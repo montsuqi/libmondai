@@ -127,6 +127,7 @@ typedef	struct _ValueStruct	{
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
 #define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
+#define	IS_VALUE_ALIAS(v)		(((v)->attr & GL_ATTR_ALIAS) == GL_ATTR_ALIAS)
 
 #define	GL_OBJ_NULL				0
 #define	GL_OBJ_INACTIVE			-1
