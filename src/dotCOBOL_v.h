@@ -23,5 +23,6 @@ copies.
 extern	char	*dotCOBOL_UnPackValue(char *p, ValueStruct *value, size_t textsize);
 extern	char	*dotCOBOL_PackValue(char *p, ValueStruct *value, size_t textsize);
 extern	void	dotCOBOL_IntegerCobol2C(int *ival);
+extern	size_t	dotCOBOL_SizeValue(ValueStruct *value, size_t arraysize, size_t textsize);
 #define	dotCOBOL_IntegerC2Cobol	dotCOBOL_IntegerCobol2C
 #endif

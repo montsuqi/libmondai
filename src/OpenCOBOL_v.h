@@ -23,4 +23,5 @@ copies.
 
 extern	char	*OpenCOBOL_UnPackValue(char *p, ValueStruct *value, size_t textsize);
 extern	char	*OpenCOBOL_PackValue(char *p, ValueStruct *value, size_t textsize);
+extern	size_t	OpenCOBOL_SizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
 #endif

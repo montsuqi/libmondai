@@ -1,3 +1,9 @@
+2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/dotCOBOL.c (dotCOBOL_SizeValue): 大きさを求める関数追加
+
+	* src/OpenCOBOL.c (OpenCOBOL_SizeValue): 
+
 2003-03-13  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* tools/Makefile.am (LDADD, INCLUDES): Fixed.

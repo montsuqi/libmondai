@@ -211,3 +211,62 @@ dbgmsg(">dotCOBOL_PackValue");
 dbgmsg("<dotCOBOL_PackValue");
 	return	(p);
 }
+
+extern	size_t
+dotCOBOL_SizeValue(
+	ValueStruct	*value,
+	size_t		arraysize,
+	size_t		textsize)
+{
+	int		i
+	,		n
+	,		size;
+	size_t	ret;
+
+	if		(  value  ==  NULL  )	return	(0);
+dbgmsg(">dotCOBOL_SizeValue");
+	switch	(value->type) {
+	  case	GL_TYPE_INT:
+		ret = sizeof(int);
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = sizeof(double);
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = 1;
+		break;
+	  case	GL_TYPE_BYTE:
+		size = ( textsize < value->body.CharData.len ) ? textsize :
+			value->body.CharData.len;
+		ret = size;
+		break;
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		ret = value->body.CharData.len;
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = value->body.FixedData.flen;
+		break;
+	  case	GL_TYPE_ARRAY:
+		if		(  value->body.ArrayData.count  >  0  ) {
+			n = value->body.ArrayData.count;
+		} else {
+			n = arraysize;
+		}
+		ret = dotCOBOL_SizeValue(value->body.ArrayData.item[0],arraysize,textsize) * n;
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
+			ret += dotCOBOL_SizeValue(value->body.RecordData.item[i],arraysize,textsize);
+		}
+		break;
+	  default:
+		ret = 0;
+		break;
+	}
+dbgmsg("<dotCOBOL_SizeValue");
+	return	(ret);
+}
+
