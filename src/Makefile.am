@@ -24,7 +24,6 @@ libmondaiinclude_HEADERS =	\
 	value.h			\
 	valueconv.h		\
 	libmondai.h		\
-	SQLparser.h		\
 	DDparser.h		\
 	monstring.h		\
 	types.h
@@ -49,8 +48,6 @@ libmondai_la_SOURCES	=			\
 	valueconv.c		valueconv.h		\
 	numerici.c		numerici.h		\
 	others.c		others.h		\
-	SQLlex.c		SQLlex.h		\
-	SQLparser.c		SQLparser.h		\
 	DDparser.c		DDparser.h		\
 	DDlex.c			DDlex.h			\
 	types.h							\
@@ -63,5 +60,3 @@ testconv_LDADD 		=	\
 
 testconv_SOURCES	=				\
 	testconv.c
-
-EXTRA_DIST = testrec.rec

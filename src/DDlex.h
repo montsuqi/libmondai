@@ -29,8 +29,8 @@ copies.
 #define	T_EOF			(YYBASE +1)
 #define	T_SYMBOL		(YYBASE +2)
 #define	T_SCONST		(YYBASE +3)
-
 #define	T_ICONST		(YYBASE +4)
+
 #define	T_CHAR			(YYBASE +5)
 #define	T_TEXT			(YYBASE +6)
 #define	T_INT			(YYBASE +7)
@@ -39,13 +39,11 @@ copies.
 #define	T_BOOL			(YYBASE +10)
 #define	T_BYTE			(YYBASE +11)
 #define	T_NUMBER		(YYBASE +12)
-#define	T_PRIMARY		(YYBASE +13)
-#define	T_PATH			(YYBASE +14)
-#define	T_VARCHAR		(YYBASE +15)
-#define	T_VIRTUAL		(YYBASE +16)
-#define	T_DBCODE		(YYBASE +17)
-#define	T_OBJECT		(YYBASE +18)
-#define	T_FLOAT			(YYBASE +19)
+#define	T_VARCHAR		(YYBASE +13)
+#define	T_DBCODE		(YYBASE +14)
+#define	T_OBJECT		(YYBASE +15)
+#define	T_FLOAT			(YYBASE +16)
+#define	T_VIRTUAL		(YYBASE +17)
 
 #undef	GLOBAL
 #ifdef	_DD_PARSER

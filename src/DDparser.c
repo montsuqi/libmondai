@@ -43,7 +43,6 @@ copies.
 #include	"monstring.h"
 #include	"DDlex.h"
 #include	"DDparser.h"
-#include	"SQLparser.h"
 #include	"debug.h"
 
 static	void
@@ -99,7 +98,7 @@ typedef	struct _ArrayDimension	{
 }	ArrayDimension;
 
 static	void
-ParValue(
+ParValueDefine(
 	ValueStruct	*upper)
 {
 	size_t		size
@@ -112,12 +111,11 @@ ParValue(
 	ArrayDimension	*next
 	,				*curr;
 
-dbgmsg(">ParValue");
+dbgmsg(">ParValueDefine");
 	value = NULL;
 	while	(  DD_Token  ==  T_SYMBOL  ) {
 		attr = GL_ATTR_NULL;
 		strcpy(name,DD_ComSymbol);
-dbgmsg(name);
 		switch	(GetSymbol) {
 		  case	T_BYTE:
 		  case	T_CHAR:
@@ -213,7 +211,7 @@ dbgmsg(name);
 		  case	'{':
 			value = NewValue(GL_TYPE_RECORD);
 			GetName;
-			ParValue(value);
+			ParValueDefine(value);
 			break;
 		  default:
 			value = NULL;
@@ -294,135 +292,13 @@ dbgmsg(name);
 		value->attr = GL_ATTR_NULL;
 		ValueAddRecordItem(upper,NULL,value);
 	}
-dbgmsg("<ParValue");
+dbgmsg("<ParValueDefine");
 }
 
 extern	void
 DD_ParserInit(void)
 {
 	DD_LexInit();
-	SQL_ParserInit();
-}
-
-static	char	***
-ParKeyItem(void)
-{
-	char	**name
-	,		**p;
-	size_t	count
-	,		rcount;
-	char	***ret
-	,		***r;
-
-dbgmsg(">ParKeyItem");
-	ret = NULL;
-	rcount = 0;
-	while	(  GetName  ==  T_SYMBOL  ) {
-		name = NULL;
-		count = 0;
-		do {
-			p = (char **)xmalloc(sizeof(char *) * ( count + 2 ));
-			if		(  name  !=  NULL  ) {
-				memcpy(p,name,sizeof(char **)*count);
-				xfree(name);
-			}
-			name = p;
-			name[count] = StrDup(DD_ComSymbol);
-			name[count+1] = NULL;
-			count ++;
-			GetSymbol;
-			if		(  DD_Token  ==  '.'  ) {
-				GetName;
-			} else
-			if		(  DD_Token  ==  ','  ) {
-				break;
-			} else
-			if		(  DD_Token  !=  ';'  ) {
-					Error("; not found");
-			}
-		}	while	(  DD_Token  ==  T_SYMBOL  );
-		r = (char ***)xmalloc(sizeof(char **) * ( rcount + 2 ));
-		if		(  ret  !=  NULL  ) {
-			memcpy(r,ret,sizeof(char ***) * rcount);
-			xfree(ret);
-		}
-		ret = r;
-		ret[rcount] = name;
-		ret[rcount+1] = NULL;
-		rcount ++;
-	}
-	if		(  DD_Token  !=  '}'  ) {
-		Error("} not found");
-	}
-dbgmsg("<ParKeyItem");
-	return	(ret);
-}
-
-static	DB_Struct	*
-ParKey(
-	DB_Struct	*db)
-{
-	KeyStruct	*skey;
-
-dbgmsg("<ParKey");
-	skey = New(KeyStruct);
-	skey->item = ParKeyItem();
-	db->pkey = skey;
-dbgmsg("<ParKey");
-	return	(db);
-}
-
-extern	DB_Struct	*
-InitDB_Struct(void)
-{
-	DB_Struct	*ret;
-
-	ret = New(DB_Struct);
-	ret->paths = NewNameHash();
-	ret->pkey = NULL;
-	ret->path = NULL;
-	ret->dbg = NULL;
-	ret->pcount = 0;
-
-	return	(ret);
-}
-
-extern	PathStruct	*
-InitPathStruct(void)
-{
-	PathStruct	*ret;
-
-	ret = New(PathStruct);
-	ret->opHash = NewNameHash();
-	ret->ops = (LargeByteString **)xmalloc(sizeof(LargeByteString *) * 5);
-	ret->ops[DBOP_SELECT] = NULL;
-	ret->ops[DBOP_FETCH ] = NULL;
-	ret->ops[DBOP_UPDATE] = NULL;
-	ret->ops[DBOP_INSERT] = NULL;
-	ret->ops[DBOP_DELETE] = NULL;
-	g_hash_table_insert(ret->opHash,"DBSELECT",(gpointer)(DBOP_SELECT+1));
-	g_hash_table_insert(ret->opHash,"DBFETCH",(gpointer)(DBOP_FETCH+1));
-	g_hash_table_insert(ret->opHash,"DBUPDATE",(gpointer)(DBOP_UPDATE+1));
-	g_hash_table_insert(ret->opHash,"DBINSERT",(gpointer)(DBOP_INSERT+1));
-	g_hash_table_insert(ret->opHash,"DBDELETE",(gpointer)(DBOP_DELETE+1));
-	ret->ocount = 5;
-	return	(ret);
-}
-
-static	char	*
-GetExt(
-	char	*name)
-{
-	char	*p;
-
-	p = name + strlen(name);
-	while	(	(  p   !=  name  )
-			 &&	(  *p  !=  '\\'  )
-			 &&	(  *p  !=  '/'   )
-			 &&	(  *p  !=  '.'   ) )	{
-		p --;
-	}
-	return	(p);
 }
 
 extern	RecordStruct	*
@@ -431,10 +307,6 @@ DD_Parse(
 	char	*name)
 {
 	RecordStruct	*ret;
-	int		ix
-	,		pcount;
-	PathStruct		**path;
-	LargeByteString	**ops;
 
 dbgmsg(">DD_Parse");
 	DD_FileName = StrDup(name);
@@ -443,106 +315,26 @@ dbgmsg(">DD_Parse");
 	ret = New(RecordStruct);
 	ret->value = NULL;
 	ret->name = NULL;
-	if		(  !stricmp(GetExt(name),".db")  ) {
-		ret->type = RECORD_DB;
-		ret->opt.db = InitDB_Struct();
-	} else {
-		ret->type = RECORD_NULL;
-	}
-	while	(  	GetSymbol  !=  T_EOF  ) {
-		switch	(DD_Token) {
-		  case	T_SYMBOL:
-			ret->name = StrDup(DD_ComSymbol);
-			if		(  GetSymbol  == '{'  ) {
-				ret->value = NewValue(GL_TYPE_RECORD);
-				ret->value->attr = GL_ATTR_NULL;
-				GetName;
-				ParValue(ret->value);
-			} else {
-				Error("syntax error");
-			}
-			break;
-		  case	T_PRIMARY:
-			dbgmsg("primary");
-			if		(  ret->type  ==  RECORD_NULL  ) {
-				ret->type = RECORD_DB;
-				ret->opt.db = InitDB_Struct();
-			}
-			if		(  GetSymbol  == '{'  ) {
-				ret->opt.db = ParKey(ret->opt.db);
-				if		(  GetSymbol  !=  ';'  ) {
-					Error("; missing");
-				}
-			} else {
-				Error("syntax error");
-			}
-			break;
-		  case	T_PATH:
-			dbgmsg("path");
-			if		(  GetName  !=  T_SYMBOL  ) {
-				Error("path name invalid");
-			}
-			pcount = ret->opt.db->pcount;
-			path = (PathStruct **)xmalloc(sizeof(PathStruct *) * (pcount + 1));
-			if		(  pcount  >  0  ) {
-				memcpy(path,ret->opt.db->path,(sizeof(PathStruct *) * pcount));
-				xfree(ret->opt.db->path);
-			}
-			path[pcount] = InitPathStruct();
-			path[pcount]->name = StrDup(DD_ComSymbol);
-			g_hash_table_insert(ret->opt.db->paths,path[pcount]->name,(void *)(pcount+1));
-			ret->opt.db->pcount ++;
-			ret->opt.db->path = path;
-			if		(  GetSymbol  !=  '{'  ) {
-				Error("{ missing");
-			}
-			while	(  GetName  ==  T_SYMBOL  ) {
-				if		(  ( ix = (int)g_hash_table_lookup(
-								 path[pcount]->opHash,DD_ComSymbol) )  ==  0  ) {
-					ix = path[pcount]->ocount;
-					ops = (LargeByteString **)xmalloc(sizeof(LargeByteString *) * ( ix + 1 ));
-					memcpy(ops,path[pcount]->ops,(sizeof(LargeByteString *) * ix));
-					xfree(path[pcount]->ops);
-					path[pcount]->ops = ops;
-					g_hash_table_insert(path[pcount]->opHash,
-										StrDup(DD_ComSymbol),
-										(gpointer)(ix + 1));
-					path[pcount]->ocount ++;
-				} else {
-					ix --;
-				}
-				if		(  GetSymbol  == '{'  ) {
-					path[pcount]->ops[ix] = ParSQL(ret);
-					if		(  GetSymbol  !=  ';'  ) {
-						Error("; missing");
-					}
-				} else {
-					Error("{ missing");
-				}
-			}
-			if		(  DD_Token  ==  '}'  ) {
-				if		(  GetSymbol  !=  ';'  ) {
-					Error("; missing");
-				}
-			} else {
-				Error("} missing");
-			}
-			break;
-		  default:
-			Error("syntax error");
-			printf("token = [%X]\n",DD_Token);
-			break;
-		}
-	}
+	ret->type = RECORD_NULL;
 
-	if		(  fDD_Error  ) {
-		FreeValueStruct(ret->value);
-		if		(  ret->name  !=  NULL ) {
-			xfree(ret->name);
+	if		(  GetSymbol  ==  T_SYMBOL  ) {
+		ret->name = StrDup(DD_ComSymbol);
+		if		(  GetSymbol  == '{'  ) {
+			ret->value = NewValue(GL_TYPE_RECORD);
+			ret->value->attr = GL_ATTR_NULL;
+			GetName;
+			ParValueDefine(ret->value);
+			if		(  fDD_Error  ) {
+				ret = NULL;
+			}
+		} else {
+			ret = NULL;
+			Error("syntax error");
 		}
-		xfree(ret);
+	} else {
 		ret = NULL;
 	}
+	xfree(DD_FileName);
 dbgmsg("<DD_Parse");
 	return	(ret);
 }

@@ -67,10 +67,8 @@ static	struct	{
 	{	"output"	,T_OUTPUT	},
 	{	"text"		,T_TEXT		},
 	{	"object"	,T_OBJECT	},
-	{	"primary"	,T_PRIMARY	},
-	{	"path"		,T_PATH		},
-	{	"virtual"	,T_VIRTUAL	},
 	{	"dbcode"	,T_DBCODE	},
+	{	"virtual"	,T_VIRTUAL	},
 	{	""			,0	}
 };
 

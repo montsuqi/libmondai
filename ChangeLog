@@ -1,3 +1,9 @@
+2003-09-08  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SQL*.[ch]: pandaに移動(libmondaiにあるべきではない)
+
+	* src/DDparser.c: DBの機能を抜いた(libmondaiにあるべきではない)
+
 2003-09-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/valueconv.h: ConvFuncのglobal化

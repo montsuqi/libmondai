@@ -710,13 +710,18 @@ RFC822_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF]
-	,		longname[SIZE_LONGNAME+1];
+	,		longname[SIZE_LONGNAME+1]
+	,		*q;
 
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
 	}
-	return	(_RFC822_PackValue(opt,p,value,NULL,longname,buff));
+	q = _RFC822_PackValue(opt,p,value,NULL,longname,buff);
+	if		(  q  >  p  ) {
+		*(q-1) = 0;
+	}
+	return	(q);
 }
 
 static	size_t
