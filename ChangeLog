@@ -1,5 +1,19 @@
 2003-03-07  Koji SHIMIZU  <shimizu@netlab.jp>
 
+	* .cvsignore:
+	* docs/.cvsignore:
+	* src/.cvsignore: New file for cvs.
+
+	* stamp-h.in: Removed file.
+	
+	* libmondai-config.in: Outputed GLib and libfixed flags.
+
+	* src/Makefile.am (libmondaiinclude_HEADERS)
+	(libmondai_la_SOURCES): Added `types.h'.
+
+	* src/LBSfunc.h: Included `types.h'.
+	* src/value.h: Included `types.h', `stdio.h'.
+
 	* libmondai-config.in: Bug fix in `--version'.
 	* configure.in (LIBMONDAI_MAJOR_VERSION): Renamed from `MAJOR_VERSION'.
 	(LIBMONDAI_MINOR_VERSION): Renamed from `MINOR_VERSION'.
