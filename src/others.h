@@ -34,4 +34,6 @@ extern	size_t		EncodeBase64(char *out, byte *in, size_t len);
 extern	size_t		DecodeBase64(byte *out, char *in, size_t len);
 extern	size_t		EncodeLengthBase64(char *str);
 
+#define	BASE64SIZE(s)	((((s)+2)/2)*3)
+
 #endif

@@ -39,6 +39,7 @@ copies.
 #include	"memory.h"
 #include	"value.h"
 #include	"cobolvalue.h"
+#include	"others.h"
 #include	"monstring.h"
 #include	"OpenCOBOL_v.h"
 #include	"getset.h"
@@ -99,17 +100,23 @@ ENTER_FUNC;
 		ValueIsNonNil(value);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			value->body.IntegerData = *(int *)p;
+			ValueInteger(value) = *(int *)p;
 			IntegerCobol2C(&value->body.IntegerData);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			value->body.FloatData = *(double *)p;
+			ValueFloat(value) = *(double *)p;
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
-			value->body.BoolData = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
+			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObjectSource(value) = *(int *)p;
+			p += sizeof(int);
+			ValueObjectID(value) = *(OidType *)p;
+			p += sizeof(OidType);
 			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(ValueByte(value),p,ValueByteLength(value));
@@ -210,6 +217,12 @@ ENTER_FUNC;
 			FixedC2Cobol(p,ValueFixedLength(value));
 			p += ValueFixedLength(value);
 			break;
+		  case	GL_TYPE_OBJECT:
+			*(int *)p = ValueObjectSource(value);
+			p += sizeof(int);
+			*(OidType *)p = ValueObjectID(value);
+			p += sizeof(OidType);
+			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
 				p += OpenCOBOL_PackValue(opt,p,value->body.ArrayData.item[i]);
@@ -260,6 +273,9 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		break;
 	  case	GL_TYPE_NUMBER:
 		ret = ValueFixedLength(value);
+		break;
+	  case	GL_TYPE_OBJECT:
+		ret = sizeof(*ValueObject(value));
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  value->body.ArrayData.count  >  0  ) {

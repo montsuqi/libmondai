@@ -25,6 +25,7 @@ testrec	{
 			j	bool;
 		}	[2];
 	}	[5];
+	i	object;
 #	h	{
 #		d	char;
 #		e	char(2);

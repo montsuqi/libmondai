@@ -112,6 +112,7 @@ main(
 
 	/*	set	*/
 	printf("***** Value setting *****\n");
+	InitializeValue(val);
 	SetValueString(GetItemLongName(val,"a"),"aaa",SRC_CODE);
 	SetValueString(GetItemLongName(val,"b"),"bb",SRC_CODE);
 	SetValueString(GetItemLongName(val,"g"),"NIL",SRC_CODE);

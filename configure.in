@@ -76,11 +76,15 @@ dnl i18n feture
 dnl ***************************************************************************
 
 AC_ARG_WITH(i18n,
-	[  --with-i18n	link with iconv],
+	[  --with-i18n	link with iconv],[
 	if test x$withval = xyes; then
 		AC_DEFINE(WITH_I18N,1,[])
+		LIBMONDAI_I18N=1
 	fi
-)		
+	],[
+	LIBMONDAI_I18N=0
+])
+AC_SUBST(LIBMONDAI_I18N)
 
 dnl ***************************************************************************
 dnl Add all the cflags & libs needed for the libfixed modules.

@@ -38,11 +38,13 @@ copies.
 #include	"misc.h"
 #include	"others.h"
 
+static	const	unsigned int	libmondai_i18n = @LIBMONDAI_I18N@;
+
 /* version infomation */
 
-static const unsigned int libmondai_major_version = @LIBMONDAI_MAJOR_VERSION@;
-static const unsigned int libmondai_minor_version = @LIBMONDAI_MINOR_VERSION@;
-static const unsigned int libmondai_micro_version = @LIBMONDAI_MICRO_VERSION@;
+static	const	unsigned int	libmondai_major_version = @LIBMONDAI_MAJOR_VERSION@;
+static	const	unsigned int	libmondai_minor_version = @LIBMONDAI_MINOR_VERSION@;
+static	const	unsigned int	libmondai_micro_version = @LIBMONDAI_MICRO_VERSION@;
 
 #define LIBMONDAI_CHECK_VERSION(major,minor,micro)	\
   (libmondai_major_version > (major)			\

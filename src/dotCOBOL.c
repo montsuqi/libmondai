@@ -39,6 +39,7 @@ copies.
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"monstring.h"
+#include	"others.h"
 #include	"dotCOBOL_v.h"
 #include	"memory.h"
 #include	"getset.h"
@@ -141,6 +142,12 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			strcpy(ValueFixedBody(value),buff);
 			p += ValueFixedLength(value);
 			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObjectSource(value) = *(int *)p;
+			p += sizeof(int);
+			ValueObjectID(value) = *(OidType *)p;
+			p += sizeof(OidType);
+			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				p += dotCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
@@ -210,6 +217,12 @@ dbgmsg(">dotCOBOL_PackValue");
 			FixedC2Cobol(p,ValueFixedLength(value));
 			p += ValueFixedLength(value);
 			break;
+		  case	GL_TYPE_OBJECT:
+			*(int *)p = ValueObjectSource(value);
+			p += sizeof(int);
+			*(OidType *)p = ValueObjectID(value);
+			p += sizeof(OidType);
+			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				p += dotCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
@@ -260,6 +273,9 @@ dbgmsg(">dotCOBOL_SizeValue");
 		break;
 	  case	GL_TYPE_NUMBER:
 		ret = ValueFixedLength(value);
+		break;
+	  case	GL_TYPE_OBJECT:
+		ret = sizeof(*ValueObject(value));
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  ValueArraySize(value)  >  0  ) {

@@ -82,6 +82,7 @@ BuildMcpArea(
 	}
 	fprintf(fp,	"mcparea	{");
 	fprintf(fp,		"func varchar(%d);",SIZE_FUNC);
+	fprintf(fp,		"obj object;");
 	fprintf(fp,		"rc int;");
 	fprintf(fp,		"dc	{");
 	//	fprintf(fp,			"window	 varchar(%d);",SIZE_NAME);

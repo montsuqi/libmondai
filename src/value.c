@@ -409,6 +409,7 @@ DumpValueStruct(
 	ValueStruct	*val)
 {
 	int		i;
+	byte	*p;
 
 	if		(  val  ==  NULL  )	{
 		printf("null value\n");
@@ -463,7 +464,12 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
-			printf("object [%d]\n",ValueObjectSource(val));
+			printf("object [%d:",ValueObjectSource(val));
+			p = (byte *)&ValueObjectID(val);
+			for	( i = 0 ; i < sizeof(ValueObjectID(val)) ; i ++ , p ++ ) {
+				printf("%02X",(int)*p);
+			}
+			printf("]\n");
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -521,8 +527,7 @@ dbgmsg(">InitializeValue");
 		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectSource(value) = 0;
-		memclear(&ValueObjectID(value),sizeof(ValueObjectID(value)));
+		memclear(ValueObject(value),sizeof(*ValueObject(value)));
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:

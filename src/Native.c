@@ -37,6 +37,7 @@ copies.
 #define	__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
+#include	"others.h"
 #include	"monstring.h"
 #include	"memory.h"
 #include	"value.h"
@@ -109,7 +110,7 @@ dbgmsg(">NativeUnPackValue");
 				ValueStringSize(value) = size;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 			}
-			if (size > 0) {
+			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
 				strcpy(ValueString(value),p);
 				p += size;
@@ -290,7 +291,7 @@ dbgmsg(">NativeSizeValue");
 		ret += sizeof(size_t) + sizeof(size_t) + ValueStringSize(val);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret += sizeof(int) + sizeof(int);
+		ret += sizeof(*ValueObject(val));
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret += sizeof(size_t);

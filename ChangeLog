@@ -1,3 +1,7 @@
+2003-12-24  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/libmondai.h.in: libmondaiが国際化されているかどうかのフラグを作った
+
 2003-12-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.c (GetRecordItem): valueがNULLの時の処理

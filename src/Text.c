@@ -115,6 +115,7 @@ _CSV_UnPackValue(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_OBJECT:
 			SetValueString(value,buff,ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -219,6 +220,7 @@ __CSV_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_OBJECT:
 			CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
 			if		(  fSsep  ) {
 				p += sprintf(p,"\"%s\",",buff);
@@ -338,6 +340,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_OBJECT:
 		str = ValueToString(value,ConvCodeset(opt));
 		ret = strlen(str) + 1;
 		if		(  fSsep  )	{
@@ -382,7 +385,6 @@ dbgmsg(">_CSV_SizeValue");
 		}
 		break;
 	  case	GL_TYPE_ALIAS:
-	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;
 		break;
@@ -577,6 +579,7 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_OBJECT:
 			q = p;
 			while	(	(  *p  !=  0     )
 					&&	(  *p  !=  '\n'  ) )	p ++;
@@ -657,6 +660,7 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_NUMBER:
 					  case	GL_TYPE_INT:
 					  case	GL_TYPE_FLOAT:
+					  case	GL_TYPE_OBJECT:
 						ch = *p;
 						*p = 0;
 						SetValueString(e,q,ConvCodeset(opt));
@@ -727,6 +731,7 @@ _RFC822_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_OBJECT:
 			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
 			}
@@ -807,6 +812,7 @@ dbgmsg(">_RFC822_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
+	  case	GL_TYPE_OBJECT:
 		ret = strlen(ValueToString(value,ConvCodeset(opt))) + 1;
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
@@ -829,7 +835,6 @@ dbgmsg(">_RFC822_SizeValue");
 		}
 		break;
 	  case	GL_TYPE_ALIAS:
-	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;
 		break;
@@ -954,6 +959,7 @@ _CGI_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_OBJECT:
 			q = ValueToString(value,ConvCodeset(opt));
 			p += sprintf(p,"%s=",longname);
 #if	1
@@ -1039,6 +1045,7 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
+	  case	GL_TYPE_OBJECT:
 		ret = EncodeLength(opt,ValueToString(value,ConvCodeset(opt))) + strlen(longname) + 2;
 		break;
 	  case	GL_TYPE_ARRAY:
@@ -1056,7 +1063,6 @@ dbgmsg(">_CGI_SizeValue");
 		}
 		break;
 	  case	GL_TYPE_ALIAS:
-	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;
 		break;

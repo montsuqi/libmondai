@@ -273,7 +273,7 @@ ENTER_FUNC;
 		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_OBJECT:
-		EncodeBase64(work,(byte *)ValueObject(val),sizeof(ValueObject(val)));
+		EncodeBase64(work,(byte *)ValueObject(val),sizeof(*ValueObject(val)));
 		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_FLOAT:
@@ -472,7 +472,9 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
-			p += DecodeBase64(ValueObject(val),str,sizeof(ValueObject(val))*2);
+			p += DecodeBase64((byte *)ValueObject(val),str,
+							  BASE64SIZE(sizeof(*ValueObject(val))));
+			rc = TRUE;
 			break;
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
