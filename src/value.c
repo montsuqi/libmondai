@@ -131,7 +131,7 @@ FreeValueStruct(
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 				FreeValueStruct(ValueArrayItem(val,i));
 			}
-            xfree(ValueArrayItems(val));
+			xfree(ValueArrayItems(val));
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
@@ -449,7 +449,6 @@ dbgmsg(">GetItemLongName");
 		}
 		if		(  *p   ==  '.'   )	p ++;
 		if		(  val  ==  NULL  )	{
-			printf("no ValueStruct [%s]\n",longname);
 			break;
 		}
 	}
@@ -821,9 +820,8 @@ DuplicateValue(
 		if		(  ValueStringSize(template)  >  0  ) {
 			ValueString(p) = (char *)xmalloc(ValueStringSize(template));
 			memclear(ValueString(p),ValueStringSize(template));
-		}
-        else {
-            ValueString(p) = NULL;
+		} else {
+			ValueString(p) = NULL;
         }
 		ValueStringLength(p) = ValueStringLength(template);
 		ValueStringSize(p) = ValueStringSize(template);
@@ -833,9 +831,8 @@ DuplicateValue(
 		if		(  ValueByteSize(template)  >  0  ) {
 			ValueByte(p) = (char *)xmalloc(ValueByteSize(template));
 			memclear(ValueByte(p),ValueByteSize(template));
-		}
-        else {
-            ValueByte(p) = NULL;
+		} else {
+			ValueByte(p) = NULL;
         }
 		ValueByteLength(p) = ValueByteLength(template);
 		ValueByteSize(p) = ValueByteSize(template);

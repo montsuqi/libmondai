@@ -220,8 +220,6 @@ ENTER_FUNC;
 									 ValueStringSize(val),
 									 0,codeset);
 			}
-		} else {
-			LBS_EmitChar(ValueStr(val),CHAR_NIL);
 		}
 		break;
 	  case	GL_TYPE_BYTE:
