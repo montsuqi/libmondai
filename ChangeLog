@@ -1,3 +1,7 @@
+2003-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/XML.c: タグ名を変数名に一致させた形式
+
 2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/XML.c: libxmlにも対応

@@ -149,11 +149,8 @@ static	void
 CSV_Encode(
 	char	*str,
 	char	fSsep,
-	char	*buff)
+	char	*p)
 {
-	char	*p;
-
-	p = buff;
 	for	( ; *str != 0 ; str ++ ) {
 		switch	(*str) {
 		  case	'"':
@@ -266,11 +263,12 @@ _CSV_PackValue(
 	Bool		fCesc,
 	char		*buff)
 {
-	char	*ret;
+	byte	*ret;
 
 	ret = __CSV_PackValue(opt,p,value,fNsep,fSsep,fCesc,buff);
-	ret --;
-	*ret = 0;
+	if		(  ret  >  p  ) {
+		*(ret-1) = 0;
+	}
 	return	(ret);
 }
 
@@ -338,26 +336,28 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_BOOL:
 		str = ValueToString(value,opt->coding);
 		ret = strlen(str) + 1;
-		if		(  fSsep  )	ret += 2;
-		fComma = FALSE;
-		for	( ; *str != 0 ; str ++ ) {
-			switch	(*str) {
-			  case	'"':
-				if		(  fSsep )	ret ++;
-				break;
-			  case	'\n':
-			  case	'\\':
-				ret ++;
-				break;
-			  case	',':
-				fComma = TRUE;
-				break;
-			  default:
-				break;
+		if		(  fSsep  )	{
+			ret += 2;
+		} else {
+			fComma = FALSE;
+			for	( ; *str != 0 ; str ++ ) {
+				switch	(*str) {
+				  case	'"':
+					if		(  fSsep )	ret ++;
+					break;
+				  case	'\n':
+				  case	'\\':
+					ret ++;
+					break;
+				  case	',':
+					fComma = TRUE;
+					break;
+				  default:
+					break;
+				}
 			}
+			if		(  fComma  )	ret += 2;
 		}
-		if		(	(  fCesc   )
-				&&	(  fComma  ) )	ret += 2;
 		break;
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:

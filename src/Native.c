@@ -79,6 +79,14 @@ dbgmsg(">NativeUnPackValue");
 			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
 			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(value) = *(double *)p;
+			p += sizeof(double);
+			break;
+		  case	GL_TYPE_NUMBER:
+			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
+			p += ValueFixedLength(value);
+			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(ValueByte(value),p,ValueByteLength(value));
 			p += ValueByteLength(value);
@@ -103,10 +111,6 @@ dbgmsg(">NativeUnPackValue");
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
 				ValueStringLength(value) = len;
 			}
-			break;
-		  case	GL_TYPE_NUMBER:
-			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
-			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
 			ValueObjectPlace(value) = *(int *)p;
@@ -179,6 +183,14 @@ dbgmsg(">NativePackValue");
 			*(char *)p = ValueBool(value) ? 'T' : 'F';
 			p ++;
 			break;
+		  case	GL_TYPE_FLOAT:
+			*(double *)p = ValueFloat(value);
+			p += sizeof(double);
+			break;
+		  case	GL_TYPE_NUMBER:
+			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+			p += ValueFixedLength(value);
+			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(p,ValueByte(value),ValueByteLength(value));
 			p += ValueByteLength(value);
@@ -187,15 +199,11 @@ dbgmsg(">NativePackValue");
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
-			size = strlen(ValueString(value));
+			size = ValueStringSize(value);
 			*(size_t *)p = size;
 			p += sizeof(size_t);
 			memcpy(p,ValueString(value),size);
 			p += size;
-			break;
-		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
-			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
 			*(int *)p = ValueObjectPlace(value);
@@ -252,23 +260,26 @@ dbgmsg(">NativeSizeValue");
 	  case	GL_TYPE_INT:
 		ret += sizeof(int);
 		break;
-	  case	GL_TYPE_FLOAT:
-		ret += sizeof(double);
-		break;
 	  case	GL_TYPE_BOOL:
 		ret += 1;
 		break;
-	  case	GL_TYPE_BYTE:
-		ret += ValueByteLength(val);
+	  case	GL_TYPE_FLOAT:
+		ret += sizeof(double);
 		break;
 	  case	GL_TYPE_NUMBER:
 		ret += ValueFixedLength(val);
+		break;
+	  case	GL_TYPE_BYTE:
+		ret += ValueByteLength(val);
 		break;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		ret += strlen(ValueString(val)) + sizeof(size_t);
+		ret += sizeof(size_t) + ValueStringSize(val);
+		break;
+	  case	GL_TYPE_OBJECT:
+		ret += sizeof(int) + sizeof(int);
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret += sizeof(size_t);
@@ -286,7 +297,6 @@ dbgmsg(">NativeSizeValue");
 		}
 		break;
 	  default:
-		ret += 0;
 		break;
 	}
 dbgmsg("<NativeSizeValue");

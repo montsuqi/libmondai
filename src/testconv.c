@@ -19,15 +19,29 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+#define	TEST_CODE		"euc-jp"
+#define	SRC_CODE		"euc-jp"
+
 #define	TEST_VALUE
-#define	XML_TEST
+
+#define	TEST_XML1
+#define	TEST_XML2
+#define	TEST_NATIVE1
+#define	TEST_NATIVE2
+#define	TEST_CSV1
+#define	TEST_CSV2
+#define	TEST_CSV3
+#define	TEST_CSVE
+#define	TEST_RFC822_1
+#define	TEST_RFC822_2
+#define	TEST_CGI
 /*
-#define	CONV_TEST
+#define	TEST_CODE		"shift-jis"
 */
 
+/*
 #define	DEBUG
 #define	TRACE
-/*
 */
 #define	MAIN
 #ifdef HAVE_CONFIG_H
@@ -60,7 +74,6 @@ copies.
 
 #include	"debug.h"
 
-static	char	*locale = "EUC-JP";
 extern	int
 main(
 	int		argc,
@@ -75,11 +88,11 @@ main(
 	,		j;
 	ValueStruct	*val
 	,			*e;
-	char	*buff;
-	size_t	size
-	,		size1;
+	size_t	size;
 	FILE	*fp;
 	CONVOPT	*opt;
+	byte	*buff
+	,		*q;
 
 	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
@@ -94,15 +107,15 @@ main(
 
 	/*	set	*/
 	printf("***** Value setting *****\n");
-	SetValueString(GetItemLongName(val,"a"),"aaa",locale);
-	SetValueString(GetItemLongName(val,"b"),"bb",locale);
-	SetValueString(GetItemLongName(val,"g"),"NIL",locale);
+	SetValueString(GetItemLongName(val,"a"),"aaa",SRC_CODE);
+	SetValueString(GetItemLongName(val,"b"),"bb",SRC_CODE);
+	SetValueString(GetItemLongName(val,"g"),"NIL",SRC_CODE);
 	ValueAttribute(GetItemLongName(val,"g")) |= GL_ATTR_NIL;
 
-	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop",locale);
-	SetValueString(GetItemLongName(val,"m"),"´Á»ú¤òÆþ¤ì¤¿",locale);
+	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop",SRC_CODE);
+	SetValueString(GetItemLongName(val,"m"),"´Á»ú¤òÆþ¤ì¤¿",SRC_CODE);
 	SetValueString(GetItemLongName(val,"n"),"200.003",NULL);
-	SetValueString(GetItemLongName(val,"c.d"),"d",locale);
+	SetValueString(GetItemLongName(val,"c.d"),"d",SRC_CODE);
 	SetValueInteger(GetItemLongName(val,"c.e"),100);
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"c.g")) ; i ++ ) {
 		sprintf(name,"c.g[%d].h",i);
@@ -112,23 +125,23 @@ main(
 			*p = '0' + ( j % 10 );
 		}
 		sprintf(name,"c.g[%d].i",i);
-		SetValueString(GetItemLongName(val,name),str,locale);
+		SetValueString(GetItemLongName(val,name),str,SRC_CODE);
 		sprintf(name,"c.g[%d].j",i);
-		SetValueString(GetItemLongName(val,name),str,locale);
+		SetValueString(GetItemLongName(val,name),str,SRC_CODE);
 	}
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"f")) ; i ++ ) {
 		sprintf(name,"f[%d].d",i);
-		SetValueString(GetItemLongName(val,name),"d",locale);
+		SetValueString(GetItemLongName(val,name),"d",SRC_CODE);
 		sprintf(name,"f[%d].e",i);
-		SetValueString(GetItemLongName(val,name),"e",locale);
+		SetValueString(GetItemLongName(val,name),"e",SRC_CODE);
 		sprintf(name,"f[%d].g",i);
 		e = GetItemLongName(val,name);
 		for	( j = 0 ; j < ValueArraySize(e) ; j ++ ) {
 			sprintf(str,"%d%d",i,j);
 			sprintf(name,"f[%d].g[%d].h",i,j);
-			SetValueString(GetItemLongName(val,name),str,locale);
+			SetValueString(GetItemLongName(val,name),str,SRC_CODE);
 			sprintf(name,"f[%d].g[%d].i",i,j);
-			SetValueString(GetItemLongName(val,name),str,locale);
+			SetValueString(GetItemLongName(val,name),str,SRC_CODE);
 			sprintf(name,"f[%d].g[%d].j",i,j);
 			if		(  j % 2  ==  1  ) {
 				SetValueBool(GetItemLongName(val,name),TRUE);
@@ -151,7 +164,7 @@ main(
 		printf("in   [%s]\n",str);fflush(stdout);
 		SetValueString(e,str,NULL);
 		printf("buff [%s]\n",ValueStringPointer(e));
-		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+		printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	}
 	printf("***** varchar(40) *****\n");
 	e = GetItemLongName(val,"q");
@@ -159,11 +172,11 @@ main(
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
 		printf("in   [%s]\n",str);fflush(stdout);
-		SetValueString(e,str,"euc-jp");
+		SetValueString(e,str,TEST_CODE);
 		printf("buff [%s]\n",ValueStringPointer(e));
-		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+		printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	}
-	printf("***** text(with locale) *****\n");
+	printf("***** text(with coding) *****\n");
 	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
 		p = str;
@@ -172,8 +185,8 @@ main(
 		}
 		*p = 0;
 		printf("in   [%s]\n",str);fflush(stdout);
-		SetValueString(e,str,"euc-jp");
-		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+		SetValueString(e,str,TEST_CODE);
+		printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 		printf("buff [%s]\n",ValueStringPointer(e));
 	}
 	printf("***** text *****\n");
@@ -195,236 +208,321 @@ main(
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
 		printf("in   [%s]\n",str);fflush(stdout);
-		SetValueString(e,str,"euc-jp");
+		SetValueString(e,str,TEST_CODE);
 		printf("buff [%s]\n",ValueStringPointer(e));
-		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+		printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	}
 
 	strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 	printf("***** str -> varchar(40) *****\n");
 	e = GetItemLongName(val,"q");
 	printf("in   [%s]\n",str);
-	SetValueString(GetItemLongName(val,"q"),str,"euc-jp");
-	printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+	SetValueString(GetItemLongName(val,"q"),str,TEST_CODE);
+	printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	printf("buff [%s]\n",ValueStringPointer(e));
 
 	printf("***** varchar(40) -> varchar(20) *****\n");
 	e = GetItemLongName(val,"p");
 	MoveValue(e,GetItemLongName(val,"q"));
 	printf("buff [%s]\n",ValueStringPointer(e));
-	printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+	printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	printf("********************\n");
 
 #endif
 	DumpValueStruct(val);
 
 	opt = NewConvOpt();
-	ConvSetCoding(opt,"shift-jis");
-	ConvSetCoding(opt,"euc-jp");
-#ifdef	XML_TEST
+	ConvSetCoding(opt,TEST_CODE);
+#ifdef	USE_XML
+#ifdef	TEST_XML1
 	buff = xmalloc(SIZE_BUFF);
-	printf("***** XML Pack *****\n");
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** XML(1) *****\n");
 	ConvSetRecName(opt,"testrec");
 	ConvSetIndent(opt,TRUE);
 	//ConvSetIndent(opt,FALSE);
 	ConvSetType(opt,FALSE);
-	XML_PackValue(opt,buff,val);
-	if		(  ( fp = fopen("test.xml","w") )  ==  NULL  ) 	exit(1);
+	ConvSetXmlType(opt,XML_TYPE1);
+
+	printf("***** XML Size(1) *****\n");
+	size = XML_SizeValue(opt,val);
+	q = XML_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
+	if		(  ( fp = fopen("test.xml1","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
 	fclose(fp);
-	printf("size = %d\n",strlen(buff));
-	printf("size = %d\n",XML_SizeValue(opt,val));
-	printf("********************\n");
+
+	printf("***** XML UnPack(1) *****\n");
 	InitializeValue(val);
 	XML_UnPackValue(opt,buff,val);
-	printf("********************\n");
 	DumpValueStruct(val);
-	printf("********************\n");
-	XML_PackValue(opt,buff,val);
+	printf("***** XML(1) end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_XML2
+	buff = xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** XML(2) *****\n");
+	ConvSetXmlType(opt,XML_TYPE2);
+	ConvSetIndent(opt,TRUE);
+	ConvSetType(opt,FALSE);
+
+	printf("***** XML Size(2) *****\n");
+	size = XML_SizeValue(opt,val);
+	q = XML_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
 	if		(  ( fp = fopen("test.xml2","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
 	fclose(fp);
-	printf("********************\n");
+
+	printf("***** XML UnPack(2) *****\n");
+	InitializeValue(val);
+	XML_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** XML(2) end *****\n");
+	xfree(buff);
+#endif
 #endif
 
-#ifdef	CONV_TEST
-	ConvSetLocale(opt,"euc-jp");
-	printf("***** Native Pack(1) *****\n");
+#ifdef	TEST_NATIVE1
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** Native(1) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
 	ConvSetUseName(opt,FALSE);
-	size =  NativeSizeValue(opt,val);
+
+	printf("***** Native Size(1) *****\n");
+	size = NativeSizeValue(opt,val);
+	q = NativePackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	NativePackValue(opt,buff,val);
+	printf("size = %d\n",(int)(q - buff));
+
 	if		(  ( fp = fopen("test.native1","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
-	xfree(buff);
 
 	printf("***** Native UnPack(1) *****\n");
-	if		(  ( fp = fopen("test.native1","r") )  ==  NULL  )	exit(1);
-	buff = (char *)xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
-	fread(buff,SIZE_BUFF,1,fp);
-	fclose(fp);
+	InitializeValue(val);
 	NativeUnPackValue(opt,buff,val);
 	DumpValueStruct(val);
-	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
+	printf("***** Native(1) end *****\n");
+	xfree(buff);
+#endif
 
-	printf("***** Native Pack(2) *****\n");
+#ifdef	TEST_NATIVE2
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** Native(2) *****\n");
 	ConvSetUseName(opt,TRUE);
-	size =  NativeSizeValue(opt,val);
+
+	printf("***** Native Size(2) *****\n");
+	size = NativeSizeValue(opt,val);
+	q = NativePackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	NativePackValue(opt,buff,val);
+	printf("size = %d\n",(int)(q - buff));
+
 	if		(  ( fp = fopen("test.native2","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
-	xfree(buff);
 
 	printf("***** Native UnPack(2) *****\n");
-	if		(  ( fp = fopen("test.native2","r") )  ==  NULL  )	exit(1);
-	buff = (char *)xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
-	fread(buff,SIZE_BUFF,1,fp);
-	fclose(fp);
+	InitializeValue(val);
 	NativeUnPackValue(opt,buff,val);
 	DumpValueStruct(val);
-	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
+	printf("***** Native(2) end *****\n");
+	xfree(buff);
+#endif
 
-	ConvSetLocale(opt,"euc-jp");
-	printf("***** CSV Pack *****\n");
+#ifdef	TEST_CSV1
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** CSV(1) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+
+	printf("***** CSV Size(1) *****\n");
 	size = CSV1_SizeValue(opt,val);
-	printf("CSV1 size = %d\n",size);
+	q = CSV1_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
+	if		(  ( fp = fopen("test.csv1","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** CSV UnPack(1) *****\n");
+	InitializeValue(val);
+	CSV_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** CSV(1) end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_CSV2
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** CSV(2) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+
+	printf("***** CSV Size(2) *****\n");
 	size = CSV2_SizeValue(opt,val);
-	printf("CSV2 size = %d\n",size);
+	q = CSV2_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
+	if		(  ( fp = fopen("test.csv2","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** CSV UnPack(2) *****\n");
+	InitializeValue(val);
+	CSV_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** CSV(2) end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_CSV3
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** CSV(3) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+
+	printf("***** CSV Size(3) *****\n");
 	size = CSV3_SizeValue(opt,val);
-	printf("CSV3 size = %d\n",size);
+	q = CSV3_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
+	if		(  ( fp = fopen("test.csv3","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** CSV UnPack(3) *****\n");
+	InitializeValue(val);
+	CSV_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** CSV(3) end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_CSVE
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** CSV(E) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+
+	printf("***** CSV Size(E) *****\n");
 	size = CSVE_SizeValue(opt,val);
-	printf("CSVE size = %d\n",size);
-	buff = (char *)xmalloc(SIZE_BUFF);
+	q = CSVE_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
 
-	if		(  ( fp = fopen("test.csv","w") )  ==  NULL  ) 	exit(1);
-	CSV1_PackValue(opt,buff,val);
-	fprintf(fp,"%s\n",buff);
-	CSV2_PackValue(opt,buff,val);
-	fprintf(fp,"%s\n",buff);
-	CSV3_PackValue(opt,buff,val);
-	fprintf(fp,"%s\n",buff);
-	CSVE_PackValue(opt,buff,val);
-	fprintf(fp,"%s\n",buff);
+	if		(  ( fp = fopen("test.csve","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
 	fclose(fp);
-	xfree(buff);
 
-	printf("***** CSV UnPack *****\n");
-	if		(  ( fp = fopen("test.csv","r") )  ==  NULL  )	exit(1);
+	printf("***** CSV UnPack(E) *****\n");
+	InitializeValue(val);
+	CSV_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** CSV(E) end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_RFC822_1
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
-	fgets(buff,SIZE_BUFF,fp);
-	CSV_UnPackValue(opt,buff,val);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	CSV_UnPackValue(opt,buff,val);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	CSV_UnPackValue(opt,buff,val);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	CSV_UnPackValue(opt,buff,val);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	xfree(buff);
-	fclose(fp);
-
-	printf("***** RFC822 Pack (with name)*****\n");
-	ConvSetLocale(opt,"euc-jp");
-	DumpValueStruct(val);
-	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);
+	printf("***** RFC822(with name) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,TRUE);
-	size =  RFC822_SizeValue(opt,val);
-	size1 = size;
-	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	RFC822_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-	fwrite(buff,size,1,fp);
-	DumpValueStruct(val);
 
-	printf("***** RFC822 Pack (without name)*****\n");
-	ConvSetUseName(opt,FALSE);
-	size =  RFC822_SizeValue(opt,val);
+	printf("***** RFC822 Size(with name) *****\n");
+	size = RFC822_SizeValue(opt,val);
+	q = RFC822_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	RFC822_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-	fwrite(buff,size,1,fp);
+	printf("size = %d\n",(int)(q - buff));
 
+	if		(  ( fp = fopen("test.822n","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
 	fclose(fp);
-	xfree(buff);
 
-	printf("***** RFC822 UnPack (with name)*****\n");
-	ConvSetUseName(opt,TRUE);
+	printf("***** RFC822 UnPack(with name) *****\n");
 	InitializeValue(val);
-	if		(  ( fp = fopen("test.822","r") )  ==  NULL  )	exit(1);
+	RFC822_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** RFC822(with name) end *****\n");
+	printf("********************\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_RFC822_2
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
-	fread(buff,size1,1,fp);
-	RFC822_UnPackValue(opt,buff,val);
-	DumpValueStruct(val);
-
-	printf("***** RFC822 UnPack (without name)*****\n");
+	printf("***** RFC822(without name) *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,FALSE);
-	InitializeValue(val);
-	fread(buff,size,1,fp);
+
+	printf("***** RFC822 Size(without name) *****\n");
+	size = RFC822_SizeValue(opt,val);
+	q = RFC822_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
+	if		(  ( fp = fopen("test.822o","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
 	fclose(fp);
+
+	printf("***** RFC822 UnPack(without name) *****\n");
+	InitializeValue(val);
 	RFC822_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
+	printf("***** RFC822(without name) end *****\n");
+	xfree(buff);
+#endif
 
+#ifdef	TEST_CGI
+	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
 
-	printf("***** end *****\n");
-	printf("***** CGI Pack *****\n");
+	printf("***** CGI *****\n");
+	ConvSetCoding(opt,TEST_CODE);
+	ConvSetRecName(opt,"testrec");
+	ConvSetUseName(opt,FALSE);
+
+	printf("***** CGI Size *****\n");
+	size = CGI_SizeValue(opt,val);
+	q = CGI_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",(int)(q - buff));
+
 	if		(  ( fp = fopen("test.CGI","w") )  ==  NULL  )	exit(1);
-	ConvSetRecName(opt,"testrec");
-	size =  CGI_SizeValue(opt,val);
-	size1 = size;
-	printf("size = %d\n",size1);
-	buff = (char *)xmalloc(size1);
-
-	CGI_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-	fwrite(buff,size1,1,fp);
+	fwrite(buff,size,1,fp);
 	fclose(fp);
-	xfree(buff);
 
 	printf("***** CGI UnPack *****\n");
 	InitializeValue(val);
-	if		(  ( fp = fopen("test.CGI","r") )  ==  NULL  )	exit(1);
-	buff = (char *)xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
-
-	fread(buff,size1,1,fp);
 	CGI_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
-
-	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	printf("***** end *****\n");
-
+	printf("***** CGI end *****\n");
+	xfree(buff);
 #endif
+
 	return	(0);
 }

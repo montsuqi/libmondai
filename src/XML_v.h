@@ -27,13 +27,22 @@ copies.
 typedef	struct {
 	Bool	fIndent;
 	Bool	fType;
+	int		type;
 }	XMLOPT;
 
-#define	ConvIndent(opt)	((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
-#define	ConvType(opt)	((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fType)
+#define	XML_TYPE1		1
+#define	XML_TYPE2		2
+
+#define	ConvIndent(opt)		\
+		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
+#define	ConvType(opt)		\
+		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fType)
+#define	ConvXmlType(opt)	\
+		(((opt)->appendix == NULL) ? XML_TYPE1 : (((XMLOPT *)(opt)->appendix)->type))
 
 extern	void	ConvSetIndent(CONVOPT *opt, Bool v);
 extern	void	ConvSetType(CONVOPT *opt, Bool v);
+extern	void	ConvSetXmlType(CONVOPT *opt, int type);
 
 extern	byte	*XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	byte	*XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
