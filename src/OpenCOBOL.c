@@ -231,11 +231,12 @@ dbgmsg(">OpenCOBOL_SizeValue");
 	  case	GL_TYPE_BOOL:
 		ret = 1;
 		break;
-	  case	GL_TYPE_BYTE:
-		size = ( textsize < value->body.CharData.len ) ? textsize :
+	  case	GL_TYPE_TEXT:
+		size = ( textsize > value->body.CharData.len ) ? textsize :
 			value->body.CharData.len;
 		ret = size;
 		break;
+	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
