@@ -488,12 +488,13 @@ DecodeName(
 	char	**vname,
 	char	*p)
 {
-	while	(  isspace(*p)  )	p ++;
 	*rname = p;
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '.'   ) )	p ++;
-	*p = 0;
-	p ++;
+	if		(  *p  !=  0  ) {
+		*p = 0;
+		p ++;
+	}
 	*vname = p;
 	if		(  *p  !=  0  ) {
 		while	(	(  *p  !=  0     )
@@ -805,7 +806,7 @@ CGI_SkipNext(
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '&'   )
 			&&	(  *p  !=  '\n'  ) )	p ++;
-	p ++;
+	if		(  *p  !=  0  )	p ++;
 	return	(p);
 }
 
@@ -831,7 +832,7 @@ _CGI_UnPackValue(
 				*q ++ = *p ++;
 			}
 			*q = 0;
-			p ++;
+			if		(  *p  !=  0  )	p ++;
 			DecodeName(&rname,&vname,str);
 			if		(  strcmp(rname,opt->recname)  ) {
 				p = CGI_SkipNext(opt,p);
@@ -845,7 +846,7 @@ _CGI_UnPackValue(
 					*p = 0;
 					DecodeStringURL(buff,q);
 					*p = ch;
-					p ++;
+					if		(  *p  !=  0  )	p ++;
 					SetValueString(e,buff);
 				} else {
 					p = CGI_SkipNext(opt,p);
