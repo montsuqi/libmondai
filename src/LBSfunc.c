@@ -79,19 +79,21 @@ LBS_ReserveSize(
 {
 	byte	*body;
 
-	if		(  lbs->asize  <  size  ) {
-		body = (byte *)xmalloc(size);
-		if		(  fKeep  ) {
-			memcpy(body,lbs->body,lbs->size);
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->asize  <  size  ) {
+			body = (byte *)xmalloc(size);
+			if		(  fKeep  ) {
+				memcpy(body,lbs->body,lbs->size);
+			}
+			if		(  lbs->body  !=  NULL  ) {
+				xfree(lbs->body);
+			}
+			lbs->body = body;
+			lbs->asize = size;
 		}
-		if		(  lbs->body  !=  NULL  ) {
-			xfree(lbs->body);
-		}
-		lbs->body = body;
-		lbs->asize = size;
+		lbs->size = size;
+		lbs->ptr = size;
 	}
-	lbs->size = size;
-	lbs->ptr = size;
 }
 
 extern	void
@@ -102,24 +104,26 @@ LBS_Seek(
 {
 	size_t		newpos;
 
-	switch	(whence) {
-	  case	SEEK_SET:
-		newpos = off;
-		break;
-	  case	SEEK_CUR:
-		newpos = lbs->ptr + off;
-		break;
-	  case	SEEK_END:
-		newpos = lbs->size + off;
-		break;
-	  default:
-		newpos = lbs->ptr;
-		break;
+	if		(  lbs  !=  NULL  ) {
+		switch	(whence) {
+		  case	SEEK_SET:
+			newpos = off;
+			break;
+		  case	SEEK_CUR:
+			newpos = lbs->ptr + off;
+			break;
+		  case	SEEK_END:
+			newpos = lbs->size + off;
+			break;
+		  default:
+			newpos = lbs->ptr;
+			break;
+		}
+		if		(  newpos  >  lbs->size  ) {
+			LBS_ReserveSize(lbs,newpos,TRUE);
+		}
+		lbs->ptr = newpos;
 	}
-	if		(  newpos  >  lbs->size  ) {
-		LBS_ReserveSize(lbs,newpos,TRUE);
-	}
-	lbs->ptr = newpos;
 }
 
 extern	int
@@ -128,9 +132,13 @@ LBS_FetchByte(
 {
 	int		ret;
 
-	if		(  lbs->ptr  <  lbs->size  ) {
-		ret = lbs->body[lbs->ptr];
-		lbs->ptr ++;
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  <  lbs->size  ) {
+			ret = lbs->body[lbs->ptr];
+			lbs->ptr ++;
+		} else {
+			ret = -1;
+		}
 	} else {
 		ret = -1;
 	}
@@ -156,10 +164,14 @@ LBS_FetchPointer(
 	int		ret;
 	int		i;
 
-	ret = 0;
-	for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
-		ret <<= 8;
-		ret |= LBS_FetchByte(lbs);
+	if		(  lbs  !=  NULL  ) {
+		ret = 0;
+		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
+	} else {
+		ret = 0;
 	}
 	return	((void *)ret);
 }
@@ -172,9 +184,11 @@ LBS_FetchInt(
 	int		i;
 
 	ret = 0;
-	for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
-		ret <<= 8;
-		ret |= LBS_FetchByte(lbs);
+	if		(  lbs  !=  NULL  ) {
+		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
 	}
 	return	(ret);
 }
@@ -183,10 +197,12 @@ extern	void
 LBS_EmitStart(
 	LargeByteString	*lbs)
 {
-	lbs->ptr = 0;
-	lbs->size = 0;
-	if		(  lbs->asize  >  0  ) {
-		memclear(lbs->body,lbs->asize);
+	if		(  lbs  !=  NULL  ) {
+		lbs->ptr = 0;
+		lbs->size = 0;
+		if		(  lbs->asize  >  0  ) {
+			memclear(lbs->body,lbs->asize);
+		}
 	}
 }
 
@@ -197,19 +213,21 @@ LBS_Emit(
 {
 	byte	*body;
 
-	if		(  lbs->ptr  ==  lbs->asize  ) {
-		lbs->asize += SIZE_GLOWN;
-		body = (byte *)xmalloc(lbs->asize);
-		if		(  lbs->body  !=  NULL  ) {
-			memcpy(body,lbs->body,lbs->ptr);
-			xfree(lbs->body);
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  ==  lbs->asize  ) {
+			lbs->asize += SIZE_GLOWN;
+			body = (byte *)xmalloc(lbs->asize);
+			if		(  lbs->body  !=  NULL  ) {
+				memcpy(body,lbs->body,lbs->ptr);
+				xfree(lbs->body);
+			}
+			lbs->body = body;
 		}
-		lbs->body = body;
-	}
-	lbs->body[lbs->ptr] = code;
-	lbs->ptr ++;
-	if		(  lbs->ptr  >  lbs->size  ) {
-		lbs->size = lbs->ptr;
+		lbs->body[lbs->ptr] = code;
+		lbs->ptr ++;
+		if		(  lbs->ptr  >  lbs->size  ) {
+			lbs->size = lbs->ptr;
+		}
 	}
 }
 
@@ -218,10 +236,12 @@ LBS_Trim(
 	LargeByteString	*lbs,
 	size_t			size)
 {
-	if		(  lbs->ptr  >=  size  ) {
-		memclear(&lbs->body[lbs->ptr - size],size);
-		lbs->ptr -= size;
-		lbs->size -= size;
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  >=  size  ) {
+			memclear(&lbs->body[lbs->ptr - size],size);
+			lbs->ptr -= size;
+			lbs->size -= size;
+		}
 	}
 }
 
@@ -230,9 +250,11 @@ LBS_EmitString(
 	LargeByteString	*lbs,
 	char			*str)
 {
-	while	(  *str  !=  0  ) {
-		LBS_EmitChar(lbs,*str);
-		str ++;
+	if		(  lbs  !=  NULL  ) {
+		while	(  *str  !=  0  ) {
+			LBS_EmitChar(lbs,*str);
+			str ++;
+		}
 	}
 }
 
@@ -259,48 +281,50 @@ LBS_EmitStringCodeset(
 #endif
 
 ENTER_FUNC;
+ 	if		(  lbs  !=  NULL  ) {
 #ifdef	WITH_I18N
-	if		(  codeset  !=  NULL  ) {
-		cd = iconv_open(codeset,"utf8");
-		while	(  isize  >  0  )	{
-			count = 1;
-			do {
-				istr = str;
-				sib = count;
-				oc = obuff;
-				sob = SIZE_CONV;
-				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  <  0  ) {
-					count ++;
+		if		(  codeset  !=  NULL  ) {
+			cd = iconv_open(codeset,"utf8");
+			while	(  isize  >  0  )	{
+				count = 1;
+				do {
+					istr = str;
+					sib = count;
+					oc = obuff;
+					sob = SIZE_CONV;
+					if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  <  0  ) {
+						count ++;
+					}
+				}	while	(	(  rc            !=  0  )
+							&&	(  str[count-1]  !=  0  ) );
+				csize = SIZE_CONV - sob;
+				for	( oc = obuff , i = 0 ; i < csize ; i ++, oc ++ ) {
+					LBS_Emit(lbs,*oc);
 				}
-			}	while	(	(  rc            !=  0  )
-						&&	(  str[count-1]  !=  0  ) );
-			csize = SIZE_CONV - sob;
-			for	( oc = obuff , i = 0 ; i < csize ; i ++, oc ++ ) {
-				LBS_Emit(lbs,*oc);
+				str += count;
+				isize -= count;
+				osize -= csize;
+				if		(  osize  ==  0  )	break;
 			}
-			str += count;
-			isize -= count;
-			osize -= csize;
-			if		(  osize  ==  0  )	break;
-		}
-		iconv_close(cd);
-	} else {
+			iconv_close(cd);
+		} else {
 #endif
 #if	0
-		LBS_ReserveSize(lbs,isize,FALSE);
-		memcpy(LBS_Body(lbs),str,isize);
+			LBS_ReserveSize(lbs,isize,FALSE);
+			memcpy(LBS_Body(lbs),str,isize);
 #else
-		while	(  isize  >  0  )	{
-			LBS_Emit(lbs,*str);
-			str ++;
-			isize --;
-			osize --;
-			if		(  osize  ==  0  )	break;
-		}
+			while	(  isize  >  0  )	{
+				LBS_Emit(lbs,*str);
+				str ++;
+				isize --;
+				osize --;
+				if		(  osize  ==  0  )	break;
+			}
 #endif
 #ifdef	WITH_I18N
-	}
+		}
 #endif
+	}
 LEAVE_FUNC;
 }
 
@@ -309,10 +333,12 @@ LBS_EmitPointer(
 	LargeByteString	*lbs,
 	void			*p)
 {
-	LBS_Emit(lbs,(((int)p & 0xFF000000) >> 24));
-	LBS_Emit(lbs,(((int)p & 0x00FF0000) >> 16));
-	LBS_Emit(lbs,(((int)p & 0x0000FF00) >>  8));
-	LBS_Emit(lbs,(((int)p & 0x000000FF)      ));
+ 	if		(  lbs  !=  NULL  ) {
+		LBS_Emit(lbs,(((int)p & 0xFF000000) >> 24));
+		LBS_Emit(lbs,(((int)p & 0x00FF0000) >> 16));
+		LBS_Emit(lbs,(((int)p & 0x0000FF00) >>  8));
+		LBS_Emit(lbs,(((int)p & 0x000000FF)      ));
+	}
 }
 
 extern	void
@@ -320,10 +346,12 @@ LBS_EmitInt(
 	LargeByteString	*lbs,
 	int				i)
 {
-	LBS_Emit(lbs,((i & 0xFF000000) >> 24));
-	LBS_Emit(lbs,((i & 0x00FF0000) >> 16));
-	LBS_Emit(lbs,((i & 0x0000FF00) >>  8));
-	LBS_Emit(lbs,((i & 0x000000FF)      ));
+ 	if		(  lbs  !=  NULL  ) {
+		LBS_Emit(lbs,((i & 0xFF000000) >> 24));
+		LBS_Emit(lbs,((i & 0x00FF0000) >> 16));
+		LBS_Emit(lbs,((i & 0x0000FF00) >>  8));
+		LBS_Emit(lbs,((i & 0x000000FF)      ));
+	}
 }
 
 extern	void
@@ -332,17 +360,19 @@ LBS_EmitFix(
 {
 	byte	*body;
 
-	if		(  lbs->size  >  0  ) {
-		body = (byte *)xmalloc(lbs->size);
-		memcpy(body,lbs->body,lbs->size);
-		xfree(lbs->body);
-		lbs->body = body;
-	} else {
-		xfree(lbs->body);
-		lbs->body = NULL;
+ 	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->size  >  0  ) {
+			body = (byte *)xmalloc(lbs->size);
+			memcpy(body,lbs->body,lbs->size);
+			xfree(lbs->body);
+			lbs->body = body;
+		} else {
+			xfree(lbs->body);
+			lbs->body = NULL;
+		}
+		lbs->asize = lbs->size;
+		lbs->ptr = 0;
 	}
-	lbs->asize = lbs->size;
-	lbs->ptr = 0;
 }
 
 extern	char	*
@@ -351,10 +381,14 @@ LBS_ToString(
 {
 	char	*ret;
 
-	ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
-	RewindLBS(lbs);
-	strncpy(ret,LBS_Body(lbs),LBS_Size(lbs));
-	ret[LBS_Size(lbs)] = 0;
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
+		RewindLBS(lbs);
+		strncpy(ret,LBS_Body(lbs),LBS_Size(lbs));
+		ret[LBS_Size(lbs)] = 0;
+	} else {
+		ret = NULL;
+	}
 	return	(ret);
 }
 
@@ -364,9 +398,13 @@ LBS_Duplicate(
 {
 	LargeByteString	*ret;
 
-	ret = NewLBS();
-	LBS_ReserveSize(ret,lbs->size,FALSE);
-	memcpy(ret->body,lbs->body,lbs->size);
+ 	if		(  lbs  !=  NULL  ) {
+		ret = NewLBS();
+		LBS_ReserveSize(ret,lbs->size,FALSE);
+		memcpy(ret->body,lbs->body,lbs->size);
+	} else {
+		ret = NULL;
+	}
 	return	(ret);
 }
 
