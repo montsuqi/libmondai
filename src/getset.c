@@ -20,9 +20,9 @@ copies.
 */
 
 /*
-*/
 #define	DEBUG
 #define	TRACE
+*/
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -399,7 +399,10 @@ ENTER_FUNC;
 						} else
 #if	1
 						if		(  errno  ==  EINVAL  ) {
-							dbgprintf("illigal string[%s]\n",istr);
+							FILE	*fp;
+							fp = fopen("illchars.log","a");
+							fprintf(fp,"illigal string[%s]\n",istr);
+							fclose(fp);
 							break;
 						} else
 #endif
@@ -445,7 +448,10 @@ ENTER_FUNC;
 						} else
 #if	1
 						if		(  errno  ==  EINVAL  ) {
-							dbgprintf("illigal string[%s]\n",istr);
+							FILE	*fp;
+							fp = fopen("illchars.log","a");
+							fprintf(fp,"illigal string[%s]\n",istr);
+							fclose(fp);
 							break;
 						} else
 #endif
