@@ -273,8 +273,12 @@ ENTER_FUNC;
 		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_OBJECT:
-		EncodeBase64(work,(byte *)ValueObject(val),sizeof(*ValueObject(val)));
+		sprintf(work,"%d",ValueObjectSource(val));
 		LBS_EmitString(ValueStr(val),work);
+		for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
+			sprintf(work,":%u",ValueObjectID(val).el[i]);
+			LBS_EmitString(ValueStr(val),work);
+		}
 		break;
 	  case	GL_TYPE_FLOAT:
 		sprintf(work,"%g",ValueFloat(val));
@@ -472,8 +476,17 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
-			p += DecodeBase64((byte *)ValueObject(val),str,
-							  BASE64SIZE(sizeof(*ValueObject(val))));
+			strcpy(buff,str);
+			q = strchr(buff,':');
+			*q = 0;
+			ValueObjectSource(val) = atoi(buff);
+			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
+				p = q + 1;
+				if		(  ( q = strchr(p,':') )  !=  NULL  ) {
+					*q = 0;
+				}
+				ValueObjectID(val).el[i] = (unsigned int)atol(p);
+			}
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_NUMBER:

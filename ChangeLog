@@ -1,3 +1,7 @@
+2003-12-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c: MonObjectTypeの文字列表現を変えた
+
 2003-12-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/monstring.c (StrToInt): 符号付き数字の処理を直した

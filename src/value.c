@@ -527,7 +527,7 @@ dbgmsg(">InitializeValue");
 		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		memclear(ValueObject(value),sizeof(*ValueObject(value)));
+		memclear(ValueObject(value),sizeof(MonObjectType));
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -748,7 +748,7 @@ DuplicateValue(
 		break;
 	  case	GL_TYPE_OBJECT:
 		ValueObjectSource(p) = 0;
-		memclear(&ValueObjectID(p),sizeof(ValueObjectID(p)));
+		memclear(&ValueObjectID(p),sizeof(OidType));
 		break;
 	  case	GL_TYPE_RECORD:
 		/*	share name table		*/

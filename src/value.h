@@ -50,8 +50,13 @@ typedef	unsigned char	PacketDataType;
 typedef	unsigned char	ValueAttributeType;
 
 typedef	struct {
-	byte	value[SIZE_OID];
+	unsigned int	el[SIZE_OID/sizeof(unsigned int)];
 }	OidType;
+
+typedef	struct {
+	int		source;
+	OidType	id;
+}	MonObjectType;
 
 typedef	struct {
 	size_t		flen;
@@ -86,13 +91,10 @@ typedef	struct _ValueStruct	{
 			unsigned char	*sval;
 		}	CharData;
 		struct {
-			int		source;
-			OidType	id;
-		}	Object;
-		struct {
 			size_t					count;
 			struct	_ValueStruct	**item;
 		}	ValuesData;
+		MonObjectType	Object;
 		char	*AliasName;
 		Fixed	FixedData;
 		int		IntegerData;
