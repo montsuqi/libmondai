@@ -97,6 +97,7 @@ AC_SUBST(GLIB_CFLAGS)
 AC_OUTPUT([
 Makefile
 src/Makefile
+tools/Makefile
 src/libmondai.h
 docs/Makefile
 libmondai-config

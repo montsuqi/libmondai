@@ -1,6 +1,6 @@
 ## Makefile.am for libfixed
 
-SRC_SUBDIRS = src docs
+SRC_SUBDIRS = src tools docs
 SUBDIRS = $(SRC_SUBDIRS)
 
 bin_SCRIPTS = libmondai-config

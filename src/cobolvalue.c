@@ -77,4 +77,3 @@ StringC2Cobol(
 	}
 }
 
-
