@@ -1,3 +1,7 @@
+2003-05-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c (_COBOL): COBOL二次元配列問題対応
+
 2003-05-15  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* configure.in: AC_CHECK_HEADERS の第 2 引数を削除

@@ -23,13 +23,22 @@ copies.
 #define	_INC_HASH_H
 #include	<glib.h>
 
+typedef	struct {
+	size_t	count;
+	void	**item;
+}	Chunk;
+
 extern	GHashTable	*NewNameHash(void);
 extern	void		DestroySymbols(GHashTable *sym);
 extern	GHashTable	*NewNameiHash(void);
 extern	GHashTable	*NewIntHash(void);
+extern	Chunk		*NewChunk(void);
+extern	void		ChunkAppend(Chunk *chunk, void *body);
+extern	void		ChunkDestroy(Chunk *chunk);
 
 #define	g_int_hash_table_insert(h,i,d)		g_hash_table_insert((h),(void *)(i),(d))
 #define	g_int_hash_table_foreach(h,p,a)		g_hash_table_foreach((h),(p),(a))
 #define	g_int_hash_table_lookup(h,i)		g_hash_table_lookup((h),(void *)(i))
 #define	g_int_hash_table_remove(h,i)		g_hash_table_remove((h),(void *)(i))
+
 #endif

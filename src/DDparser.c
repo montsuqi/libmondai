@@ -45,7 +45,6 @@ copies.
 #include	"SQLparser.h"
 #include	"debug.h"
 
-
 static	void
 SetAttribute(
 	ValueStruct	*val,

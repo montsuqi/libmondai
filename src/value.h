@@ -184,7 +184,6 @@ extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
 
 extern	char		*ToString(ValueStruct *value);
 
-
 extern	void		FreeValueStruct(ValueStruct *val);
 extern	void		DumpValueStruct(ValueStruct *val);
 

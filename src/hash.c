@@ -37,7 +37,7 @@ copies.
 
 #include	"types.h"
 #include	"misc.h"
-#include	"value.h"
+#include	"hash.h"
 #include	"debug.h"
 
 static	guint
@@ -151,3 +151,38 @@ NewIntHash(void)
 	return	(ret);
 }
 
+extern	Chunk	*
+NewChunk(void)
+{
+	Chunk	*ret;
+
+	ret = New(Chunk);
+	ret->count = 0;
+	ret->item = NULL;
+	return	(ret);
+}
+
+extern	void
+ChunkAppend(
+	Chunk	*chunk,
+	void	*body)
+{
+	void	**temp;
+
+	temp = (void **)xmalloc(sizeof(void*) * (chunk->count + 1));
+	if		(  chunk->item  !=  NULL  ) {
+		memcpy(temp,chunk->item,(sizeof(void*) * chunk->count));
+		xfree(chunk->item);
+	}
+	chunk->item = temp;
+	chunk->item[chunk->count] = body;
+	chunk->count ++;
+}
+
+extern	void
+ChunkDestroy(
+	Chunk	*chunk)
+{
+	xfree(chunk->item);
+	xfree(chunk);
+}

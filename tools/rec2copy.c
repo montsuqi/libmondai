@@ -145,6 +145,9 @@ PutName(
 	PutString(buff);
 }
 
+static	char	PrevName[SIZE_BUFF];
+static	int		PrevCount;
+static	char	*PrevSuffix[] = { "X","Y","Z" };
 static	void
 _COBOL(
 	ValueStruct	*val,
@@ -153,7 +156,8 @@ _COBOL(
 {
 	int		i
 	,		n;
-	ValueStruct	*tmp;
+	ValueStruct	*tmp
+	,			*dummy;
 	char	buff[SIZE_BUFF+1];
 	char	*name;
 
@@ -193,16 +197,29 @@ _COBOL(
 		if		(  n  ==  0  ) {
 			n = arraysize;
 		}
-		if		(  tmp->type  ==  GL_TYPE_RECORD  ) {
+		switch	(tmp->type) {
+		  case	GL_TYPE_RECORD:
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
 			_COBOL(tmp,arraysize,textsize);
-		} else {
+			break;
+		  case	GL_TYPE_ARRAY:
+			sprintf(buff,"OCCURS  %d TIMES",n);
+			PutTab(8);
+			PutString(buff);
+			dummy = NewValue(GL_TYPE_RECORD);
+			sprintf(buff,"%s-%s",PrevName,PrevSuffix[PrevCount]);
+			ValueAddRecordItem(dummy,buff,tmp);
+			PrevCount ++;
+			_COBOL(dummy,arraysize,textsize);
+			break;
+		  default:
 			_COBOL(tmp,arraysize,textsize);
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
+			break;
 		}
 		break;
 	  case	GL_TYPE_RECORD:
@@ -221,6 +238,8 @@ _COBOL(
 			} else {
 				strcpy(namebuff,val->body.RecordData.names[i]);
 			}
+			strcpy(PrevName,val->body.RecordData.names[i]);
+			PrevCount = 0;
 			PutName(namebuff);
 			tmp = val->body.RecordData.item[i];
 			if		(  is_return  ) {

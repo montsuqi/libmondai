@@ -43,6 +43,8 @@ copies.
 
 #define	NUM_BUFF	60
 
+static	Chunk	*HashTables = NULL;
+
 extern	ValueStruct	*
 NewValue(
 	PacketDataType	type)
@@ -83,6 +85,10 @@ dbgmsg(">NewValue");
 		ret->body.RecordData.members = NewNameHash();
 		ret->body.RecordData.item = NULL;
 		ret->body.RecordData.names = NULL;
+		if		(  HashTables  ==  NULL  ) {
+			HashTables = NewChunk();
+		}
+		ChunkAppend(HashTables,ret->body.RecordData.members);
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret->body.ArrayData.count = 0;
