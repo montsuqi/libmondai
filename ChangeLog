@@ -1,6 +1,7 @@
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* makecopyright: Removed file.
+	* Makefile.am (EXTRA_DIST): Removed makecopyright.
 
 	* libmondai.m4: Bug fix in version check c program.
 
