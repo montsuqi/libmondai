@@ -89,6 +89,7 @@ _xfree(
 #ifdef	TRACE
 	size_t	*area;
 
+	if		(  p  ==  NULL  )	return;
 	if		(  g_hash_table_lookup(PoolHash,p)  ==  NULL  ) {
 		fprintf(stderr,"free duplicate in %s(%d)\n",fn,line);
 		exit(1);
@@ -99,6 +100,7 @@ _xfree(
 	printf("xfree %d byte in %s(%d)\n",(int)area[-1],fn,line);
 	free(&area[-1]);
 #else
+	if		(  p  ==  NULL  )	return;
 	free(p);
 #endif
 }

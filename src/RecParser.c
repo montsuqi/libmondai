@@ -378,12 +378,8 @@ ENTER_FUNC;
 		}
 	}
 	if		(	(  !in->fError      )
-#if	0
-			&&	(  ComToken  ==  '}'  ) ) {
-#else
 			&&	(	(  ComToken  ==  '}'  )
 				||	(  ComToken  ==  ')'  ) ) ) {
-#endif
 		GetSymbol;
 		/*	OK	*/
 	} else {

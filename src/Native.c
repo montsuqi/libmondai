@@ -141,8 +141,10 @@ ENTER_FUNC;
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
-				memcpy(ValueString(value),p,size);
-				p += size;
+				strcpy(ValueString(value),p);
+				p += strlen(p) + 1;
+			} else {
+				p ++;
 			}
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
 				ValueStringLength(value) = len;
@@ -252,8 +254,14 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			*(size_t *)p = ValueStringLength(value);
 			p += sizeof(size_t);
-			memcpy(p,ValueString(value),size);
-			p += size;
+			if		(	(  ValueString(value)  ==  NULL  )
+					||	(  size                ==  0     ) ) {
+				*p = 0;
+				p ++;
+			} else {
+				strcpy(p,ValueString(value));
+				p += strlen(ValueString(value)) + 1;
+			}
 			break;
 		  case	GL_TYPE_OBJECT:
 			*(MonObjectType *)p = ValueObject(value);
@@ -304,6 +312,7 @@ ENTER_FUNC;
 		fName = FALSE;
 	}
 	ret = sizeof(PacketDataType) + sizeof(ValueAttributeType);
+DumpValueStruct(val);
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_INT:
 		ret += sizeof(int);
@@ -327,7 +336,12 @@ ENTER_FUNC;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		ret += sizeof(size_t) + sizeof(size_t) + ValueStringSize(val);
+		ret += sizeof(size_t) + sizeof(size_t) + 1;
+		if		(  ValueString(val)  !=  NULL  )	{
+			ret += strlen(ValueString(val));
+		} else {
+			ret ++;
+		}
 		break;
 	  case	GL_TYPE_OBJECT:
 		ret += sizeof(MonObjectType);
@@ -420,8 +434,8 @@ ENTER_FUNC;
 			*(size_t *)p = ValueStringLength(value);
 			p += sizeof(size_t);
 			if		(  fData  ) {
-				memcpy(p,ValueString(value),size);
-				p += size;
+				strcpy(p,ValueString(value));
+				p += strlen(ValueString(value)) + 1;
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
@@ -560,8 +574,8 @@ ENTER_FUNC;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
 				if		(  fData  ) {
-					memcpy(ValueString(value),p,size);
-					p += size;
+					strcpy(ValueString(value),p);
+					p += strlen(p) + 1;
 				}
 			}
 			ValueStringLength(value) = len;

@@ -80,5 +80,6 @@ extern	void			SetReserved(CURFILE *in, GHashTable *res);
 #define	ComToken		(in->Token)
 #define	ComInt			(in->Int)
 #define	ComSymbol		(in->Symbol)
+#define	MoveSymbol(to)	((to) = in->Symbol, in->Symbol = NULL)
 
 #endif

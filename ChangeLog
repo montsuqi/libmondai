@@ -1,3 +1,7 @@
+2004-12-22  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: 文字列の保存の無駄をなくした
+
 2004-12-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/RecParser.c (ParValueDefine): 構造体の表現に'()'も使うようにした

@@ -310,9 +310,8 @@ ENTER_FUNC;
 	SKIP_SPACE(in);
 	p = GetPos(in)-1;
 	while	(  !isspace(c = GetChar(in))  );
-	UnGetChar(in);
-	q = GetPos(in);
-	if		(  !strnicmp(p,"include",q-p)  ) {
+	q = GetPos(in)-1;
+	if		(  !strlicmp(p,"include")  ) {
 		SKIP_SPACE(in);
 		p = GetPos(in);
 		switch	(c) {
@@ -333,7 +332,7 @@ ENTER_FUNC;
 		}
 	} else {
 		UnGetChar(in);
-		while	(  GetChar(in)  !=  '\n'  );
+		while	(  ( c = GetChar(in) )  !=  '\n'  );
 		in->cLine ++;
 	}
 LEAVE_FUNC;
