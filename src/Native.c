@@ -109,9 +109,11 @@ dbgmsg(">NativeUnPackValue");
 				ValueStringSize(value) = size;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 			}
-			memclear(ValueString(value),size);
-			strcpy(ValueString(value),p);
-			p += size;
+			if (size > 0) {
+				memclear(ValueString(value),size);
+				strcpy(ValueString(value),p);
+				p += size;
+			}
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
 				ValueStringLength(value) = len;
 			}
