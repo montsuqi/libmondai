@@ -271,12 +271,13 @@ EncodeStringLengthURL(
 	ret = 0;
 	while	(  *p  !=  0  ) {
 		if		(  *p  ==  0x20  ) {
+			ret ++;
 		} else
 		if		(  isalnum(*p)  ) {
+			ret ++;
 		} else {
 			ret += 3;
 		}
-		ret ++;
 		p ++;
 	}
 	return	(ret);

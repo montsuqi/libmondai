@@ -1,3 +1,9 @@
+2003-07-29  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/Text.c: CGI形式に対応
+
+	* src/others.c (EncodeStringLengthURL): 長さ計算の誤りを直した
+
 2003-07-19  OGOSHI  <ogochan@nurs.or.jp>
 
 	* src/valueconv.c: パラメータの変更をした(ただし、機能的に未実装の

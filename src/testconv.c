@@ -226,5 +226,36 @@ main(
 	printf("%s\n",buff);
 
 	printf("***** end *****\n");
+
+	printf("***** CGI Pack *****\n");
+	if		(  ( fp = fopen("test.CGI","w") )  ==  NULL  )	exit(1);
+	ConvSetRecName(opt,"testrec");
+	size =  CGI_SizeValue(opt,rec);
+	size1 = size;
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	CGI_PackValue(opt,buff,rec);
+	printf("%s\n",buff);
+	fwrite(buff,size,1,fp);
+
+	fclose(fp);
+	xfree(buff);
+
+	printf("***** CGI UnPack *****\n");
+	InitializeValue(rec);
+	if		(  ( fp = fopen("test.CGI","r") )  ==  NULL  )	exit(1);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	fread(buff,size1,1,fp);
+	CGI_UnPackValue(opt,buff,rec);
+	DumpValueStruct(rec);
+
+	memset(buff,0,SIZE_BUFF);
+	CSV3_PackValue(opt,buff,rec);
+	printf("%s\n",buff);
+
+	printf("***** end *****\n");
+
 	return	(0);
 }

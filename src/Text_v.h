@@ -42,4 +42,8 @@ extern	char	*RFC822_UnPackValue(CONVOPT *opt,char *p, ValueStruct *value);
 extern	char	*RFC822_PackValue(CONVOPT *opt,char *p, ValueStruct *value);
 extern	size_t	RFC822_SizeValue(CONVOPT *opt,ValueStruct *value);
 
+extern	char	*CGI_UnPackValue(CONVOPT *opt,char *p, ValueStruct *value);
+extern	char	*CGI_PackValue(CONVOPT *opt,char *p, ValueStruct *value);
+extern	size_t	CGI_SizeValue(CONVOPT *opt,ValueStruct *value);
+
 #endif
