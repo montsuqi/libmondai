@@ -593,6 +593,7 @@ dbgmsg(">InitializeValue");
 		FreeLBS(ValueStr(value));
 	}
 	ValueStr(value) = NULL;
+	ValueIsNil(value);
 	switch	(ValueType(value)) {
 	  case	GL_TYPE_INT:
 		ValueInteger(value) = 0;
@@ -667,6 +668,7 @@ MoveValue(
 	Fixed	*xval;
 
 ENTER_FUNC;
+	ValueAttribute(to) = ValueAttribute(from);
 	switch	(ValueType(to)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
@@ -734,6 +736,7 @@ CopyValue(
 ENTER_FUNC;
 	if		(  vd  ==  NULL  )	return;
 	if		(  vs  ==  NULL  )	return;
+	ValueAttribute(vd) = ValueAttribute(vs);
 	switch	(vs->type) {
 	  case	GL_TYPE_INT:
 		ValueInteger(vd) = ValueInteger(vs);

@@ -58,6 +58,9 @@ typedef	struct {
 	OidType	id;
 }	MonObjectType;
 
+#define	ObjectID(obj)		((obj)->id.el[0])
+#define	ObjectSource(obj)	((obj)->source)
+
 typedef	struct {
 	size_t		flen;
 	size_t		slen;
