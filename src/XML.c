@@ -220,7 +220,7 @@ _XML_PackValue(
 #ifdef	USE_XML2
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->locale),buff));
 #else
-				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_LOCALE),buff));
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
 			}
 			if		(  ConvIndent(opt)  ) {
@@ -249,7 +249,7 @@ XML_PackValue(
 		p += sprintf(p," encoding=\"%s\"",opt->locale);
 	}
 #else
-	p += sprintf(p," encoding=\"%s\"",LIBXML_LOCALE);
+	p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
 #endif
 	p += sprintf(p,"?>");
 	p += PutCR(opt,p);
@@ -303,6 +303,7 @@ internalSubset_(
 		fprintf(stderr, " %s)\n", SystemID);
 }
 
+#ifdef	USE_XML2
 static	void
 externalSubset_(
 	ValueContext	*value,
@@ -320,6 +321,7 @@ externalSubset_(
 	else
 		fprintf(stderr, " %s)\n", SystemID);
 }
+#endif
 
 static	xmlParserInputPtr
 resolveEntity_(
@@ -562,7 +564,7 @@ characters_(
 #ifdef	USE_XML2
 			SetValueString(ctx->value,(char *)ctx->buff,NULL);
 #else
-			SetValueString(ctx->value,(char *)ctx->buff,LIBXML_LOCALE);
+			SetValueString(ctx->value,(char *)ctx->buff,LIBXML_CODE);
 #endif
 			ValueIsNonNil(ctx->value);
 		}
@@ -846,7 +848,7 @@ _XML_SizeValue(
 				size += 3;		//	" />"
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
-				size += strlen(XML_Encode(ValueToString(value,opt->locale),buff));
+				size += strlen(XML_Encode(ValueToString(value,opt->coding),buff));
 			}
 			if		(  ConvIndent(opt)  ) {
 				size += 10;		//	"</lm:item>"
@@ -875,7 +877,7 @@ XML_SizeValue(
 		//	" encoding=\"%s\"",opt->locale
 	}
 #else
-	size += 12 + strlen(LIBXML_LOCALE);
+	size += 12 + strlen(LIBXML_CODE);
 #endif
 	size += 2;			//	?>
 	size += PutCR(opt,buff);
