@@ -238,7 +238,7 @@ LBS_ToString(
 
 	ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
 	RewindLBS(lbs);
-	strcpy(ret,LBS_Body(lbs));
+	strncpy(ret,LBS_Body(lbs),LBS_Size(lbs));
 	ret[LBS_Size(lbs)] = 0;
 	return	(ret);
 }
