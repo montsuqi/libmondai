@@ -172,6 +172,7 @@ ChunkAppend(
 	temp = (void **)xmalloc(sizeof(void*) * (chunk->count + 1));
 	if		(  chunk->item  !=  NULL  ) {
 		memcpy(temp,chunk->item,(sizeof(void*) * chunk->count));
+		printf("[%X]\n",(int)chunk->item);
 		xfree(chunk->item);
 	}
 	chunk->item = temp;

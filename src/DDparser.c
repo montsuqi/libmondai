@@ -116,6 +116,7 @@ dbgmsg(">ParValue");
 	while	(  DD_Token  ==  T_SYMBOL  ) {
 		attr = GL_ATTR_NULL;
 		strcpy(name,DD_ComSymbol);
+dbgmsg(name);
 		switch	(GetSymbol) {
 		  case	T_BYTE:
 		  case	T_CHAR:
@@ -155,6 +156,7 @@ dbgmsg(">ParValue");
 			} else {
 				size = 1;
 			}
+dbgmsg("+");
 			if		(  !fDD_Error  ) {
 				switch	(token) {
 				  case	T_BYTE:
@@ -175,6 +177,7 @@ dbgmsg(">ParValue");
 				  default:
 					break;
 				}
+dbgmsg("*");
 				if		(  value->type  ==  GL_TYPE_NUMBER  ) {
 					value->body.FixedData.flen = size;
 					value->body.FixedData.slen = ssize;
@@ -186,6 +189,7 @@ dbgmsg(">ParValue");
 					value->body.CharData.sval = (char *)xmalloc(size + 1);
 					memclear(value->body.CharData.sval,size + 1);
 				}
+dbgmsg("**");
 			}
 			break;
 		  case	T_TEXT:
@@ -205,15 +209,20 @@ dbgmsg(">ParValue");
 			GetSymbol;
 			break;
 		  case	'{':
+dbgmsg("**{");
 			value = NewValue(GL_TYPE_RECORD);
+dbgmsg("**{*");
 			GetName;
+dbgmsg("**{**");
 			ParValue(value);
+dbgmsg("**{***");
 			break;
 		  default:
 			value = NULL;
 			Error("not supported");
 			break;
 		}
+dbgmsg("**+");
 		next = NULL;
 		while	(  DD_Token  ==  '['  ) {	
 			curr = New(ArrayDimension);
@@ -231,6 +240,7 @@ dbgmsg(">ParValue");
 			}
 			GetSymbol;
 		}
+dbgmsg("***");
 		for	( curr = next ; curr != NULL ; ) {
 			array = New(ValueStruct);
 			array->type = GL_TYPE_ARRAY;
@@ -246,6 +256,7 @@ dbgmsg(">ParValue");
 			curr = next;
 			value = array;
 		}
+dbgmsg("****");
 		while	(  DD_Token  ==  ','  ) {
 			switch	(GetSymbol) {
 			  case	T_INPUT:
@@ -263,17 +274,20 @@ dbgmsg(">ParValue");
 			}
 			GetSymbol;
 		}
+dbgmsg("*****");
 		if		(  DD_Token  ==  ';'  ) {
 			GetSymbol;
 			/*	OK	*/
 		} else {
 			Error("; missing");
 		}
+dbgmsg("******");
 		if		(  !fDD_Error  ) {
 			value->attr = GL_ATTR_NULL;
 			SetAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
+dbgmsg("*******");
 	}
 	if		(	(  !fDD_Error         )
 			 &&	(  DD_Token  ==  '}'  ) ) {
@@ -430,6 +444,7 @@ DD_Parse(
 	PathStruct		**path;
 	LargeByteString	**ops;
 
+dbgmsg(">DD_Parse");
 	DD_FileName = StrDup(name);
 	DD_cLine = 1;
 	DD_File = fp;
@@ -536,6 +551,7 @@ DD_Parse(
 		xfree(ret);
 		ret = NULL;
 	}
+dbgmsg("<DD_Parse");
 	return	(ret);
 }
 

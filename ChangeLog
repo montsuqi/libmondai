@@ -1,3 +1,7 @@
+2003-06-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (NewValue): 一時的な虫止め(将来的には抜本的な対策をするべき)
+
 2003-05-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* Ver 1.0.1 release

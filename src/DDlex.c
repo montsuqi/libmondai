@@ -326,7 +326,11 @@ dbgmsg(">DD_Lex");
 		printf("[EOF]\n");
 		break;
 	  default:
-		printf("(%c)\n",token);
+		if		(  token  <  128  ) {
+			printf("(%c)\n",token);
+		} else {
+			printf("(%04X)\n",token);
+		}
 		break;
 	}
 #endif

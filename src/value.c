@@ -83,10 +83,12 @@ dbgmsg(">NewValue");
 		ret->body.RecordData.members = NewNameHash();
 		ret->body.RecordData.item = NULL;
 		ret->body.RecordData.names = NULL;
+#if	0
 		if		(  HashTables  ==  NULL  ) {
 			HashTables = NewChunk();
 		}
 		ChunkAppend(HashTables,ret->body.RecordData.members);
+#endif
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret->body.ArrayData.count = 0;
