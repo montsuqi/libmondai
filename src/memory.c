@@ -97,7 +97,7 @@ GetPool(
 }
 
 extern	void	*
-__GetArea(
+_GetArea(
 	POOL	*pool,
 	size_t	size,
 	char	*fn,
@@ -117,6 +117,8 @@ __GetArea(
 			abort();
 		}
 		area->next = pool->head;
+		area->final = NULL;
+		area->data = NULL;
 		pool->head = area;
 		p = (void *)&area[1];
 
@@ -131,7 +133,20 @@ __GetArea(
 }
 
 extern	void
-__ReleaseArea(
+SetFinalizer(
+	void	*p,
+	AreaFinalizerFunc	func,
+	void	*data)
+{
+	MEMAREA	*mp;
+
+	mp = &((MEMAREA *)p)[-1];
+	mp->final = func;
+	mp->data = data;
+}
+
+extern	void
+_ReleaseArea(
 	POOL	*pool,
 	void	*p)
 {
@@ -146,6 +161,9 @@ dbgmsg(">_ReleaseArea");
 			np = rp->next;
 			if ((&np[1]) == p) {
 				rp->next = np->next;
+				if		(  np->final  !=  NULL  ) {
+					(*np->final)(&np[1],np->data);
+				}
 				free(np);
 				return;
 			}
@@ -156,21 +174,23 @@ dbgmsg("<_ReleaseArea");
 }
 
 extern	void
-ReleasePool(
-	char	*name)
+_ReleasePool(
+	POOL	*pool)
 {
-	POOL	*pool;
 	MEMAREA	*np
 	,		*rp;
 
 dbgmsg(">ReleasePool");
-	if		(  ( pool = g_hash_table_lookup(PoolTable,name) )  !=  NULL  ) {
-		g_hash_table_remove(PoolTable,name);
+	if		(  pool  !=  NULL  ) {
+		g_hash_table_remove(PoolTable,pool->name);
 		np = pool->head;
 		rp = np->next;
 		np->next = NULL;
 		while	(  rp  !=  NULL  )	{
 			np = rp->next;
+			if		(  rp->final  !=  NULL  ) {
+				(*rp->final)((void *)&rp[1],rp->data);
+			}
 			free(rp);
 			rp = np;
 		}

@@ -26,11 +26,12 @@ Boston, MA  02111-1307, USA.
 #include	<string.h>
 #include	"types.h"
 
+typedef	void	(*AreaFinalizerFunc)(void *area, void *data);
+
 typedef	struct	MEMAREA_S	{
 	struct	MEMAREA_S	*next;
-#if defined(sparc)
-	long dummy;					/* for 8byte alignment */
-#endif
+	AreaFinalizerFunc	final;
+	void	*data;
 }	MEMAREA;
 
 typedef	struct {
@@ -42,15 +43,19 @@ extern	void	*_xmalloc(size_t size, char *fn, int line);
 extern	void	_xfree(void *p, char *fn, int line);
 
 extern	POOL	*GetPool(char *name);
-extern	void	*__GetArea(POOL *pool, size_t size, char *fn, int line);
-extern	void	__ReleaseArea(POOL *pool, void *p);
-extern	void	ReleasePool(char *name);
+extern	void	*_GetArea(POOL *pool, size_t size, char *fn, int line);
+extern	void	_ReleaseArea(POOL *pool, void *p);
+extern	void	_ReleasePool(POOL *pool);
+extern	POOL	*NewPool(char *name);
 extern	void	InitPool(void);
+extern	void	SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
 
-#define	GetArea(s)					_GetArea((s),__FILE__,__LINE__)
-#define	ReleaseArea(p)				_ReleaseArea(p)
-#define	_GetArea(name,size,fn,line)	__GetArea(GetPool(name),(size),(fn),(line))
-#define	_ReleaseArea(name,p)		__ReleaseArea(GetPool(name),(p));
+#define	GetAreaByPool(p,s)			_GetArea((p),(s),__FILE__,__LINE__)
+#define	GetAreaByName(n,s)			_GetArea(GetPool(n),(s),__FILE__,__LINE__)
+#define	ReleaseAreaByPool(p,a)		_ReleaseArea((p),(a))
+#define	ReleaseAreaByName(n,a)		_ReleaseArea(GetPool(n),(a))
+#define	ReleasePoolByPool(p)		_ReleasePool(p)
+#define	ReleasePoolByName(n)		_ReleasePool(GetPool(n))
 
 #ifndef	New
 #define	New(s)				(s *)xmalloc(sizeof(s))

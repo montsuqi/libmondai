@@ -894,7 +894,7 @@ _CGI_UnPackValue(
 			*q = 0;
 			if		(  *p  !=  0  )	p ++;
 			DecodeName(&rname,&vname,str);
-			if		(  strcmp(rname,opt->recname)  ) {
+			if		(  strcmp(rname,opt->recname)  !=  0  ) {
 				p = CGI_SkipNext(opt,p);
 			} else {
 				if		(  ( e = GetItemLongName(value,vname) )  !=  NULL  ) {

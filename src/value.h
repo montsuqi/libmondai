@@ -25,8 +25,6 @@ copies.
 #define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
 //#define	SIZE_BUFF		1024
 #define	SIZE_BUFF		65538
-//#define	SIZE_SQL		16384
-#define	SIZE_SQL		65538
 
 #define	SIZE_SYMBOL			255
 #define	SIZE_NUMBUF			60
@@ -94,6 +92,28 @@ typedef	struct _ValueStruct	{
 	}	body;
 }	ValueStruct;
 
+#if	1
+#define	GL_TYPE_NULL			(PacketDataType)0x00
+#define	GL_TYPE_INT				(PacketDataType)0x10
+#define	GL_TYPE_BOOL			(PacketDataType)0x11
+#define	GL_TYPE_FLOAT			(PacketDataType)0x20
+#define	GL_TYPE_CHAR			(PacketDataType)0x30
+#define	GL_TYPE_TEXT			(PacketDataType)0x31
+#define	GL_TYPE_VARCHAR			(PacketDataType)0x32
+#define	GL_TYPE_BYTE			(PacketDataType)0x40
+#define	GL_TYPE_NUMBER			(PacketDataType)0x50
+
+#define	GL_TYPE_DBCODE			(PacketDataType)0x60
+
+#define	GL_TYPE_STRUCTURE		(PacketDataType)0x80
+#define	GL_TYPE_ARRAY			(PacketDataType)0x90
+#define	GL_TYPE_RECORD			(PacketDataType)0xA0
+
+#define	GL_TYPE_OBJECT			(PacketDataType)0x41
+#define	GL_TYPE_CLASS			(PacketDataType)0xF0
+#define	GL_TYPE_ALIAS			(PacketDataType)0x83
+
+#else
 #define	GL_TYPE_CLASS			(PacketDataType)0xF0
 #define	GL_TYPE_NULL			(PacketDataType)0x00
 
@@ -116,6 +136,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_ARRAY			(PacketDataType)0x81
 #define	GL_TYPE_RECORD			(PacketDataType)0x82
 #define	GL_TYPE_ALIAS			(PacketDataType)0x83
+#endif
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
 #define	GL_ATTR_ALIAS			(ValueAttributeType)0x10
@@ -125,6 +146,8 @@ typedef	struct _ValueStruct	{
 #define	GL_ATTR_UPDATE			(ValueAttributeType)0x01
 
 #define	GL_ATTR_NIL				(ValueAttributeType)0x80
+
+
 #define	CHAR_NIL				0x01
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)

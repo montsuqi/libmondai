@@ -357,13 +357,6 @@ dbgmsg(">ParValueDefine");
 		printf("token = %d [%c]\n",ComToken,ComToken);
 		Error("syntax error");
 	}
-#if	0
-	if		(  value  ==  NULL  ) {
-		value = NewValue(GL_TYPE_INT);
-		ValueAttribute(value) = ValueAttribute(upper);
-		ValueAddRecordItem(upper,NULL,value);
-	}
-#endif
 dbgmsg("<ParValueDefine");
 }
 

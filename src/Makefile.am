@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libmondai.la
-noinst_PROGRAMS = testconv testvalue
+noinst_PROGRAMS = testconv testvalue testmem
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -59,17 +59,17 @@ libmondai_la_SOURCES	=			\
 	types.h							\
 	debug.h
 
+LDADD 				=		\
+	$(GLIB_LIBS)			\
+	$(FIXED_LIBS)			\
+	$(XML_LIBS)				\
+	./libmondai.la
+
 testconv_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\
 	$(FIXED_CFLAGS)			\
 	$(XML_CFLAGS)			\
 	-I$(top_srcdir)
-
-testconv_LDADD 		=		\
-	$(GLIB_LIBS)			\
-	$(FIXED_LIBS)			\
-	$(XML_LIBS)				\
-	./libmondai.la
 
 testconv_SOURCES	=		\
 	testconv.c
@@ -80,11 +80,12 @@ testvalue_INCLUDES 	= 		\
 	$(XML_CFLAGS)			\
 	-I$(top_srcdir)
 
-testvalue_LDADD 		=	\
-	$(GLIB_LIBS)			\
-	$(FIXED_LIBS)			\
-	$(XML_LIBS)				\
-	./libmondai.la
-
-testvalue_SOURCES		=	\
+testvalue_SOURCES	=		\
 	testvalue.c
+
+testmem_INCLUDES 	= 		\
+	$(GLIB_CFLAGS) 			\
+	-I$(top_srcdir)
+
+testmem_SOURCES		=		\
+	testmem.c
