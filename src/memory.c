@@ -33,7 +33,7 @@ Boston, MA  02111-1307, USA.
 #include	<stdlib.h>
 #include	<strings.h>
 #include	"libmondai.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"debug.h"
 
 
