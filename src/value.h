@@ -64,12 +64,6 @@ typedef	struct {
 	char		*sval;
 }	Fixed;
 
-typedef	struct {
-	int		oid;
-	char	*name;
-	FILE	*fp;
-}	Element;
-
 typedef	struct _ValueStruct	{
 	PacketDataType		type;
 	ValueAttributeType	attr;
