@@ -53,6 +53,7 @@ copies.
 #include	"valueconv.h"
 #include	"DDparser.h"
 #include	"numerici.h"
+#include	"memory.h"
 #include	"misc.h"
 #include	"others.h"
 
@@ -143,7 +144,8 @@ main(
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
 	SetValueString(GetItemLongName(val,"rc"),"0",SRC_CODE);
 
-	SetValueString(GetItemLongName(val,"dc.window"),"window",SRC_CODE);
+	//SetValueString(GetItemLongName(val,"dc.window"),"window",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.window"),"1 √À",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.widget"),"widget",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.event"),"event",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.fromwin"),"fromwin",SRC_CODE);

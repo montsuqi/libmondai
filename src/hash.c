@@ -38,6 +38,7 @@ copies.
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"hash.h"
 #include	"debug.h"
 

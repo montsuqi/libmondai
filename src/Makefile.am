@@ -28,6 +28,7 @@ libmondaiinclude_HEADERS =	\
 	Lex.h			\
 	DDparser.h		\
 	monstring.h		\
+	memory.h		\
 	types.h
 
 INCLUDES 			= 		\
@@ -54,6 +55,7 @@ libmondai_la_SOURCES	=			\
 	others.c		others.h		\
 	DDparser.c		DDparser.h		\
 	Lex.c			Lex.h			\
+	memory.c		memory.h		\
 	types.h							\
 	debug.h
 

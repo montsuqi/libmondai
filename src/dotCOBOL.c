@@ -39,6 +39,7 @@ copies.
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"dotCOBOL_v.h"
+#include	"memory.h"
 #include	"getset.h"
 #include	"debug.h"
 

@@ -37,6 +37,7 @@ copies.
 #define	_VALUECONV
 #include	"types.h"
 #include	"misc.h"
+#include	"memory.h"
 #include	"value.h"
 #include	"hash.h"
 #include	"OpenCOBOL_v.h"
@@ -132,7 +133,7 @@ NewConvOpt(void)
 	ret->recname = NULL;
 	ret->textsize = 100;
 	ret->arraysize = 10;
-	ret->encode = STRING_ENCODING_URL;
+	ret->encode = STRING_ENCODING_NULL;
 	ret->appendix = NULL;
 
 	return	(ret);

@@ -40,6 +40,7 @@ copies.
 #include	"value.h"
 #include	"hash.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"others.h"
 #include	"debug.h"
 
@@ -88,104 +89,6 @@ dbgmsg(">ParCommandLine");
 dbgmsg("<ParCommandLine");
 
 	return	(cmd); 
-}
-
-extern	void
-DestroyPort(
-	Port	*port)
-{
-	if		(  port->port  !=  NULL  ) {
-		xfree(port->port);
-	}
-	if		(  port->host  !=  NULL  ) {
-		xfree(port->host);
-	}
-	xfree(port);
-}
-
-extern	Port	*
-ParPort(
-	char	*str,
-	int		def)
-{
-	Port	*ret;
-	char	*p;
-	char	dup[SIZE_LONGNAME+1];
-
-	strncpy(dup,str,SIZE_LONGNAME);
-	ret = New(Port);
-	if		(  dup[0]  ==  '['  ) {
-		if		(  ( p = strchr(dup,']') )  !=  NULL  ) {
-			*p = 0;
-			ret->host = StrDup(&dup[1]);
-			p ++;
-			if		(  *p  ==  ':'  ) {
-				ret->port = StrDup(p+1);
-			} else {
-				if		(  def  <  0  ) {
-					ret->port = NULL;
-				} else {
-					ret->port = IntStrDup(def);
-				}
-			}
-		}
-	} else {
-		if		(  ( p = strchr(dup,':') )  !=  NULL  ) {
-			*p = 0;
-			ret->host = StrDup(dup);
-			ret->port = StrDup(p+1);
-		} else {
-			ret->host = StrDup(dup);
-			if		(  def  <  0  ) {
-				ret->port = NULL;
-			} else {
-				ret->port = IntStrDup(def);
-			}
-		}
-	}
-	if		(  *ret->host  ==  0  ) {
-		ret->host = "localhost";
-	}
-	return	(ret);
-}
-
-extern	void
-ParseURL(
-	URL		*url,
-	char	*instr)
-{
-	char	*p
-	,		*str;
-	char	buff[256];
-	Port	*port;
-
-	strcpy(buff,instr);
-	str = buff;
-	if		(  ( p = strchr(str,':') )  ==  NULL  ) {
-		url->protocol = StrDup("http");
-	} else {
-		*p = 0;
-		url->protocol = StrDup(str);
-		str = p + 1;
-	}
-	if		(  *str  ==  '/'  ) {
-		str ++;
-	}
-	if		(  *str  ==  '/'  ) {
-		str ++;
-	}
-	if		(  ( p = strchr(str,'/') )  !=  NULL  ) {
-		*p = 0;
-	}
-	port = ParPort(str,-1);
-	url->host = StrDup(port->host);
-	url->port = StrDup(port->port);
-	DestroyPort(port);
-	if		(  p  !=  NULL  ) {
-		url->file = StrDup(p+1);
-	} else {
-		url->file = "";
-	}
 }
 
 extern	char	*

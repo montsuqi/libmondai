@@ -429,6 +429,7 @@ RFC822_SkipNext(
 	char	*p)
 {
 	switch	(opt->encode) {
+	  case	STRING_ENCODING_NULL:
 	  case	STRING_ENCODING_URL:
 		while	(	(  *p  !=  0     )
 				&&	(  *p  !=  '\n'  ) )	p ++;

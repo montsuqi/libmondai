@@ -23,24 +23,8 @@ copies.
 #define	_INC_OTHERS_H
 #include	<glib.h>
 #include	"types.h"
-typedef	struct	{
-	char	*protocol;
-	char	*host;
-	char	*port;
-	char	*file;
-}	URL;
-
-typedef	struct {
-	char	*host;
-	char	*port;
-}	Port;
-
 
 extern	char		**ParCommandLine(char *line);
-
-extern	void		ParseURL(URL *url, char *str);
-extern	void		DestroyPort(Port *port);
-extern	Port		*ParPort(char *str, int def);
 extern	char		*ExpandPath(char *org,char *base);
 
 extern	void		DecodeStringURL(byte *q, char *p);

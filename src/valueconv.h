@@ -38,6 +38,8 @@ typedef	struct {
 	void	*appendix;
 }	CONVOPT;
 
+#define	ConvEncoding(opt)			((opt)->encode)
+
 typedef	struct {
 	char	*name;
 	char	*fsep;

@@ -38,6 +38,8 @@ copies.
 #include	"types.h"
 #include	"value.h"
 #include	"misc.h"
+#include	"monstring.h"
+#include	"memory.h"
 #include	"LBSfunc.h"
 #include	"debug.h"
 

@@ -34,6 +34,7 @@ copies.
 #include	"numerici.h"
 #include	"hash.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"misc.h"
 #include	"others.h"
 

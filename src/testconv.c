@@ -69,6 +69,7 @@ copies.
 #include	"numerici.h"
 #include	"hash.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"misc.h"
 #include	"others.h"
 
@@ -244,6 +245,11 @@ main(
 	//ConvSetIndent(opt,FALSE);
 	ConvSetType(opt,FALSE);
 	ConvSetXmlType(opt,XML_TYPE1);
+
+	//ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY|XML_OUT_TAILER));
+	//	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_TAILER));
+	//	ConvSetOutput(opt,XML_OUT_BODY);
+	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY));
 
 	printf("***** XML Size(1) *****\n");
 	size = XML_SizeValue(opt,val);

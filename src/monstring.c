@@ -35,6 +35,7 @@ Boston, MA  02111-1307, USA.
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"debug.h"
 
 #ifdef	__GNUC__

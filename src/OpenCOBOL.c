@@ -36,6 +36,7 @@ copies.
 
 #include	"types.h"
 #include	"misc.h"
+#include	"memory.h"
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"OpenCOBOL_v.h"

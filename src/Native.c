@@ -37,6 +37,7 @@ copies.
 #define	__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
+#include	"memory.h"
 #include	"value.h"
 #include	"Native_v.h"
 #include	"debug.h"

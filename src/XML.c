@@ -19,9 +19,9 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-/*
 #define	DEBUG
 #define	TRACE
+/*
 */
 
 #ifdef HAVE_CONFIG_H
@@ -44,6 +44,7 @@ copies.
 #include	"misc.h"
 #include	"value.h"
 #include	"getset.h"
+#include	"memory.h"
 #include	"monstring.h"
 #include	"XML_v.h"
 #include	"debug.h"
@@ -68,6 +69,7 @@ NewXMLOPT(void)
 	ret->fIndent = FALSE;
 	ret->fType = FALSE;
 	ret->type = XML_TYPE1;
+	ret->fOutput = XML_OUT_HEADER | XML_OUT_TAILER | XML_OUT_BODY;
 
 	return	(ret);
 }
@@ -103,6 +105,17 @@ ConvSetXmlType(
 		opt->appendix = NewXMLOPT();
 	}
 	((XMLOPT *)opt->appendix)->type = type;
+}
+
+extern	void
+ConvSetOutput(
+	CONVOPT	*opt,
+	byte	v)
+{
+	if		(  opt->appendix  ==  NULL  ) {
+		opt->appendix = NewXMLOPT();
+	}
+	((XMLOPT *)opt->appendix)->fOutput = v;
 }
 
 static	int		nIndent;
@@ -368,30 +381,46 @@ XML_PackValue(
 {
 	char	buff[SIZE_BUFF+1];
 
-	p += sprintf(p,"<?xml version=\"1.0\"");
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		p += sprintf(p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
-	if		(  ConvCodeset(opt)  !=  NULL  ) {
-		p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
-	}
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+		}
 #else
-	p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
 #endif
-	p += sprintf(p,"?>");
-	p += PutCR(opt,p);
-	nIndent = 0;
+		p += sprintf(p,"?>");
+		p += PutCR(opt,p);
+		nIndent = 0;
+	} else {
+		nIndent = -1;
+	}
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
-		p += sprintf(p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-		p += PutCR(opt,p);
-		p =_XML_PackValue1(opt,p,opt->recname,value,buff);
-		p += sprintf(p,"</lm:block>");
+		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+			p += sprintf(p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+			p += PutCR(opt,p);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+			p =_XML_PackValue1(opt,p,opt->recname,value,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+			p += sprintf(p,"</lm:block>");
+		}
 		break;
 	  case	XML_TYPE2:
-		p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-					 ,opt->recname,opt->recname,NS_URI,opt->recname);
-		p += PutCR(opt,p);
-		p =_XML_PackValue2(opt,p,opt->recname,value,buff);
-		p += sprintf(p,"</%s:data>",opt->recname);
+		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+			p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+						 ,opt->recname,opt->recname,NS_URI,opt->recname);
+			p += PutCR(opt,p);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+			p =_XML_PackValue2(opt,p,opt->recname,value,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+			p += sprintf(p,"</%s:data>",opt->recname);
+		}
 		break;
 	}
 	*p = 0;
@@ -1024,7 +1053,9 @@ ENTER_FUNC;
 	ctx->size = 1;
 	ctx->fStart = FALSE;
 	ctx->opt = opt;
+	ctx->value = NULL;
 	memset(ctx->longname,0,SIZE_LONGNAME+1);
+
 	SetNil(value);
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
@@ -1267,31 +1298,52 @@ XML_SizeValue(
 	char	buff[SIZE_BUFF+1];
 	size_t	size;
 
-	nIndent = 0;
-	size = 19;			//	<?xml version="1.0"
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		size = 19;			//	<?xml version="1.0"
 #ifdef	USE_XML2
-	if		(  ConvCodeset(opt)  !=  NULL  ) {
-		size += 12 + strlen(ConvCodeset(opt));	
-		//	" encoding=\"%s\"",ConvCodeset(opt)
-	}
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			size += 12 + strlen(ConvCodeset(opt));	
+			//	" encoding=\"%s\"",ConvCodeset(opt)
+		}
 #else
-	size += 12 + strlen(LIBXML_CODE);
+		size += 12 + strlen(LIBXML_CODE);
 #endif
-	size += 2;			//	?>
-	size += PutCR(opt,buff);
+		size += 2;			//	?>
+		size += PutCR(opt,buff);
+		nIndent = 0;
+	} else
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		size = 0;
+		nIndent = 0;
+	} else {
+		size = 0;
+		nIndent = -1;
+	}
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
-		size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-		size += PutCR(opt,buff);
-		size += _XML_SizeValue1(opt,opt->recname,value,buff);
-		size += 11;			//	</lm:block>
+		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+			size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+			size += PutCR(opt,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+			size += _XML_SizeValue1(opt,opt->recname,value,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+			size += 11;			//	</lm:block>
+		}
 		break;
 	  case	XML_TYPE2:
-		size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-						,opt->recname,opt->recname,NS_URI,opt->recname);
-		size += PutCR(opt,buff);
-		size += _XML_SizeValue2(opt,opt->recname,value,buff);
-		size += sprintf(buff,"</%s:data>",opt->recname);
+		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+			size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+							,opt->recname,opt->recname,NS_URI,opt->recname);
+			size += PutCR(opt,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+			size += _XML_SizeValue2(opt,opt->recname,value,buff);
+		}
+		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+			size += sprintf(buff,"</%s:data>",opt->recname);
+		}
 		break;
 	}
 	return	(size);

@@ -34,6 +34,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"misc.h"
+#include	"memory.h"
 #include	"monstring.h"
 #include	"others.h"
 #include	"hash.h"

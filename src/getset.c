@@ -42,6 +42,7 @@ copies.
 #include	"misc.h"
 #include	"monstring.h"
 #include	"value.h"
+#include	"memory.h"
 #include	"getset.h"
 #include	"debug.h"
 

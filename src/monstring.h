@@ -34,6 +34,7 @@ Boston, MA  02111-1307, USA.
 extern	int		stricmp(char *s1, char *s2);
 extern	int		strnicmp(char *s1, char *s2, size_t l);
 #endif
+
 extern	char	*StrDup(char *s);
 extern	char	*IntStrDup(int val);
 extern	char	*StringChop(char *str);

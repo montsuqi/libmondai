@@ -1,3 +1,12 @@
+2003-11-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory.[ch]: misc.[ch]から分離
+
+2003-11-10  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/others.[ch]: Port, URL関係の関数を削除(このライブラリではサ
+	ポートしない)
+
 2003-10-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/valueconv.h: メンバ名変更(あまりかこよくなかったので)

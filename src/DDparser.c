@@ -42,6 +42,7 @@ copies.
 #include	"value.h"
 #include	"misc.h"
 #include	"monstring.h"
+#include	"memory.h"
 #include	"others.h"
 #include	"Lex.h"
 #include	"DDparser.h"

@@ -24,9 +24,14 @@ copies.
 
 #define	NS_URI		"http://panda.montsuqui.org/libmondai"
 
+#define	XML_OUT_HEADER		0x01
+#define	XML_OUT_BODY		0x02
+#define	XML_OUT_TAILER		0x04
+
 typedef	struct {
 	Bool	fIndent;
 	Bool	fType;
+	byte	fOutput;
 	int		type;
 }	XMLOPT;
 
@@ -37,12 +42,15 @@ typedef	struct {
 		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
 #define	ConvType(opt)		\
 		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fType)
+#define	ConvOutput(opt)		(((XMLOPT *)(opt)->appendix)->fOutput)
+
 #define	ConvXmlType(opt)	\
 		(((opt)->appendix == NULL) ? XML_TYPE1 : (((XMLOPT *)(opt)->appendix)->type))
 
 extern	void	ConvSetIndent(CONVOPT *opt, Bool v);
 extern	void	ConvSetType(CONVOPT *opt, Bool v);
 extern	void	ConvSetXmlType(CONVOPT *opt, int type);
+extern	void	ConvSetOutput(CONVOPT *opt, byte v);
 
 extern	byte	*XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	byte	*XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
