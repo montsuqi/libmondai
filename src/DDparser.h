@@ -25,6 +25,7 @@ copies.
 
 extern	void		 DD_ParserInit(void);
 extern	ValueStruct	*DD_ParseValue(char *name);
+extern	ValueStruct	*DD_ParseMain(FILE *fp, char *name);
 
 #undef	GLOBAL
 #ifdef	_DD_PARSER

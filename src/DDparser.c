@@ -301,14 +301,14 @@ DD_ParserInit(void)
 	ValueName = (char *)xmalloc(1);;
 }
 
-static	ValueStruct	*
-ParseMain(
+extern	ValueStruct	*
+DD_ParseMain(
 	FILE	*fp,
 	char	*name)
 {
 	ValueStruct	*ret;
 
-dbgmsg(">ParseMain");
+dbgmsg(">DD_ParseMain");
 	DD_FileName = StrDup(name);
 	DD_cLine = 1;
 	DD_File = fp;
@@ -333,7 +333,7 @@ dbgmsg(">ParseMain");
 		ret = NULL;
 	}
 	xfree(DD_FileName);
-dbgmsg("<ParseMain");
+dbgmsg("<DD_ParseMain");
 	return	(ret);
 }
 
@@ -347,7 +347,7 @@ DD_ParseValue(
 dbgmsg(">DD_ParseValue");
 	fDD_Error = FALSE;
 	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
-		ret = ParseMain(fp,name);
+		ret = DD_ParseMain(fp,name);
 		fclose(fp);
 	} else {
 		ret = NULL;
