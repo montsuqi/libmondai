@@ -2,7 +2,7 @@
 
 	* tools/Makefile.am (LDADD, INCLUDES): Fixed.
 
-	*  aclocal.m4: Removed file because it is generated aclocal.
+	* aclocal.m4: Removed file because it is generated aclocal.
 
 2003-03-12  Masami Ogoshi  <ogochan@nurs.or.jp>
 
