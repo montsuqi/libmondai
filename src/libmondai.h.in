@@ -27,6 +27,7 @@ copies.
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"
 #include	"Text_v.h"
+#include	"XML_v.h"
 #include	"cobolvalue.h"
 #include	"valueconv.h"
 #include	"DDparser.h"

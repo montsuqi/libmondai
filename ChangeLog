@@ -1,3 +1,7 @@
+2003-10-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/XML.c: XMLに対応(正しく動くが不完全)
+
 2003-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/DDparser.c : 同一レコード内でのaliasをやめた。弊害の方が大き

@@ -16,6 +16,7 @@ libmondaiinclude_HEADERS =	\
 	dotCOBOL_v.h	\
 	Native_v.h		\
 	Text_v.h		\
+	XML_v.h			\
 	cobolvalue.h	\
 	others.h		\
 	numerici.h		\
@@ -32,6 +33,7 @@ libmondaiinclude_HEADERS =	\
 INCLUDES 			= 		\
 	$(GLIB_CFLAGS) 			\
 	$(FIXED_CFLAGS)			\
+	$(XML2_CFLAGS)			\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=			\
@@ -43,6 +45,7 @@ libmondai_la_SOURCES	=			\
 	dotCOBOL.c		dotCOBOL_v.h	\
 	Native.c		Native_v.h		\
 	Text.c			Text_v.h		\
+	XML.c			XML_v.h			\
 	hash.c			hash.h			\
 	getset.c		getset.h		\
 	value.c			value.h			\

@@ -64,6 +64,7 @@ dbgmsg(">NewValue");
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		ValueStringLength(ret) = 0;
+		ValueStringSize(ret) = 0;
 		ValueString(ret) = NULL;
 		break;
 	  case	GL_TYPE_NUMBER:
@@ -344,7 +345,9 @@ dbgmsg(">GetItemLongName");
 				*q ++ = *p ++;
 			}
 			*q = 0;
-			val = GetRecordItem(val,item);
+			if		(  *item  !=  0  ) {
+				val = GetRecordItem(val,item);
+			}
 		}
 		if		(  *p   ==  '.'   )	p ++;
 		if		(  val  ==  NULL  )	{
@@ -391,17 +394,19 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_CHAR:
-			printf("char(%d) [",ValueStringLength(val));
+			printf("char(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
 			PrintFixString(ValueString(val),ValueStringLength(val));
 			printf("]\n");
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_VARCHAR:
-			printf("varchar(%d) [%s]\n",ValueStringLength(val),ValueString(val));
+			printf("varchar(%d,%d) [%s]\n",ValueStringSize(val),ValueStringLength(val),
+				   ValueString(val));
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_DBCODE:
-			printf("code(%d) [%s]\n",ValueStringLength(val),ValueString(val));
+			printf("code(%d,%d) [%s]\n",ValueStringSize(val),ValueStringLength(val),
+				   ValueString(val));
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_NUMBER:
@@ -411,7 +416,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_TEXT:
-			printf("text(%d) [",ValueStringLength(val));
+			printf("text(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
 			PrintFixString(ValueString(val),ValueStringLength(val));
 			printf("]\n");
 			fflush(stdout);
@@ -471,7 +476,7 @@ dbgmsg(">InitializeValue");
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		memclear(ValueString(value),ValueStringLength(value)+1);
+		memclear(ValueString(value),ValueStringSize(value));
 		break;
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(value)  !=  NULL  ) {
@@ -479,6 +484,7 @@ dbgmsg(">InitializeValue");
 		}
 		ValueString(value) = NULL;
 		ValueStringLength(value) = 0;
+		ValueStringSize(value) = 0;
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(value)  >  0  ) {
@@ -566,8 +572,9 @@ dbgmsg(">CopyValue");
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		memcpy(ValueString(vd),ValueString(vs),ValueStringLength(vs)+1);
+		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vs));
 		ValueStringLength(vd) = ValueStringLength(vs);
+		ValueStringSize(vd) = ValueStringSize(vs);
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(vd)  >  0  ) {
@@ -625,11 +632,12 @@ DuplicateValue(
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		if		(  ValueStringLength(template)  >  0  ) {
-			ValueString(p) = (char *)xmalloc(ValueStringLength(template)+1);
-			memclear(ValueString(p),ValueStringLength(template)+1);
+		if		(  ValueStringSize(template)  >  0  ) {
+			ValueString(p) = (char *)xmalloc(ValueStringSize(template));
+			memclear(ValueString(p),ValueStringSize(template));
 		}
 		ValueStringLength(p) = ValueStringLength(template);
+		ValueStringSize(p) = ValueStringSize(template);
 		break;
 	  case	GL_TYPE_NUMBER:
 		ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);

@@ -1,6 +1,7 @@
 全体
 	文字列長の制限を解除する
 	YAML対応する
+	国際化(現在文字列はEUC-JP)
 
 RFC822形式
 	MIME encodingに対応する

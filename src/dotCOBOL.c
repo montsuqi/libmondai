@@ -39,6 +39,7 @@ copies.
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"dotCOBOL_v.h"
+#include	"getset.h"
 #include	"debug.h"
 
 extern	void
@@ -87,6 +88,7 @@ dotCOBOL_UnPackValue(
 {
 	int		i;
 	char	buff[SIZE_BUFF];
+	char	*str;
 
 dbgmsg(">dotCOBOL_UnPackValue");
 	if		(  value  !=  NULL  ) {
@@ -105,26 +107,24 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			if		(  ValueString(value)  !=  NULL  ) {
-				if		(  ValueStringLength(value)  <  opt->textsize  ) {
-					xfree(ValueString(value));
-					ValueString(value) = (char *)xmalloc(opt->textsize + 1);
-					ValueStringLength(value) = opt->textsize;
-				}
-			} else {
-				ValueString(value) = (char *)xmalloc(opt->textsize + 1);
-				ValueStringLength(value) = opt->textsize;
-			}
-			memcpy(ValueString(value),p,ValueStringLength(value));
+			str = (char *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
+			memcpy(str,p,ValueStringLength(value));
+			str[ValueStringLength(value)] = 0;
 			p += opt->textsize;
-			StringCobol2C(ValueString(value),ValueStringLength(value));
+			StringCobol2C(str,ValueStringLength(value));
+			SetValueString(value,str);
+			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(ValueString(value),p,ValueStringLength(value));
+			str = (char *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
+			memcpy(str,p,ValueStringLength(value));
+			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
-			StringCobol2C(ValueString(value),ValueStringLength(value));
+			StringCobol2C(str,ValueStringLength(value));
+			SetValueString(value,str);
+			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
 			memcpy(buff,p,ValueFixedLength(value));
@@ -178,14 +178,14 @@ dbgmsg(">dotCOBOL_PackValue");
 		  case	GL_TYPE_TEXT:
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize :
 				ValueStringLength(value);
-			memcpy(p,ValueString(value),size);
+			memcpy(p,ValueToString(value),size);
 			StringC2Cobol(p,opt->textsize);
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,ValueString(value),ValueStringLength(value));
+			memcpy(p,ValueToString(value),ValueStringLength(value));
 			StringC2Cobol(p,ValueStringLength(value));
 			p += ValueStringLength(value);
 			break;

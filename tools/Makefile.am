@@ -5,6 +5,7 @@ bin_PROGRAMS = rec2copy
 LDADD 		=	\
 	$(GLIB_LIBS)						\
 	$(FIXED_LIBS)						\
+	$(XML2_LIBS)						\
 	$(top_builddir)/src/libmondai.la
 
 INCLUDES 			= 					\

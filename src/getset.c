@@ -297,6 +297,7 @@ SetValueString(
 	,		fMinus
 	,		fPoint;
 	size_t	len;
+	int		i;
 	char	*p;
 	char	buff[SIZE_NUMBUF+1];
 	Fixed	from;
@@ -352,15 +353,16 @@ SetValueString(
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_TEXT:
-			len = strlen(str) + 1;
-			if		(  len  >  ValueStringLength(val)  ) {
+			len = strlen(str);
+			if		(  ( len + 1 )  >  ValueStringSize(val)  ) {
 				if		(  ValueString(val)  !=  NULL  ) {
 					xfree(ValueString(val));
 				}
-				ValueString(val) = (char *)xmalloc(len + 1);
+				ValueStringSize(val) = len + 1;
 				ValueStringLength(val) = len;
+				ValueString(val) = (char *)xmalloc(ValueStringSize(val));
 			}
-			memset(ValueString(val),0,ValueStringLength(val)+1);
+			memset(ValueString(val),0,ValueStringSize(val));
 			strcpy(ValueString(val),str);
 			rc = TRUE;
 			break;
@@ -374,6 +376,25 @@ SetValueString(
 			break;
 		  case	GL_TYPE_BOOL:
 			ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BYTE:
+			p = ValueByte(val);
+			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
+				if		(  *str  ==  '%'  ) {
+					str ++;
+					if		(  *str  ==  '%'  ) {
+						*p = '%';
+						str ++;
+					} else {
+						*p = (unsigned char)HexToInt(str,2);
+						str += 2;
+					}
+				} else {
+					*p = *str;
+					str ++;
+				}
+			}
 			rc = TRUE;
 			break;
 		  default:

@@ -19,14 +19,14 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+#define	CONV_TEST
 #define	XML_TEST
 /*
-#define	CONV_TEST
 */
 
-/*
 #define	DEBUG
 #define	TRACE
+/*
 */
 #define	MAIN
 #ifdef HAVE_CONFIG_H
@@ -40,187 +40,24 @@ copies.
 #include	<unistd.h>
 #include	<glib.h>
 #include	"types.h"
-#include	"libmondai.h"
+
+#include	"value.h"
+#include	"getset.h"
+#include	"OpenCOBOL_v.h"
+#include	"dotCOBOL_v.h"
+#include	"Native_v.h"
+#include	"Text_v.h"
+#include	"XML_v.h"
+#include	"cobolvalue.h"
+#include	"valueconv.h"
+#include	"DDparser.h"
+#include	"numerici.h"
+#include	"hash.h"
+#include	"monstring.h"
+#include	"misc.h"
+#include	"others.h"
+
 #include	"debug.h"
-
-typedef	struct {
-	Bool	fIndent;
-}	XMLOPT;
-
-#define	ConvIndent(opt)			((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
-
-extern	void
-ConvSetIndent(
-	CONVOPT	*opt,
-	Bool	v)
-{
-	if		(  opt->appendix  ==  NULL  ) {
-		opt->appendix = New(XMLOPT);
-	}
-	((XMLOPT *)opt->appendix)->fIndent = v;
-}
-
-static	int		nIndent;
-
-static	char	*
-XML_Encode(
-	char	*str,
-	char	*buff)
-{
-	char	*p;
-
-	p = buff;
-	for	( ; *str != 0 ; str ++ ) {
-		if		(  *str  <  0x20  ) {
-			switch	(*str) {
-			  case	' ':
-			  case	0x1B:
-				*p ++ = *str;
-				break;
-			  default:
-				p += sprintf(p,"\\%02X",*str);
-				break;
-			}
-		} else {
-			*p ++ = *str;
-		}
-	}
-	*p = 0;
-	return	(buff);
-}
-
-static	byte	*
-_XML_PackValue(
-	CONVOPT		*opt,
-	byte		*p,
-	char		*name,
-	ValueStruct	*value,
-	char		*buff)
-{
-	char	num[SIZE_NAME+1];
-	int		i;
-
-	if		(  value  !=  NULL  ) {
-		nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
-		}
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_INT:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"int\"/>%s",name,ValueToString(value));
-			break;
-		  case	GL_TYPE_BOOL:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"bool\"/>%s",name,ValueToString(value));
-			break;
-		  case	GL_TYPE_BYTE:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"byte\"/>%s"
-						 ,name,XML_Encode(ValueToString(value),buff));
-			break;
-		  case	GL_TYPE_CHAR:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"char\" size=\"%d\" />%s"
-						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
-			break;
-		  case	GL_TYPE_VARCHAR:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"varchar\" size=\"%d\" />%s"
-						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
-			break;
-		  case	GL_TYPE_TEXT:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"text\" size=\"%d\" />%s"
-						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
-			break;
-		  case	GL_TYPE_DBCODE:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"dbcode\" size=\"%d\" />%s"
-						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
-			break;
-		  case	GL_TYPE_NUMBER:
-#if	0
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"number\"/>%s"
-						 ,name,XML_Encode(ValueToString(value),buff));
-#endif
-			break;
-		  case	GL_TYPE_FLOAT:
-			p += sprintf(p,"<ITEM name=\"%s\" type=\"float\"/>%s"
-						 ,name,XML_Encode(ValueToString(value),buff));
-			break;
-		  case	GL_TYPE_ARRAY:
-			p += sprintf(p,"<ARRAY name=\"%s\" count=\"%d\">"
-						 ,name,ValueArraySize(value));
-			if		(  ConvIndent(opt)  ) {
-				*p ++ = '\n';
-			}
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s[%d]",name,i);
-				p = _XML_PackValue(opt,p,num,ValueArrayItem(value,i),buff);
-			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
-			}
-			p += sprintf(p,"</ARRAY>");
-			break;
-		  case	GL_TYPE_RECORD:
-			p += sprintf(p,"<RECORD name=\"%s\" size=\"%d\">"
-						 ,name,ValueRecordSize(value));
-			if		(  ConvIndent(opt)  ) {
-				*p ++ = '\n';
-			}
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _XML_PackValue(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
-			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
-			}
-			p += sprintf(p,"</RECORD>");
-			break;
-		  case	GL_TYPE_ALIAS:
-		  default:
-			break;
-		}
-		if		(  ConvIndent(opt)  ) {
-			*p ++ = '\n';
-		}
-		nIndent --;
-	}
-	return	(p);
-}
-
-extern	byte	*
-XML_PackValue(
-	CONVOPT		*opt,
-	 byte		*p,
-	ValueStruct	*value)
-{
-	char	buff[SIZE_BUFF+1];
-
-	nIndent = 0;
-	p += sprintf(p,"<?xml version=\"1.0\">");
-	if		(  opt->locale  !=  NULL  ) {
-		p += sprintf(p," encoding=\"%s\"",opt->locale);
-	}
-	p += sprintf(p,"?>");
-	if		(  ConvIndent(opt)  ) {
-		*p ++ = '\n';
-	}
-	_XML_PackValue(opt,p,opt->recname,value,buff);
-	return	(p);
-}
-
-extern	byte	*
-XML_UnPackValue(
-	CONVOPT		*opt,
-	byte		*p,
-	ValueStruct	*value)
-{
-	return	(p);
-}
-
-extern	size_t
-XML_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
-{
-	return	(0);
-}
-
 
 
 extern	int
@@ -259,7 +96,7 @@ main(
 
 	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop");
 	SetValueString(GetItemLongName(val,"m"),"漢字を入れた");
-	//	SetValueString(GetItemLongName(val,"n"),"200.003");
+	SetValueString(GetItemLongName(val,"n"),"200.003");
 	SetValueString(GetItemLongName(val,"c.d"),"d");
 	SetValueInteger(GetItemLongName(val,"c.e"),100);
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"c.g")) ; i ++ ) {
@@ -303,11 +140,18 @@ main(
 	buff = xmalloc(SIZE_BUFF);
 	printf("***** XML Pack *****\n");
 	ConvSetRecName(opt,"testrec");
-	//	ConvSetUseName(opt,TRUE);
-	ConvSetIndent(opt,TRUE);
+	ConvSetIndent(opt,FALSE);
+	ConvSetType(opt,TRUE);
 	XML_PackValue(opt,buff,val);
-	printf("%s\n",buff);
+	if		(  ( fp = fopen("test.xml","w") )  ==  NULL  ) 	exit(1);
+	fprintf(fp,"%s\n",buff);
+	fclose(fp);
+	printf("size = %d\n",strlen(buff));
+	printf("size = %d\n",XML_SizeValue(opt,val));
 	printf("********************\n");
+	InitializeValue(val);
+	XML_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
 #endif
 
 #ifdef	CONV_TEST

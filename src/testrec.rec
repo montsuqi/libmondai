@@ -2,8 +2,7 @@ testrec	{
 	a	char(3);
 	b	char(2);
 	g	varchar(3);
-#	n	number(10,3);
-	n	int;
+	n	number(10,3);
 	l	text;
 	m	text;
 	c	{

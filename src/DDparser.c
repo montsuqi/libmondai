@@ -251,8 +251,9 @@ dbgmsg(">ParValueDefine");
 					memset(ValueFixedBody(value),'0',size);
 				} else {
 					ValueStringLength(value) = size;
-					ValueString(value) = (char *)xmalloc(size + 1);
-					memclear(ValueString(value),size + 1);
+					ValueStringSize(value) = size+1;
+					ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+					memclear(ValueString(value),ValueStringSize(value));
 				}
 			}
 			break;

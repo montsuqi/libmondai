@@ -78,7 +78,8 @@ typedef	struct _ValueStruct	{
 			GHashTable				*members;
 		}	RecordData;
 		struct {
-			size_t			len;
+			size_t			length
+			,				asize;
 			unsigned char	*sval;
 		}	CharData;
 		struct {
@@ -143,10 +144,13 @@ typedef	struct _ValueStruct	{
 #define	ValueIsNonNil(v)		((v)->attr &= ~GL_ATTR_NIL)
 
 #define	ValueString(v)			((v)->body.CharData.sval)
-#define	ValueStringLength(v)	((v)->body.CharData.len)
+#define	ValueStringLength(v)	((v)->body.CharData.length)
+#define	ValueStringSize(v)		((v)->body.CharData.asize)
 
 #define	ValueByte(v)			((v)->body.CharData.sval)
-#define	ValueByteLength(v)		((v)->body.CharData.len)
+#define	ValueByteLength(v)		((v)->body.CharData.length)
+#define	ValueByteSize(v)		((v)->body.CharData.asize)
+
 #define	ValueInteger(v)			((v)->body.IntegerData)
 #define	ValueBool(v)			((v)->body.BoolData)
 #define	ValueFloat(v)			((v)->body.FloatData)

@@ -43,6 +43,7 @@ copies.
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"
 #include	"Text_v.h"
+#include	"XML_v.h"
 #include	"valueconv.h"
 #include	"debug.h"
 
@@ -69,6 +70,9 @@ static	ConvFuncs	funcs[] = {
 
 	{	"CGI",					"&",					"\n",
 		CGI_PackValue,			CGI_UnPackValue,		CGI_SizeValue		},
+
+	{	"XML",					"\n",					"\n",
+		XML_PackValue,			XML_UnPackValue,		XML_SizeValue		},
 
 	{	NULL,					"",						"",
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}

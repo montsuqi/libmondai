@@ -44,7 +44,7 @@ stricmp(
 	char	*s2)
 {
 	for	( ; *s1  !=  0 ; s1 ++ , s2 ++ )	{
-		if		(  toupper(*s1) - toupper(*s2)  !=  0  )
+		if		(  toupper(*s1)  !=  toupper(*s2)  )
 			break;
 	}
 	return	(toupper(*s1) - toupper(*s2));

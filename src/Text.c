@@ -52,8 +52,7 @@ _CSV_UnPackValue(
 	char		*buff)
 {
 	int		i;
-	char	*q
-	,		*s;
+	char	*q;
 
 	if		(  value  !=  NULL  ) {
 		if		(  !IS_VALUE_STRUCTURE(value)  ) {
@@ -104,62 +103,17 @@ _CSV_UnPackValue(
 			}
 			*q = 0;
 		}
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			ValueInteger(value) = StrToInt(buff,strlen(buff));
-			break;
 		  case	GL_TYPE_BOOL:
-			ValueBool(value) = ( *buff == 'T' ) ? TRUE : FALSE;
-			break;
 		  case	GL_TYPE_FLOAT:
-			ValueFloat(value) = atof(buff);
-			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(ValueFixedBody(value),buff,ValueFixedLength(value));
-			break;
 		  case	GL_TYPE_TEXT:
-			if		(  ValueString(value)  !=  NULL  ) {
-				if		(  ValueStringLength(value)  <  strlen(buff)  ) {
-					xfree(ValueString(value));
-					ValueString(value) = (char *)xmalloc(strlen(buff) + 1);
-					ValueStringLength(value) = strlen(buff);
-				}
-			} else {
-				ValueString(value) = (char *)xmalloc(strlen(buff) + 1);
-				ValueStringLength(value) = strlen(buff);
-			}
-			memset(ValueString(value),0,ValueStringLength(value)+1);
-			if		(  ValueStringLength(value)  >  0  ) {
-				memcpy(ValueString(value),buff,ValueStringLength(value));
-			}
-			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			if		(  ValueString(value)  ==  NULL  ) {
-				ValueString(value) = (char *)xmalloc(strlen(buff) + 1);
-				ValueStringLength(value) = strlen(buff);
-			}
-			memcpy(ValueString(value),buff,ValueStringLength(value));
-			break;
 		  case	GL_TYPE_BYTE:
-			s = buff;
-			q = ValueByte(value);
-			for	( i = 0 ; i < ValueByteLength(value) ; i ++ , q ++ ) {
-				if		(  *s  ==  '%'  ) {
-					s ++;
-					if		(  *s  ==  '%'  ) {
-						*q = '%';
-						s ++;
-					} else {
-						*q = (unsigned char)HexToInt(s,2);
-						s += 2;
-					}
-				} else {
-					*q = *s;
-					s ++;
-				}
-			}
+			SetValueString(value,buff);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
