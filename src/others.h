@@ -45,5 +45,8 @@ extern	char		*ExpandPath(char *org,char *base);
 extern	void		DecodeStringURL(char *q, char *p);
 extern	void		EncodeStringURL(char *q, char *p);
 extern	size_t		EncodeStringLengthURL(char *q);
+extern	void		EncodeBase64(char *out, byte *in, size_t len);
+extern	size_t		DecodeBase64(byte *out, char *in, size_t len);
+extern	size_t		EncodeLengthBase64(char *str);
 
 #endif

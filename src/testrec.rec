@@ -2,6 +2,7 @@ testrec	{
 	a	char(3);
 	b	char(2);
 	l	text;
+	m	text;
 	c	{
 		d	char;
 		e	int;

@@ -26,7 +26,7 @@ copies.
 
 #define	STRING_ENCODING_NULL	0
 #define	STRING_ENCODING_URL		1
-#define	STRING_ENCODING_MIME	2
+#define	STRING_ENCODING_BASE64	2
 
 typedef	struct {
 	char	*locale;

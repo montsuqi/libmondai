@@ -512,7 +512,6 @@ _RFC822_UnPackValueNoNamed(
 {
 	int		i;
 	char	*q;
-	int		c;
 
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
@@ -525,20 +524,11 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
-			switch	(opt->encode) {
-			  case	STRING_ENCODING_URL:
-				q = p;
-				while	(	(  *p  !=  0     )
-						&&	(  *p  !=  '\n'  ) )	p ++;
-				c = *p;
-				*p = 0;
-				DecodeStringURL(buff,q);
-				*p = c;
-				p ++;
-				break;
-			  default:
-				break;
-			}
+			q = p;
+			while	(	(  *p  !=  0     )
+					&&	(  *p  !=  '\n'  ) )	p ++;
+			DecodeBase64(buff,q,q-p);
+			p ++;
 			SetValueString(value,buff);
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -569,7 +559,6 @@ _RFC822_UnPackValueNamed(
 	char	*vname
 	,		*rname;
 	char	*q;
-	int		c;
 	ValueStruct	*e;
 
 	if		(  value  !=  NULL  ) {
@@ -588,20 +577,11 @@ _RFC822_UnPackValueNamed(
 				p = SkipNext(opt,p);
 			} else {
 				if		(  ( e = GetItemLongName(value,vname) )  !=  NULL  ) {
-					switch	(opt->encode) {
-					  case	STRING_ENCODING_URL:
-						q = p;
-						while	(	(  *p  !=  0     )
-								&&	(  *p  !=  '\n'  ) )	p ++;
-						c = *p;
-						*p = 0;
-						DecodeStringURL(buff,q);
-						*p = c;
-						p ++;
-						break;
-					  default:
-						break;
-					}
+					q = p;
+					while	(	(  *p  !=  0     )
+							&&	(  *p  !=  '\n'  ) )	p ++;
+					DecodeBase64(buff,q,p-q);
+					p ++;
 					SetValueString(e,buff);
 				} else {
 					p = SkipNext(opt,p);
@@ -639,6 +619,7 @@ _RFC822_PackValue(
 	char		*buff)
 {
 	int		i;
+	char	*str;
 
 	if		(  value  !=  NULL  ) {
 		if		(  name  ==  NULL  ) { 
@@ -650,17 +631,12 @@ _RFC822_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
-			switch	(opt->encode) {
-			  case	STRING_ENCODING_URL:
-				EncodeStringURL(buff,ValueToString(value));
-				if		(  opt->fName  ) {
-					p+= sprintf(p,"%s: ",longname);
-				}
-				p += sprintf(p,"%s\n",buff);
-				break;
-			  default:
-				break;
+			str = ValueToString(value);
+			EncodeBase64(buff,str,strlen(str));
+			if		(  opt->fName  ) {
+				p+= sprintf(p,"%s: ",longname);
 			}
+			p += sprintf(p,"%s\n",buff);
 			break;
 		  case	GL_TYPE_BOOL:
 		  case	GL_TYPE_NUMBER:
@@ -734,13 +710,7 @@ dbgmsg(">_RFC822_SizeValue");
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
-		switch	(opt->encode) {
-		  case	STRING_ENCODING_URL:
-			ret += EncodeStringLengthURL(ValueToString(value));
-			break;
-		  default:
-			break;
-		}
+		ret += EncodeLengthBase64(ValueToString(value));
 		break;
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_NUMBER:

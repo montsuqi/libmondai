@@ -71,6 +71,7 @@ main(
 	SetValueString(GetItemLongName(rec,"a"),"aaa");
 	SetValueString(GetItemLongName(rec,"b"),"bb");
 	SetValueString(GetItemLongName(rec,"l"),"abcde,fghijklmnop");
+	SetValueString(GetItemLongName(rec,"m"),"漢字を入れた");
 	SetValueString(GetItemLongName(rec,"c.d"),"d");
 	SetValueInteger(GetItemLongName(rec,"c.e"),100);
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(rec,"c.g")) ; i ++ ) {
