@@ -33,7 +33,6 @@ Boston, MA  02111-1307, USA.
 #include	<ctype.h>
 #include	<string.h>
 #include	"types.h"
-//#include	"misc_v.h"
 #include	"monstring.h"
 #include	"memory_v.h"
 #include	"debug.h"
@@ -170,3 +169,28 @@ StringChop(
 	return	(str);
 }
 
+/*
+ *	for utf8
+ */
+extern	size_t
+CharLength(
+	byte	c)
+{
+	size_t	len;
+
+	if		(  ( c & 0x80 )  ==  0  ) {
+		len = 1;
+	} else
+	if		(  ( c & 0xE0 )  ==  0xC0  ) {
+		len = 2;
+	} else
+	if		(  ( c & 0xE0 )  ==  0xE0  ) {
+		len = 3;
+	} else
+	if		(  ( c & 0xF8 )  ==  0xF0  ) {
+		len = 4;
+	} else {
+		len = 0;
+	}
+	return	(len);
+}

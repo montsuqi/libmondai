@@ -42,4 +42,6 @@ extern	long	StrToInt(char *str, size_t len);
 extern	long	HexToInt(char *str, size_t len);
 extern	char	*IntToStr(char *str, long val, size_t len);
 extern	void	PrintFixString(char *s, int len);
+extern	size_t	CharLength(byte c);
+
 #endif
