@@ -65,7 +65,7 @@ LDADD 				=		\
 	$(GLIB_LIBS)			\
 	$(FIXED_LIBS)			\
 	$(XML_LIBS)				\
-	./libmondai.la
+	$(top_builddir)/src/libmondai.la
 
 testconv_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\

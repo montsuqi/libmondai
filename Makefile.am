@@ -1,24 +1,22 @@
-## Makefile.am for libfixed
+SUBDIRS = 					\
+	src					\
+	tools 					\
+	docs
 
-SRC_SUBDIRS = src tools docs
-SUBDIRS = $(SRC_SUBDIRS)
+bin_SCRIPTS = 					\
+	libmondai-config
 
-bin_SCRIPTS = libmondai-config
+man_MANS = 					\
+	libmondai-config.1
 
-# require automake 1.4
-AUTOMAKE_OPTIONS = 1.4
-
-EXTRA_DIST = \
-	TODO \
-	libmondai.m4
-
-release:
-	rm -rf .deps */.deps
-	$(MAKE) distcheck
+EXTRA_DIST =					\
+	libmondai.m4				\
+	libmondai-config.1.in			\
+	libmondai-config.in
 
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-`date +"%Y%m%d"`
 
 install-data-local:
 	-mkdir -p $(DESTDIR)$(datadir)/aclocal
-	$(INSTALL_DATA) $(srcdir)/libmondai.m4 $(DESTDIR)$(datadir)/aclocal/libmondai.m4
+	$(INSTALL_DATA) $(top_srcdir)/libmondai.m4 $(DESTDIR)$(datadir)/aclocal/libmondai.m4

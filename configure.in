@@ -1,13 +1,10 @@
+#                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_INIT(src)
 
-# Save this value here, since automake will set cflags later
-cflags_set=${CFLAGS+set}
-
-# make version
 LIBMONDAI_MAJOR_VERSION=1
 LIBMONDAI_MINOR_VERSION=2
-LIBMONDAI_MICRO_VERSION=0
+LIBMONDAI_MICRO_VERSION=1
 
 LIBMONDAI_VERSION=$LIBMONDAI_MAJOR_VERSION.$LIBMONDAI_MINOR_VERSION.$LIBMONDAI_MICRO_VERSION
 LTVERSION=`expr $LIBMONDAI_MAJOR_VERSION + $LIBMONDAI_MINOR_VERSION`:$LIBMONDAI_MICRO_VERSION:$LIBMONDAI_MINOR_VERSION
@@ -19,53 +16,21 @@ AC_SUBST(LIBMONDAI_MICRO_VERSION)
 AC_SUBST(LIBMONDAI_VERSION)
 AC_SUBST(LTVERSION)
 
-# For automake
-PACKAGE=libmondai
-# Initialize automake stuff
-AM_INIT_AUTOMAKE($PACKAGE, $LIBMONDAI_VERSION, no-define)
-
-# Specify a configuration file
+AM_INIT_AUTOMAKE(libmondai, $LIBMONDAI_VERSION)
 AM_CONFIG_HEADER(config.h)
-
-# Build time sanity check...
-AM_SANITY_CHECK
+AM_MAINTAINER_MODE
 
 # Checks for programs.
 AC_PROG_CC
 AC_ISC_POSIX
 AM_PROG_CC_STDC
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-
-# Initialize libtool
 AM_PROG_LIBTOOL
-
-AM_MAINTAINER_MODE
-
-#AC_CANONICAL_HOST
-
-changequote(,)dnl
-if test "x$GCC" = "xyes"; then
-  case " $CFLAGS " in
-  *[\ \	]-Wall[\ \	]*) ;;
-  *) CFLAGS="$CFLAGS -Wall" ;;
-  esac
-fi
-changequote([,])dnl
-
-# Honor aclocal flags
-ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
+AC_PROG_MAKE_SET
 
 # Checks for header files.
 AC_HEADER_STDC
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-
-dnl header file checks
-AC_CHECK_HEADERS(unistd.h) 
-AC_CHECK_HEADERS(dirent.h) 
-AC_CHECK_HEADERS(fnmatch.h) 
+AC_CHECK_HEADERS([unistd.h dirent.h fnmatch.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -75,14 +40,14 @@ dnl ***************************************************************************
 dnl i18n feture
 dnl ***************************************************************************
 
+LIBMONDAI_I18N=0
 AC_ARG_WITH(i18n,
-	[  --with-i18n	link with iconv],[
-	if test x$withval = xyes; then
-		AC_DEFINE(WITH_I18N,1,[])
-		LIBMONDAI_I18N=1
-	fi
-	],[
-	LIBMONDAI_I18N=0
+	[  --without-i18n          link with iconv],
+	[USE_I18N="no"],
+	[
+	AC_DEFINE(WITH_I18N,1,"")
+	LIBMONDAI_I18N=1
+	USE_I18N="yes"
 ])
 AC_SUBST(LIBMONDAI_I18N)
 
@@ -91,6 +56,9 @@ dnl Add all the cflags & libs needed for the libfixed modules.
 dnl ***************************************************************************
 
 AC_PATH_PROG(libfixed_config, libfixed-config)
+if test x$libfixed_config = xno; then
+  AC_MSG_ERROR(Couldn't find libfixed-config)
+fi
 FIXED_CFLAGS=`$libfixed_config --cflags 2>/dev/null`
 FIXED_LIBS=`$libfixed_config --libs 2>/dev/null`
 AC_SUBST(FIXED_LIBS)
@@ -111,9 +79,11 @@ AC_SUBST(GLIB_CFLAGS)
 
 dnl ***************************************************************************
 dnl Add all the cflags & libs needed for the XML modules.
-dnl *****************************************************************
+dnl ***************************************************************************
 AC_ARG_WITH(xml2,
-	[  --with-xml2	Use libxml2],[
+	[  --without-xml2          Use libxml2],
+	[USE_LIBXML2="no"],
+	[
 	AC_PATH_PROG(XML_CONFIG,xml2-config,no)
 	if test x$XML_CONFIG = xno; then
 	  AC_MSG_ERROR(Couldn't find xml2-config)
@@ -122,8 +92,9 @@ AC_ARG_WITH(xml2,
 	XML_CFLAGS=`xml2-config --cflags`
 	AC_SUBST(XML_LIBS)
 	AC_SUBST(XML_CFLAGS)
-	AC_DEFINE(USE_XML,2,[])
-	AC_DEFINE(USE_XML2,1,[])
+	AC_DEFINE(USE_XML,2,"")
+	AC_DEFINE(USE_XML2,1,"")
+	USE_LIBXML2="yes"
 ])		
 
 AC_ARG_WITH(xml,
@@ -141,9 +112,10 @@ AC_ARG_WITH(xml,
 	XML_CFLAGS=`xml-config --cflags`
 	AC_SUBST(XML_LIBS)
 	AC_SUBST(XML_CFLAGS)
-	AC_DEFINE(USE_XML,1,[])
+	AC_DEFINE(USE_XML,1,"")
 	AC_DEFINE_UNQUOTED(LIBXML_CODE,"$encode","")
-])		
+	USE_LIBXML=$encode], 
+	[USE_LIBXML="no"])		
 
 dnl ***************************************************************************
 
@@ -154,4 +126,19 @@ tools/Makefile
 src/libmondai.h
 docs/Makefile
 libmondai-config
+libmondai-config.1
 ], [chmod +x libmondai-config])
+
+dnl ***************************************************************************
+dnl output result
+dnl ***************************************************************************
+
+echo ""
+echo "libmondai Configuration:"
+echo ""
+echo "  VERSION:               $LIBMONDAI_VERSION"
+echo "  LTVERSION:             $LTVERSION"
+echo "  Use i18n:              $USE_I18N"
+echo "  Use libxml2:           $USE_LIBXML2"
+echo "  Use libxml:            $USE_LIBXML"
+echo ""

@@ -1,3 +1,13 @@
+2004-04-24  Kouji SHIMIZU  <shimizu@netlab.jp>
+
+	* configure.in: version up to `1.2.1'. output result.
+	* acconfig.h: Removed.
+	
+	* src/Makefile.am: Throw make distcheck.
+	
+	* libmondai-config.1.in: New file, man page.
+	* Makefile.am: Append man_MANS.
+
 2004-04-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.c: NULLの時に対応

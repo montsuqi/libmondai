@@ -18,3 +18,4 @@ aclocal.m4
 stamp-h1
 decomp
 autom4te.cache
+libmondai-config.1
