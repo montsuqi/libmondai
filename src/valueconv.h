@@ -37,6 +37,13 @@ typedef	struct {
 	Bool	fName;
 }	CONVOPT;
 
+typedef	struct {
+	char	*name;
+	char	*(*Pack)(CONVOPT *opt, char *p, ValueStruct *value);
+	char	*(*UnPack)(CONVOPT *opt, char *p, ValueStruct *value);
+	size_t	(*Size)(CONVOPT *opt, ValueStruct *value);
+}	ConvFuncs;
+
 #undef	GLOBAL
 #ifdef	_VALUECONV
 #define	GLOBAL		/*	*/
@@ -50,8 +57,10 @@ GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 
 #undef	GLOBAL
 
-extern	void	ConvSetLanguage(char *name);
-extern	CONVOPT	*NewConvOpt(void);
+extern	ConvFuncs	*GetConvFunc(char *name);
+extern	void		ConvSetLanguage(char *name);
+extern	CONVOPT		*NewConvOpt(void);
+extern	void		DestroyConvOpt(CONVOPT *opt);
 
 #define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
 #define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)

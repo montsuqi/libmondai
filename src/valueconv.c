@@ -46,14 +46,6 @@ copies.
 #include	"valueconv.h"
 #include	"debug.h"
 
-
-typedef	struct {
-	char	*name;
-	char	*(*Pack)(CONVOPT *opt, char *p, ValueStruct *value);
-	char	*(*UnPack)(CONVOPT *opt, char *p, ValueStruct *value);
-	size_t	(*Size)(CONVOPT *opt, ValueStruct *value);
-}	ConvFuncs;
-
 static	ConvFuncs	funcs[] = {
 
 	{	"OpenCOBOL",
@@ -81,14 +73,13 @@ static	ConvFuncs	funcs[] = {
 
 static	GHashTable	*FuncTable = NULL;
 
-extern	void
-ConvSetLanguage(
+extern	ConvFuncs	*
+GetConvFunc(
 	char	*name)
 {
-	int		i;
 	ConvFuncs	*func;
+	int			i;
 
-dbgmsg(">SetLanguage");
 	if		(  name  !=  NULL  ) {
 		if		(  FuncTable  ==  NULL  ) {
 			FuncTable = NewNameHash();
@@ -98,8 +89,22 @@ dbgmsg(">SetLanguage");
 				}
 			}
 		}
-		if		(  ( func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name) )
-				   ==  NULL  ) {
+		func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name);
+	} else {
+		func = NULL;
+	}
+	return	(func);
+}
+
+extern	void
+ConvSetLanguage(
+	char	*name)
+{
+	ConvFuncs	*func;
+
+dbgmsg(">SetLanguage");
+	if		(  name  !=  NULL  ) {
+		if		(  ( func = GetConvFunc(name) )  ==  NULL  ) {
 			fprintf(stderr,"can not found %s convert rule\n",name);
 			exit(1);
 		}
@@ -123,4 +128,11 @@ NewConvOpt(void)
 	ret->encode = STRING_ENCODING_URL;
 
 	return	(ret);
+}
+
+extern	void
+DestroyConvOpt(
+	CONVOPT	*opt)
+{
+	xfree(opt);
 }

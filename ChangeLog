@@ -1,3 +1,7 @@
+2003-09-03  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/valueconv.c (GetConvFunc): 追加
+
 2003-08-12  OGOSHI  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.c (LBS_Trim): LBSの末尾を切り詰める関数
