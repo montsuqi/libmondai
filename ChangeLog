@@ -1,3 +1,8 @@
+2003-05-15  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* configure.in: AC_CHECK_HEADERS の第 2 引数を削除
+	* acconfig.h: 削除
+
 2003-05-15  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/hash.c: hash関係関数を別ファイルにした
