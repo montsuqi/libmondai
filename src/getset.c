@@ -76,6 +76,9 @@ ValueToInteger(
 	  case	GL_TYPE_BOOL:
 		ret = ValueBool(val);
 		break;
+	  case	GL_TYPE_OBJECT:
+		ret = ValueObject(val);
+		break;
 	  default:
 		ret = 0;
 	}
