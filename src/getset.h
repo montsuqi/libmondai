@@ -39,5 +39,6 @@ extern	char		*ValueToString(ValueStruct *value, char *locale);
 extern	byte		*ValueToBinary(ValueStruct *val);
 
 #define	SetValueString(val,st,loc)	SetValueStringWithLength((val),(st),strlen(st),(loc))
+#define	SetValueLBS(val,lbs)		SetValueBinary((val),LBS_Body(lbs),LBS_Size(lbs))
 
 #endif

@@ -839,67 +839,94 @@ ENTER_FUNC;
 		rc = TRUE;
 	} else {
 		ValueIsNonNil(val);
-		switch	(ValueType(val)) {
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-			size = slen + 1;
-			if		(  size  >  ValueStringSize(val)  ) {
-				if		(  ValueString(val)  !=  NULL  ) {
-					xfree(ValueString(val));
-				}
-				ValueStringSize(val) = size;
-				ValueString(val) = (char *)xmalloc(size);
+	}
+	switch	(ValueType(val)) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		size = slen + 1;
+		if		(  size  >  ValueStringSize(val)  ) {
+			if		(  ValueString(val)  !=  NULL  ) {
+				xfree(ValueString(val));
 			}
-			memclear(ValueString(val),ValueStringSize(val));
-			strcpy(ValueString(val),str);
-			if		(  ValueType(val)  ==  GL_TYPE_TEXT  ) {
-				ValueStringLength(val) = slen;
-			}
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_BYTE:
-			size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
-			memcpy(ValueByte(val),str,size);
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_BINARY:
-			if		(  slen  >  ValueByteSize(val)  ) {
-				if		(  ValueByte(val)  !=  NULL  ) {
-					xfree(ValueByte(val));
-				}
-				ValueByteSize(val) = slen;
-				ValueByte(val) = (char *)xmalloc(slen);
-			}
-			memclear(ValueByte(val),ValueByteSize(val));
-			memcpy(ValueByte(val),str,slen);
-			ValueByteLength(val) = slen;
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_NUMBER:
-			memcpy(&ValueFixed(val),str,sizeof(Fixed));
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_INT:
-			memcpy(&ValueInteger(val),str,sizeof(int));
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_OBJECT:
-			memcpy(ValueObject(val),str,sizeof(MonObjectType));
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_FLOAT:
-			memcpy(&ValueFloat(val),str,sizeof(double));
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_BOOL:
-			memcpy(&ValueBool(val),str,sizeof(Bool));
-			rc = TRUE;
-			break;
-		  default:
-			rc = FALSE;	  
+			ValueStringSize(val) = size;
+			ValueString(val) = (char *)xmalloc(size);
 		}
+		memclear(ValueString(val),ValueStringSize(val));
+		if		(  str  !=  NULL  ) {
+			strcpy(ValueString(val),str);
+		}
+		if		(  ValueType(val)  ==  GL_TYPE_TEXT  ) {
+			ValueStringLength(val) = slen;
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_BYTE:
+		size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
+		memclear(ValueByte(val),ValueByteSize(val));
+		if		(  str  !=  NULL  ) {
+			memcpy(ValueByte(val),str,size);
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_BINARY:
+		if		(  slen  >  ValueByteSize(val)  ) {
+			if		(  ValueByte(val)  !=  NULL  ) {
+				xfree(ValueByte(val));
+			}
+			ValueByteSize(val) = slen;
+			ValueByte(val) = (char *)xmalloc(slen);
+		}
+		memclear(ValueByte(val),ValueByteSize(val));
+		if		(  str  !=  NULL  ) {
+			memcpy(ValueByte(val),str,slen);
+		}
+		ValueByteLength(val) = slen;
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  str  !=  NULL  ) {
+			memcpy(&ValueFixed(val),str,sizeof(Fixed));
+		} else {
+			memclear(&ValueFixed(val),sizeof(Fixed));
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_INT:
+		if		(  str  !=  NULL  ) {
+			memcpy(&ValueInteger(val),str,sizeof(int));
+		} else {
+			memclear(&ValueInteger(val),sizeof(int));
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_OBJECT:
+		if		(  str  !=  NULL  ) {
+			memcpy(ValueObject(val),str,sizeof(MonObjectType));
+		} else {
+			memclear(ValueObject(val),sizeof(MonObjectType));
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_FLOAT:
+		if		(  str  !=  NULL  ) {
+			memcpy(&ValueFloat(val),str,sizeof(double));
+		} else {
+			memclear(&ValueFloat(val),sizeof(double));
+		}
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_BOOL:
+		if		(  str  !=  NULL  ) {
+			memcpy(&ValueBool(val),str,sizeof(Bool));
+		} else {
+			memclear(&ValueBool(val),sizeof(Bool));
+		}
+		rc = TRUE;
+		break;
+	  default:
+		rc = FALSE;	  
 	}
 LEAVE_FUNC;
 	return	(rc);
@@ -961,3 +988,4 @@ ENTER_FUNC;
 LEAVE_FUNC;
 	return	(ValueStrBody(val));
 }
+
