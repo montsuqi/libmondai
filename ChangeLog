@@ -1,3 +1,7 @@
+2003-05-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/ : options.c, options.h, options.docを削除した(ここにあるべきではない)
+
 2003-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/DDparser.c (ParValue): 多次元定義体の処理(間違っていた)

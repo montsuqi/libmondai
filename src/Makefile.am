@@ -6,7 +6,6 @@ libmondai_la_LDFLAGS	=	\
 
 libmondaiincludedir = $(includedir)/libmondai
 libmondaiinclude_HEADERS =	\
-	option.h		\
 	misc.h			\
 	LBSfunc.h		\
 	OpenCOBOL_v.h	\
@@ -28,7 +27,6 @@ INCLUDES 			= 		\
 	$(FIXED_CFLAGS)
 
 libmondai_la_SOURCES	=			\
-	option.c		option.h		\
 	misc.c			misc.h			\
 	LBSfunc.c		LBSfunc.h		\
 	cobolvalue.c	cobolvalue.h	\

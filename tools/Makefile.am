@@ -16,5 +16,5 @@ rec2copy_DEPENDENCIES	=	\
 	$(top_srcdir)/src/libmondai.la
 
 rec2copy_SOURCES	=	\
+	option.c	option.h	\
 	rec2copy.c
-
