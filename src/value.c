@@ -822,6 +822,9 @@ DuplicateValue(
 			ValueString(p) = (char *)xmalloc(ValueStringSize(template));
 			memclear(ValueString(p),ValueStringSize(template));
 		}
+        else {
+            ValueString(p) = NULL;
+        }
 		ValueStringLength(p) = ValueStringLength(template);
 		ValueStringSize(p) = ValueStringSize(template);
 		break;
@@ -831,6 +834,9 @@ DuplicateValue(
 			ValueByte(p) = (char *)xmalloc(ValueByteSize(template));
 			memclear(ValueByte(p),ValueByteSize(template));
 		}
+        else {
+            ValueByte(p) = NULL;
+        }
 		ValueByteLength(p) = ValueByteLength(template);
 		ValueByteSize(p) = ValueByteSize(template);
 		break;
