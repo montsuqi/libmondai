@@ -28,9 +28,10 @@ copies.
 //#define	SIZE_SQL		16384
 #define	SIZE_SQL		65538
 
+#define	SIZE_NUMBUF	60
+
 #include	<stdio.h>
 #include	<glib.h>
-#include	<numeric.h>
 #include	"types.h"
 #include	"LBSfunc.h"
 
@@ -174,15 +175,20 @@ extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
 
 extern	int			FixedToInt(Fixed *xval);
 extern	void		FloatToFixed(Fixed *xval, double fval);
+extern	void		IntToFixed(Fixed *xval, int ival);
 extern	double		FixedToFloat(Fixed *xval);
-
-extern	Numeric		FixedToNumeric(Fixed *xval);
-extern	char		*NumericToFixed(Numeric value, int precision, int scale);
+extern	Fixed		*NewFixed(int flen, int slen);
+extern	void		FreeFixed(Fixed *xval);
 
 extern	void		InitializeValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
 
+extern	int			ToInteger(ValueStruct *val);
+extern	double		ToFloat(ValueStruct *val);
+extern	Fixed		*ToFixed(ValueStruct *val);
+extern	Bool		ToBool(ValueStruct *val);
 extern	char		*ToString(ValueStruct *value);
+extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
 
 extern	void		FreeValueStruct(ValueStruct *val);
 extern	void		DumpValueStruct(ValueStruct *val);

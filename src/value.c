@@ -41,8 +41,6 @@ copies.
 #include	"hash.h"
 #include	"debug.h"
 
-#define	NUM_BUFF	60
-
 static	Chunk	*HashTables = NULL;
 
 extern	ValueStruct	*
@@ -141,6 +139,32 @@ FreeValueStruct(
 	}
 }
 
+extern	void
+FreeFixed(
+	Fixed	*xval)
+{
+	if		(  xval->sval  !=  NULL  ) {
+		xfree(xval->sval);
+	}
+	xfree(xval);
+}
+
+extern	Fixed	*
+NewFixed(
+	int		flen,
+	int		slen)
+{
+	Fixed	*xval;
+
+	xval = New(Fixed);
+	xval->flen = flen;
+	xval->slen = slen;
+	if		(  flen  >  0  ) {
+		xval->sval = (char *)xmalloc(flen+1);
+	}
+	return	(xval);
+}
+
 extern	ValueStruct	*
 GetRecordItem(
 	ValueStruct	*value,
@@ -176,6 +200,137 @@ GetArrayItem(
 		item = NULL;
 	}
 	return	(item);
+}
+
+extern	int
+ToInteger(
+	ValueStruct	*val)
+{
+	int		ret;
+
+	switch	(val->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		ret = atoi(ValueString(val));
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = FixedToInt(ValueFixed(val));
+		break;
+	  case	GL_TYPE_INT:
+		ret = ValueInteger(val);
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = (int)ValueFloat(val);
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = ValueBool(val);
+		break;
+	  default:
+		ret = 0;
+	}
+	return	(ret);
+}
+
+extern	double
+ToFloat(
+	ValueStruct	*val)
+{
+	double	ret;
+
+	switch	(val->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		ret = atof(ValueString(val));
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = FixedToFloat(ValueFixed(val));
+		break;
+	  case	GL_TYPE_INT:
+		ret = (double)ValueInteger(val);
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = ValueFloat(val);
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = (double)ValueBool(val);
+		break;
+	  default:
+		ret = 0;
+	}
+	return	(ret);
+}
+
+extern	Fixed	*
+ToFixed(
+	ValueStruct	*val)
+{
+	Fixed	*ret;
+	Fixed	*xval;
+
+	switch	(val->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		ret = NewFixed(0,0);
+		IntToFixed(ret,atoi(ValueString(val)));
+		break;
+	  case	GL_TYPE_NUMBER:
+		xval = ValueFixed(val);
+		ret = NewFixed(xval->flen,xval->slen);
+		strcpy(ret->sval,xval->sval);
+		break;
+	  case	GL_TYPE_INT:
+		ret = NewFixed(0,0);
+		IntToFixed(ret,ValueInteger(val));
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = NewFixed(SIZE_NUMBUF,(SIZE_NUMBUF / 2));
+		FloatToFixed(ret,ValueFloat(val));
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = NewFixed(0,0);
+		IntToFixed(ret,(int)ValueBool(val));
+		break;
+	  default:
+		ret = NewFixed(0,0);
+	}
+	return	(ret);
+}
+
+extern	Bool
+ToBool(
+	ValueStruct	*val)
+{
+	Bool	ret;
+
+	switch	(val->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		ret = ( *ValueString(val) == 'T' ) ? TRUE : FALSE;
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = FixedToInt(ValueFixed(val)) ? TRUE : FALSE;
+		break;
+	  case	GL_TYPE_INT:
+		ret = ValueInteger(val) ? TRUE : FALSE;
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = (int)ValueFloat(val) ? TRUE : FALSE;
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = ValueBool(val);
+		break;
+	  default:
+		ret = FALSE;
+	}
+	return	(ret);
 }
 
 extern	char	*
@@ -452,7 +607,7 @@ FloatToFixed(
 	Fixed	*xval,
 	double	fval)
 {
-	char	str[NUM_BUFF+1];
+	char	str[SIZE_NUMBUF+1];
 	char	*p
 	,		*q;
 	Bool	fMinus;
@@ -473,6 +628,29 @@ FloatToFixed(
 		}
 		p ++;
 	}
+	if		(  fMinus  ) {
+		*xval->sval |= 0x40;
+	}
+}
+
+extern	void
+IntToFixed(
+	Fixed	*xval,
+	int		ival)
+{
+	char	str[SIZE_NUMBUF+1];
+	Bool	fMinus;
+
+	if		(  ival  <  0  ) {
+		ival = - ival;
+		fMinus = TRUE;
+	} else {
+		fMinus = FALSE;
+	}
+	sprintf(str, "%d",ival);
+	xval->sval = StrDup(str);
+	xval->flen = strlen(str);
+	xval->slen = 0;
 	if		(  fMinus  ) {
 		*xval->sval |= 0x40;
 	}
@@ -598,83 +776,6 @@ SetValueFixed(
 		rc = FALSE;	  
 	}
 	return	(rc);
-}
-
-extern	Numeric
-FixedToNumeric(
-	Fixed	*xval)
-{
-	Numeric	value
-	,		value2;
-	Bool	fMinus;
-
-	if		(  ( xval->sval[0] & 0x40 )  !=  0  ) {
-		xval->sval[0] &= 0x3F;
-		fMinus = TRUE;
-	} else {
-		fMinus = FALSE;
-	}
-	value = NumericInput(xval->sval,xval->flen,xval->slen);
-	value2 = NumericShift(value,- xval->slen);
-	NumericFree(value);
-	if		(  fMinus  ) {
-		value = NumericUMinus(value2);
-		NumericFree(value2);
-	} else {
-		value = value2;
-	}
-	return	(value);
-}
-
-extern	char	*
-NumericToFixed(
-	Numeric	value,
-	int		precision,
-	int		scale)
-{
-	char	*fr
-	,		*to;
-	char	*p
-	,		*q;
-	char	*str;
-	size_t	len;
-	Bool	fMinus;
-
-	str = NumericOutput(value);
-	fr = str;
-	if		(  *fr  ==  '-'  ) {
-		fMinus = TRUE;
-		fr ++;
-	} else {
-		fMinus = FALSE;
-	}
-	to = (char *)xmalloc(precision+1);
-	memset(to,'0',precision);
-	to[precision] = 0;
-	if		(  ( p = strchr(fr,'.') )  !=  NULL  ) {
-		p ++;
-		q = to + ( precision - scale );
-		len = ( strlen(p) > scale ) ? scale : strlen(p);
-		for	( ; len > 0 ; len -- ) {
-			*q ++ = *p ++;
-		}
-	}
-	if		(  ( p = strchr(fr,'.') )  !=  NULL  ) {
-		p --;
-	} else {
-		p = fr + strlen(fr) - 1;
-	}
-	q = to + ( precision - scale ) - 1;
-	len = ( ( p - fr + 1 ) > ( precision - scale ) )
-		? ( precision - scale ) : ( p - fr + 1 );
-	for	( ; len > 0 ; len -- ) {
-		*q -- = *p --;
-	}
-	if		(  fMinus  ) {
-		*to |= 0x40;
-	}
-	xfree(str);
-	return	(to);
 }
 
 extern	ValueStruct	*
@@ -871,6 +972,39 @@ dbgmsg(">InitializeValue");
 		break;
 	}
 dbgmsg("<InitializeValue");
+}
+
+extern	void
+MoveValue(
+	ValueStruct	*to,
+	ValueStruct	*from)
+{
+	Fixed	*xval;
+
+	switch	(to->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		SetValueString(to,ToString(from));
+		break;
+	  case	GL_TYPE_NUMBER:
+		xval = ToFixed(from);
+		SetValueFixed(to,xval);
+		FreeFixed(xval);
+		break;
+	  case	GL_TYPE_INT:
+		SetValueInteger(to,ToInteger(from));
+		break;
+	  case	GL_TYPE_FLOAT:
+		SetValueFloat(to,ToFloat(from));
+		break;
+	  case	GL_TYPE_BOOL:
+		SetValueBool(to,ToBool(from));
+		break;
+	  default:
+		break;
+	}
 }
 
 extern	void

@@ -13,6 +13,7 @@ libmondaiinclude_HEADERS =	\
 	Native_v.h		\
 	cobolvalue.h	\
 	others.h		\
+	numerici.h		\
 	hash.h			\
 	value.h			\
 	valueconv.h		\
@@ -22,9 +23,9 @@ libmondaiinclude_HEADERS =	\
 	types.h
 
 INCLUDES 			= 		\
-	-I$(top_srcdir)			\
 	$(GLIB_CFLAGS) 			\
-	$(FIXED_CFLAGS)
+	$(FIXED_CFLAGS)			\
+	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=			\
 	misc.c			misc.h			\
@@ -36,6 +37,7 @@ libmondai_la_SOURCES	=			\
 	hash.c			hash.h			\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
+	numerici.c		numerici.h		\
 	others.c		others.h		\
 	SQLlex.c		SQLlex.h		\
 	SQLparser.c		SQLparser.h		\

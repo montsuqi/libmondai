@@ -1,3 +1,9 @@
+2003-05-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/numerici. : value.cから分離
+
+	* src/value.c : Fixed関係関数の追加
+
 2003-05-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/SQLparser.c (ParSQL): 「名前」に予約語が使えるようにした
