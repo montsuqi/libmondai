@@ -22,6 +22,8 @@ copies.
 #ifndef	_INC_LBSFUNC_H
 #define	_INC_LBSFUNC_H
 
+#include	"types.h"
+
 typedef	struct {
 	size_t	ptr
 	,		size;

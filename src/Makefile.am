@@ -21,7 +21,8 @@ libmondaiinclude_HEADERS =	\
 	comms.h			\
 	tcp.h			\
 	pty.h			\
-	queue.h
+	queue.h			\
+	types.h
 
 INCLUDES 			= 		\
 	-I$(top_srcdir)			\
@@ -45,4 +46,5 @@ libmondai_la_SOURCES	=		\
 	comms.c			comms.h			\
 	tcp.c			tcp.h			\
 	pty.c			pty.h			\
-	queue.c			queue.h
+	queue.c			queue.h			\
+	types.h

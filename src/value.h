@@ -28,8 +28,10 @@ copies.
 //#define	SIZE_SQL		16384
 #define	SIZE_SQL		65538
 
+#include	<stdio.h>
 #include	<glib.h>
 #include	<numeric.h>
+#include	"types.h"
 #include	"LBSfunc.h"
 
 #ifndef	PacketClass
