@@ -1,3 +1,11 @@
+2005-01-23  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): 名前の先頭に_を許す
+
+2005-01-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c: CSV, SQLには末尾の\0も数に入れる
+
 2005-01-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.c (CompareValue): ValueStructの値の比較関数

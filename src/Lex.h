@@ -43,6 +43,7 @@ typedef	struct	INCFILE_S	{
 	int					cLine;
 	char				*fn;
 }	INCFILE;
+
 typedef	struct	_CURFILE_S {
 	struct	_CURFILE_S	*next;
 	GHashTable			*Reserved;
@@ -87,6 +88,5 @@ extern	void			SetReserved(CURFILE *in, GHashTable *res);
 #define	ComToken		(in->Token)
 #define	ComInt			(in->Int)
 #define	ComSymbol		(in->Symbol)
-#define	MoveSymbol(to)	((to) = in->Symbol, in->Symbol = NULL)
 
 #endif

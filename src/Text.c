@@ -38,6 +38,7 @@ copies.
 #include	"types.h"
 #include	"misc_v.h"
 #include	"monstring.h"
+#include	"memory_v.h"
 #include	"others.h"
 #include	"value.h"
 #include	"getset.h"
@@ -287,7 +288,7 @@ CSV1_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff));
+	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff)+1);
 }
 
 extern	size_t
@@ -297,7 +298,7 @@ CSV2_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff)+1);
 }
 
 extern	size_t
@@ -307,7 +308,7 @@ CSV3_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff));
+	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff)+1);
 }
 
 extern	size_t
@@ -317,7 +318,7 @@ CSVE_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff)+1);
 }
 
 static	size_t
@@ -903,11 +904,11 @@ _RFC822_UnPackValueNamed(
 	char	*vname
 	,		*rname;
 	byte	*q
-	,		*pp
-	,		ch;
+		,	*pp;
 	ValueStruct	*e;
 	size_t	len;
 
+ENTER_FUNC;
 	pp = p;
 	if		(  value  !=  NULL  ) {
 		while	(  *p  !=  0  ) {
@@ -935,10 +936,9 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_TEXT:
 					  case	GL_TYPE_BYTE:
 					  case	GL_TYPE_BINARY:
-						ch = *p;
 						*p = 0;
+printf("buff = [%s]\n",q);
 						len = DecodeString(opt,buff,q);
-						*p = ch;
 						buff[len] = 0;
 						SetValueString(e,buff,ConvCodeset(opt));
 						break;
@@ -947,10 +947,8 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_INT:
 					  case	GL_TYPE_FLOAT:
 					  case	GL_TYPE_OBJECT:
-						ch = *p;
 						*p = 0;
 						SetValueString(e,q,ConvCodeset(opt));
-						*p = ch;
 						break;
 					  default:
 						break;
@@ -962,6 +960,7 @@ _RFC822_UnPackValueNamed(
 			}
 		}
 	}					
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
@@ -974,11 +973,15 @@ RFC822_UnPackValue(
 	size_t	ret;
 	char	buff[SIZE_BUFF];
 
+ENTER_FUNC;
+	p = StrDup(p);
 	if		(  opt->fName  ) {
 		ret = _RFC822_UnPackValueNamed(opt,p,value,buff);
 	} else {
 		ret = _RFC822_UnPackValueNoNamed(opt,p,value,buff);
 	}
+	xfree(p);
+LEAVE_FUNC;
 	return	(ret);
 }
 
@@ -995,6 +998,7 @@ _RFC822_PackValue(
 	char	*str;
 	byte	*pp;
 
+ENTER_FUNC;
 	pp = p;
 	if		(  value  !=  NULL  ) {
 		if		(  name  ==  NULL  ) { 
@@ -1044,6 +1048,7 @@ _RFC822_PackValue(
 		}
 	}
 	*p = 0;
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
@@ -1057,6 +1062,7 @@ RFC822_PackValue(
 	,		longname[SIZE_LONGNAME+1];
 	size_t	ret;
 
+ENTER_FUNC;
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
@@ -1065,6 +1071,7 @@ RFC822_PackValue(
 	if		(  ret  >  0  ) {
 		*(p+ret-1) = 0;
 	}
+LEAVE_FUNC;
 	return	(ret);
 }
 

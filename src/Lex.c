@@ -462,7 +462,8 @@ ENTER_FUNC;
 		}
 		break;
 	  default:
-		if		(  isalpha(c)  ) {
+		if		(	(  isalpha(c)  )
+				||	(  c  ==  '_'  ) ) {
 			p = GetPos(in)-1;
 			do {
 				c = GetChar(in);

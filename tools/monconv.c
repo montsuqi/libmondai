@@ -134,6 +134,7 @@ main(
 				   "\tCSV3(string delimitd by \"\")\n"
 				   "\tCSVE(Excel type CSV)\n"
 				   "\tCSV(same as CSV3)\n"
+				   "\tSQL(SQL type)\n"
 				   "\tXML1(tag is data class)\n"
 				   "\tXML2(tag is data name)\n"
 				   "\tCGI('name=value&...)\n"

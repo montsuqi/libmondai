@@ -131,6 +131,10 @@ dbgmsg(">SetLanguage");
 		PackValue = func->PackValue;
 		UnPackValue = func->UnPackValue;
 		SizeValue = func->SizeValue;
+	} else {
+		PackValue = NULL;
+		UnPackValue = NULL;
+		SizeValue = NULL;
 	}
 dbgmsg("<SetLanguage");
 }

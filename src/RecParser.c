@@ -63,6 +63,7 @@ copies.
 #define	T_VIRTUAL		(T_YYBASE +13)
 #define	T_ALIAS			(T_YYBASE +14)
 #define	T_BINARY		(T_YYBASE +15)
+#define	T_UNIQ			(T_YYBASE +16)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -82,6 +83,7 @@ static	TokenTable	tokentable[] = {
 	{	"dbcode"	,T_DBCODE	},
 	{	"virtual"	,T_VIRTUAL	},
 	{	"alias"		,T_ALIAS	},
+	{	"uniq"		,T_UNIQ		},
 	{	""			,0	}
 };
 
@@ -359,6 +361,9 @@ ENTER_FUNC;
 				break;
 			  case	T_VIRTUAL:
 				attr |= GL_ATTR_VIRTUAL;
+				break;
+			  case	T_UNIQ:
+				attr |= GL_ATTR_UNIQ;
 				break;
 			  default:
 				Error("invalid attribute modifier");

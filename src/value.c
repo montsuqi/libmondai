@@ -747,6 +747,90 @@ LEAVE_FUNC;
 	return	(res);
 }
 
+/*
+ *	compare structure
+ */
+extern	Bool
+EqualValue(
+	ValueStruct	*vl,
+	ValueStruct	*vr)
+{
+	int		i;
+	Bool	ret;
+
+ENTER_FUNC;
+	if		(  ValueType(vl)  ==  ValueType(vr)  ) {
+		ret = TRUE;
+		switch	(ValueType(vl)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+			if		(  ValueStringSize(vl)  ==  ValueStringSize(vr)  ) {
+				ret = TRUE;
+			} else {
+				ret = FALSE;
+			}
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			if		(  ValueByteSize(vl)  ==  ValueByteSize(vr)  ) {
+				ret = TRUE;
+			} else {
+				ret = FALSE;
+			}
+			break;
+		  case	GL_TYPE_NUMBER:
+			if		(	(  ValueFixedLength(vl)  ==  ValueFixedLength(vr)  )
+					&&	(  ValueFixedSlen(vl)    ==  ValueFixedSlen(vr)    ) ) {
+				ret = TRUE;
+			} else {
+				ret = FALSE;
+			}
+			break;
+		  case	GL_TYPE_ARRAY:
+			if		(  ValueArraySize(vl)  !=  ValueArraySize(vr)  ) {
+				ret = FALSE;
+			} else
+			for	( i = 0 ; i < ValueArraySize(vr) ; i ++ ) {
+				if		(  !EqualValue(ValueArrayItem(vl,i),ValueArrayItem(vr,i))  ) {
+					ret = FALSE;
+					break;
+				}
+			}
+			break;
+		  case	GL_TYPE_VALUES:
+			if		(  ValueValuesSize(vl)  !=  ValueValuesSize(vr)  ) {
+				ret = FALSE;
+			} else
+			for	( i = 0 ; i < ValueValuesSize(vr) ; i ++ ) {
+				if		(  !EqualValue(ValueValuesItem(vl,i),ValueValuesItem(vr,i))  ) {
+					ret = FALSE;
+					break;
+				}
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			if		(  ValueRecordSize(vl)  !=  ValueRecordSize(vr)  ) {
+				ret = FALSE;
+			} else
+			for	( i = 0 ; i < ValueRecordSize(vr) ; i ++ ) {
+				if		(	(  strcmp(ValueRecordName(vl,i),ValueRecordName(vr,i))  !=  0  )
+						||	(  !EqualValue(ValueRecordItem(vl,i),ValueRecordItem(vr,i))  ) ) {
+					ret = FALSE;
+					break;
+				}
+			}
+			break;
+		  default:
+			break;
+		}
+	} else {
+		ret = FALSE;
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
 extern	ValueStruct	**
 MakeValueArray(
 	ValueStruct	*template,

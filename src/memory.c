@@ -97,7 +97,7 @@ _xfree(
 	g_hash_table_remove(PoolHash,p);
 	area = (size_t *)p;
 	total -= area[-1];
-	printf("xfree %d byte in %s(%d)\n",(int)area[-1],fn,line);
+	printf("xfree %p %d byte in %s(%d)\n",p,(int)area[-1],fn,line);
 	free(&area[-1]);
 #else
 	if		(  p  ==  NULL  )	return;
