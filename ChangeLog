@@ -1,3 +1,7 @@
+2003-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/misc.c (StringChop): 追加
+
 2003-06-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.c: 虫取りと一部関数のマクロ化およびデータアクセスマクロの追加

@@ -306,6 +306,21 @@ IntStrDup(
 }
 
 extern	void
+StringChop(
+	char	*str)
+{
+	char	*p;
+
+	p = str + strlen(str) - 1;
+	while	(	(  *p  ==  '\r'  )
+			||	(  *p  ==  '\n'  ) ) {
+		*p = 0;
+		if		(  p  ==  str  )	break;
+		p --;
+	}
+}
+
+extern	void
 MakeCobolX(
 	char	*to,
 	size_t	len,

@@ -56,6 +56,7 @@ extern	int		strnicmp(char *s1, char *s2, size_t l);
 #endif
 extern	char	*StrDup(char *s);
 extern	char	*IntStrDup(int val);
+extern	void	StringChop(char *str);
 extern	long	StrToInt(char *str, size_t len);
 extern	long	HexToInt(char *str, size_t len);
 extern	char	*IntToStr(char *str, long val, size_t len);
