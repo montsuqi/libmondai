@@ -1,3 +1,7 @@
+2004-02-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: nil objectの処理を追加
+
 2004-02-02  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/dotCOBOL.c (dotCOBOL_PackValue), src/OpenCOBOL.c (OpenCOBOL_PackValue): 

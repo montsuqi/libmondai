@@ -74,9 +74,6 @@ dbgmsg(">NativeUnPackValue");
 			fprintf(stdout,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 		}
 		ValueAttribute(value) = attr;
-#if	0
-		ValueIsNonNil(value);
-#endif
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
@@ -140,7 +137,9 @@ dbgmsg(">NativeUnPackValue");
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectSource(value) = *(int *)p;
+			if		(  ( ValueObjectSource(value) = *(int *)p )  ==  GL_OBJ_INACTIVE  ) {
+				ValueIsNil(value);
+			}
 			p += sizeof(int);
 			ValueObjectID(value) = *(OidType *)p;
 			p += sizeof(OidType);
@@ -245,7 +244,11 @@ dbgmsg(">NativePackValue");
 			p += size;
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(int *)p = ValueObjectSource(value);
+			if		(  IS_VALUE_NIL(value)  ) {
+				*(int *)p = GL_OBJ_INACTIVE;
+			} else {
+				*(int *)p = ValueObjectSource(value);
+			}
 			p += sizeof(int);
 			*(OidType *)p = ValueObjectID(value);
 			p += sizeof(OidType);
