@@ -593,7 +593,17 @@ dbgmsg(">InitializeValue");
 		FreeLBS(ValueStr(value));
 	}
 	ValueStr(value) = NULL;
-	ValueIsNil(value);
+
+    switch (ValueType(value)) {
+	  case	GL_TYPE_ARRAY:
+	  case	GL_TYPE_VALUES:
+	  case	GL_TYPE_RECORD:
+	  case	GL_TYPE_ALIAS:
+        break;
+      default:
+        ValueIsNil(value);
+        break;
+    }
 	switch	(ValueType(value)) {
 	  case	GL_TYPE_INT:
 		ValueInteger(value) = 0;
