@@ -52,19 +52,19 @@ extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
-#define	RewindLBS(lbs)			((lbs)->ptr = 0)
-#define	LBS_Peek(lbs)			((lbs)->body[(lbs)->ptr])
+#define	RewindLBS(lbs)			(((LargeByteString *)lbs)->ptr = 0)
+#define	LBS_Peek(lbs)			(((LargeByteString *)lbs)->body[((LargeByteString *)lbs)->ptr])
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitChar(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitEnd(lbs)		LBS_Emit((lbs),0);
 #define	LBS_Clear(lbs)			LBS_EmitStart(lbs)
-#define	LBS_Size(lbs)			((lbs)->size)
+#define	LBS_Size(lbs)			(((LargeByteString *)lbs)->size)
 #define	LBS_StringLength(lbs)	LBS_Size(lbs)
 #define	LBS_Body(lbs)			((void *)((LargeByteString *)lbs)->body)
 
-#define	LBS_Ptr(lbs)			(&(lbs)->body[(lbs)->ptr])
-#define	LBS_GetPos(lbs)			((lbs)->ptr)
-#define	LBS_SetPos(lbs,pos)		((lbs)->ptr = (pos))
-#define	LBS_Eof(lbs)			((lbs)->ptr >= (lbs)->size)
+#define	LBS_Ptr(lbs)			(&((LargeByteString *)lbs)->body[((LargeByteString *)lbs)->ptr])
+#define	LBS_GetPos(lbs)			(((LargeByteString *)lbs)->ptr)
+#define	LBS_SetPos(lbs,pos)		(((LargeByteString *)lbs)->ptr = (pos))
+#define	LBS_Eof(lbs)			(((LargeByteString *)lbs)->ptr >= ((LargeByteString *)lbs)->size)
 #endif
