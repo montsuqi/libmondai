@@ -92,18 +92,24 @@ _Error(
 #define	GetSymbol	(DD_Token = DD_Lex(FALSE))
 #define	GetName		(DD_Token = DD_Lex(TRUE))
 
+typedef	struct _ArrayDimension	{
+	int		count;
+	struct	_ArrayDimension	*next;
+}	ArrayDimension;
+
 static	void
 ParValue(
 	ValueStruct	*upper)
 {
 	size_t		size
-	,			ssize
-	,			count;
+	,			ssize;
 	char		name[SIZE_SYMBOL+1];
 	ValueStruct	*value
 	,			*array;
 	ValueAttributeType	attr;
 	int			token;
+	ArrayDimension	*next
+	,				*curr;
 
 dbgmsg(">ParValue");
 	value = NULL;
@@ -208,27 +214,36 @@ dbgmsg(">ParValue");
 			Error("not supported");
 			break;
 		}
+		next = NULL;
 		while	(  DD_Token  ==  '['  ) {	
+			curr = New(ArrayDimension);
 			if		(  GetSymbol  == T_ICONST  ) {
-				count = DD_ComInt;
+				curr->count = DD_ComInt;
 				GetSymbol;
 			} else {
-				count = 0;
+				curr->count = 0;
 			}
+			curr->next = next;
+			next = curr;
 			if		(  DD_Token  !=  ']'  ) {
 				Error("unmatch lbracket");
 				break;
 			}
 			GetSymbol;
+		}
+		for	( curr = next ; curr != NULL ; ) {
 			array = New(ValueStruct);
 			array->type = GL_TYPE_ARRAY;
 			array->attr = GL_ATTR_NULL;
-			array->body.ArrayData.count = count;
-			if		(  count  >  0  ) {
-				array->body.ArrayData.item = MakeValueArray(value,count);
+			array->body.ArrayData.count = curr->count;
+			if		(  curr->count  >  0  ) {
+				array->body.ArrayData.item = MakeValueArray(value,curr->count);
 			} else {
 				array->body.ArrayData.item = MakeValueArray(value,1);
 			}
+			next = curr->next;
+			xfree(curr);
+			curr = next;
 			value = array;
 		}
 		while	(  DD_Token  ==  ','  ) {

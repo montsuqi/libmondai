@@ -12,6 +12,9 @@ INCLUDES 			= 		\
 	$(GLIB_CFLAGS)			\
 	$(FIXED_CFLAGS)
 
+rec2copy_DEPENDENCIES	=	\
+	$(top_srcdir)/src/libmondai.la
+
 rec2copy_SOURCES	=	\
 	rec2copy.c
 

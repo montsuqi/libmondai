@@ -1,3 +1,7 @@
+2003-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (ParValue): 多次元定義体の処理(間違っていた)
+
 2003-05-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* tools/rec2copy.c (_COBOL): COBOL二次元配列問題対応

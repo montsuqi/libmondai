@@ -300,6 +300,7 @@ MakeFromRecord(
 {
 	RecordStruct	*rec;
 
+dbgmsg(">MakeFromRecord");
 	level = 1;
 	DD_ParserInit();
 	if		(  ( rec = DD_ParserDataDefines(name) )  !=  NULL  ) {
@@ -317,6 +318,7 @@ MakeFromRecord(
 		}
 		printf(".\n");
 	}
+dbgmsg("<MakeFromRecord");
 }
 
 static	ARG_TABLE	option[] = {
