@@ -433,7 +433,7 @@ DumpValueStruct(
 		}
 	}
 }
-
+#define	_dbgmsg(s)		printf("%s:%d:%s\n",__FILE__,__LINE__,(s));fflush(stdout);
 extern	void
 InitializeValue(
 	ValueStruct	*value)
@@ -446,7 +446,6 @@ ENTER_FUNC;
 		FreeLBS(ValueStr(value));
 	}
 	ValueStr(value) = NULL;
-
     switch (ValueType(value)) {
 	  case	GL_TYPE_ARRAY:
 	  case	GL_TYPE_VALUES:
@@ -651,6 +650,55 @@ LEAVE_FUNC;
 }
 
 /*
+ *	assign compatible structure
+ */
+extern	void
+AssignValue(
+	ValueStruct	*vd,
+	ValueStruct	*vs)
+{
+	int		i;
+
+ENTER_FUNC;
+	if		(  vd  ==  NULL  )	return;
+	if		(  vs  ==  NULL  )	return;
+	switch	(ValueType(vd)) {
+	  case	GL_TYPE_INT:
+	  case	GL_TYPE_FLOAT:
+	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_OBJECT:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+	  case	GL_TYPE_NUMBER:
+		SetValueString(vd,ValueToString(vs,NULL),NULL);
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(vs) ; i ++ ) {
+			AssignValue(ValueArrayItem(vd,i),ValueArrayItem(vs,i));
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(vs) ; i ++ ) {
+			AssignValue(ValueValuesItem(vd,i),ValueValuesItem(vs,i));
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(vs) ; i ++ ) {
+			AssignValue(ValueRecordItem(vd,i),ValueRecordItem(vs,i));
+		}
+		break;
+	  case	GL_TYPE_ALIAS:
+	  default:
+		break;
+	}
+LEAVE_FUNC;
+}
+
+/*
  *	compare same structure
  */
 extern	int
@@ -660,6 +708,10 @@ CompareValue(
 {
 	int		i;
 	int		res;
+	Fixed	*fl
+		,	*fr;
+	Numeric	nl
+		,	nr;
 
 ENTER_FUNC;
 	res = 0;
@@ -674,30 +726,32 @@ ENTER_FUNC;
 	} else
 	if		(  IS_VALUE_NIL(vr)  )	{
 		res = 1;
+#if	0
 	} else
 	if		(  ( ValueType(vl) - ValueType(vr) )  !=  0  ) {
 		res = ValueType(vl) - ValueType(vr);
+#endif
 	} else
-	switch	(ValueType(vr)) {
+	switch	(ValueType(vl)) {
 	  case	GL_TYPE_INT:
 		if		(  IS_VALUE_DESC(vr)  ) {
-			res = ValueInteger(vr) - ValueInteger(vl);
+			res = ValueToInteger(vr) - ValueToInteger(vl);
 		} else {
-			res = ValueInteger(vl) - ValueInteger(vr);
+			res = ValueToInteger(vl) - ValueToInteger(vr);
 		}
 		break;
 	  case	GL_TYPE_FLOAT:
 		if		(  IS_VALUE_DESC(vr)  ) {
-			res = (int)(ValueFloat(vr) - ValueFloat(vl));
+			res = (int)(ValueToFloat(vr) - ValueToFloat(vl));
 		} else {
-			res = (int)(ValueFloat(vl) - ValueFloat(vr));
+			res = (int)(ValueToFloat(vl) - ValueToFloat(vr));
 		}
 		break;
 	  case	GL_TYPE_BOOL:
 		if		(  IS_VALUE_DESC(vr)  ) {
-			res = (int)(ValueBool(vr) - ValueBool(vl));
+			res = (int)(ValueToBool(vr) - ValueToBool(vl));
 		} else {
-			res = (int)(ValueBool(vl) - ValueBool(vr));
+			res = (int)(ValueToBool(vl) - ValueToBool(vr));
 		}
 		break;
 	  case	GL_TYPE_TEXT:
@@ -713,11 +767,19 @@ ENTER_FUNC;
 		}
 		break;
 	  case	GL_TYPE_NUMBER:
+		fl = ValueToFixed(vl);
+		fr = ValueToFixed(vr);
+		nl = FixedToNumeric(fl);
+		nr = FixedToNumeric(fr);
 		if		(  IS_VALUE_DESC(vr)  ) {
-			res = NumericCmp(FixedToNumeric(&ValueFixed(vr)),FixedToNumeric(&ValueFixed(vl)));
+			res = NumericCmp(nr,nl);
 		} else {
-			res = NumericCmp(FixedToNumeric(&ValueFixed(vl)),FixedToNumeric(&ValueFixed(vr)));
+			res = NumericCmp(nl,nr);
 		}
+		NumericFree(nl);
+		NumericFree(nr);
+		FreeFixed(fl);
+		FreeFixed(fr);
 		break;
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(vr) ; i ++ ) {

@@ -1,3 +1,7 @@
+2005-03-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (AssignValue): 代入用関数
+
 2005-01-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Lex.c (Lex): 名前の先頭に_を許す

@@ -221,6 +221,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
+			RewindLBS(ValueStr(val));
 			LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 								  ValueStringSize(val),
 								  ValueStringLength(val),codeset);
@@ -594,7 +595,7 @@ ENTER_FUNC;
 				rc = TRUE;
 				break;
 			  case	GL_TYPE_BOOL:
-				ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
+				ValueBool(val) = ( toupper(*str) == 'T' ) ? TRUE : FALSE;
 				rc = TRUE;
 				break;
 			  default:

@@ -69,7 +69,7 @@ static	ConvFuncs	funcs[] = {
 	{	"RFC822",				FALSE,	"\n",					"\n",
 		RFC822_PackValue,		RFC822_UnPackValue,		RFC822_SizeValue	},
 
-	{	"SQL",					FALSE,	"\n",					"\n",
+	{	"SQL",					FALSE,	",",					"\n",
 		SQL_PackValue,			SQL_UnPackValue,		SQL_SizeValue		},
 
 	{	"CGI",					FALSE,	"&",					"\n",
