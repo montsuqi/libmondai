@@ -315,12 +315,12 @@ SetValueStringWithLength(
 	,		sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
+	char	*q;
 #ifdef	WITH_I18N
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
-	char	*q
-	,		*istr;
+	char	*istr;
 #endif
 
 	if		(  val  ==  NULL  ) {
