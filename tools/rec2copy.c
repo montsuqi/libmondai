@@ -307,8 +307,8 @@ MakeFromRecord(
 
 dbgmsg(">MakeFromRecord");
 	level = 1;
-	DD_ParserInit();
-	if		(  ( value = DD_ParseValue(name,&ValueName) )  !=  NULL  ) {
+	RecParserInit();
+	if		(  ( value = RecParseValue(name,&ValueName) )  !=  NULL  ) {
 		PutLevel(level,TRUE);
 		if		(  *RecName  ==  0  ) {
 			PutString(ValueName);

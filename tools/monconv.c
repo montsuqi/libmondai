@@ -140,9 +140,9 @@ main(
 				   "\tRFC822('name: value\\n')\n"
 		);
 
-	DD_ParserInit();
+	RecParserInit();
 	if		(	(  fl->name  ==  NULL  )
-			||	(  ( rec = DD_ParseValue(fl->name,&ValueName) )  ==  NULL  ) ) {
+			||	(  ( rec = RecParseValue(fl->name,&ValueName) )  ==  NULL  ) ) {
 		fprintf(stderr,"can not found %s input record define.\n",fl->name);
 		exit(1);
 	}
