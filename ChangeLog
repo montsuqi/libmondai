@@ -205,6 +205,10 @@
 
 	* src/Lex.c: 再入可能にして汎用ライブラリにした
 
+2004-09-29  Noboru Saitou  <noborus@netlab.jp>
+
+        * Ver 1.2.2 release
+
 2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* tools/Makefile.am (LDADD): make distcheckが通るようにした。
