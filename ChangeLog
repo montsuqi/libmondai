@@ -1,3 +1,7 @@
+2003-05-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (ParPort): hostがない時にlocalhostとみなす
+
 2003-04-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.h: asizeの管理を追加、sizeは「使った大きさ」にした

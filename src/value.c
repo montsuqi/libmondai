@@ -977,6 +977,9 @@ ParPort(
 			}
 		}
 	}
+	if		(  *ret->host  ==  0  ) {
+		ret->host = "localhost";
+	}
 	return	(ret);
 }
 
