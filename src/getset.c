@@ -55,6 +55,9 @@ ValueToInteger(
 {
 	int		ret;
 
+	if		(  val  ==  NULL  ) {
+		ret = 0;
+	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
@@ -85,7 +88,10 @@ ValueToFloat(
 {
 	double	ret;
 
-	switch	(val->type) {
+	if		(  val  ==  NULL  ) {
+		ret = 0;
+	} else
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
@@ -116,6 +122,9 @@ ValueToFixed(
 	Fixed	*ret;
 	Fixed	*xval;
 
+	if		(  val  ==  NULL  ) {
+		ret = NewFixed(0,0);
+	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
@@ -142,6 +151,7 @@ ValueToFixed(
 		break;
 	  default:
 		ret = NewFixed(0,0);
+		break;
 	}
 	return	(ret);
 }
@@ -152,6 +162,9 @@ ValueToBool(
 {
 	Bool	ret;
 
+	if		(  val  ==  NULL  ) {
+		ret = FALSE;
+	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
@@ -187,112 +200,118 @@ ValueToString(
 	,		*q;
 	int		i;
 	int		size;
+	char	*ret;
 
 ENTER_FUNC;
-	dbgprintf("type = %X\n",(int)ValueType(val));
-	if		(  ValueStr(val)  ==  NULL  ) {
-		ValueStr(val) = NewLBS();
-	}
-	LBS_EmitStart(ValueStr(val));
-	if		(  IS_VALUE_NIL(val)  ) {
-		LBS_EmitChar(ValueStr(val),CHAR_NIL);
-	} else
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-		LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
-							  ValueStringSize(val),
-							  ValueStringLength(val),codeset);
-		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
-			for	(  ; size > 0 ; size -- ) {
-				LBS_EmitChar(ValueStr(val),0);
-			}
+	if		(  val  ==  NULL  ) {
+		ret = "0x01";
+	} else {
+		dbgprintf("type = %X\n",(int)ValueType(val));
+		if		(  ValueStr(val)  ==  NULL  ) {
+			ValueStr(val) = NewLBS();
 		}
-		break;
-	  case	GL_TYPE_TEXT:
-		if		(  ValueString(val)  !=  NULL  ) {
-			if		(  codeset  ==  NULL  ) {
-				LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
-				strcpy(ValueStrBody(val),ValueString(val));
-			} else {
-				LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
-									 ValueStringSize(val),
-									 0,codeset);
-			}
-		}
-		break;
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_BINARY:
-		p = ValueByte(val);
-		for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
-			switch	(*p) {
-			  case	'%':
-				LBS_EmitChar(ValueStr(val),'%');
-				LBS_EmitChar(ValueStr(val),'%');
-				break;
-			  default:
-				if		(  isalnum(*p)  ) {
-					LBS_EmitChar(ValueStr(val),*p);
-				} else {
-					sprintf(work,"%%%02X",(int)*p);
-					LBS_EmitString(ValueStr(val),work);
+		LBS_EmitStart(ValueStr(val));
+		if		(  IS_VALUE_NIL(val)  ) {
+			LBS_EmitChar(ValueStr(val),CHAR_NIL);
+		} else
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+			LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
+								  ValueStringSize(val),
+								  ValueStringLength(val),codeset);
+			if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
+				for	(  ; size > 0 ; size -- ) {
+					LBS_EmitChar(ValueStr(val),0);
 				}
-				break;
 			}
-		}
-		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
-			for	(  ; size > 0 ; size -- ) {
-				LBS_EmitByte(ValueStr(val),0);
+			break;
+		  case	GL_TYPE_TEXT:
+			if		(  ValueString(val)  !=  NULL  ) {
+				if		(  codeset  ==  NULL  ) {
+					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
+					strcpy(ValueStrBody(val),ValueString(val));
+				} else {
+					LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
+										  ValueStringSize(val),
+										  0,codeset);
+				}
 			}
-		}
-		break;
-	  case	GL_TYPE_NUMBER:
-		strcpy(work,ValueFixedBody(val));
-		p = work;
-		q = work2;
-		if		(  *p  >=  0x70  ) {
-			*q ++ = '-';
-			*p ^= 0x40;
-		}
-		strcpy(q,p);
-		if		(  ValueFixedSlen(val)  >  0  ) {
-			p = work2 + strlen(work2);
-			*(p + 1) = 0;
-			q = p - 1;
-			for	( i = 0 ; i < ValueFixedSlen(val) ; i ++ ) {
-				*p -- = *q --;
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			p = ValueByte(val);
+			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
+				switch	(*p) {
+				  case	'%':
+					LBS_EmitChar(ValueStr(val),'%');
+					LBS_EmitChar(ValueStr(val),'%');
+					break;
+				  default:
+					if		(  isalnum(*p)  ) {
+						LBS_EmitChar(ValueStr(val),*p);
+					} else {
+						sprintf(work,"%%%02X",(int)*p);
+						LBS_EmitString(ValueStr(val),work);
+					}
+					break;
+				}
 			}
-			*p = '.';
-		}
-		LBS_EmitString(ValueStr(val),work2);
-		break;
-	  case	GL_TYPE_INT:
-		sprintf(work,"%d",ValueInteger(val));
-		LBS_EmitString(ValueStr(val),work);
-		break;
-	  case	GL_TYPE_OBJECT:
-		sprintf(work,"%d",ValueObjectSource(val));
-		LBS_EmitString(ValueStr(val),work);
-		for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
-			sprintf(work,":%u",ValueObjectID(val).el[i]);
+			if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
+				for	(  ; size > 0 ; size -- ) {
+					LBS_EmitByte(ValueStr(val),0);
+				}
+			}
+			break;
+		  case	GL_TYPE_NUMBER:
+			strcpy(work,ValueFixedBody(val));
+			p = work;
+			q = work2;
+			if		(  *p  >=  0x70  ) {
+				*q ++ = '-';
+				*p ^= 0x40;
+			}
+			strcpy(q,p);
+			if		(  ValueFixedSlen(val)  >  0  ) {
+				p = work2 + strlen(work2);
+				*(p + 1) = 0;
+				q = p - 1;
+				for	( i = 0 ; i < ValueFixedSlen(val) ; i ++ ) {
+					*p -- = *q --;
+				}
+				*p = '.';
+			}
+			LBS_EmitString(ValueStr(val),work2);
+			break;
+		  case	GL_TYPE_INT:
+			sprintf(work,"%d",ValueInteger(val));
 			LBS_EmitString(ValueStr(val),work);
+			break;
+		  case	GL_TYPE_OBJECT:
+			sprintf(work,"%d",ValueObjectSource(val));
+			LBS_EmitString(ValueStr(val),work);
+			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
+				sprintf(work,":%u",ValueObjectID(val).el[i]);
+				LBS_EmitString(ValueStr(val),work);
+			}
+			break;
+		  case	GL_TYPE_FLOAT:
+			sprintf(work,"%g",ValueFloat(val));
+			LBS_EmitString(ValueStr(val),work);
+			break;
+		  case	GL_TYPE_BOOL:
+			sprintf(work,"%s",ValueBool(val) ? "TRUE" : "FALSE");
+			LBS_EmitString(ValueStr(val),work);
+			break;
+		  default:
+			break;
 		}
-		break;
-	  case	GL_TYPE_FLOAT:
-		sprintf(work,"%g",ValueFloat(val));
-		LBS_EmitString(ValueStr(val),work);
-		break;
-	  case	GL_TYPE_BOOL:
-		sprintf(work,"%s",ValueBool(val) ? "TRUE" : "FALSE");
-		LBS_EmitString(ValueStr(val),work);
-		break;
-	  default:
-		break;
+		LBS_EmitEnd(ValueStr(val));
+		ret = ValueStrBody(val);
 	}
-	LBS_EmitEnd(ValueStr(val));
 LEAVE_FUNC;
-	return	(ValueStrBody(val));
+	return	(ret);
 }
 
 
@@ -321,11 +340,11 @@ SetValueStringWithLength(
 	char	*istr;
 #endif
 
+ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
-	}
-ENTER_FUNC;
+		rc = FALSE;
+	} else
 	if		(	(  str   ==  NULL      )
 			||	(  *str  ==  CHAR_NIL  ) ) {
 		ValueIsNil(val);
@@ -569,11 +588,12 @@ ENTER_FUNC;
 				rc = TRUE;
 				break;
 			  default:
-				rc = FALSE;
+				rc = TRUE;
 				break;
 			}
 			break;
 		  default:
+			ValueIsNil(val);
 			rc = FALSE;	  
 		}
 	}
@@ -592,45 +612,47 @@ SetValueInteger(
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
-	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		sprintf(str,"%d",ival);
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_NUMBER:
-		if		(  ival  <  0  ) {
-			ival = - ival;
-			fMinus = TRUE;
-		} else {
-			fMinus = FALSE;
+		rc = FALSE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			sprintf(str,"%d",ival);
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_NUMBER:
+			if		(  ival  <  0  ) {
+				ival = - ival;
+				fMinus = TRUE;
+			} else {
+				fMinus = FALSE;
+			}
+			sprintf(str,"%0*d",ValueFixedLength(val),ival);
+			if		(  fMinus  ) {
+				*str |= 0x40;
+			}
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = ival;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = ival;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(val) = ( ival == 0 ) ? FALSE : TRUE;
+			rc = TRUE;
+			break;
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;	  
 		}
-		sprintf(str,"%0*d",ValueFixedLength(val),ival);
-		if		(  fMinus  ) {
-			*str |= 0x40;
-		}
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = ival;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = ival;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(val) = ( ival == 0 ) ? FALSE : TRUE;
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
 	}
-	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -645,45 +667,47 @@ SetValueChar(
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
-	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		sprintf(str,"%c",cval);
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_NUMBER:
-		if		(  cval  <  0  ) {
-			cval = - cval;
-			fMinus = TRUE;
-		} else {
-			fMinus = FALSE;
+		rc = FALSE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			sprintf(str,"%c",cval);
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_NUMBER:
+			if		(  cval  <  0  ) {
+				cval = - cval;
+				fMinus = TRUE;
+			} else {
+				fMinus = FALSE;
+			}
+			sprintf(str,"%0*d",ValueFixedLength(val),(int)cval);
+			if		(  fMinus  ) {
+				*str |= 0x40;
+			}
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = (int)cval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = (double)cval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(val) = ( cval == 0 ) ? FALSE : TRUE;
+			rc = TRUE;
+			break;
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;	  
 		}
-		sprintf(str,"%0*d",ValueFixedLength(val),(int)cval);
-		if		(  fMinus  ) {
-			*str |= 0x40;
-		}
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = (int)cval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = (double)cval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(val) = ( cval == 0 ) ? FALSE : TRUE;
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
 	}
-	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -697,36 +721,39 @@ SetValueBool(
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
+		rc = FALSE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			sprintf(str,"%s",(bval ? "TRUE" : "FALSE"));
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_NUMBER:
+			sprintf(str,"%d",bval);
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = bval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = bval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(val) = bval;
+			rc = TRUE;
+			break;
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;
+			break;
+		}
 	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		sprintf(str,"%s",(bval ? "TRUE" : "FALSE"));
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_NUMBER:
-		sprintf(str,"%d",bval);
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = bval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = bval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(val) = bval;
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
-	}
-	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -740,36 +767,39 @@ SetValueFloat(
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
+		rc = FALSE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			sprintf(str,"%f",fval);
+			rc = SetValueString(val,str,NULL);
+			break;
+		  case	GL_TYPE_NUMBER:
+			FloatToFixed(&ValueFixed(val),fval);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = (int)fval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = fval;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(val) = ( fval == 0 ) ? FALSE : TRUE;
+			rc = TRUE;
+			break;
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;
+			break;
+		}
 	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		sprintf(str,"%f",fval);
-		rc = SetValueString(val,str,NULL);
-		break;
-	  case	GL_TYPE_NUMBER:
-		FloatToFixed(&ValueFixed(val),fval);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = (int)fval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = fval;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(val) = ( fval == 0 ) ? FALSE : TRUE;
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
-	}
-	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -782,37 +812,40 @@ SetValueFixed(
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
-	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		rc = SetValueString(val,fval->sval,NULL);
-		break;
-	  case	GL_TYPE_NUMBER:
-		FixedRescale(&ValueFixed(val),fval);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = FixedToInt(fval);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = FixedToFloat(fval);
-		rc = TRUE;
-		break;
+		rc = FALSE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			rc = SetValueString(val,fval->sval,NULL);
+			break;
+		  case	GL_TYPE_NUMBER:
+			FixedRescale(&ValueFixed(val),fval);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = FixedToInt(fval);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = FixedToFloat(fval);
+			rc = TRUE;
+			break;
 #if	0
-	  case	GL_TYPE_BOOL:
-		val->body.BoolData = ( *fval->sval == 0 ) ? FALSE : TRUE;
-		rc = TRUE;
-		break;
+		  case	GL_TYPE_BOOL:
+			val->body.BoolData = ( *fval->sval == 0 ) ? FALSE : TRUE;
+			rc = TRUE;
+			break;
 #endif
-	  default:
-		rc = FALSE;	  
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;
+			break;
+		}
 	}
-	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -825,106 +858,112 @@ SetValueBinary(
 	Bool	rc;
 	size_t	size;
 
+ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
-		return	(FALSE);
-	}
-ENTER_FUNC;
-	if		(	(  str   ==  NULL      )
-			||	(  *str  ==  CHAR_NIL  )
-			||	(  slen  ==  0         ) ) {
-		ValueIsNil(val);
-		rc = TRUE;
+		rc = FALSE;
 	} else {
-		ValueIsNonNil(val);
-	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		size = slen + 1;
-		if		(  size  >  ValueStringSize(val)  ) {
-			if		(  ValueString(val)  !=  NULL  ) {
-				xfree(ValueString(val));
+		if		(	(  str   ==  NULL      )
+				||	(  slen  ==  0         ) ) {
+			ValueIsNil(val);
+			rc = TRUE;
+		} else {
+			ValueIsNonNil(val);
+		}
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			if		(  *str  ==  CHAR_NIL  ) {
+				ValueIsNil(val);
+			} else {
+				size = slen + 1;
+				if		(  size  >  ValueStringSize(val)  ) {
+					if		(  ValueString(val)  !=  NULL  ) {
+						xfree(ValueString(val));
+					}
+					ValueStringSize(val) = size;
+					ValueString(val) = (char *)xmalloc(size);
+				}
+				memclear(ValueString(val),ValueStringSize(val));
+				if		(  str  !=  NULL  ) {
+					strcpy(ValueString(val),str);
+				}
+				if		(  ValueType(val)  ==  GL_TYPE_TEXT  ) {
+					ValueStringLength(val) = slen;
+				}
 			}
-			ValueStringSize(val) = size;
-			ValueString(val) = (char *)xmalloc(size);
-		}
-		memclear(ValueString(val),ValueStringSize(val));
-		if		(  str  !=  NULL  ) {
-			strcpy(ValueString(val),str);
-		}
-		if		(  ValueType(val)  ==  GL_TYPE_TEXT  ) {
-			ValueStringLength(val) = slen;
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BYTE:
-		size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
-		memclear(ValueByte(val),ValueByteSize(val));
-		if		(  str  !=  NULL  ) {
-			memcpy(ValueByte(val),str,size);
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BINARY:
-		if		(  slen  >  ValueByteSize(val)  ) {
-			if		(  ValueByte(val)  !=  NULL  ) {
-				xfree(ValueByte(val));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BYTE:
+			size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
+			memclear(ValueByte(val),ValueByteSize(val));
+			if		(  str  !=  NULL  ) {
+				memcpy(ValueByte(val),str,size);
 			}
-			ValueByteSize(val) = slen;
-			ValueByte(val) = (char *)xmalloc(slen);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BINARY:
+			if		(  slen  >  ValueByteSize(val)  ) {
+				if		(  ValueByte(val)  !=  NULL  ) {
+					xfree(ValueByte(val));
+				}
+				ValueByteSize(val) = slen;
+				ValueByte(val) = (char *)xmalloc(slen);
+			}
+			memclear(ValueByte(val),ValueByteSize(val));
+			if		(  str  !=  NULL  ) {
+				memcpy(ValueByte(val),str,slen);
+			}
+			ValueByteLength(val) = slen;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_NUMBER:
+			if		(  str  !=  NULL  ) {
+				memcpy(&ValueFixed(val),str,sizeof(Fixed));
+			} else {
+				memclear(&ValueFixed(val),sizeof(Fixed));
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_INT:
+			if		(  str  !=  NULL  ) {
+				memcpy(&ValueInteger(val),str,sizeof(int));
+			} else {
+				memclear(&ValueInteger(val),sizeof(int));
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_OBJECT:
+			if		(  str  !=  NULL  ) {
+				memcpy(ValueObject(val),str,sizeof(MonObjectType));
+			} else {
+				memclear(ValueObject(val),sizeof(MonObjectType));
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			if		(  str  !=  NULL  ) {
+				memcpy(&ValueFloat(val),str,sizeof(double));
+			} else {
+				memclear(&ValueFloat(val),sizeof(double));
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			if		(  str  !=  NULL  ) {
+				memcpy(&ValueBool(val),str,sizeof(Bool));
+			} else {
+				memclear(&ValueBool(val),sizeof(Bool));
+			}
+			rc = TRUE;
+			break;
+		  default:
+			ValueIsNil(val);
+			rc = FALSE;
+			break;
 		}
-		memclear(ValueByte(val),ValueByteSize(val));
-		if		(  str  !=  NULL  ) {
-			memcpy(ValueByte(val),str,slen);
-		}
-		ValueByteLength(val) = slen;
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_NUMBER:
-		if		(  str  !=  NULL  ) {
-			memcpy(&ValueFixed(val),str,sizeof(Fixed));
-		} else {
-			memclear(&ValueFixed(val),sizeof(Fixed));
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_INT:
-		if		(  str  !=  NULL  ) {
-			memcpy(&ValueInteger(val),str,sizeof(int));
-		} else {
-			memclear(&ValueInteger(val),sizeof(int));
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_OBJECT:
-		if		(  str  !=  NULL  ) {
-			memcpy(ValueObject(val),str,sizeof(MonObjectType));
-		} else {
-			memclear(ValueObject(val),sizeof(MonObjectType));
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		if		(  str  !=  NULL  ) {
-			memcpy(&ValueFloat(val),str,sizeof(double));
-		} else {
-			memclear(&ValueFloat(val),sizeof(double));
-		}
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		if		(  str  !=  NULL  ) {
-			memcpy(&ValueBool(val),str,sizeof(Bool));
-		} else {
-			memclear(&ValueBool(val),sizeof(Bool));
-		}
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
 	}
 LEAVE_FUNC;
 	return	(rc);
@@ -934,56 +973,64 @@ extern	byte	*
 ValueToBinary(
 	ValueStruct	*val)
 {
+	byte	*ret;
 ENTER_FUNC;
-	dbgprintf("type = %X\n",(int)ValueType(val));
-	if		(  ValueStr(val)  ==  NULL  ) {
-		ValueStr(val) = NewLBS();
-	}
-	LBS_EmitStart(ValueStr(val));
-	if		(  IS_VALUE_NIL(val)  ) {
-		LBS_EmitChar(ValueStr(val),CHAR_NIL);
-	} else
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-		if		(  ValueString(val)  !=  NULL  ) {
-			LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
-			strcpy(ValueStrBody(val),ValueString(val));
-		} else {
-			LBS_EmitChar(ValueStr(val),CHAR_NIL);
+
+	if		(  val  ==  NULL  ) {
+		ret = NULL;
+	} else {
+		dbgprintf("type = %X\n",(int)ValueType(val));
+		if		(  ValueStr(val)  ==  NULL  ) {
+			ValueStr(val) = NewLBS();
 		}
-		break;
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_BINARY:
-		LBS_ReserveSize(ValueStr(val),ValueByteLength(val),FALSE);
-		memcpy(ValueStrBody(val),ValueByte(val),ValueByteLength(val));
-		break;
-	  case	GL_TYPE_NUMBER:
-		LBS_ReserveSize(ValueStr(val),sizeof(Fixed),FALSE);
-		memcpy(ValueStrBody(val),&ValueFixed(val),sizeof(Fixed));
-		break;
-	  case	GL_TYPE_INT:
-		LBS_ReserveSize(ValueStr(val),sizeof(int),FALSE);
-		memcpy(ValueStrBody(val),&ValueInteger(val),sizeof(int));
-		break;
-	  case	GL_TYPE_OBJECT:
-		LBS_ReserveSize(ValueStr(val),sizeof(MonObjectType),FALSE);
-		memcpy(ValueStrBody(val),ValueObject(val),sizeof(MonObjectType));
-		break;
-	  case	GL_TYPE_FLOAT:
-		LBS_ReserveSize(ValueStr(val),sizeof(double),FALSE);
-		memcpy(ValueStrBody(val),&ValueFloat(val),sizeof(double));
-		break;
-	  case	GL_TYPE_BOOL:
-		LBS_ReserveSize(ValueStr(val),sizeof(Bool),FALSE);
-		memcpy(ValueStrBody(val),&ValueBool(val),sizeof(Bool));
-		break;
-	  default:
-		break;
+		LBS_EmitStart(ValueStr(val));
+		if		(  IS_VALUE_NIL(val)  ) {
+			LBS_EmitChar(ValueStr(val),CHAR_NIL);
+		} else {
+			switch	(ValueType(val)) {
+			  case	GL_TYPE_CHAR:
+			  case	GL_TYPE_VARCHAR:
+			  case	GL_TYPE_DBCODE:
+			  case	GL_TYPE_TEXT:
+				if		(  ValueString(val)  !=  NULL  ) {
+					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
+					strcpy(ValueStrBody(val),ValueString(val));
+				} else {
+					LBS_EmitChar(ValueStr(val),CHAR_NIL);
+				}
+				break;
+			  case	GL_TYPE_BYTE:
+			  case	GL_TYPE_BINARY:
+				LBS_ReserveSize(ValueStr(val),ValueByteLength(val),FALSE);
+				memcpy(ValueStrBody(val),ValueByte(val),ValueByteLength(val));
+				break;
+			  case	GL_TYPE_NUMBER:
+				LBS_ReserveSize(ValueStr(val),sizeof(Fixed),FALSE);
+				memcpy(ValueStrBody(val),&ValueFixed(val),sizeof(Fixed));
+				break;
+			  case	GL_TYPE_INT:
+				LBS_ReserveSize(ValueStr(val),sizeof(int),FALSE);
+				memcpy(ValueStrBody(val),&ValueInteger(val),sizeof(int));
+				break;
+			  case	GL_TYPE_OBJECT:
+				LBS_ReserveSize(ValueStr(val),sizeof(MonObjectType),FALSE);
+				memcpy(ValueStrBody(val),ValueObject(val),sizeof(MonObjectType));
+				break;
+			  case	GL_TYPE_FLOAT:
+				LBS_ReserveSize(ValueStr(val),sizeof(double),FALSE);
+				memcpy(ValueStrBody(val),&ValueFloat(val),sizeof(double));
+				break;
+			  case	GL_TYPE_BOOL:
+				LBS_ReserveSize(ValueStr(val),sizeof(Bool),FALSE);
+				memcpy(ValueStrBody(val),&ValueBool(val),sizeof(Bool));
+				break;
+			  default:
+				break;
+			}
+		}
+		ret = ValueStrBody(val);
 	}
 LEAVE_FUNC;
-	return	(ValueStrBody(val));
+	return	(ret);
 }
 

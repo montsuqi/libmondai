@@ -69,7 +69,7 @@ PushLexInfo(
 		info->next = InfoRoot.curr;
 		InfoRoot.curr = info;
 	} else {
-		printf("file not found [%s]\n",name);
+		fprintf(stderr,"file not found [%s]\n",name);
 		info = NULL;
 	}
 	return	(info);

@@ -187,7 +187,7 @@ OpenCOBOL_PackValue(
 ENTER_FUNC;
 	pp = p; 
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			*(int *)p = value->body.IntegerData;
 			IntegerC2Cobol((int *)p);

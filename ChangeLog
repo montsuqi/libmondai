@@ -1,3 +1,7 @@
+2004-01-31  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c: 引数チェックの強化
+
 2004-01-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.c (GetItemLongName): ワーニングを削った(邪魔)

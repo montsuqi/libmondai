@@ -106,7 +106,7 @@ main(
 	DD_ParserInit();
 	printf("***** DD_ParseValue *****\n");
 	if		( ( val = DD_ParseValue("testrec.rec") )  ==  NULL  )	{
-		printf("file not found.\n");
+		fprintf(stderr,"file not found.\n");
 		exit(1);
 	}
 
