@@ -1,3 +1,3 @@
 #undef	USE_XML
 #undef	USE_XML2
-#undef	LIBXML_LOCALE
+#undef	LIBXML_CODE

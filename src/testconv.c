@@ -219,8 +219,8 @@ main(
 	DumpValueStruct(val);
 
 	opt = NewConvOpt();
-	ConvSetLocale(opt,"shift-jis");
-	ConvSetLocale(opt,"euc-jp");
+	ConvSetCoding(opt,"shift-jis");
+	ConvSetCoding(opt,"euc-jp");
 #ifdef	XML_TEST
 	buff = xmalloc(SIZE_BUFF);
 	printf("***** XML Pack *****\n");

@@ -111,7 +111,7 @@ OpenCOBOL_UnPackValue(
 			str[ValueStringLength(value)] = 0;
 			p += opt->textsize;
 			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,opt->locale);
+			SetValueString(value,str,opt->coding);
 			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
@@ -122,7 +122,7 @@ OpenCOBOL_UnPackValue(
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
 			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,opt->locale);
+			SetValueString(value,str,opt->coding);
 			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
@@ -175,14 +175,14 @@ OpenCOBOL_PackValue(
 		  case	GL_TYPE_TEXT:
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize :
 				ValueStringLength(value);
-			memcpy(p,ValueToString(value,opt->locale),size);
+			memcpy(p,ValueToString(value,opt->coding),size);
 			StringC2Cobol(p,opt->textsize);
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,ValueToString(value,opt->locale),ValueStringLength(value));
+			memcpy(p,ValueToString(value,opt->coding),ValueStringLength(value));
 			StringC2Cobol(p,ValueStringLength(value));
 			p += ValueStringLength(value);
 			break;

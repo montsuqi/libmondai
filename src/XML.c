@@ -218,7 +218,7 @@ _XML_PackValue(
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->locale),buff));
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->coding),buff));
 #else
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
@@ -245,8 +245,8 @@ XML_PackValue(
 	nIndent = 0;
 	p += sprintf(p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
-	if		(  opt->locale  !=  NULL  ) {
-		p += sprintf(p," encoding=\"%s\"",opt->locale);
+	if		(  opt->coding  !=  NULL  ) {
+		p += sprintf(p," encoding=\"%s\"",opt->coding);
 	}
 #else
 	p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
@@ -872,9 +872,9 @@ XML_SizeValue(
 	nIndent = 0;
 	size = 19;			//	<?xml version="1.0"
 #ifdef	USE_XML2
-	if		(  opt->locale  !=  NULL  ) {
-		size += 12 + strlen(opt->locale);	
-		//	" encoding=\"%s\"",opt->locale
+	if		(  opt->coding  !=  NULL  ) {
+		size += 12 + strlen(opt->coding);	
+		//	" encoding=\"%s\"",opt->coding
 	}
 #else
 	size += 12 + strlen(LIBXML_CODE);

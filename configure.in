@@ -112,11 +112,11 @@ AC_ARG_WITH(xml2,
 ])		
 
 AC_ARG_WITH(xml,
-	[  --with-xml=<locale>	Use libxml],[
+	[  --with-xml=<encode>	Use libxml],[
 	if test $withval != yes; then
-	  locale=$withval
+	  encode=$withval
 	else
-	  locale="euc-jp"
+	  encode="euc-jp"
 	fi
 	AC_PATH_PROG(XML_CONFIG,xml-config,no)
 	if test x$XML_CONFIG = xno; then
@@ -127,7 +127,7 @@ AC_ARG_WITH(xml,
 	AC_SUBST(XML_LIBS)
 	AC_SUBST(XML_CFLAGS)
 	AC_DEFINE(USE_XML,1,[])
-	AC_DEFINE_UNQUOTED(LIBXML_LOCALE,"$locale","")
+	AC_DEFINE_UNQUOTED(LIBXML_CODE,"$encode","")
 ])		
 
 dnl ***************************************************************************

@@ -29,7 +29,7 @@ copies.
 #define	STRING_ENCODING_BASE64	2
 
 typedef	struct {
-	char	*locale;
+	char	*coding;
 	char	*recname;
 	int		encode;
 	size_t	textsize;
@@ -66,7 +66,7 @@ extern	CONVOPT		*NewConvOpt(void);
 extern	void		DestroyConvOpt(CONVOPT *opt);
 
 #define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
-#define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)
+#define	ConvSetCoding(opt,loc)		(opt)->coding = (loc)
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
 #define	ConvSetUseName(opt,f)		(opt)->fName = (f)
