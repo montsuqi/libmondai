@@ -196,12 +196,16 @@ GetRecordItem(
 	gpointer	p;
 	ValueStruct	*item;
 
-	if		(  value->type  ==  GL_TYPE_RECORD  ) {
-		if		(  ( p = g_hash_table_lookup(ValueRecordMembers(value),name) )
-				   ==  NULL  ) {
-			item = NULL;
+	if		(  value  !=  NULL  ) {
+		if		(  ValueType(value)  ==  GL_TYPE_RECORD  ) {
+			if		(  ( p = g_hash_table_lookup(ValueRecordMembers(value),name) )
+					   ==  NULL  ) {
+				item = NULL;
+			} else {
+				item = ValueRecordItem(value,(int)p-1);
+			}
 		} else {
-			item = ValueRecordItem(value,(int)p-1);
+			item = NULL;
 		}
 	} else {
 		item = NULL;
