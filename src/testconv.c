@@ -20,9 +20,9 @@ copies.
 */
 
 #define	CONV_TEST
-/*
 #define	TEST_VALUE
 #define	XML_TEST
+/*
 */
 
 #define	DEBUG
@@ -81,15 +81,19 @@ main(
 	FILE	*fp;
 	CONVOPT	*opt;
 
+	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
-	ConvSetLanguage(argv[1]);
+	//	ConvSetLanguage(argv[1]);
+	printf("***** DD_ParserInit *****\n");
 	DD_ParserInit();
+	printf("***** DD_ParseValue *****\n");
 	if		( ( val = DD_ParseValue("testrec.rec") )  ==  NULL  )	{
 		printf("file not found.\n");
 		exit(1);
 	}
 
 	/*	set	*/
+	printf("***** Value setting *****\n");
 	SetValueString(GetItemLongName(val,"a"),"aaa",locale);
 	SetValueString(GetItemLongName(val,"b"),"bb",locale);
 	SetValueString(GetItemLongName(val,"g"),"NIL",locale);
@@ -135,6 +139,8 @@ main(
 	}
 
 #ifdef	TEST_VALUE
+	printf("***** test Value *****\n");
+	printf("***** varchar(40) *****\n");
 	e = GetItemLongName(val,"q");
 	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
 		p = str;
@@ -142,19 +148,22 @@ main(
 			*p ++= j + '@';
 		}
 		*p = 0;
+		printf("in   [%s]\n",str);fflush(stdout);
 		SetValueString(e,str,NULL);
-		printf("[%s]\n",ValueToString(e,NULL));
-		printf("[%s]\n",ValueStringPointer(e));
+		printf("buff [%s]\n",ValueStringPointer(e));
+		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
 	}
+	printf("***** varchar(40) *****\n");
 	e = GetItemLongName(val,"q");
 	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
-		printf("[%s]\n",str);fflush(stdout);
+		printf("in   [%s]\n",str);fflush(stdout);
 		SetValueString(e,str,"euc-jp");
-		printf("[%s]\n",ValueToString(e,"euc-jp"));
-		//		printf("[%s]\n",ValueStringPointer(e));
+		printf("buff [%s]\n",ValueStringPointer(e));
+		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
 	}
+	printf("***** text(with locale) *****\n");
 	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
 		p = str;
@@ -162,29 +171,49 @@ main(
 			*p ++= j + '@';
 		}
 		*p = 0;
-		SetValueString(e,str,NULL);
-		printf("[%s]\n",ValueToString(e,NULL));
-		printf("[%s]\n",ValueStringPointer(e));
+		printf("in   [%s]\n",str);fflush(stdout);
+		SetValueString(e,str,"euc-jp");
+		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+		printf("buff [%s]\n",ValueStringPointer(e));
 	}
+	printf("***** text *****\n");
+	e = GetItemLongName(val,"m");
+	for	( i = 0 ; i < 20 ; i ++ ) {
+		p = str;
+		for	( j = 0 ; j < i ; j ++ ) {
+			*p ++= j + '@';
+		}
+		*p = 0;
+		printf("in   [%s]\n",str);fflush(stdout);
+		SetValueString(e,str,NULL);
+		printf("out  [%s]\n",ValueToString(e,NULL));
+		printf("buff [%s]\n",ValueStringPointer(e));
+	}
+	printf("***** text *****\n");
 	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
-		printf("[%s]\n",str);fflush(stdout);
+		printf("in   [%s]\n",str);fflush(stdout);
 		SetValueString(e,str,"euc-jp");
-		printf("[%s]\n",ValueToString(e,"euc-jp"));
-		printf("[%s]\n",ValueStringPointer(e));
+		printf("buff [%s]\n",ValueStringPointer(e));
+		printf("out  [%s]\n",ValueToString(e,"euc-jp"));
 	}
 
 	strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
-printf("*\n");fflush(stdout);
+	printf("***** str -> varchar(40) *****\n");
+	e = GetItemLongName(val,"q");
+	printf("in   [%s]\n",str);
 	SetValueString(GetItemLongName(val,"q"),str,"euc-jp");
-	printf("[%s]\n",ValueToString(GetItemLongName(val,"q"),"euc-jp"));
-printf("*\n");fflush(stdout);
+	printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+	printf("buff [%s]\n",ValueStringPointer(e));
 
-	MoveValue(GetItemLongName(val,"p"),GetItemLongName(val,"q"));
-	printf("[%s]\n",ValueToString(GetItemLongName(val,"p"),"euc-jp"));
-printf("*\n");fflush(stdout);
+	printf("***** varchar(40) -> varchar(20) *****\n");
+	e = GetItemLongName(val,"p");
+	MoveValue(e,GetItemLongName(val,"q"));
+	printf("buff [%s]\n",ValueStringPointer(e));
+	printf("out  [%s]\n",ValueToString(e,"euc-jp"));
+	printf("********************\n");
 
 #endif
 	DumpValueStruct(val);
@@ -214,7 +243,7 @@ printf("*\n");fflush(stdout);
 #endif
 
 #ifdef	CONV_TEST
-
+	ConvSetLocale(opt,"euc-jp");
 	printf("***** Native Pack(1) *****\n");
 	ConvSetUseName(opt,FALSE);
 	size =  NativeSizeValue(opt,val);
@@ -261,6 +290,7 @@ printf("*\n");fflush(stdout);
 	CSV3_PackValue(opt,buff,val);
 	printf("%s\n",buff);
 
+	ConvSetLocale(opt,"euc-jp");
 	printf("***** CSV Pack *****\n");
 	size = CSV1_SizeValue(opt,val);
 	printf("CSV1 size = %d\n",size);
@@ -309,7 +339,9 @@ printf("*\n");fflush(stdout);
 	xfree(buff);
 	fclose(fp);
 
-	printf("***** RFC822 Pack *****\n");
+	printf("***** RFC822 Pack (with name)*****\n");
+	ConvSetLocale(opt,"euc-jp");
+	DumpValueStruct(val);
 	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,TRUE);
@@ -320,7 +352,9 @@ printf("*\n");fflush(stdout);
 	RFC822_PackValue(opt,buff,val);
 	printf("%s\n",buff);
 	fwrite(buff,size,1,fp);
+	DumpValueStruct(val);
 
+	printf("***** RFC822 Pack (without name)*****\n");
 	ConvSetUseName(opt,FALSE);
 	size =  RFC822_SizeValue(opt,val);
 	printf("size = %d\n",size);
@@ -332,7 +366,7 @@ printf("*\n");fflush(stdout);
 	fclose(fp);
 	xfree(buff);
 
-	printf("***** RFC822 UnPack *****\n");
+	printf("***** RFC822 UnPack (with name)*****\n");
 	ConvSetUseName(opt,TRUE);
 	InitializeValue(val);
 	if		(  ( fp = fopen("test.822","r") )  ==  NULL  )	exit(1);
@@ -343,6 +377,7 @@ printf("*\n");fflush(stdout);
 	RFC822_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
 
+	printf("***** RFC822 UnPack (without name)*****\n");
 	ConvSetUseName(opt,FALSE);
 	InitializeValue(val);
 	fread(buff,size,1,fp);
@@ -360,12 +395,12 @@ printf("*\n");fflush(stdout);
 	ConvSetRecName(opt,"testrec");
 	size =  CGI_SizeValue(opt,val);
 	size1 = size;
-	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
+	printf("size = %d\n",size1);
+	buff = (char *)xmalloc(size1);
+
 	CGI_PackValue(opt,buff,val);
 	printf("%s\n",buff);
-	fwrite(buff,size,1,fp);
-
+	fwrite(buff,size1,1,fp);
 	fclose(fp);
 	xfree(buff);
 

@@ -32,8 +32,8 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<errno.h>
 #include	<iconv.h>
-#include	<wchar.h>
 #include	<glib.h>
 #include	<math.h>
 
@@ -181,83 +181,85 @@ ValueToString(
 	ValueStruct	*val,
 	char		*locale)
 {
-	char	buff[SIZE_BUFF];
 	char	work[SIZE_NUMBUF+1];
+	char	work2[SIZE_NUMBUF+2];
 	char	*p
 	,		*q;
 	int		i;
-	iconv_t	cd;
-	size_t	len
-	,		sob
-	,		size;
+	int		size;
 
 ENTER_FUNC;
-	memset(buff,0,SIZE_BUFF);
+	dbgprintf("type = %X\n",(int)ValueType(val));
+	if		(  ValueStr(val)  ==  NULL  ) {
+		ValueStr(val) = NewLBS();
+	}
+	LBS_EmitStart(ValueStr(val));
 	if		(  IS_VALUE_NIL(val)  ) {
-		*buff = CHAR_NIL;
+		LBS_EmitChar(ValueStr(val),CHAR_NIL);
 	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
 		if		(  locale  ==  NULL  ) {
-			memcpy(buff,ValueString(val),ValueStringLength(val));
+			LBS_ReserveSize(ValueStr(val),ValueStringLength(val),FALSE);
+			memcpy(ValueStrBody(val),ValueString(val),ValueStringLength(val));
 		} else {
-			cd = iconv_open(locale,"utf8");
-			p = ValueString(val);
-			len = strlen(p);
-			q = buff;
-			sob = ValueStringLength(val);
-			iconv(cd,&p,&len,&q,&sob);
-			*q = 0;
-			iconv_close(cd);
+			LBS_EmitStringLocale(ValueStr(val),ValueString(val),
+								 ValueStringSize(val),
+								 ValueStringLength(val),locale);
+		}
+		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
+			for	(  ; size > 0 ; size -- ) {
+				LBS_EmitChar(ValueStr(val),0);
+			}
 		}
 		break;
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(val)  !=  NULL  ) {
 			if		(  locale  ==  NULL  ) {
-				strcpy(buff,ValueString(val));
+				LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
+				strcpy(ValueStrBody(val),ValueString(val));
 			} else {
-				cd = iconv_open(locale,"utf8");
-				p = ValueString(val);
-				len = strlen(p);
-				q = buff;
-				sob = SIZE_BUFF;
-				iconv(cd,&p,&len,&q,&sob);
-				iconv_close(cd);
-				*q = 0;
+				LBS_EmitStringLocale(ValueStr(val),ValueString(val),
+									 ValueStringSize(val),
+									 0,locale);
 			}
 		} else {
-			*buff = CHAR_NIL;
+			LBS_EmitChar(ValueStr(val),CHAR_NIL);
 		}
 		break;
 	  case	GL_TYPE_BYTE:
 		p = ValueByte(val);
-		q = buff;
 		for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
 			if		(  *p  ==  '%'  ) {
-				*q ++ = '%';
-				*q ++ = '%';
+				LBS_EmitChar(ValueStr(val),'%');
+				LBS_EmitChar(ValueStr(val),'%');
 			} else
 			if		(  isprint(*p)  ) {
-				*q ++ = *p;
+				LBS_EmitChar(ValueStr(val),*p);
 			} else {
-				q += sprintf(q,"%02X",(int)*p);
+				sprintf(work,"%02X",(int)*p);
+				LBS_EmitString(ValueStr(val),work);
 			}
 		}
-		*q = 0;
+		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
+			for	(  ; size > 0 ; size -- ) {
+				LBS_EmitByte(ValueStr(val),0);
+			}
+		}
 		break;
 	  case	GL_TYPE_NUMBER:
 		strcpy(work,ValueFixedBody(val));
 		p = work;
-		q = buff;
+		q = work2;
 		if		(  *p  >=  0x70  ) {
 			*q ++ = '-';
 			*p ^= 0x40;
 		}
 		strcpy(q,p);
 		if		(  ValueFixedSlen(val)  >  0  ) {
-			p = buff + strlen(buff);
+			p = work2 + strlen(work2);
 			*(p + 1) = 0;
 			q = p - 1;
 			for	( i = 0 ; i < ValueFixedSlen(val) ; i ++ ) {
@@ -265,35 +267,30 @@ ENTER_FUNC;
 			}
 			*p = '.';
 		}
+		LBS_EmitString(ValueStr(val),work2);
 		break;
 	  case	GL_TYPE_INT:
-		sprintf(buff,"%d",ValueInteger(val));
+		sprintf(work,"%d",ValueInteger(val));
+		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_OBJECT:
-		sprintf(buff,"[%d:%d]",ValueObject(val)->apsid,ValueObject(val)->oid);
+		sprintf(work,"[%d:%d]",ValueObject(val)->apsid,ValueObject(val)->oid);
+		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_FLOAT:
-		sprintf(buff,"%g",ValueFloat(val));
+		sprintf(work,"%g",ValueFloat(val));
+		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_BOOL:
-		sprintf(buff,"%s",ValueBool(val) ? "TRUE" : "FALSE");
+		sprintf(work,"%s",ValueBool(val) ? "TRUE" : "FALSE");
+		LBS_EmitString(ValueStr(val),work);
 		break;
 	  default:
-		*buff = 0;
+		break;
 	}
-	len = strlen(buff) < ValueStringLength(val) ? ValueStringLength(val) : strlen(buff);
-	size = len + 1;
-	if		(  ValueSize(val)  <  size  ) {
-		if		(  ValueStr(val)  !=  NULL  ) {
-			xfree(ValueStr(val));
-		}
-		ValueSize(val) = size;
-		ValueStr(val) = (char *)xmalloc(ValueSize(val));
-		memclear(ValueStr(val),ValueSize(val));
-	}
-	strcpy(ValueStr(val),buff);
+	LBS_EmitEnd(ValueStr(val));
 LEAVE_FUNC;
-	return	(ValueStr(val));
+	return	(ValueStrBody(val));
 }
 
 static	void
@@ -347,8 +344,8 @@ SetValueString(
 	char	*p
 	,		*q
 	,		*istr;
-	char	buff[SIZE_NUMBUF+1];
-	char	sbuff[SIZE_BUFF+1];
+	char	buff[SIZE_NUMBUF+1]
+	,		sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
 	iconv_t	cd;
@@ -366,100 +363,152 @@ ENTER_FUNC;
 		rc = TRUE;
 	} else {
 		ValueIsNonNil(val);
+		if		(  locale  !=  NULL  ) {
+			cd = iconv_open("utf8",locale);
+		} else {
+			cd = (iconv_t)0;
+		}
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 			if		(  locale  !=  NULL  ) {
-				cd = iconv_open("utf8",locale);
 				len = ValueStringLength(val) < strlen(str) ?
 					ValueStringLength(val) : strlen(str);
-				istr = str;
-				sob = SIZE_BUFF;
-				q = sbuff;
-				iconv(cd,&istr,&len,&q,&sob);
-				iconv_close(cd);
+				while	(TRUE) {
+					istr = str;
+					sib = len;
+					sob = ValueStringSize(val);
+					if		(  ( q = ValueString(val) )  !=  NULL  ) {
+						*q = 0;
+						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
+						if		(	(  errno  ==  E2BIG  )
+								||	(  errno  ==  EINVAL  ) ) {
+							xfree(ValueString(val));
+							ValueStringSize(val) *= 2;
+						} else
+							break;
+					} else {
+						ValueStringSize(val) = 1;
+					}
+					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
+				};
 				*q = 0;
-				str = sbuff;
-			}
-			size = strlen(str) + 1;
-			if		(  size  >  ValueStringSize(val)  ) {
-				if		(  ValueString(val)  !=  NULL  ) {
-					xfree(ValueString(val));
+			} else {
+				size = strlen(str) + 1;
+				if		(  size  >  ValueStringSize(val)  ) {
+					if		(  ValueString(val)  !=  NULL  ) {
+						xfree(ValueString(val));
+					}
+					ValueStringSize(val) = size;
+					ValueString(val) = (char *)xmalloc(size);
 				}
-				ValueStringSize(val) = size;
-				ValueString(val) = (char *)xmalloc(size);
+				memclear(ValueString(val),ValueStringSize(val));
+				strcpy(ValueString(val),str);
 			}
-			memclear(ValueString(val),ValueStringSize(val));
-			strcpy(ValueString(val),str);
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_TEXT:
 			len = strlen(str);
 			if		(  locale  !=  NULL  ) {
-				cd = iconv_open("utf8",locale);
-				sib = len;
-				sob = SIZE_BUFF;
-				q = sbuff;
-				iconv(cd,&str,&sib,&q,&sob);
-				iconv_close(cd);
+				while	(TRUE) {
+					istr = str;
+					sib = len;
+					sob = ValueStringSize(val);
+					if		(  ( q = ValueString(val) )  !=  NULL  ) {
+						*q = 0;
+						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
+						if		(	(  errno  ==  E2BIG  )
+								||	(  errno  ==  EINVAL  ) ) {
+							xfree(ValueString(val));
+							ValueStringSize(val) *= 2;
+						} else
+							break;
+					} else {
+						ValueStringSize(val) = 1;
+					}
+					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
+					memclear(ValueString(val),ValueStringSize(val));
+				};
 				*q = 0;
-				str = sbuff;
-			}
-			size = strlen(str) + 1;
-			if		(  size  >  ValueStringSize(val)  ) {
-				if		(  ValueString(val)  !=  NULL  ) {
-					xfree(ValueString(val));
+			} else {
+				size = len + 1;
+				if		(  size  >  ValueStringSize(val)  ) {
+					if		(  ValueString(val)  !=  NULL  ) {
+						xfree(ValueString(val));
+					}
+					ValueStringSize(val) = size;
+					ValueString(val) = (char *)xmalloc(size);
 				}
-				ValueStringSize(val) = size;
-				ValueString(val) = (char *)xmalloc(size);
+				memclear(ValueString(val),ValueStringSize(val));
+				strcpy(ValueString(val),str);
 			}
-			memclear(ValueString(val),ValueStringSize(val));
-			strcpy(ValueString(val),str);
 			ValueStringLength(val) = len;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_NUMBER:
-			p = buff;
-			from.flen = 0;
-			from.slen = 0;
-			from.sval = buff;
-			fPoint = FALSE;
-			fMinus = FALSE;
-			while	(  *str  !=  0  ) {
-				if		(  fPoint  ) {
-					from.slen ++;
-				}
-				if		(  *str  ==  '-'  ) {
-					fMinus = TRUE;
-				} else
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_BOOL:
+			if		(  locale  !=  NULL  ) {
+				istr = str;
+				sib = strlen(str);
+				sob = SIZE_NUMBUF;
+				p = sbuff;
+				iconv(cd,&istr,&sib,&p,&sob);
+				*p = 0;
+				str = sbuff;
+			} else {
+				strncpy(sbuff,str,SIZE_NUMBUF);
+				str = sbuff;
+			}
+			switch	(ValueType(val)) {
+			  case	GL_TYPE_NUMBER:
+				p = buff;
+				from.flen = 0;
+				from.slen = 0;
+				from.sval = buff;
+				fPoint = FALSE;
+				fMinus = FALSE;
+				while	(  *str  !=  0  ) {
+					if		(  fPoint  ) {
+						from.slen ++;
+					}
+					if		(  *str  ==  '-'  ) {
+						fMinus = TRUE;
+					} else
 					if	(  isdigit(*str)  ) {
 						*p ++ = *str;
 						from.flen ++;
 					} else
-						if		(  *str  ==  '.'  ) {
-							fPoint = TRUE;
-						}
-				str ++;
+					if		(  *str  ==  '.'  ) {
+						fPoint = TRUE;
+					}
+					str ++;
+				}
+				*p = 0;
+				if		(  fMinus  ) {
+					*buff |= 0x40;
+				}
+				FixedRescale(&ValueFixed(val),&from);
+				rc = TRUE;
+				break;
+			  case	GL_TYPE_INT:
+				ValueInteger(val) = StrToInt(str,strlen(str));
+				rc = TRUE;
+				break;
+			  case	GL_TYPE_FLOAT:
+				ValueFloat(val) = atof(str);
+				rc = TRUE;
+				break;
+			  case	GL_TYPE_BOOL:
+				ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
+				rc = TRUE;
+				break;
+			  default:
+				rc = FALSE;
+				break;
 			}
-			*p = 0;
-			if		(  fMinus  ) {
-				*buff |= 0x40;
-			}
-			FixedRescale(&ValueFixed(val),&from);
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_INT:
-			ValueInteger(val) = StrToInt(str,strlen(str));
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_FLOAT:
-			ValueFloat(val) = atof(str);
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_BOOL:
-			ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
-			rc = TRUE;
 			break;
 		  case	GL_TYPE_BYTE:
 			p = ValueByte(val);
@@ -482,6 +531,9 @@ ENTER_FUNC;
 			break;
 		  default:
 			rc = FALSE;	  
+		}
+		if		(  locale  !=  NULL  ) {
+			iconv_close(cd);
 		}
 	}
 LEAVE_FUNC;

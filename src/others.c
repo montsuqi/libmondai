@@ -223,7 +223,7 @@ ExpandPath(
 
 extern	void
 DecodeStringURL(
-	char	*q,
+	byte	*q,
 	char	*p)
 {
 	while	(	(  *p  !=  0    )
@@ -233,7 +233,7 @@ DecodeStringURL(
 			*q ++ = ' ';
 		} else
 		if		(  *p  ==  '%'  ) {
-			*q ++ = (char)HexToInt(p+1,2);
+			*q ++ = (byte)HexToInt(p+1,2);
 			p += 2;
 		} else {
 			*q ++ = *p;
@@ -246,7 +246,7 @@ DecodeStringURL(
 extern	void
 EncodeStringURL(
 	char	*q,
-	char	*p)
+	byte	*p)
 {
 	while	(  *p  !=  0  ) {
 		if		(  *p  ==  0x20  ) {
@@ -265,7 +265,7 @@ EncodeStringURL(
 
 extern	size_t
 EncodeStringLengthURL(
-	char	*p)
+	byte	*p)
 {
 	size_t	ret;
 

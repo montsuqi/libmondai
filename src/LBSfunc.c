@@ -32,6 +32,7 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<iconv.h>
 #include	<math.h>
 
 #include	"types.h"
@@ -231,6 +232,60 @@ LBS_EmitString(
 	}
 }
 
+#define	SIZE_CONV		10
+extern	void
+LBS_EmitStringLocale(
+	LargeByteString	*lbs,
+	char			*str,
+	size_t			isize,
+	size_t			osize,
+	char			*locale)
+{
+	char	*oc
+	,		*istr;
+	char	obuff[SIZE_CONV];
+	size_t	count
+	,		sib
+	,		sob
+	,		csize;
+	int		rc;
+	iconv_t	cd;
+	int		i;
+
+ENTER_FUNC;
+	if		(  locale  !=  NULL  ) {
+		cd = iconv_open(locale,"utf8");
+		while	(  isize  >  0  )	{
+			count = 1;
+			do {
+				istr = str;
+				sib = count;
+				oc = obuff;
+				sob = SIZE_CONV;
+				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  <  0  ) {
+					count ++;
+				}
+			}	while	(	(  rc            !=  0  )
+						&&	(  str[count-1]  !=  0  ) );
+			csize = SIZE_CONV - sob;
+			for	( oc = obuff , i = 0 ; i < csize ; i ++, oc ++ ) {
+				LBS_Emit(lbs,*oc);
+			}
+			str += count;
+			isize -= count;
+			osize -= csize;
+			if		(  osize  ==  0  )	break;
+		}
+		iconv_close(cd);
+	} else {
+		for	( oc = str , i = 0 ;(	(  i  <  isize  )
+								&&	(  i  <  osize  ) ); i ++, oc ++ ) {
+			LBS_Emit(lbs,*oc);
+		}
+	}
+LEAVE_FUNC;
+}
+
 extern	void
 LBS_EmitPointer(
 	LargeByteString	*lbs,
@@ -270,13 +325,6 @@ LBS_EmitFix(
 	}
 	lbs->asize = lbs->size;
 	lbs->ptr = 0;
-}
-
-extern	void	*
-LBS_Body(
-	LargeByteString	*lbs)
-{
-	return	((void *)lbs->body);
 }
 
 extern	char	*

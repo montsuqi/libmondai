@@ -779,9 +779,9 @@ static	byte	*
 _CGI_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
-	ValueStruct	*value,
-	char		*buff)
+	ValueStruct	*value)
 {
+	char	buff[SIZE_BUFF+1];
 	char	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
@@ -829,9 +829,8 @@ CGI_UnPackValue(
 	ValueStruct	*value)
 {
 	char	*ret;
-	char	buff[SIZE_BUFF];
 
-	ret = _CGI_UnPackValue(opt,p,value,buff);
+	ret = _CGI_UnPackValue(opt,p,value);
 	return	(ret);
 }
 
@@ -841,10 +840,10 @@ _CGI_PackValue(
 	byte		*p,
 	ValueStruct	*value,
 	char		*name,
-	char		*longname,
-	char		*buff)
+	char		*longname)
 {
 	int		i;
+	byte	*q;
 
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
@@ -857,21 +856,34 @@ _CGI_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
-			EncodeStringURL(buff,ValueToString(value,opt->locale));
-			p += sprintf(p,"%s=%s&",longname,buff);
+			q = ValueToString(value,opt->locale);
+			p += sprintf(p,"%s=",longname);
+			while	(  *q  !=  0  ) {
+				if		(  *q  ==  0x20  ) {
+					*p ++ = '+';
+				} else
+				if		(  isalnum(*q)  ) {
+					*p ++ = *q;
+				} else {
+					*p ++ = '%';
+					p += sprintf(p,"%02X",(int)(*q & 0xFF));
+				}
+				q ++;
+			}
+			*p ++ = '&';
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(name,"[%d]",i);
 				p = _CGI_PackValue(opt,p,ValueArrayItem(value,i),
-								   name+strlen(name),longname,buff);
+								   name+strlen(name),longname);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				sprintf(name,".%s",ValueRecordName(value,i));
 				p = _CGI_PackValue(opt,p,ValueRecordItem(value,i),
-								   name+strlen(name),longname,buff);
+								   name+strlen(name),longname);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -888,15 +900,14 @@ CGI_PackValue(
 	byte		*p,
 	ValueStruct	*value)
 {
-	char	buff[SIZE_BUFF]
-	,		longname[SIZE_LONGNAME+1];
+	char	longname[SIZE_LONGNAME+1];
 	byte	*q;
 
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
 	}
-	q = _CGI_PackValue(opt,p,value,(longname + strlen(longname)),longname,buff);
+	q = _CGI_PackValue(opt,p,value,(longname + strlen(longname)),longname);
 	if		(  q  >  p  ) {
 		*(q-1) = 0;
 	}

@@ -1,3 +1,8 @@
+2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c : 文字列の操作をrobustにした(バッファサイズを意識し
+	ている部分を減らしつつある)
+
 2003-10-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c: 文字列の格納方法を変更した(内部表現を直接保存する

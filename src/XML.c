@@ -545,7 +545,6 @@ characters_(
 #ifdef	DEBUG
 		printf("characters_[%s]\n",(char *)ctx->buff);
 #endif
-		printf("len = [%d:%d]\n",len,strlen((char *)ctx->buff));
 		if		(  ctx->value  !=  NULL  ) {
 			SetValueString(ctx->value,(char *)ctx->buff,NULL);
 			ValueIsNonNil(ctx->value);

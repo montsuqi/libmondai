@@ -65,8 +65,7 @@ typedef	struct {
 typedef	struct _ValueStruct	{
 	PacketDataType		type;
 	ValueAttributeType	attr;
-	char				*str;
-	size_t				asize;
+	LargeByteString		*str;
 	union {
 		struct {
 			size_t					count;
@@ -142,8 +141,9 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
 #define	ValueType(v)			((v)->type)
-#define	ValueSize(v)			((v)->asize)
+#define	ValueSize(v)			LBS_StringLength((v)->str)
 #define	ValueStr(v)				((v)->str)
+#define	ValueStrBody(v)			(char *)LBS_Body(((v)->str))
 
 #define	ValueAttribute(v)		((v)->attr)
 #define	ValueIsNil(v)			((v)->attr |= GL_ATTR_NIL)
