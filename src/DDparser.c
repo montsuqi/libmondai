@@ -94,7 +94,7 @@ SetValueAttribute(
 {
 	int		i;
 
-	val->attr |= attr;
+	ValueAttribute(val) |= attr;
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {

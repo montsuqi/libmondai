@@ -1,3 +1,7 @@
+2004-01-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (GetItemLongName): ワーニングを削った(邪魔)
+
 2004-01-11  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.c他: binary型追加
