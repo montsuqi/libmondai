@@ -113,7 +113,7 @@ main ()
      fi
   fi
   if test "x$no_libmondai" = x ; then
-     AC_MSG_RESULT(yes)
+     AC_MSG_RESULT(yes (version $libmondai_config_major_version.$libmondai_config_minor_version.$libmondai_config_micro_version))
      ifelse([$2], , :, [$2])     
   else
      AC_MSG_RESULT(no)
