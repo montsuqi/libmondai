@@ -1,3 +1,10 @@
+2003-03-27  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* tools/rec2copy.c (is_return): New static variable, for output return
+	flag .
+	(PutName): Set is_return = TRUE if over threshold.
+	(COBOL): Output return if is_return is TRUE.
+
 2003-03-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c : valueconv.c から分離した

@@ -54,6 +54,7 @@ static	int		level;
 static	void	COBOL(ValueStruct *val, size_t arraysize, size_t textsize);
 
 static	int		Col;
+static	int		is_return = FALSE;
 
 static	void
 PutLevel(
@@ -123,7 +124,17 @@ PutName(
 			||	(  !stricmp(name,"filler")  ) ) {
 		strcpy(buff,"filler");
 	} else {
+		int threshold;
+
 		sprintf(buff,"%s%s",Prefix,name);
+#define MAX_CHARACTER_IN_LINE 65
+
+		threshold = MAX_CHARACTER_IN_LINE -
+					(8 + level * 2 + 4 + 4 + 18 + 2 + 18 + 1);
+		if		(	(  threshold <= 0          )
+				||	(  strlen(buff) > threshold) ) {
+			is_return = TRUE;
+		}
 	}
 	PutString(buff);
 }
@@ -194,6 +205,19 @@ COBOL(
 			PutLevel(level);
 			tmp = val->body.RecordData.item[i];
 			PutName(val->body.RecordData.names[i]);
+			if		(  is_return  ) {
+				/* new line if current ValueStruct children is item and it has
+				   occurs */
+				if		(	(  tmp->type != GL_TYPE_RECORD  )
+						&&	(  tmp->type == GL_TYPE_ARRAY  )
+						&&	(  tmp->body.ArrayData.item[0]->type != GL_TYPE_RECORD  ) ) {
+					fputs("\n",stdout);
+					fputs("        " /* comment */
+					      "                   " /* indent */,stdout);
+					Col = 0;
+				}
+			  	is_return = FALSE;
+			}
 			if		(  tmp->type  !=  GL_TYPE_RECORD  ) {
 				PutTab(4);
 			}
