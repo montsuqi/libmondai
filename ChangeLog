@@ -1,3 +1,8 @@
+2003-09-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h, src/DDparser.[ch] : RecordStructを追い出す。それに
+	伴い、関数の仕様等変更した
+
 2003-09-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.c (LBS_Emit): 途中にemitした時の処理を正しくした

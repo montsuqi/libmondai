@@ -294,23 +294,23 @@ static	void
 MakeFromRecord(
 	char	*name)
 {
-	RecordStruct	*rec;
+	ValueStruct	*value;
 
 dbgmsg(">MakeFromRecord");
 	level = 1;
 	DD_ParserInit();
-	if		(  ( rec = DD_ParserDataDefines(name) )  !=  NULL  ) {
+	if		(  ( value = DD_ParseValue(name) )  !=  NULL  ) {
 		PutLevel(level,TRUE);
 		if		(  *RecName  ==  0  ) {
-			PutString(rec->name);
+			PutString(ValueName);
 		} else {
 			PutString(RecName);
 		}
 		if		(  fFiller  ) {
 			printf(".\n");
-			SIZE(rec->value);
+			SIZE(value);
 		} else {
-			COBOL(rec->value);
+			COBOL(value);
 		}
 		printf(".\n");
 	}

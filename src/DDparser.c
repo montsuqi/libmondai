@@ -35,7 +35,6 @@ copies.
 #include	<string.h>
 #include	<ctype.h>
 #include	<glib.h>
-#include	<sys/stat.h>	/*	for stbuf	*/
 #include	"types.h"
 #include	"hash.h"
 #include	"value.h"
@@ -299,31 +298,30 @@ extern	void
 DD_ParserInit(void)
 {
 	DD_LexInit();
+	ValueName = (char *)xmalloc(1);;
 }
 
-extern	RecordStruct	*
-DD_Parse(
+static	ValueStruct	*
+ParseMain(
 	FILE	*fp,
 	char	*name)
 {
-	RecordStruct	*ret;
+	ValueStruct	*ret;
 
-dbgmsg(">DD_Parse");
+dbgmsg(">ParseMain");
 	DD_FileName = StrDup(name);
 	DD_cLine = 1;
 	DD_File = fp;
-	ret = New(RecordStruct);
-	ret->value = NULL;
-	ret->name = NULL;
-	ret->type = RECORD_NULL;
+	ret = NULL;
 
 	if		(  GetSymbol  ==  T_SYMBOL  ) {
-		ret->name = StrDup(DD_ComSymbol);
+		xfree(ValueName);
+		ValueName = StrDup(DD_ComSymbol);
 		if		(  GetSymbol  == '{'  ) {
-			ret->value = NewValue(GL_TYPE_RECORD);
-			ret->value->attr = GL_ATTR_NULL;
+			ret = NewValue(GL_TYPE_RECORD);
+			ret->attr = GL_ATTR_NULL;
 			GetName;
-			ParValueDefine(ret->value);
+			ParValueDefine(ret);
 			if		(  fDD_Error  ) {
 				ret = NULL;
 			}
@@ -335,69 +333,25 @@ dbgmsg(">DD_Parse");
 		ret = NULL;
 	}
 	xfree(DD_FileName);
-dbgmsg("<DD_Parse");
+dbgmsg("<ParseMain");
 	return	(ret);
 }
 
-extern	RecordStruct	*
-DD_ParserDataDefines(
+extern	ValueStruct	*
+DD_ParseValue(
 	char	*name)
 {
 	FILE	*fp;
-	struct	stat	stbuf;
-	RecordStruct	*ret;
+	ValueStruct	*ret;
 
-dbgmsg(">ParserDataDefines");
-	if		(  stat(name,&stbuf)  ==  0  ) { 
-		fDD_Error = FALSE;
-		if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
-			ret = DD_Parse(fp,name);
-			fclose(fp);
-		} else {
-			ret = NULL;
-		}
+dbgmsg(">DD_ParseValue");
+	fDD_Error = FALSE;
+	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
+		ret = ParseMain(fp,name);
+		fclose(fp);
 	} else {
 		ret = NULL;
 	}
-dbgmsg("<ParserDataDefines");
+dbgmsg("<DD_ParseValue");
 	return	(ret);
 }
-
-extern	RecordStruct	*
-ReadRecordDefine(
-	char	*name)
-{
-	RecordStruct	*rec;
-	char		buf[SIZE_LONGNAME+1]
-	,			dir[SIZE_LONGNAME+1];
-	char		*p
-	,			*q;
-	Bool		fExit;
-
-dbgmsg(">ReadRecordDefine");
-	strcpy(dir,RecordDir);
-	p = dir;
-	rec = NULL;
-	do {
-		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
-			*q = 0;
-			fExit = FALSE;
-		} else {
-			fExit = TRUE;
-		}
-		sprintf(buf,"%s/%s.rec",p,name);
-		if		(  ( rec = DD_ParserDataDefines(buf) )  !=  NULL  ) {
-			break;
-		}
-		p = q + 1;
-	}	while	(  !fExit  );
-	if		(  rec  ==  NULL  ) {
-		rec = New(RecordStruct);
-		rec->name = StrDup(name);
-		rec->value = NULL;
-		rec->type = RECORD_NULL;
-	}
-dbgmsg("<ReadRecordDefine");
-	return	(rec);
-}
-

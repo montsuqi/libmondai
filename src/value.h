@@ -91,44 +91,6 @@ typedef	struct _ValueStruct	{
 	}	body;
 }	ValueStruct;
 
-typedef	struct {
-	char	***item;
-}	KeyStruct;
-
-#define	DBOP_SELECT		0
-#define	DBOP_FETCH		1
-#define	DBOP_UPDATE		2
-#define	DBOP_INSERT		3
-#define	DBOP_DELETE		4
-
-typedef	struct {
-	char			*name;
-	GHashTable		*opHash;
-	int				ocount;
-	LargeByteString	**ops;
-}	PathStruct;
-
-
-typedef	struct {
-	KeyStruct	*pkey;
-	PathStruct	**path;
-	GHashTable	*paths;
-	int			pcount;
-	void		*dbg;
-}	DB_Struct;
-
-#define	RECORD_NULL		0
-#define	RECORD_DB		1
-
-typedef	struct _RecordStruct	{
-	char		*name;
-	ValueStruct	*value;
-	int		type;
-	union {
-		DB_Struct	*db;
-	}	opt;
-}	RecordStruct;
-
 #define	GL_TYPE_CLASS			(PacketDataType)0xF0
 #define	GL_TYPE_NULL			(PacketDataType)0x00
 

@@ -23,10 +23,8 @@ copies.
 #define	_INC_DD_PARSER_H
 #include	<glib.h>
 
-extern	void			 DD_ParserInit(void);
-extern	RecordStruct	*DD_Parse(FILE *fp, char *name);
-extern	RecordStruct	*DD_ParserDataDefines(char *name);
-extern	RecordStruct	*ReadRecordDefine(char *name);
+extern	void		 DD_ParserInit(void);
+extern	ValueStruct	*DD_ParseValue(char *name);
 
 #undef	GLOBAL
 #ifdef	_DD_PARSER
@@ -36,5 +34,7 @@ extern	RecordStruct	*ReadRecordDefine(char *name);
 #endif
 
 GLOBAL	char	*RecordDir;
+GLOBAL	char	*ValueName;
+
 #undef	GLOBAL
 #endif

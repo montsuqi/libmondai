@@ -51,7 +51,6 @@ main(
 	char	*p;
 	int		i
 	,		j;
-	RecordStruct	*rec;
 	ValueStruct	*val
 	,			*e;
 	char	*buff;
@@ -63,11 +62,10 @@ main(
 	RecordDir = ".";
 	ConvSetLanguage(argv[1]);
 	DD_ParserInit();
-	if		( ( rec = ReadRecordDefine("testrec") )  ==  NULL  )	{
+	if		( ( val = DD_ParseValue("testrec.rec") )  ==  NULL  )	{
 		printf("file not found.\n");
 		exit(1);
 	}
-	val = rec->value;
 
 	/*	set	*/
 	SetValueString(GetItemLongName(val,"a"),"aaa");
