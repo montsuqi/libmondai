@@ -61,7 +61,7 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_Clear(lbs)			LBS_EmitStart(lbs)
 #define	LBS_Size(lbs)			((lbs)->size)
 #define	LBS_StringLength(lbs)	LBS_Size(lbs)
-#define	LBS_Body(lbs)			((void *)(lbs)->body)
+#define	LBS_Body(lbs)			((void *)((LargeByteString *)lbs)->body)
 
 #define	LBS_Ptr(lbs)			(&(lbs)->body[(lbs)->ptr])
 #define	LBS_GetPos(lbs)			((lbs)->ptr)
