@@ -103,9 +103,9 @@ main(
 	RecordDir = ".";
 	//	ConvSetLanguage(argv[1]);
 	printf("***** DD_ParserInit *****\n");
-	DD_ParserInit();
-	printf("***** DD_ParseValue *****\n");
-	if		( ( val = DD_ParseValue("testrec.rec",NULL) )  ==  NULL  )	{
+	RecParserInit();
+	printf("***** RecParseValue *****\n");
+	if		( ( val = RecParseValue("testrec.rec",NULL) )  ==  NULL  )	{
 		fprintf(stderr,"file not found.\n");
 		exit(1);
 	}

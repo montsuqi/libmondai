@@ -27,10 +27,10 @@ copies.
 
 extern	ValueStruct	*ParValueDefine(CURFILE *in);
 extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
-extern	void		DD_ParserInit(void);
-extern	ValueStruct	*DD_ParseValue(char *name, char **ValueName);
-extern	ValueStruct	*DD_ParseValueMem(char *mem, char **ValueName);
-extern	ValueStruct	*DD_ParseMain(CURFILE *in);
+extern	void		RecParserInit(void);
+extern	ValueStruct	*RecParseValue(char *name, char **ValueName);
+extern	ValueStruct	*RecParseValueMem(char *mem, char **ValueName);
+extern	ValueStruct	*RecParseMain(CURFILE *in);
 
 #undef	GLOBAL
 #ifdef	_REC_PARSER

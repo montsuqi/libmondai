@@ -100,10 +100,7 @@ PushLexInfo(
 		info->Reserved = res;
 		info->fError = FALSE;
 		info->ValueName = NULL;
-		if		(  path  ==  NULL  ) {
-			path = ".";
-		}
-		info->path = StrDup(path);
+		info->path = path;
 		info->Symbol = NULL;
 		info->ValueName = NULL;
 		info->next = in;
@@ -128,13 +125,13 @@ PushLexInfoMem(
 	info = New(CURFILE);
 	info->fn = StrDup("** memory **");
 	info->cLine = 1;
-	info->body = StrDup(mem);
+	info->body = mem;
 	info->size = strlen(mem)+1;
 	info->pos = 0;
 	info->ftop = NULL;
 	info->Reserved = res;
 	info->fError = FALSE;
-	info->path = NULL;
+	info->path = path;
 	info->Symbol = NULL;
 	info->ValueName = NULL;
 	info->next = in;
@@ -151,11 +148,6 @@ DropLexInfo(
 	xfree(info->fn);
 	if		(  info->Symbol  !=  NULL  ) {
 		xfree(info->Symbol);
-	}
-	if		(  info->path  !=  NULL  ) {
-		xfree(info->path);
-	} else {
-		xfree(info->body);
 	}
 	if		(  info->ValueName  !=  NULL  ) {
 		xfree(info->ValueName);
@@ -209,7 +201,9 @@ ENTER_FUNC;
 	if		(  in->body  !=  NULL  ) {
 		xfree(in->body);
 	}
-	strcpy(buff,in->path);
+	if		(  in->path  !=  NULL  ) {
+		strcpy(buff,in->path);
+	}
 	p = buff;
 	do {
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
@@ -275,7 +269,7 @@ CheckReserved(
 	return	(ret);
 }
 
-#define	UnGetChar(in,c)		(in)->body[-- (in)->pos] =(c)
+#define	UnGetChar(in)		(in)->pos --
 #define	GetPos(in)			&(in)->body[(in)->pos]
 #define	SKIP_SPACE(in)		\
 	while	(  isspace( c = GetChar(in) ) ) {	\
@@ -316,7 +310,7 @@ ENTER_FUNC;
 	SKIP_SPACE(in);
 	p = GetPos(in)-1;
 	while	(  !isspace(c = GetChar(in))  );
-	UnGetChar(in,c);
+	UnGetChar(in);
 	q = GetPos(in);
 	if		(  !strnicmp(p,"include",q-p)  ) {
 		SKIP_SPACE(in);
@@ -338,12 +332,39 @@ ENTER_FUNC;
 			DoInclude(in,fn);
 		}
 	} else {
-		UnGetChar(in,c);
+		UnGetChar(in);
 		while	(  GetChar(in)  !=  '\n'  );
 		in->cLine ++;
 	}
 LEAVE_FUNC;
 }
+
+#ifdef	DEBUG
+static	void
+DumpCURFILE(
+	CURFILE	*in)
+{
+	printf("token = ");
+	switch	(in->Token) {
+	  case	T_SYMBOL:
+		printf("symbol (%s)\n",in->Symbol);
+		break;
+	  case	T_ICONST:
+		printf("iconst (%d)\n",in->Int);
+		break;
+	  case	T_EOF:
+		printf("[EOF]\n");
+		break;
+	  default:
+		if		(  in->Token  <  128  ) {
+			printf("(%c)\n",in->Token);
+		} else {
+			printf("(%04X)\n",in->Token);
+		}
+		break;
+	}
+}
+#endif
 
 extern	int
 Lex(
@@ -405,7 +426,7 @@ ENTER_FUNC;
 			}	while	(	(  isalpha(c)  )
 						||	(  isdigit(c)  )
 						||	(  c  ==  '_'  ) );
-			UnGetChar(in,c);
+			UnGetChar(in);
 			q = GetPos(in);
 			in->Symbol = (char *)xmalloc(q-p+1);
 			memcpy(in->Symbol,p,q-p);
@@ -423,7 +444,7 @@ ENTER_FUNC;
 			}	while	(	(  isalpha(c)  )
 						||	(  isdigit(c)  )
 						||	(  c  ==  '_'  ) );
-			UnGetChar(in,c);
+			UnGetChar(in);
 			q = GetPos(in);
 			in->Symbol = (char *)xmalloc(q-p+1);
 			memcpy(in->Symbol,p,q-p);
@@ -447,26 +468,9 @@ ENTER_FUNC;
 		}
 		break;
 	}
+dbgmsg("*");
 #ifdef	DEBUG
-	printf("token = ");
-	switch	(in->Token) {
-	  case	T_SYMBOL:
-		printf("symbol (%s)\n",in->Symbol);
-		break;
-	  case	T_ICONST:
-		printf("iconst (%d)\n",in->Int);
-		break;
-	  case	T_EOF:
-		printf("[EOF]\n");
-		break;
-	  default:
-		if		(  in->Token  <  128  ) {
-			printf("(%c)\n",in->Token);
-		} else {
-			printf("(%04X)\n",in->Token);
-		}
-		break;
-	}
+	DumpCURFILE(in);
 #endif
 LEAVE_FUNC;
 	return	(in->Token);

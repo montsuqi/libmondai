@@ -287,6 +287,7 @@ ENTER_FUNC;
 		GetSymbol;
 		break;
 	  case	'{':
+	  case	'(':
 		value = NewValue(GL_TYPE_RECORD);
 		GetName;
 		ParValueDefines(in,value);
@@ -377,7 +378,12 @@ ENTER_FUNC;
 		}
 	}
 	if		(	(  !in->fError      )
+#if	0
 			&&	(  ComToken  ==  '}'  ) ) {
+#else
+			&&	(	(  ComToken  ==  '}'  )
+				||	(  ComToken  ==  ')'  ) ) ) {
+#endif
 		GetSymbol;
 		/*	OK	*/
 	} else {
@@ -389,14 +395,14 @@ LEAVE_FUNC;
 
 
 extern	void
-DD_ParserInit(void)
+RecParserInit(void)
 {
 	LexInit();
 	Reserved = MakeReservedTable(tokentable);
 }
 
 extern	ValueStruct	*
-DD_ParseMain(
+RecParseMain(
 	CURFILE	*in)
 {
 	ValueStruct	*ret;
@@ -436,7 +442,7 @@ LEAVE_FUNC;
 }
 
 extern	ValueStruct	*
-DD_ParseValue(
+RecParseValue(
 	char	*name,
 	char	**ValueName)
 {
@@ -447,7 +453,7 @@ DD_ParseValue(
 ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = DD_ParseMain(in);
+		ret = RecParseMain(in);
 		if		(	(  in->ValueName  !=  NULL  )
 				&&	(  ValueName      !=  NULL  ) ) {
 			*ValueName = StrDup(in->ValueName);
@@ -461,7 +467,7 @@ LEAVE_FUNC;
 }
 
 extern	ValueStruct	*
-DD_ParseValueMem(
+RecParseValueMem(
 	char	*mem,
 	char	**ValueName)
 {
@@ -472,7 +478,7 @@ DD_ParseValueMem(
 ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfoMem(&root,mem,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = DD_ParseMain(in);
+		ret = RecParseMain(in);
 		if		(	(  in->ValueName  !=  NULL  )
 				&&	(  ValueName      !=  NULL  ) ) {
 			*ValueName = StrDup(in->ValueName);

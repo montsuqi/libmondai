@@ -160,7 +160,7 @@ BuildMcpArea(
 	p += sprintf(p,		"};");
 	p += sprintf(p,	"};");
 
-	value = DD_ParseValueMem(buff,NULL);
+	value = RecParseValueMem(buff,NULL);
 #endif
 
 	return	(value);
@@ -185,9 +185,9 @@ main(
 
 	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
-	printf("***** DD_ParserInit *****\n");
-	DD_ParserInit();
-	printf("***** DD_ParseValue *****\n");
+	printf("***** RecParserInit *****\n");
+	RecParserInit();
+	printf("***** RecParseValue *****\n");
 	val = BuildMcpArea(10);
 
 	DumpValueStruct(val);
