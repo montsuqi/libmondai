@@ -594,6 +594,59 @@ SetValueInteger(
 }
 
 extern	Bool
+SetValueChar(
+	ValueStruct	*val,
+	char		cval)
+{
+	Bool	rc;
+	char	str[SIZE_NUMBUF+1];
+	Bool	fMinus;
+
+	if		(  val  ==  NULL  ) {
+		fprintf(stderr,"no ValueStruct\n");
+		return	(FALSE);
+	}
+	switch	(val->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		sprintf(str,"%c",cval);
+		rc = SetValueString(val,str,NULL);
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  cval  <  0  ) {
+			cval = - cval;
+			fMinus = TRUE;
+		} else {
+			fMinus = FALSE;
+		}
+		sprintf(str,"%0*d",ValueFixedLength(val),(int)cval);
+		if		(  fMinus  ) {
+			*str |= 0x40;
+		}
+		rc = SetValueString(val,str,NULL);
+		break;
+	  case	GL_TYPE_INT:
+		ValueInteger(val) = (int)cval;
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_FLOAT:
+		ValueFloat(val) = (double)cval;
+		rc = TRUE;
+		break;
+	  case	GL_TYPE_BOOL:
+		ValueBool(val) = ( cval == 0 ) ? FALSE : TRUE;
+		rc = TRUE;
+		break;
+	  default:
+		rc = FALSE;	  
+	}
+	ValueIsNonNil(val);
+	return	(rc);
+}
+
+extern	Bool
 SetValueBool(
 	ValueStruct	*val,
 	Bool		bval)

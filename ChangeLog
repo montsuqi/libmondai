@@ -1,3 +1,13 @@
+2003-10-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Ver 1.2.0 リリース(安定版ブランチ作成)
+
+	* src/testvalue.c: 追加
+
+	* src/getset.c (SetValueChar): 追加
+
+	* src/Native.c : 文字列のpack/unpackの形式を変更した
+
 2003-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/XML.c: タグ名を変数名に一致させた形式

@@ -24,6 +24,7 @@ copies.
 
 extern	Bool		SetValueString(ValueStruct *val, char *str, char *locale);
 extern	Bool		SetValueInteger(ValueStruct *val, int ival);
+extern	Bool		SetValueChar(ValueStruct *val, char cval);
 extern	Bool		SetValueBool(ValueStruct *val, Bool bval);
 extern	Bool		SetValueFloat(ValueStruct *val, double bval);
 extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
