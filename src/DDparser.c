@@ -40,9 +40,45 @@ copies.
 #include	"value.h"
 #include	"misc.h"
 #include	"monstring.h"
-#include	"DDlex.h"
+#include	"others.h"
+#include	"Lex.h"
 #include	"DDparser.h"
 #include	"debug.h"
+
+#define	T_CHAR			(T_YYBASE +1)
+#define	T_TEXT			(T_YYBASE +2)
+#define	T_INT			(T_YYBASE +3)
+#define	T_INPUT			(T_YYBASE +4)
+#define	T_OUTPUT		(T_YYBASE +5)
+#define	T_BOOL			(T_YYBASE +6)
+#define	T_BYTE			(T_YYBASE +7)
+#define	T_NUMBER		(T_YYBASE +8)
+#define	T_VARCHAR		(T_YYBASE +9)
+#define	T_DBCODE		(T_YYBASE +10)
+#define	T_OBJECT		(T_YYBASE +11)
+#define	T_FLOAT			(T_YYBASE +12)
+#define	T_VIRTUAL		(T_YYBASE +13)
+#define	T_ALIAS			(T_YYBASE +14)
+
+static	TokenTable	tokentable[] = {
+	{	"bool"		,T_BOOL		},
+	{	"byte"		,T_BYTE		},
+	{	"char"		,T_CHAR		},
+	{	"varchar"	,T_VARCHAR	},
+	{	"float"		,T_FLOAT	},
+	{	"input"		,T_INPUT	},
+	{	"int"		,T_INT		},
+	{	"number"	,T_NUMBER	},
+	{	"output"	,T_OUTPUT	},
+	{	"text"		,T_TEXT		},
+	{	"object"	,T_OBJECT	},
+	{	"dbcode"	,T_DBCODE	},
+	{	"virtual"	,T_VIRTUAL	},
+	{	"alias"		,T_ALIAS	},
+	{	""			,0	}
+};
+
+static	GHashTable	*Reserved;
 
 static	void
 SetAttribute(
@@ -79,6 +115,44 @@ SetAttribute(
 }
 
 static	void
+ResolveAlias(
+	ValueStruct		*root,
+	ValueStruct		*val)
+{
+	char		*name;
+	int			i;
+
+	if		(  val  !=  NULL  ) {
+		switch	(val->type) {
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+				ResolveAlias(root,ValueArrayItem(val,i));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+				ResolveAlias(root,ValueRecordItem(val,i));
+			}
+			break;
+		  case	GL_TYPE_ALIAS:
+			name = ValueAliasName(val);
+			if		(  *name  ==  '.'  ) {
+				ValueAlias(val) = GetItemLongName(root,name+1);
+			}
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_NUMBER:
+		  default:
+			break;
+		}
+	}
+}	
+
+static	void
 _Error(
 	char	*msg,
 	char	*fn,
@@ -87,9 +161,7 @@ _Error(
 	printf("%s:%d:%s\n",fn,line,msg);
 }
 #undef	Error
-#define	Error(msg)	{fDD_Error=TRUE;_Error((msg),DD_FileName,DD_cLine);}
-#define	GetSymbol	(DD_Token = DD_Lex(FALSE))
-#define	GetName		(DD_Token = DD_Lex(TRUE))
+#define	Error(msg)		{CURR->fError=TRUE;_Error((msg),CURR->fn,CURR->cLine);}
 
 typedef	struct _ArrayDimension	{
 	int		count;
@@ -102,7 +174,9 @@ ParValueDefine(
 {
 	size_t		size
 	,			ssize;
-	char		name[SIZE_SYMBOL+1];
+	char		name[SIZE_SYMBOL+1]
+	,			buff[SIZE_LONGNAME+1];
+	char		*p;
 	ValueStruct	*value
 	,			*array;
 	ValueAttributeType	attr;
@@ -112,21 +186,55 @@ ParValueDefine(
 
 dbgmsg(">ParValueDefine");
 	value = NULL;
-	while	(  DD_Token  ==  T_SYMBOL  ) {
-		attr = GL_ATTR_NULL;
-		strcpy(name,DD_ComSymbol);
+	while	(  ComToken  ==  T_SYMBOL  ) {
+		attr = ValueAttribute(upper);
+		strcpy(name,ComSymbol);
 		switch	(GetSymbol) {
+		  case	T_ALIAS:
+		  case	'=':
+			value = NewValue(GL_TYPE_ALIAS);
+			p = buff;
+			while	(	(  GetSymbol  !=  ','  )
+					&&	(  ComToken   !=  ';'  ) ) {
+				switch	(ComToken) {
+				  case	T_SYMBOL:
+					p += sprintf(p,"%s",ComSymbol);
+					break;
+				  case	'[':
+					if		(  GetSymbol  ==  T_ICONST  ) {
+						size = ComInt;
+						GetSymbol;
+					} else {
+						size = 0;
+					}
+					if		(  ComToken  ==  ']'  ) {
+						p += sprintf(p,"[%d]",size);
+					} else {
+						Error("invalid sufix");
+					}
+					break;
+				  case	'.':
+					p += sprintf(p,".");
+					break;
+				  default:
+					Error("invalid char in alias");
+					break;
+				}
+				ValueAliasName(value) = StrDup(buff);
+			}
+			attr |= GL_ATTR_ALIAS;
+			break;
 		  case	T_BYTE:
 		  case	T_CHAR:
 		  case	T_NUMBER:
 		  case	T_DBCODE:
 		  case	T_VARCHAR:
-			token = DD_Token;
+			token = ComToken;
 			size = 0;
 			ssize = 0;
 			if		(  GetSymbol  ==  '('  ) {
 				if		(  GetSymbol  ==  T_ICONST  ) {
-					size = DD_ComInt;
+					size = ComInt;
 					if		(  token  ==  T_NUMBER  ) {
 						switch	(GetSymbol) {
 						  case	')':
@@ -134,7 +242,7 @@ dbgmsg(">ParValueDefine");
 							break;
 						  case	',':
 							if		(  GetSymbol  ==  T_ICONST  ) {
-								ssize = DD_ComInt;
+								ssize = ComInt;
 							} else {
 								Error("field size invalud");
 							}
@@ -144,7 +252,7 @@ dbgmsg(">ParValueDefine");
 					} else {
 						GetSymbol;
 					}
-					if		(  DD_Token  !=  ')'  ) {
+					if		(  ComToken  !=  ')'  ) {
 						Error("not closed left paren");
 					}
 				} else {
@@ -154,7 +262,7 @@ dbgmsg(">ParValueDefine");
 			} else {
 				size = 1;
 			}
-			if		(  !fDD_Error  ) {
+			if		(  !CURR->fError  ) {
 				switch	(token) {
 				  case	T_BYTE:
 					value = NewValue(GL_TYPE_BYTE);
@@ -175,15 +283,15 @@ dbgmsg(">ParValueDefine");
 					break;
 				}
 				if		(  value->type  ==  GL_TYPE_NUMBER  ) {
-					value->body.FixedData.flen = size;
-					value->body.FixedData.slen = ssize;
-					value->body.FixedData.sval = (char *)xmalloc(size + 1);
-					value->body.FixedData.sval[size] = 0;
-					memset(value->body.FixedData.sval,'0',value->body.FixedData.flen);
+					ValueFixedLength(value) = size;
+					ValueFixedSlen(value) = ssize;
+					ValueFixedBody(value) = (char *)xmalloc(size + 1);
+					ValueFixedBody(value)[size] = 0;
+					memset(ValueFixedBody(value),'0',size);
 				} else {
-					value->body.CharData.len = size;
-					value->body.CharData.sval = (char *)xmalloc(size + 1);
-					memclear(value->body.CharData.sval,size + 1);
+					ValueStringLength(value) = size;
+					ValueString(value) = (char *)xmalloc(size + 1);
+					memclear(ValueString(value),size + 1);
 				}
 			}
 			break;
@@ -218,17 +326,17 @@ dbgmsg(">ParValueDefine");
 			break;
 		}
 		next = NULL;
-		while	(  DD_Token  ==  '['  ) {	
+		while	(  ComToken  ==  '['  ) {	
 			curr = New(ArrayDimension);
 			if		(  GetSymbol  == T_ICONST  ) {
-				curr->count = DD_ComInt;
+				curr->count = ComInt;
 				GetSymbol;
 			} else {
 				curr->count = 0;
 			}
 			curr->next = next;
 			next = curr;
-			if		(  DD_Token  !=  ']'  ) {
+			if		(  ComToken  !=  ']'  ) {
 				Error("unmatch lbracket");
 				break;
 			}
@@ -249,7 +357,7 @@ dbgmsg(">ParValueDefine");
 			curr = next;
 			value = array;
 		}
-		while	(  DD_Token  ==  ','  ) {
+		while	(  ComToken  ==  ','  ) {
 			switch	(GetSymbol) {
 			  case	T_INPUT:
 				attr |= GL_ATTR_INPUT;
@@ -266,63 +374,67 @@ dbgmsg(">ParValueDefine");
 			}
 			GetSymbol;
 		}
-		if		(  DD_Token  ==  ';'  ) {
+		if		(  ComToken  ==  ';'  ) {
 			GetSymbol;
 			/*	OK	*/
 		} else {
 			Error("; missing");
 		}
-		if		(  !fDD_Error  ) {
+		if		(  !CURR->fError  ) {
 			value->attr = GL_ATTR_NULL;
 			SetAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
 	}
-	if		(	(  !fDD_Error         )
-			 &&	(  DD_Token  ==  '}'  ) ) {
+	if		(	(  !CURR->fError      )
+			 &&	(  ComToken  ==  '}'  ) ) {
 		GetSymbol;
 		/*	OK	*/
 	} else {
-		printf("token = %d [%c]\n",DD_Token,DD_Token);
+		printf("token = %d [%c]\n",ComToken,ComToken);
 		Error("syntax error");
 	}
 	if		(  value  ==  NULL  ) {
 		value = NewValue(GL_TYPE_INT);
-		value->attr = GL_ATTR_NULL;
+		ValueAttribute(value) = ValueAttribute(upper);
 		ValueAddRecordItem(upper,NULL,value);
 	}
 dbgmsg("<ParValueDefine");
 }
 
+
 extern	void
 DD_ParserInit(void)
 {
-	DD_LexInit();
-	ValueName = (char *)xmalloc(1);;
+	LexInit();
+	Reserved = MakeReservedTable(tokentable);
+	ValueName = (char *)xmalloc(1);
 }
 
 extern	ValueStruct	*
-DD_ParseMain(
-	FILE	*fp,
-	char	*name)
+DD_ParseMain(void)
 {
 	ValueStruct	*ret;
+	ValueAttributeType	attr;
 
 dbgmsg(">DD_ParseMain");
-	DD_FileName = StrDup(name);
-	DD_cLine = 1;
-	DD_File = fp;
+	SetReserved(Reserved); 
 	ret = NULL;
-
-	if		(  GetSymbol  ==  T_SYMBOL  ) {
+	if		(  GetSymbol  ==  T_VIRTUAL  ) {
+		attr = GL_ATTR_VIRTUAL;
+		GetSymbol;
+	} else {
+		attr = GL_ATTR_NULL;
+	}
+	if		(  ComToken  ==  T_SYMBOL  ) {
 		xfree(ValueName);
-		ValueName = StrDup(DD_ComSymbol);
+		ValueName = StrDup(ComSymbol);
 		if		(  GetSymbol  == '{'  ) {
 			ret = NewValue(GL_TYPE_RECORD);
-			ret->attr = GL_ATTR_NULL;
+			ValueAttribute(ret) = attr;
 			GetName;
 			ParValueDefine(ret);
-			if		(  fDD_Error  ) {
+			if		(  CURR->fError  ) {
 				ret = NULL;
 			}
 		} else {
@@ -332,7 +444,9 @@ dbgmsg(">DD_ParseMain");
 	} else {
 		ret = NULL;
 	}
-	xfree(DD_FileName);
+	if		(  ret  !=  NULL  ) {
+		ResolveAlias(ret,ret);
+	}
 dbgmsg("<DD_ParseMain");
 	return	(ret);
 }
@@ -341,14 +455,12 @@ extern	ValueStruct	*
 DD_ParseValue(
 	char	*name)
 {
-	FILE	*fp;
 	ValueStruct	*ret;
 
 dbgmsg(">DD_ParseValue");
-	fDD_Error = FALSE;
-	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
-		ret = DD_ParseMain(fp,name);
-		fclose(fp);
+	if		(  PushLexInfo(name,RecordDir,Reserved)  !=  NULL  ) {
+		ret = DD_ParseMain();
+		DropLexInfo();
 	} else {
 		ret = NULL;
 	}

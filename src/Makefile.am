@@ -24,6 +24,7 @@ libmondaiinclude_HEADERS =	\
 	value.h			\
 	valueconv.h		\
 	libmondai.h		\
+	Lex.h			\
 	DDparser.h		\
 	monstring.h		\
 	types.h
@@ -49,7 +50,7 @@ libmondai_la_SOURCES	=			\
 	numerici.c		numerici.h		\
 	others.c		others.h		\
 	DDparser.c		DDparser.h		\
-	DDlex.c			DDlex.h			\
+	Lex.c			Lex.h			\
 	types.h							\
 	debug.h
 

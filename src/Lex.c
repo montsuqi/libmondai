@@ -35,79 +35,57 @@ copies.
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
+#include	"others.h"
 #include	"hash.h"
 #include	"value.h"
-#include	"DDlex.h"
+#define		_LEX
+#include	"Lex.h"
 #include	"DDparser.h"
 #include	"debug.h"
 
-typedef	struct	INCFILE_S	{
-	struct	INCFILE_S	*next;
-	fpos_t				pos;
-	int					cLine;
-	char				*fn;
-}	INCFILE;
-static	INCFILE		*ftop;
+extern	CURFILE	*
+PushLexInfo(
+	char	*name,
+	char	*path,
+	GHashTable	*res)
+{
+	CURFILE	*info;
+	FILE	*fp;
 
-#define	GetChar(fp)		fgetc(fp)
-#define	UnGetChar(fp,c)	ungetc((c),(fp))
-
-static	struct	{
-	char	*str;
-	int		token;
-}	tokentable[] = {
-	{	"bool"		,T_BOOL		},
-	{	"byte"		,T_BYTE		},
-	{	"char"		,T_CHAR		},
-	{	"varchar"	,T_VARCHAR	},
-	{	"float"		,T_FLOAT	},
-	{	"input"		,T_INPUT	},
-	{	"int"		,T_INT		},
-	{	"number"	,T_NUMBER	},
-	{	"output"	,T_OUTPUT	},
-	{	"text"		,T_TEXT		},
-	{	"object"	,T_OBJECT	},
-	{	"dbcode"	,T_DBCODE	},
-	{	"virtual"	,T_VIRTUAL	},
-	{	""			,0	}
-};
-
-static	GHashTable	*Reserved;
+	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
+		info = New(CURFILE);
+		info->fn = StrDup(name);
+		info->cLine = 1;
+		info->fp = fp;
+		info->ftop = NULL;
+		info->Reserved = res;
+		info->fError = FALSE;
+		info->next = InfoRoot.curr;
+		if		(  path  ==  NULL  ) {
+			path = ".";
+		}
+		info->path = StrDup(path);
+		info->Symbol = (char *)xmalloc(SIZE_SYMBOL+1);
+		InfoRoot.curr = info;
+	} else {
+		info = NULL;
+	}
+	return	(info);
+}
 
 extern	void
-DD_LexInit(void)
+DropLexInfo(void)
 {
-	int		i;
+	CURFILE	*info;
 
-	Reserved = NewNameHash();
-	for	( i = 0 ; tokentable[i].token  !=  0 ; i ++ ) {
-		g_hash_table_insert(Reserved,tokentable[i].str,(gpointer)tokentable[i].token);
-	}
-	ftop = NULL;
+	info = InfoRoot.curr;
+	xfree(info->fn);
+	xfree(info->Symbol);
+	xfree(info->path);
+	fclose(info->fp);
+	InfoRoot.curr = info->next;
+	xfree(info);
 }
-
-static	int
-CheckReserved(
-	char	*str)
-{
-	gpointer	p;
-	int		ret;
-
-	if		(  ( p = g_hash_table_lookup(Reserved,str) ) !=  NULL  ) {
-		ret = (int)p;
-	} else {
-		ret = T_SYMBOL;
-	}
-	return	(ret);
-}
-
-#define	SKIP_SPACE	while	(  isspace( c = GetChar(DD_File) ) ) {	\
-						if		(  c  ==  '\n'  ) {	\
-							c = ' ';\
-							DD_cLine ++;\
-						}	\
-					}
-
 
 static	void
 DoInclude(
@@ -121,31 +99,27 @@ DoInclude(
 
 dbgmsg(">DoInclude");
 	back = New(INCFILE);
-	back->next = ftop;
-	back->fn =  DD_FileName;
-	fgetpos(DD_File,&back->pos);
-	back->cLine = DD_cLine;
-	ftop = back;
-	fclose(DD_File);
-	if		(  RecordDir  !=  NULL  ) {
-		strcpy(buff,RecordDir);
-	} else {
-		strcpy(buff,".");
-	}
+	back->next = CURR->ftop;
+	back->fn =  CURR->fn;
+	fgetpos(CURR->fp,&back->pos);
+	back->cLine = CURR->cLine;
+	CURR->ftop = back;
+	fclose(CURR->fp);
+	strcpy(buff,CURR->path);
 	p = buff;
 	do {
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
 			*q = 0;
 		}
 		sprintf(name,"%s/%s",p,fn);
-		if		(  ( DD_File = fopen(name,"r") )  !=  NULL  )	break;
+		if		(  ( CURR->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
-	if		(  DD_File  ==  NULL  ) {
+	if		(  CURR->fp  ==  NULL  ) {
 		Error("include not found");
 	}
-	DD_cLine = 1;
-	DD_FileName = StrDup(name);
+	CURR->cLine = 1;
+	CURR->fn = StrDup(name);
 dbgmsg("<DoInclude");
 }
 
@@ -153,19 +127,72 @@ static	void
 ExitInclude(void)
 {
 	INCFILE	*back;
+	CURFILE	*info = InfoRoot.curr;
 
 dbgmsg(">ExitInclude");
-	fclose(DD_File);
-	back = ftop;
-	DD_File = fopen(back->fn,"r");
-	xfree(DD_FileName);
-	DD_FileName = back->fn;
-	fsetpos(DD_File,&back->pos);
-	DD_cLine = back->cLine;
-	ftop = back->next;
+	fclose(info->fp);
+	back = info->ftop;
+	info->fp = fopen(back->fn,"r");
+	xfree(info->fn);
+	info->fn = back->fn;
+	fsetpos(info->fp,&back->pos);
+	info->cLine = back->cLine;
+	info->ftop = back->next;
 	xfree(back);
 dbgmsg("<ExitInclude");
 }
+
+extern	void
+LexInit(void)
+{
+	InfoRoot.curr = NULL;
+}
+
+extern	GHashTable	*
+MakeReservedTable(
+	TokenTable	*table)
+{
+	int		i;
+	GHashTable	*res;
+	
+	res = NewNameHash();
+	for	( i = 0 ; table[i].token  !=  0 ; i ++ ) {
+		g_hash_table_insert(res,StrDup(table[i].str),(gpointer)table[i].token);
+	}
+	return	(res);
+}
+
+extern	void
+SetReserved(
+	GHashTable	*res)
+{
+	InfoRoot.curr->Reserved = res;
+}
+
+static	int
+CheckReserved(
+	char	*str)
+{
+	gpointer	p;
+	int		ret;
+
+	if		(  ( p = g_hash_table_lookup(InfoRoot.curr->Reserved,str) ) !=  NULL  ) {
+		ret = (int)p;
+	} else {
+		ret = T_SYMBOL;
+	}
+	return	(ret);
+}
+
+#define	GetChar()			fgetc(CURR->fp)
+#define	UnGetChar(c)		ungetc((c),CURR->fp)
+#define	SKIP_SPACE	while	(  isspace( c = GetChar() ) ) {	\
+						if		(  c  ==  '\n'  ) {	\
+							c = ' ';\
+							CURR->cLine ++;\
+						}	\
+					}
+
 
 static	void
 ReadyDirective(void)
@@ -175,26 +202,26 @@ ReadyDirective(void)
 	char	*s;
 	int		c;
 
-dbgmsg(">ReadyDirective");
+ENTER_FUNC;
 	SKIP_SPACE;
 	s = buff;
 	do {
 		*s = c;
 		s ++;
-	}	while	(  !isspace( c = GetChar(DD_File) )  );
+	}	while	(  !isspace( c = GetChar() )  );
 	*s = 0;
 	if		(  !stricmp(buff,"include")  ) {
 		SKIP_SPACE;
 		s = fn;
 		switch	(c) {
 		  case	'"':
-			while	(  ( c = GetChar(DD_File) )  !=  '"'  ) {
+			while	(  ( c = GetChar() )  !=  '"'  ) {
 				*s ++ = c;
 			}
 			*s = 0;
 			break;
 		  case	'<':
-			while	(  ( c = GetChar(DD_File) )  !=  '>'  ) {
+			while	(  ( c = GetChar() )  !=  '>'  ) {
 				*s ++ = c;
 			}
 			*s = 0;
@@ -207,22 +234,22 @@ dbgmsg(">ReadyDirective");
 			DoInclude(fn);
 		}
 	} else {
-		UnGetChar(DD_File,c);
-		while	(  ( c = GetChar(DD_File) )  !=  '\n'  );
-		DD_cLine ++;
+		UnGetChar(c);
+		while	(  ( c = GetChar() )  !=  '\n'  );
+		CURR->cLine ++;
 	}
-dbgmsg("<ReadyDirective");
+LEAVE_FUNC;
 }
 
 extern	int
-DD_Lex(
+Lex(
 	Bool	fSymbol)
 {	int		c
 	,		len;
 	int		token;
 	char	*s;
 
-dbgmsg(">DD_Lex");
+ENTER_FUNC;
   retry:
 	SKIP_SPACE; 
 	if		(  c  ==  '#'  ) {
@@ -230,16 +257,16 @@ dbgmsg(">DD_Lex");
 		goto	retry;
 	}
 	if		(  c  ==  '!'  ) {
-		while	(  ( c = GetChar(DD_File) )  !=  '\n'  );
-		DD_cLine ++;
+		while	(  ( c = GetChar() )  !=  '\n'  );
+		CURR->cLine ++;
 		goto	retry;
 	}
 	if		(  c  ==  '"'  ) {
-		s = DD_ComSymbol;
+		s = ComSymbol;
 		len = 0;
-		while	(  ( c = GetChar(DD_File) )  !=  '"'  ) {
+		while	(  ( c = GetChar() )  !=  '"'  ) {
 			if		(  c  ==  '\\'  ) {
-				c = GetChar(DD_File);
+				c = GetChar();
 			}
 			*s = c;
 			if		(  len  <  SIZE_SYMBOL  ) {
@@ -251,7 +278,7 @@ dbgmsg(">DD_Lex");
 		token = T_SCONST;
 	} else
 	if		(  isalpha(c)  ) {
-		s = DD_ComSymbol;
+		s = ComSymbol;
 		len = 0;
 		do {
 			*s = c;
@@ -259,20 +286,20 @@ dbgmsg(">DD_Lex");
 				s ++;
 				len ++;
 			}
-			c = GetChar(DD_File);
+			c = GetChar();
 		}	while	(	(  isalpha(c) )
 					 ||	(  isdigit(c) )
 					 ||	(  c  ==  '_' ) );
 		*s = 0;
-		UnGetChar(DD_File,c);
+		UnGetChar(c);
 		if		(  fSymbol  ) {
 			token = T_SYMBOL;
 		} else {
-			token = CheckReserved(DD_ComSymbol);
+			token = CheckReserved(ComSymbol);
 		}
 	} else
 	if		(  isdigit(c)  )	{
-		s = DD_ComSymbol;
+		s = ComSymbol;
 		len = 0;
 		do {
 			*s = c;
@@ -280,16 +307,16 @@ dbgmsg(">DD_Lex");
 				s ++;
 				len ++;
 			}
-			c = GetChar(DD_File);
+			c = GetChar();
 		}	while	(  isdigit(c)  );
 		*s = 0;
-		UnGetChar(DD_File,c);
+		UnGetChar(c);
 		token = T_ICONST;
-		DD_ComInt = atoi(DD_ComSymbol);
+		ComInt = atoi(ComSymbol);
 	} else {
 		switch	(c) {
 		  case	EOF:
-			if		(  ftop  ==  NULL  )	{
+			if		(  CURR->ftop  ==  NULL  )	{
 				token = T_EOF;
 			} else {
 				ExitInclude();
@@ -305,22 +332,10 @@ dbgmsg(">DD_Lex");
 	printf("token = ");
 	switch	(token) {
 	  case	T_SYMBOL:
-		printf("symbol (%s)\n",DD_ComSymbol);
-		break;
-	  case	T_BYTE:
-		printf("[byte]\n");
-		break;
-	  case	T_CHAR:
-		printf("[char]\n");
-		break;
-	  case	T_INT:
-		printf("[int]\n");
-		break;
-	  case	T_TEXT:
-		printf("[text]\n");
+		printf("symbol (%s)\n",ComSymbol);
 		break;
 	  case	T_ICONST:
-		printf("iconst (%d)\n",DD_ComInt);
+		printf("iconst (%d)\n",ComInt);
 		break;
 	  case	T_EOF:
 		printf("[EOF]\n");
@@ -334,7 +349,7 @@ dbgmsg(">DD_Lex");
 		break;
 	}
 #endif
-dbgmsg("<DD_Lex");
+LEAVE_FUNC;
 	return	(token);
 }
 

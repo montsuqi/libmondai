@@ -1,3 +1,7 @@
+2003-10-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c: 再入可能にして汎用ライブラリにした
+
 2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* tools/Makefile.am (LDADD): make distcheckが通るようにした。

@@ -94,6 +94,10 @@ dbgmsg(">NewValue");
 		ValueArraySize(ret) = 0;
 		ValueArrayItems(ret) = NULL;
 		break;
+	  case	GL_TYPE_ALIAS:
+		ValueAliasName(ret) = NULL;
+		ValueAlias(ret) = NULL;
+		break;
 	  default:
 		xfree(ret);
 		ret = NULL;
@@ -139,6 +143,7 @@ FreeValueStruct(
 				xfree(ValueFixedBody(val));
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
 		}
@@ -359,6 +364,7 @@ DumpItem(
 {
 	printf("%s:",name);
 	printf("%s",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
+	printf("%s",((value->attr&GL_ATTR_ALIAS) == GL_ATTR_ALIAS) ? " ALIAS" : "");
 	printf("%s",((value->attr&GL_ATTR_NIL) == GL_ATTR_NIL) ? " NIL:" : ":");
 	DumpValueStruct(value);
 }
@@ -430,6 +436,13 @@ DumpValueStruct(
 			}
 			printf("--\n");
 			break;
+		  case	GL_TYPE_ALIAS:
+			printf("alias name = [%s]\n",ValueAliasName(val));
+			fflush(stdout);
+			if		(  ValueAlias(val)  !=  NULL  ) {
+				DumpValueStruct(ValueAlias(val));
+			}
+			break;
 		  default:
 			break;
 		}
@@ -487,6 +500,7 @@ dbgmsg(">InitializeValue");
 			InitializeValue(ValueRecordItem(value,i));
 		}
 		break;
+	  case	GL_TYPE_ALIAS:
 	  default:
 		break;
 	}
@@ -521,6 +535,7 @@ MoveValue(
 	  case	GL_TYPE_BOOL:
 		SetValueBool(to,ValueToBool(from));
 		break;
+	  case	GL_TYPE_ALIAS:
 	  default:
 		break;
 	}
@@ -577,6 +592,7 @@ dbgmsg(">CopyValue");
 		ValueRecordMembers(vd) = ValueRecordMembers(vs);
 		ValueRecordNames(vd) = ValueRecordNames(vs);
 		break;
+	  case	GL_TYPE_ALIAS:
 	  default:
 		break;
 	}
@@ -656,6 +672,7 @@ DuplicateValue(
 				DuplicateValue(ValueRecordItem(template,i));
 		}
 		break;
+	  case	GL_TYPE_ALIAS:
 	  default:
 		break;
 	}

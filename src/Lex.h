@@ -23,47 +23,63 @@ copies.
 #define	_INC_DD_LEX_H
 #include	<glib.h>
 
-#define	SIZE_SYMBOL		255
-
 #define	YYBASE			256
 #define	T_EOF			(YYBASE +1)
 #define	T_SYMBOL		(YYBASE +2)
 #define	T_SCONST		(YYBASE +3)
 #define	T_ICONST		(YYBASE +4)
+#define	T_YYBASE		(YYBASE+4)
 
-#define	T_CHAR			(YYBASE +5)
-#define	T_TEXT			(YYBASE +6)
-#define	T_INT			(YYBASE +7)
-#define	T_INPUT			(YYBASE +8)
-#define	T_OUTPUT		(YYBASE +9)
-#define	T_BOOL			(YYBASE +10)
-#define	T_BYTE			(YYBASE +11)
-#define	T_NUMBER		(YYBASE +12)
-#define	T_VARCHAR		(YYBASE +13)
-#define	T_DBCODE		(YYBASE +14)
-#define	T_OBJECT		(YYBASE +15)
-#define	T_FLOAT			(YYBASE +16)
-#define	T_VIRTUAL		(YYBASE +17)
+typedef	struct	INCFILE_S	{
+	struct	INCFILE_S	*next;
+	fpos_t				pos;
+	int					cLine;
+	char				*fn;
+}	INCFILE;
+typedef	struct	_CURFILE_S {
+	struct	_CURFILE_S	*next;
+	GHashTable			*Reserved;
+	INCFILE	*ftop;
+	FILE	*fp;
+	char	*fn;
+	char	*path;
+	int		cLine;
+	Bool	fError;
+	char	*Symbol;
+	int		Int;
+	int		Token;
+}	CURFILE;
+
+typedef	struct	{
+	char	*str;
+	int		token;
+}	TokenTable;
+
+typedef	struct _LexInfo	{
+	CURFILE		*curr;
+}	LexInfo;
 
 #undef	GLOBAL
-#ifdef	_DD_PARSER
+#ifdef	_LEX
 #define	GLOBAL	/*	*/
 #else
 #define	GLOBAL	extern
 #endif
-
-GLOBAL	char	DD_ComSymbol[SIZE_SYMBOL+1];
-GLOBAL	int		DD_ComInt;
-GLOBAL	int		DD_Token;
-GLOBAL	FILE	*DD_File;
-GLOBAL	char	*DD_FileName;
-GLOBAL	int		DD_cLine;
-GLOBAL	Bool	fDD_Error;
-
+GLOBAL	LexInfo	InfoRoot;
 #undef	GLOBAL
 
-extern	int		DD_Lex(Bool fSymbol);
-extern	void	DD_LexInit(void);
+extern	CURFILE			*PushLexInfo(char *name, char *path, GHashTable *res);
+extern	void			DropLexInfo();
+extern	void			LexInit(void);
+extern	GHashTable		*MakeReservedTable(TokenTable *table);
+extern	int				Lex(Bool fSymbol);
+extern	void			SetReserved(GHashTable *res);
 
+#define	CURR			(InfoRoot.curr)
+#define	GetSymbol		(ComToken = Lex(FALSE))
+#define	GetName			(ComToken = Lex(TRUE))
+#define	ComToken		(InfoRoot.curr->Token)
+#define	ComInt			(InfoRoot.curr->Int)
+#define	ComSymbol		(InfoRoot.curr->Symbol)
 
 #endif

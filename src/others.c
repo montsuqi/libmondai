@@ -38,6 +38,7 @@ copies.
 #include	"types.h"
 #include	"misc.h"
 #include	"value.h"
+#include	"hash.h"
 #include	"monstring.h"
 #include	"others.h"
 #include	"debug.h"
@@ -392,3 +393,4 @@ DecodeBase64(
 
 	return outp - out;
 }
+

@@ -21,8 +21,8 @@ copies.
 
 #ifndef	_INC_OTHERS_H
 #define	_INC_OTHERS_H
+#include	<glib.h>
 #include	"types.h"
-
 typedef	struct	{
 	char	*protocol;
 	char	*host;
@@ -34,6 +34,7 @@ typedef	struct {
 	char	*host;
 	char	*port;
 }	Port;
+
 
 extern	char		**ParCommandLine(char *line);
 

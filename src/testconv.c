@@ -19,12 +19,15 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#define	MAIN
+/*
+#define	CONV_TEST
+*/
+
 /*
 #define	DEBUG
 #define	TRACE
 */
-
+#define	MAIN
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -112,6 +115,7 @@ main(
 	}
 	DumpValueStruct(val);
 
+#ifdef	CONV_TEST
 	opt = NewConvOpt();
 	printf("***** CSV Pack *****\n");
 	size = CSV1_SizeValue(opt,val);
@@ -283,6 +287,6 @@ main(
 	printf("%s\n",buff);
 
 	printf("***** end *****\n");
-
+#endif
 	return	(0);
 }

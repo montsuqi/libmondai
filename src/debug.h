@@ -31,10 +31,14 @@ copies.
 #define	dbgmsg(x)			printf("%s\n",(x));fflush(stdout)
 #define	PASS(x)				printf("%s(%d):%s\n",__FILE__,__LINE__,(x))
 #define	DUMP_VALUE(val)		printf("%s:%ld\n",#val,(long)(val))
+#define	ENTER_FUNC			printf(">%s\n", __func__)
+#define	LEAVE_FUNC			printf("<%s\n", __func__)
 #else
 #define	dbgmsg(x)			/*	*/
 #define	PASS(x)				/*	*/
 #define	DUMP_VALUE(val)		/*	*/
+#define	ENTER_FUNC			/*	*/
+#define	LEAVE_FUNC			/*	*/
 #endif
 #define	Error(x)			printf("Error: %s\n",(x));fflush(stdout);exit(1)
 #define	Warning(x)			printf("Warning: %s\n",(x));fflush(stdout)

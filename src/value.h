@@ -28,7 +28,8 @@ copies.
 //#define	SIZE_SQL		16384
 #define	SIZE_SQL		65538
 
-#define	SIZE_NUMBUF	60
+#define	SIZE_SYMBOL			255
+#define	SIZE_NUMBUF			60
 
 #ifndef	SIZE_NAME
 #define	SIZE_NAME			64
@@ -84,6 +85,10 @@ typedef	struct _ValueStruct	{
 			int		apsid;
 			int		oid;
 		}	Object;
+		struct {
+			char		*name;
+			struct	_ValueStruct	*value;
+		}	Alias;
 		Fixed	FixedData;
 		int		IntegerData;
 		Bool	BoolData;
@@ -112,13 +117,15 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_STRUCTURE		(PacketDataType)0x80
 #define	GL_TYPE_ARRAY			(PacketDataType)0x81
 #define	GL_TYPE_RECORD			(PacketDataType)0x82
+#define	GL_TYPE_ALIAS			(PacketDataType)0x83
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
+#define	GL_ATTR_ALIAS			(ValueAttributeType)0x10
 #define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x08
 #define	GL_ATTR_INPUT			(ValueAttributeType)0x04
 #define	GL_ATTR_OUTPUT			(ValueAttributeType)0x02
 
-#define	GL_ATTR_NIL				(ValueAttributeType)0x10
+#define	GL_ATTR_NIL				(ValueAttributeType)0x80
 #define	CHAR_NIL				0x01
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
@@ -162,6 +169,9 @@ typedef	struct _ValueStruct	{
 #define	ValueObject(v)			(&(v)->body.Object)
 #define	ValueObjectPlace(v)		((v)->body.Object.apsid)
 #define	ValueObjectID(v)		((v)->body.Object.oid)
+
+#define	ValueAliasName(v)		((v)->body.Alias.name)
+#define	ValueAlias(v)			((v)->body.Alias.value)
 
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,

@@ -22,6 +22,7 @@ testrec	{
 			j	bool;
 		}	[2];
 	}	[5];
+	d	= .f[2].g[1];
 #	i	{
 #		d	char;
 #		e	char(2);
