@@ -866,66 +866,6 @@ DumpValueStruct(
 	}
 }
 
-extern	size_t
-SizeValue(
-	ValueStruct	*val,
-	size_t		arraysize,
-	size_t		textsize)
-{
-	int		i
-	,		n;
-	size_t	ret;
-
-	if		(  val  ==  NULL  )	return	(0);
-dbgmsg(">SizeValue");
-	switch	(val->type) {
-	  case	GL_TYPE_INT:
-		ret = sizeof(int);
-		break;
-	  case	GL_TYPE_FLOAT:
-		ret = sizeof(double);
-		break;
-	  case	GL_TYPE_BOOL:
-		ret = 1;
-		break;
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-		ret = val->body.CharData.len;
-		break;
-	  case	GL_TYPE_NUMBER:
-		ret = val->body.FixedData.flen;
-		break;
-	  case	GL_TYPE_TEXT:
-		if		(  textsize  >  0  ) {
-			ret = textsize;
-		} else {
-			ret = val->body.CharData.len + sizeof(size_t);
-		}
-		break;
-	  case	GL_TYPE_ARRAY:
-		if		(  val->body.ArrayData.count  >  0  ) {
-			n = val->body.ArrayData.count;
-		} else {
-			n = arraysize;
-		}
-		ret = SizeValue(val->body.ArrayData.item[0],arraysize,textsize) * n;
-		break;
-	  case	GL_TYPE_RECORD:
-		ret = 0;
-		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
-			ret += SizeValue(val->body.RecordData.item[i],arraysize,textsize);
-		}
-		break;
-	  default:
-		ret = 0;
-		break;
-	}
-dbgmsg("<SizeValue");
-	return	(ret);
-}
-
 extern	void
 InitializeValue(
 	ValueStruct	*value)

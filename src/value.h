@@ -129,8 +129,8 @@ typedef	struct {
 }	DBCOMM_CTRL;
 
 typedef	struct _DBG_Struct	{
-	char		*name;
-	char		*type;
+	char		*name;					/*	group name		*/
+	char		*type;					/*	DBMS type name	*/
 	struct	_DB_Func		*func;
 	FILE		*fpLog;
 	LargeByteString	*redirectData;
@@ -237,7 +237,6 @@ extern	double		FixedToFloat(Fixed *xval);
 extern	Numeric		FixedToNumeric(Fixed *xval);
 extern	char		*NumericToFixed(Numeric value, int precision, int scale);
 
-extern	size_t		SizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
 extern	void		InitializeValue(ValueStruct *value);
 extern	char		*ToString(ValueStruct *value);
 

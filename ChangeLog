@@ -1,5 +1,7 @@
 2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
+	* tools/rec2copy.c: 言語の指定をするようにした
+
 	* src/dotCOBOL.c (dotCOBOL_SizeValue): 大きさを求める関数追加
 
 	* src/OpenCOBOL.c (OpenCOBOL_SizeValue): 

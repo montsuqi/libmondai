@@ -33,12 +33,14 @@ copies.
 
 GLOBAL	char	*(*PackValue)(char *p, ValueStruct *value, size_t textsize);
 GLOBAL	char	*(*UnPackValue)(char *p, ValueStruct *value, size_t textsize);
+GLOBAL	size_t	(*SizeValue)(ValueStruct *value, size_t arraysize, size_t textsize);
 
 #undef	GLOBAL
 
 extern	void	SetLanguage(char *name);
-extern	char	*NativeUnPackValue(char *p, ValueStruct *value);
-extern	char	*NativePackValue(char *p, ValueStruct *value);
+extern	char	*NativeUnPackValue(char *p, ValueStruct *value, size_t textsize);
+extern	char	*NativePackValue(char *p, ValueStruct *value, size_t textsize);
+extern	size_t	NativeSizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
 
 #endif
 

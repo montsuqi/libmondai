@@ -45,18 +45,18 @@ copies.
 #include	"debug.h"
 
 
-typedef	char	*(*ConvFunc)(char *p, ValueStruct *value, size_t textsize);
-
 typedef	struct {
 	char	*name;
 	char	*(*Pack)(char *p, ValueStruct *value, size_t textsize);
 	char	*(*UnPack)(char *p, ValueStruct *value, size_t textsize);
+	size_t	(*Size)(ValueStruct *value, size_t arraysize, size_t textsize);
 }	ConvFuncs;
 
 extern	char	*
 NativeUnPackValue(
 	char	*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	size_t	textsize)
 {
 	int		i;
 	size_t	size;
@@ -106,12 +106,12 @@ dbgmsg(">NativeUnPackValue");
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.ArrayData.item[i]);
+				p = NativeUnPackValue(p,value->body.ArrayData.item[i],textsize);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.RecordData.item[i]);
+				p = NativeUnPackValue(p,value->body.RecordData.item[i],textsize);
 			}
 			break;
 		  default:
@@ -125,7 +125,8 @@ dbgmsg("<NativeUnPackValue");
 extern	char	*
 NativePackValue(
 	char	*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	size_t	textsize)
 {
 	int		i;
 
@@ -168,12 +169,12 @@ dbgmsg(">NativePackValue");
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.ArrayData.item[i]);
+				p = NativePackValue(p,value->body.ArrayData.item[i],textsize);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.RecordData.item[i]);
+				p = NativePackValue(p,value->body.RecordData.item[i],textsize);
 			}
 			break;
 		  default:
@@ -184,10 +185,73 @@ dbgmsg("<NativePackValue");
 	return	(p);
 }
 
+extern	size_t
+NativeSizeValue(
+	ValueStruct	*val,
+	size_t		arraysize,
+	size_t		textsize)
+{
+	int		i
+	,		n;
+	size_t	ret;
+
+	if		(  val  ==  NULL  )	return	(0);
+dbgmsg(">NativeSizeValue");
+	switch	(val->type) {
+	  case	GL_TYPE_INT:
+		ret = sizeof(int);
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = sizeof(double);
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = 1;
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		ret = val->body.CharData.len;
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = val->body.FixedData.flen;
+		break;
+	  case	GL_TYPE_TEXT:
+		if		(  textsize  >  0  ) {
+			ret = textsize;
+		} else {
+			ret = val->body.CharData.len + sizeof(size_t);
+		}
+		break;
+	  case	GL_TYPE_ARRAY:
+		if		(  val->body.ArrayData.count  >  0  ) {
+			n = val->body.ArrayData.count;
+		} else {
+			n = arraysize;
+		}
+		ret = NativeSizeValue(val->body.ArrayData.item[0],arraysize,textsize) * n;
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
+			ret += NativeSizeValue(val->body.RecordData.item[i],arraysize,textsize);
+		}
+		break;
+	  default:
+		ret = 0;
+		break;
+	}
+dbgmsg("<NativeSizeValue");
+	return	(ret);
+}
+
 static	ConvFuncs	funcs[] = {
-	{	"OpenCOBOL",OpenCOBOL_PackValue,			OpenCOBOL_UnPackValue	},
-	{	"dotCOBOL",	dotCOBOL_PackValue,				dotCOBOL_UnPackValue	},
-	{	NULL,		(ConvFunc)NativePackValue,		(ConvFunc)NativeUnPackValue		}
+	{	"OpenCOBOL",
+		OpenCOBOL_PackValue,	OpenCOBOL_UnPackValue,	OpenCOBOL_SizeValue	},
+	{	"dotCOBOL",
+		dotCOBOL_PackValue,		dotCOBOL_UnPackValue,	dotCOBOL_SizeValue	},
+	{	NULL,
+		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };
 
 static	GHashTable	*FuncTable = NULL;
@@ -214,5 +278,6 @@ dbgmsg(">SetLanguage");
 	}
 	PackValue = func->Pack;
 	UnPackValue = func->UnPack;
+	SizeValue = func->Size;
 dbgmsg("<SetLanguage");
 }

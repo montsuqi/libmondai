@@ -47,6 +47,7 @@ static	int		TextSize;
 static	int		ArraySize;
 static	char	*Prefix;
 static	char	*RecName;
+static	char	*Lang;
 
 static	int		level;
 
@@ -249,6 +250,8 @@ MakeFromRecord(
 }
 
 static	ARG_TABLE	option[] = {
+	{	"lang",		STRING,		TRUE,	(void*)&Lang	,
+		"対象言語名"			 						},
 	{	"textsize",	INTEGER,	TRUE,	(void*)&TextSize,
 		"textの最大長"									},
 	{	"arraysize",INTEGER,	TRUE,	(void*)&ArraySize,
@@ -273,6 +276,7 @@ SetDefault(void)
 	TextSize = -1;
 	Prefix = "";
 	RecName = "";
+	Lang = "OpenCOBOL";
 }
 
 extern	int
@@ -286,7 +290,7 @@ main(
 
 	SetDefault();
 	fl = GetOption(option,argc,argv);
-
+	SetLanguage(Lang);
 	if		(  fl  !=  NULL  ) {
 		name = fl->name;
 		ext = GetExt(name);
