@@ -1,3 +1,11 @@
+2003-03-07  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* libmondai-config.in: Bug fix in `--version'.
+	* configure.in (LIBMONDAI_MAJOR_VERSION): Renamed from `MAJOR_VERSION'.
+	(LIBMONDAI_MINOR_VERSION): Renamed from `MINOR_VERSION'.
+	(LIBMONDAI_MICRO_VERSION): Renamed from `MICRO_VERSION'.
+	(LIBMONDAI_VERSION): Renamed from `VERSION'.
+
 2003-02-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* branch from panda

@@ -48,7 +48,7 @@ while test $# -gt 0; do
       echo_exec_prefix=yes
       ;;
     --version)
-      echo @LIBMONDAI_MAJOR_VERSION@.@LIBMONDAI_MINOR_VERSION@.@LIBMONDAI_MICRO_VERSION@
+      echo @VERSION@
       ;;
     --cflags)
       echo_cflags=yes
