@@ -4,7 +4,10 @@ libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
 	-export-dynamic
 
+CONFIG_CLEAN_FILES =  libmondai.h
+
 libmondaiincludedir = $(includedir)/libmondai
+
 libmondaiinclude_HEADERS =	\
 	misc.h			\
 	LBSfunc.h		\

@@ -1,1 +1,2 @@
-EXTRA_DIST = 
+EXTRA_DIST = api.tex mondai.tex
+

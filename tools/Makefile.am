@@ -18,3 +18,5 @@ rec2copy_DEPENDENCIES	=	\
 rec2copy_SOURCES	=	\
 	option.c	option.h	\
 	rec2copy.c
+
+EXTRA_DIST = option.doc

@@ -17,7 +17,7 @@ release:
 	$(MAKE) distcheck
 
 snapshot:
-	$(MAKE) dist distdir=$(PACKAGE)`date +"%y%m%d"`
+	$(MAKE) dist distdir=$(PACKAGE)-`date +"%Y%m%d"`
 
 install-data-local:
 	-mkdir -p $(DESTDIR)$(datadir)/aclocal
