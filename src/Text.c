@@ -805,6 +805,7 @@ CGI_SkipNext(
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '&'   )
 			&&	(  *p  !=  '\n'  ) )	p ++;
+	p ++;
 	return	(p);
 }
 

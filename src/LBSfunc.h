@@ -34,22 +34,25 @@ typedef	struct {
 extern	LargeByteString	*NewLBS(void);
 extern	void			FreeLBS(LargeByteString *lbs);
 extern	void			LBS_ReserveSize(LargeByteString *lbs, size_t size, Bool fKeep);
+extern	void			LBS_Seek(LargeByteString *lbs,size_t off, int whence);
 extern	void			LBS_EmitStart(LargeByteString *lbs);
 extern	void			LBS_Emit(LargeByteString *lbs, byte code);
-extern	void			LBS_EmitChar(LargeByteString *lbs, char c);
 extern	void			LBS_EmitString(LargeByteString *lbs, char *str);
 extern	void			LBS_EmitPointer(LargeByteString *lbs, void *p);
 extern	void			LBS_EmitInt(LargeByteString *lbs, int i);
 extern	void			LBS_EmitFix(LargeByteString *lbs);
+extern	void			LBS_Trim(LargeByteString *lbs, size_t size);
 extern	int				LBS_FetchByte(LargeByteString *lbs);
 extern	int				LBS_FetchChar(LargeByteString *lbs);
 extern	void			*LBS_FetchPointer(LargeByteString *lbs);
 extern	int				LBS_FetchInt(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
+extern	void			*LBS_Body(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			((lbs)->ptr = 0)
+#define	LBS_Peek(lbs)			((lbs)->body[(lbs)->ptr])
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitChar(lbs,c)		LBS_Emit((lbs),(c))
@@ -61,5 +64,4 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_GetPos(lbs)			((lbs)->ptr)
 #define	LBS_SetPos(lbs,pos)		((lbs)->ptr = (pos))
 #define	LBS_Eof(lbs)			((lbs)->ptr >= (lbs)->size)
-#define	LBS_Body(lbs)			((lbs)->body)
 #endif

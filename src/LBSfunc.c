@@ -89,6 +89,34 @@ LBS_ReserveSize(
 	lbs->ptr = size;
 }
 
+extern	void
+LBS_Seek(
+	LargeByteString	*lbs,
+	size_t			off,
+	int				whence)
+{
+	size_t		newpos;
+
+	switch	(whence) {
+	  case	SEEK_SET:
+		newpos = off;
+		break;
+	  case	SEEK_CUR:
+		newpos = lbs->ptr + off;
+		break;
+	  case	SEEK_END:
+		newpos = lbs->size + off;
+		break;
+	  default:
+		newpos = lbs->ptr;
+		break;
+	}
+	if		(  newpos  >  lbs->size  ) {
+		LBS_ReserveSize(lbs,newpos,TRUE);
+	}
+	lbs->ptr = newpos;
+}
+
 extern	int
 LBS_FetchByte(
 	LargeByteString	*lbs)
@@ -179,6 +207,18 @@ LBS_Emit(
 }
 
 extern	void
+LBS_Trim(
+	LargeByteString	*lbs,
+	size_t			size)
+{
+	if		(  lbs->ptr  >=  size  ) {
+		memclear(&lbs->body[lbs->ptr - size],size);
+		lbs->ptr -= size;
+		lbs->size -= size;
+	}
+}
+
+extern	void
 LBS_EmitString(
 	LargeByteString	*lbs,
 	char			*str)
@@ -228,6 +268,13 @@ LBS_EmitFix(
 	}
 	lbs->asize = lbs->size;
 	lbs->ptr = 0;
+}
+
+extern	void	*
+LBS_Body(
+	LargeByteString	*lbs)
+{
+	return	((void *)lbs->body);
 }
 
 extern	char	*

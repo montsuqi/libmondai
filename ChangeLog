@@ -1,3 +1,7 @@
+2003-08-12  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_Trim): LBSの末尾を切り詰める関数
+
 2003-07-30  OGOSHI  <ogochan@nurs.or.jp>
 
 	* src/value.h: RecordStructのメンバ名変更(わかりやすい名前に)
