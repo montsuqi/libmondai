@@ -1,5 +1,5 @@
 # Configure paths for libmondai
-# Koji SHIMIZU 03-03-7
+# Koji SHIMIZU 03-03-10
 
 dnl AM_PATH_LIBMONDAI([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libmondai, and define LIBMONDAI_CFLAGS and LIBMONDAI_LIBS
@@ -10,7 +10,7 @@ AC_DEFUN(AM_PATH_LIBMONDAI,
 dnl Get the cflags and libraries from the libmondai-config script
 dnl
 AC_ARG_WITH(libmondai-prefix,
-            [  --with-libmondai-prefix=PFX   Prefix where libmondai is installed (optional)],
+            [  --with-libmondai-prefix=PFX      Prefix where libmondai is installed (optional)],
             libmondai_config_prefix="$withval",
             libmondai_config_prefix="")
 
@@ -20,7 +20,7 @@ AC_ARG_WITH(libmondai-exec-prefix,
             libmondai_config_exec_prefix="")
 
 AC_ARG_ENABLE(libmondaitest,
-              [  --disable-libmondaitest       Do not try to compile and run a test libmondai program],
+              [  --disable-libmondaitest Do not try to compile and run a test libmondai program],
               ,
               enable_libmondaitest=yes)
 
