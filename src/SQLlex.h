@@ -43,7 +43,7 @@ copies.
 
 #undef	GLOBAL
 
-extern	int		SQL_Lex(void);
+extern	int		SQL_Lex(Bool fName);
 extern	void	SQL_LexInit(void);
 
 #endif

@@ -59,7 +59,8 @@ _Error(
 #undef	Error
 #define	Error(msg)	{fDD_Error=TRUE;_Error((msg),DD_FileName,DD_cLine);}
 
-#define	GetSymbol	(DD_Token = SQL_Lex())
+#define	GetSymbol	(DD_Token = SQL_Lex(FALSE))
+#define	GetName		(DD_Token = SQL_Lex(TRUE))
 
 extern	LargeByteString	*
 ParSQL(
@@ -144,7 +145,7 @@ dbgmsg(">ParSQL");
 			} else {
 				LBS_Emit(sql,SQL_OP_REF);
 			}
-			if		(  GetSymbol  ==  T_SYMBOL  ) {
+			if		(  GetName  ==  T_SYMBOL  ) {
 				val = rec->rec;
 				do {
 					val = GetRecordItem(val,DD_ComSymbol);
@@ -153,7 +154,7 @@ dbgmsg(">ParSQL");
 					}
 					switch	(GetSymbol) {
 					  case	'.':
-						GetSymbol;
+						GetName;
 						break;
 					  case	'[':
 						if		(  val->type  ==  GL_TYPE_ARRAY  ) {

@@ -345,7 +345,8 @@ CheckReserved(
 }
 
 extern	int
-SQL_Lex(void)
+SQL_Lex(
+	Bool	fName)
 {	int		c
 	,		len;
 	int		token;
@@ -413,7 +414,11 @@ dbgmsg(">SQL_Lex");
 					||	(  c  ==  '_'  ) );
 		*s = 0;
 		UnGetChar(DD_File,c);
-		token = CheckReserved(DD_ComSymbol);
+		if		(  fName  ) {
+			token = T_SYMBOL;
+		} else {
+			token = CheckReserved(DD_ComSymbol);
+		}
 	} else {
 		switch	(c) {
 		  case	EOF:
