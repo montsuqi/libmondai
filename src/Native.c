@@ -100,6 +100,7 @@ dbgmsg(">NativeUnPackValue");
 			ValueFixedSlen(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
+			ValueFixedBody(value)[ValueFixedLength(value)] = 0;
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_BYTE:
