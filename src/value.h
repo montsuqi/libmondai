@@ -70,8 +70,8 @@ typedef	struct _ValueStruct	{
 			GHashTable				*members;
 		}	RecordData;
 		struct {
-			size_t		len;
-			char		*sval;
+			size_t			len;
+			unsigned char	*sval;
 		}	CharData;
 		struct {
 			int		apsid;
@@ -151,12 +151,24 @@ typedef	struct _RecordStruct	{
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_STRUCTURE) == GL_TYPE_STRUCTURE)
 
 #define	ValueString(v)			((v)->body.CharData.sval)
+#define	ValueStringLength(v)	((v)->body.CharData.len)
 #define	ValueByte(v)			((v)->body.CharData.sval)
+#define	ValueByteLength(v)		((v)->body.CharData.len)
 #define	ValueInteger(v)			((v)->body.IntegerData)
 #define	ValueBool(v)			((v)->body.BoolData)
 #define	ValueFloat(v)			((v)->body.FloatData)
 #define	ValueFixed(v)			(&(v)->body.FixedData)
+#define	ValueFixedLength(v)		((v)->body.FixedData.flen)
+#define	ValueFixedBody(v)		((v)->body.FixedData.sval)
 #define	ValueObject(v)			(&(v)->body.Object)
+
+#define	ValueArraySize(v)		((v)->body.ArrayData.count)
+#define	ValueArrayItems(v)		((v)->body.ArrayData.item)
+#define	ValueArrayItem(v,i)		((v)->body.ArrayData.item[(i)])
+
+#define	ValueRecordSize(v)		((v)->body.RecordData.count)
+#define	ValueRecordItems(v)		((v)->body.RecordData.item)
+#define	ValueRecordItem(v,i)	((v)->body.RecordData.item[(i)])
 
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,

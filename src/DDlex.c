@@ -34,6 +34,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"misc.h"
+#include	"monstring.h"
 #include	"hash.h"
 #include	"value.h"
 #include	"DDlex.h"
@@ -59,6 +60,7 @@ static	struct	{
 	{	"byte"		,T_BYTE		},
 	{	"char"		,T_CHAR		},
 	{	"varchar"	,T_VARCHAR	},
+	{	"float"		,T_FLOAT	},
 	{	"input"		,T_INPUT	},
 	{	"int"		,T_INT		},
 	{	"number"	,T_NUMBER	},

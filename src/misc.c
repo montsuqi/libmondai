@@ -35,7 +35,7 @@ Boston, MA  02111-1307, USA.
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<ctype.h>
-#include	<string.h>
+#include	<strings.h>
 #include	<dirent.h>
 #include	<sys/stat.h>
 #include	<unistd.h>
@@ -194,131 +194,6 @@ Fopen(
 		mkdir(buff,0755);
 	}
 	return	(fopen(name,mode));
-}
-
-#ifdef	__GNUC__
-extern	int
-stricmp(
-	char	*s1,
-	char	*s2)
-{	int		ret;
-
-	ret = 0;
-	for	( ; *s1  !=  0 ; s1 ++ , s2 ++ )	{
-		if		(  ( ret = toupper(*s1) - toupper(*s2) )  !=  0  )
-			break;
-	}
-	return	(ret);
-}
-extern	int
-strnicmp(
-	char	*s1,
-	char	*s2,
-	size_t	l)
-{	int		ret;
-
-	ret = 0;
-	for	( ; l > 0 ; l -- , s1 ++ , s2 ++ )	{
-		if		(  ( ret = toupper(*s1) - toupper(*s2) )  !=  0  )
-			break;
-	}
-	return	(ret);
-}
-#endif
-
-extern	char	*
-StrDup(
-	char	*s)
-{
-	char	*str;
-
-	if		(  s  !=  NULL  ) {
-		str = xmalloc(strlen(s)+1);
-		strcpy(str,s);
-	} else {
-		str = NULL;
-	}
-	return	(str);
-}
-
-extern	long
-StrToInt(
-	char	*str,
-	size_t	len)
-{	long	ret;
-
-	ret = 0L;
-	for	( ; len > 0 ; len -- )	{
-		if		(  isdigit(*str)  )	{
-			ret = ret * 10 + ( *str - '0' );
-		}
-		str ++;
-	}
-	return	(ret);
-}
-
-extern	long
-HexToInt(
-	char	*str,
-	size_t	len)
-{	long	ret;
-
-	ret = 0L;
-	for	( ; len > 0 ; len -- )	{
-		ret <<= 4;
-		if		(  isdigit(*str)  )	{
-			ret += ( *str - '0' );
-		} else
-		if		(  isxdigit(*str)  )	{
-			ret += ( toupper(*str) - 'A' + 10 );
-		}
-		str ++;
-	}
-	return	(ret);
-}
-
-extern	char	*
-IntToStr(
-	char	*str,
-	long	val,
-	size_t	len)
-{
-	str += len;
-#if	0
-	*str = 0;
-#endif
-	for	( ; len > 0 ; len -- )	{
-		str --;
-		*str = (char)(( val % 10 ) + '0');
-		val /= 10;
-	}
-	return	(str);
-}
-
-extern	char	*
-IntStrDup(
-	int		val)
-{
-	char	buff[20];
-
-	sprintf(buff,"%d",val);
-	return	(StrDup(buff));
-}
-
-extern	char	*
-StringChop(
-	char	*str)
-{
-	char	*p;
-
-	p = str + strlen(str) - 1;
-	while	(	(  *p  ==  '\r'  )
-			||	(  *p  ==  '\n'  ) ) {
-		*p = 0;
-		if		(  p  ==  str  )	break;
-		p --;
-	}
-	return	(str);
 }
 
 extern	void

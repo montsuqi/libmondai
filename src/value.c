@@ -37,6 +37,7 @@ copies.
 
 #include	"types.h"
 #include	"misc.h"
+#include	"monstring.h"
 #include	"value.h"
 #include	"hash.h"
 #include	"debug.h"
@@ -70,6 +71,9 @@ dbgmsg(">NewValue");
 		break;
 	  case	GL_TYPE_INT:
 		ret->body.IntegerData = 0;
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret->body.FloatData = 0.0;
 		break;
 	  case	GL_TYPE_BOOL:
 		ret->body.BoolData = FALSE;
@@ -344,12 +348,33 @@ ToString(
 	,		*q;
 	int		i;
 
+	memset(buff,0,SIZE_BUFF);
 	switch	(val->type) {
 	  case	GL_TYPE_CHAR:
+		memcpy(buff,ValueString(val),ValueStringLength(val));
+		break;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		strcpy(buff,ValueString(val));
+		if		(  ValueString(val)  !=  NULL  ) {
+			strcpy(buff,ValueString(val));
+		}
+		break;
+	  case	GL_TYPE_BYTE:
+		p = ValueByte(val);
+		q = buff;
+		for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
+			if		(  *p  ==  '%'  ) {
+				*q ++ = '%';
+				*q ++ = '%';
+			} else
+			if		(  isprint(*p)  ) {
+				*q ++ = *p;
+			} else {
+				q += sprintf(q,"%02X",(int)*p);
+			}
+		}
+		*q = 0;
 		break;
 	  case	GL_TYPE_NUMBER:
 		p = ValueFixed(val)->sval;
@@ -483,13 +508,15 @@ SetValueString(
 		break;
 	  case	GL_TYPE_TEXT:
 		len = strlen(str) + 1;
-		if		(  len  !=  val->body.CharData.len  ) {
-			if		(  val->body.CharData.sval  !=  NULL  ) {
-				xfree(val->body.CharData.sval);
+		if		(  len  >  ValueStringLength(val)  ) {
+			if		(  ValueString(val)  !=  NULL  ) {
+				xfree(ValueString(val));
 			}
-			val->body.CharData.sval = (char *)xmalloc(len + 1);
+			ValueString(val) = (char *)xmalloc(len + 1);
+			ValueStringLength(val) = len;
 		}
-		strcpy(val->body.CharData.sval,str);
+		memset(ValueString(val),0,ValueStringLength(val)+1);
+		strcpy(ValueString(val),str);
 		rc = TRUE;
 		break;
 	  case	GL_TYPE_INT:

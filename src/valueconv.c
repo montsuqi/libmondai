@@ -42,6 +42,7 @@ copies.
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"
+#include	"Text_v.h"
 #define	_VALUECONV
 #include	"valueconv.h"
 #include	"debug.h"
@@ -59,6 +60,14 @@ static	ConvFuncs	funcs[] = {
 		OpenCOBOL_PackValue,	OpenCOBOL_UnPackValue,	OpenCOBOL_SizeValue	},
 	{	"dotCOBOL",
 		dotCOBOL_PackValue,		dotCOBOL_UnPackValue,	dotCOBOL_SizeValue	},
+	{	"CSV1",
+		CSV1_PackValue,			CSV_UnPackValue,		CSV1_SizeValue		},
+	{	"CSV2",
+		CSV2_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
+	{	"CSV3",
+		CSV3_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
+	{	"CSVE",
+		CSVE_PackValue,			CSV_UnPackValue,		CSVE_SizeValue		},
 	{	NULL,
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };

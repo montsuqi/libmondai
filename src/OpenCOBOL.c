@@ -100,36 +100,36 @@ OpenCOBOL_UnPackValue(
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(ValueByte(value),p,ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			if		(  value->body.CharData.sval  !=  NULL  ) {
-				if		(  value->body.CharData.len  <  textsize  ) {
-					xfree(value->body.CharData.sval);
-					value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-					value->body.CharData.len = textsize;
+			if		(  ValueString(value)  !=  NULL  ) {
+				if		(  ValueStringLength(value)  <  textsize  ) {
+					xfree(ValueString(value));
+					ValueString(value) = (char *)xmalloc(textsize + 1);
+					ValueStringLength(value) = textsize;
 				}
 			} else {
-				value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-				value->body.CharData.len = textsize;
+				ValueString(value) = (char *)xmalloc(textsize + 1);
+				ValueStringLength(value) = textsize;
 			}
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
+			memcpy(ValueString(value),p,ValueStringLength(value));
 			p += textsize;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+			StringCobol2C(ValueString(value),ValueStringLength(value));
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+			memcpy(ValueString(value),p,ValueStringLength(value));
+			p += ValueStringLength(value);
+			StringCobol2C(ValueString(value),ValueStringLength(value));
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(buff,p,ValueFixed(value)->flen);
-			FixedCobol2C(buff,ValueFixed(value)->flen);
-			strcpy(ValueFixed(value)->sval,buff);
-			p += value->body.FixedData.flen;
+			memcpy(buff,p,ValueFixedLength(value));
+			FixedCobol2C(buff,ValueFixedLength(value));
+			strcpy(ValueFixedBody(value),buff);
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -169,27 +169,27 @@ OpenCOBOL_PackValue(
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueByte(value),ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			size = ( textsize < value->body.CharData.len ) ? textsize :
-				value->body.CharData.len;
-			memcpy(p,value->body.CharData.sval,size);
+			size = ( textsize < ValueStringLength(value) ) ? textsize :
+				ValueStringLength(value);
+			memcpy(p,ValueString(value),size);
 			StringC2Cobol(p,textsize);
 			p += textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			StringC2Cobol(value->body.CharData.sval,value->body.CharData.len);
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			StringC2Cobol(ValueString(value),ValueStringLength(value));
+			memcpy(p,ValueString(value),ValueStringLength(value));
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixed(value)->sval,ValueFixed(value)->flen);
-			FixedC2Cobol(p,ValueFixed(value)->flen);
-			p += value->body.FixedData.flen;
+			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+			FixedC2Cobol(p,ValueFixedLength(value));
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -232,18 +232,18 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = 1;
 		break;
 	  case	GL_TYPE_TEXT:
-		size = ( textsize > value->body.CharData.len ) ? textsize :
-			value->body.CharData.len;
+		size = ( textsize > ValueStringLength(value) ) ? textsize :
+			ValueStringLength(value);
 		ret = size;
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		ret = value->body.CharData.len;
+		ret = ValueStringLength(value);
 		break;
 	  case	GL_TYPE_NUMBER:
-		ret = value->body.FixedData.flen;
+		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  value->body.ArrayData.count  >  0  ) {

@@ -1,0 +1,27 @@
+testrec	{
+	a	char(3);
+	b	char(2);
+	l	text;
+	c	{
+		d	char;
+		e	int;
+		g	{
+			h	float;
+			i	char(10);
+			j	varchar(10);
+		}	[11];
+	};
+	f	{
+		d	char;
+		e	char(2);
+		g	{
+			h	char(4);
+			i	char(5);
+			j	bool;
+		}	[2];
+	}	[5];
+#	i	{
+#		d	char;
+#		e	char(2);
+#	}	[];
+};

@@ -40,6 +40,7 @@ copies.
 #include	"hash.h"
 #include	"value.h"
 #include	"misc.h"
+#include	"monstring.h"
 #include	"DDlex.h"
 #include	"DDparser.h"
 #include	"SQLparser.h"
@@ -156,7 +157,6 @@ dbgmsg(name);
 			} else {
 				size = 1;
 			}
-dbgmsg("+");
 			if		(  !fDD_Error  ) {
 				switch	(token) {
 				  case	T_BYTE:
@@ -177,7 +177,6 @@ dbgmsg("+");
 				  default:
 					break;
 				}
-dbgmsg("*");
 				if		(  value->type  ==  GL_TYPE_NUMBER  ) {
 					value->body.FixedData.flen = size;
 					value->body.FixedData.slen = ssize;
@@ -189,7 +188,6 @@ dbgmsg("*");
 					value->body.CharData.sval = (char *)xmalloc(size + 1);
 					memclear(value->body.CharData.sval,size + 1);
 				}
-dbgmsg("**");
 			}
 			break;
 		  case	T_TEXT:
@@ -198,6 +196,10 @@ dbgmsg("**");
 			break;
 		  case	T_INT:
 			value = NewValue(GL_TYPE_INT);
+			GetSymbol;
+			break;
+		  case	T_FLOAT:
+			value = NewValue(GL_TYPE_FLOAT);
 			GetSymbol;
 			break;
 		  case	T_BOOL:
@@ -209,20 +211,15 @@ dbgmsg("**");
 			GetSymbol;
 			break;
 		  case	'{':
-dbgmsg("**{");
 			value = NewValue(GL_TYPE_RECORD);
-dbgmsg("**{*");
 			GetName;
-dbgmsg("**{**");
 			ParValue(value);
-dbgmsg("**{***");
 			break;
 		  default:
 			value = NULL;
 			Error("not supported");
 			break;
 		}
-dbgmsg("**+");
 		next = NULL;
 		while	(  DD_Token  ==  '['  ) {	
 			curr = New(ArrayDimension);
@@ -240,7 +237,6 @@ dbgmsg("**+");
 			}
 			GetSymbol;
 		}
-dbgmsg("***");
 		for	( curr = next ; curr != NULL ; ) {
 			array = New(ValueStruct);
 			array->type = GL_TYPE_ARRAY;
@@ -256,7 +252,6 @@ dbgmsg("***");
 			curr = next;
 			value = array;
 		}
-dbgmsg("****");
 		while	(  DD_Token  ==  ','  ) {
 			switch	(GetSymbol) {
 			  case	T_INPUT:
@@ -274,20 +269,17 @@ dbgmsg("****");
 			}
 			GetSymbol;
 		}
-dbgmsg("*****");
 		if		(  DD_Token  ==  ';'  ) {
 			GetSymbol;
 			/*	OK	*/
 		} else {
 			Error("; missing");
 		}
-dbgmsg("******");
 		if		(  !fDD_Error  ) {
 			value->attr = GL_ATTR_NULL;
 			SetAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
-dbgmsg("*******");
 	}
 	if		(	(  !fDD_Error         )
 			 &&	(  DD_Token  ==  '}'  ) ) {

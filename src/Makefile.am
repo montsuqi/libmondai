@@ -1,4 +1,5 @@
 lib_LTLIBRARIES = libmondai.la
+noinst_PROGRAMS = testconv
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -14,6 +15,7 @@ libmondaiinclude_HEADERS =	\
 	OpenCOBOL_v.h	\
 	dotCOBOL_v.h	\
 	Native_v.h		\
+	Text_v.h		\
 	cobolvalue.h	\
 	others.h		\
 	numerici.h		\
@@ -23,6 +25,7 @@ libmondaiinclude_HEADERS =	\
 	libmondai.h		\
 	SQLparser.h		\
 	DDparser.h		\
+	monstring.h		\
 	types.h
 
 INCLUDES 			= 		\
@@ -31,12 +34,14 @@ INCLUDES 			= 		\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=			\
+	monstring.c		monstring.h		\
 	misc.c			misc.h			\
 	LBSfunc.c		LBSfunc.h		\
 	cobolvalue.c	cobolvalue.h	\
 	OpenCOBOL.c		OpenCOBOL_v.h	\
 	dotCOBOL.c		dotCOBOL_v.h	\
 	Native.c		Native_v.h		\
+	Text.c			Text_v.h		\
 	hash.c			hash.h			\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
@@ -48,3 +53,11 @@ libmondai_la_SOURCES	=			\
 	DDlex.c			DDlex.h			\
 	types.h							\
 	debug.h
+
+testconv_LDADD 		=	\
+	$(GLIB_LIBS)		\
+	$(FIXED_LIBS)		\
+	./libmondai.la
+
+testconv_SOURCES	=				\
+	testconv.c

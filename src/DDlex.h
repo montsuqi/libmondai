@@ -45,6 +45,7 @@ copies.
 #define	T_VIRTUAL		(YYBASE +16)
 #define	T_DBCODE		(YYBASE +17)
 #define	T_OBJECT		(YYBASE +18)
+#define	T_FLOAT			(YYBASE +19)
 
 #undef	GLOBAL
 #ifdef	_DD_PARSER
