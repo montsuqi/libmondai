@@ -52,7 +52,7 @@ extern	void	ConvSetType(CONVOPT *opt, Bool v);
 extern	void	ConvSetXmlType(CONVOPT *opt, int type);
 extern	void	ConvSetOutput(CONVOPT *opt, byte v);
 
-extern	byte	*XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	byte	*XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	XML_SizeValue(CONVOPT *opt, ValueStruct *value);
 #endif

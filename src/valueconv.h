@@ -44,8 +44,8 @@ typedef	struct {
 	char	*name;
 	char	*fsep;
 	char	*bsep;
-	byte	*(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
-	byte	*(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+	size_t	(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+	size_t	(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 }	ConvFuncs;
 
@@ -56,8 +56,8 @@ typedef	struct {
 #define	GLOBAL		extern
 #endif
 
-GLOBAL	byte	*(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
-GLOBAL	byte	*(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+GLOBAL	size_t	(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+GLOBAL	size_t	(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 
 #undef	GLOBAL

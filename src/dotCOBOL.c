@@ -38,6 +38,7 @@ copies.
 #include	"misc.h"
 #include	"value.h"
 #include	"cobolvalue.h"
+#include	"monstring.h"
 #include	"dotCOBOL_v.h"
 #include	"memory.h"
 #include	"getset.h"
@@ -81,7 +82,7 @@ FixedC2Cobol(
 	}
 }
 
-extern	byte	*
+extern	size_t
 dotCOBOL_UnPackValue(
 	CONVOPT *opt,
 	byte	*p,
@@ -90,8 +91,10 @@ dotCOBOL_UnPackValue(
 	int		i;
 	char	buff[SIZE_BUFF];
 	char	*str;
+	byte	*pp;
 
 dbgmsg(">dotCOBOL_UnPackValue");
+	pp = p; 
 	if		(  value  !=  NULL  ) {
 		ValueIsNonNil(value);
 		switch	(ValueType(value)) {
@@ -99,6 +102,10 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			ValueInteger(value) = *(int *)p;
 			dotCOBOL_IntegerCobol2C(&ValueInteger(value));
 			p += sizeof(int);
+			break;
+		  case	GL_TYPE_FLOAT:
+			value->body.FloatData = *(double *)p;
+			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
 			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
@@ -109,11 +116,11 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			str = (char *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
-			memcpy(str,p,ValueStringLength(value));
-			str[ValueStringLength(value)] = 0;
+			str = (char *)xmalloc((opt->textsize+1)*sizeof(char));
+			memcpy(str,p,opt->textsize);
+			str[opt->textsize] = 0;
 			p += opt->textsize;
-			StringCobol2C(str,ValueStringLength(value));
+			StringCobol2C(str,opt->textsize);
 			SetValueString(value,str,ConvCodeset(opt));
 			xfree(str);
 			break;
@@ -136,12 +143,12 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = dotCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
+				p += dotCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = dotCOBOL_UnPackValue(opt,p,ValueRecordItem(value,i));
+				p += dotCOBOL_UnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -150,10 +157,10 @@ dbgmsg(">dotCOBOL_UnPackValue");
 		}
 	}
 dbgmsg("<dotCOBOL_UnPackValue");
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 dotCOBOL_PackValue(
 	CONVOPT	*opt,
 	byte	*p,
@@ -161,14 +168,20 @@ dotCOBOL_PackValue(
 {
 	int		i;
 	size_t	size;
+	byte	*pp;
 
 dbgmsg(">dotCOBOL_PackValue");
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_INT:
 			*(int *)p = ValueInteger(value);
 			dotCOBOL_IntegerC2Cobol((int *)p);
 			p += sizeof(int);
+			break;
+		  case	GL_TYPE_FLOAT:
+			*(double *)p = value->body.FloatData;
+			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
 			*(char *)p = ValueBool(value) ? 'T' : 'F';
@@ -179,6 +192,7 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
+			memclear(p,opt->textsize);
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
 			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
 			StringC2Cobol(p,opt->textsize);
@@ -198,12 +212,12 @@ dbgmsg(">dotCOBOL_PackValue");
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = dotCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
+				p += dotCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = dotCOBOL_PackValue(opt,p,ValueRecordItem(value,i));
+				p += dotCOBOL_PackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -211,7 +225,7 @@ dbgmsg(">dotCOBOL_PackValue");
 		}
 	}
 dbgmsg("<dotCOBOL_PackValue");
-	return	(p);
+	return	(p-pp);
 }
 
 extern	size_t
@@ -235,10 +249,10 @@ dbgmsg(">dotCOBOL_SizeValue");
 	  case	GL_TYPE_BOOL:
 		ret = 1;
 		break;
-	  case	GL_TYPE_BYTE:
-		ret = ( opt->textsize < ValueByteLength(value) ) ? opt->textsize :
-			ValueByteLength(value);
+	  case	GL_TYPE_TEXT:
+		ret = opt->textsize;
 		break;
+	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:

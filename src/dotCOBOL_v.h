@@ -22,8 +22,8 @@ copies.
 #define	_DOTCOBOL_VALUE_H
 #include	"valueconv.h"
 
-extern	byte	*dotCOBOL_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	byte	*dotCOBOL_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	dotCOBOL_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	dotCOBOL_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	void	dotCOBOL_IntegerCobol2C(int *ival);
 extern	size_t	dotCOBOL_SizeValue(CONVOPT *opt, ValueStruct *value);
 #define	dotCOBOL_IntegerC2Cobol	dotCOBOL_IntegerCobol2C

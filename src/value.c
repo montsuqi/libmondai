@@ -401,7 +401,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_CHAR:
-			printf("char(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
+			printf("char(%d,%d) [",ValueStringLength(val),ValueStringSize(val));
 			if		(  !IS_VALUE_NIL(val)  ) {
 				PrintFixString(ValueToString(val,DUMP_LOCALE),ValueStringLength(val));
 			}
@@ -409,7 +409,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_VARCHAR:
-			printf("varchar(%d,%d)",ValueStringSize(val),ValueStringLength(val));
+			printf("varchar(%d,%d)",ValueStringLength(val),ValueStringSize(val));
 			if		(  !IS_VALUE_NIL(val)  ) {
 				printf(" [%s]",ValueToString(val,DUMP_LOCALE));
 			}
@@ -417,7 +417,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_DBCODE:
-			printf("code(%d,%d) [%s]\n",ValueStringSize(val),ValueStringLength(val),
+			printf("code(%d,%d) [%s]\n",ValueStringLength(val),ValueStringSize(val),
 				   ValueString(val));
 			fflush(stdout);
 			break;
@@ -428,7 +428,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_TEXT:
-			printf("text(%d,%d)",ValueStringSize(val),ValueStringLength(val));
+			printf("text(%d,%d)",ValueStringLength(val),ValueStringSize(val));
 			fflush(stdout);
 			if		(  !IS_VALUE_NIL(val)  ) {
 				printf(" [%s]\n",ValueStringPointer(val));

@@ -167,7 +167,7 @@ PutCR(
 	return	(size);
 }
 
-static	byte	*
+static	size_t
 _XML_PackValue1(
 	CONVOPT		*opt,
 	byte		*p,
@@ -177,8 +177,10 @@ _XML_PackValue1(
 {
 	char	num[SIZE_NAME+1];
 	int		i;
+	byte	*pp;
 
-	if		(  IS_VALUE_NIL(value)  )	return	(p);
+	if		(  IS_VALUE_NIL(value)  )	return	(0);
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
@@ -191,7 +193,7 @@ _XML_PackValue1(
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s[%d]",name,i);
-				p = _XML_PackValue1(opt,p,num,ValueArrayItem(value,i),buff);
+				p += _XML_PackValue1(opt,p,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
 				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
@@ -203,7 +205,7 @@ _XML_PackValue1(
 						 ,name,ValueRecordSize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
+				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
 				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
@@ -268,10 +270,10 @@ _XML_PackValue1(
 		p += PutCR(opt,p);
 		nIndent --;
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-static	byte	*
+static	size_t
 _XML_PackValue2(
 	CONVOPT		*opt,
 	byte		*p,
@@ -281,8 +283,10 @@ _XML_PackValue2(
 {
 	char	num[SIZE_NAME+1];
 	int		i;
+	byte	*pp;
 
-	if		(  IS_VALUE_NIL(value)  )	return	(p);
+	if		(  IS_VALUE_NIL(value)  )	return	(0);
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
@@ -295,7 +299,7 @@ _XML_PackValue2(
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s:%d",name,i);
-				p = _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
+				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
 				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
@@ -307,7 +311,7 @@ _XML_PackValue2(
 			p += sprintf(p," size=\"%d\">",ValueRecordSize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
+				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
 				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
@@ -370,17 +374,19 @@ _XML_PackValue2(
 		p += PutCR(opt,p);
 		nIndent --;
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 XML_PackValue(
 	CONVOPT		*opt,
 	 byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
+	byte	*pp;
 
+	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		p += sprintf(p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
@@ -396,6 +402,7 @@ XML_PackValue(
 	} else {
 		nIndent = -1;
 	}
+
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -403,7 +410,7 @@ XML_PackValue(
 			p += PutCR(opt,p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			p =_XML_PackValue1(opt,p,opt->recname,value,buff);
+			p +=_XML_PackValue1(opt,p,opt->recname,value,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 			p += sprintf(p,"</lm:block>");
@@ -416,7 +423,7 @@ XML_PackValue(
 			p += PutCR(opt,p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			p =_XML_PackValue2(opt,p,opt->recname,value,buff);
+			p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 			p += sprintf(p,"</%s:data>",opt->recname);
@@ -424,7 +431,7 @@ XML_PackValue(
 		break;
 	}
 	*p = 0;
-	return	(p);
+	return	(p-pp);
 }
 
 static	int
@@ -1038,13 +1045,14 @@ SetNil(
 	}
 }
 
-extern	byte	*
+extern	size_t
 XML_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
+	byte	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1057,6 +1065,7 @@ ENTER_FUNC;
 	memset(ctx->longname,0,SIZE_LONGNAME+1);
 
 	SetNil(value);
+	pp = p;
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
 		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
@@ -1069,7 +1078,7 @@ ENTER_FUNC;
 	xfree(ctx->buff);
 	xfree(ctx);
 LEAVE_FUNC;
-	return	(p);
+	return	(p-pp);
 }
 
 static	size_t

@@ -44,7 +44,7 @@ copies.
 #include	"Text_v.h"
 #include	"debug.h"
 
-static	byte	*
+static	size_t
 _CSV_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -53,7 +53,9 @@ _CSV_UnPackValue(
 {
 	int		i;
 	char	*q;
+	byte	*pp;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		if		(  !IS_VALUE_STRUCTURE(value)  ) {
 			memset(buff,0,SIZE_BUFF);
@@ -117,12 +119,12 @@ _CSV_UnPackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = _CSV_UnPackValue(opt,p,ValueArrayItem(value,i),buff);
+				p += _CSV_UnPackValue(opt,p,ValueArrayItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _CSV_UnPackValue(opt,p,ValueRecordItem(value,i),buff);
+				p += _CSV_UnPackValue(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -131,10 +133,10 @@ _CSV_UnPackValue(
 			break;
 		}
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 CSV_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -195,7 +197,7 @@ IsComma(
 	return	(ret);
 }
 
-static	byte	*
+static	size_t
 __CSV_PackValue(
 	CONVOPT		*opt,
 	char		*p,
@@ -206,7 +208,9 @@ __CSV_PackValue(
 	char		*buff)
 {
 	int		i;
+	char	*pp;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_CHAR:
@@ -237,12 +241,12 @@ __CSV_PackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = __CSV_PackValue(opt,p,ValueArrayItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueArrayItem(value,i),fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -250,10 +254,10 @@ __CSV_PackValue(
 			break;
 		}
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-static	byte	*
+static	size_t
 _CSV_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -263,16 +267,16 @@ _CSV_PackValue(
 	Bool		fCesc,
 	char		*buff)
 {
-	byte	*ret;
+	size_t	ret;
 
 	ret = __CSV_PackValue(opt,p,value,fNsep,fSsep,fCesc,buff);
-	if		(  ret  >  p  ) {
-		*(ret-1) = 0;
+	if		(  ret  >  0  ) {
+		*(p+ret-1) = 0;
 	}
 	return	(ret);
 }
 
-extern	byte	*
+extern	size_t
 CSV1_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -282,7 +286,7 @@ CSV1_PackValue(
 	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff));
 }
 
-extern	byte	*
+extern	size_t
 CSV2_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -292,7 +296,7 @@ CSV2_PackValue(
 	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
-extern	byte	*
+extern	size_t
 CSV3_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -302,7 +306,7 @@ CSV3_PackValue(
 	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff));
 }
 
-extern	byte	*
+extern	size_t
 CSVE_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -537,7 +541,7 @@ DecodeString(
 	return	(result);
 }
 
-static	byte	*
+static	size_t
 _RFC822_UnPackValueNoNamed(
 	CONVOPT		*opt,
 	byte		*p,
@@ -546,9 +550,11 @@ _RFC822_UnPackValueNoNamed(
 {
 	int		i;
 	byte	*q
+	,		*pp
 	,		ch;
 	size_t	len;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_CHAR:
@@ -582,12 +588,12 @@ _RFC822_UnPackValueNoNamed(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = _RFC822_UnPackValueNoNamed(opt,p,ValueArrayItem(value,i),buff);
+				p += _RFC822_UnPackValueNoNamed(opt,p,ValueArrayItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _RFC822_UnPackValueNoNamed(opt,p,ValueRecordItem(value,i),buff);
+				p += _RFC822_UnPackValueNoNamed(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -595,10 +601,10 @@ _RFC822_UnPackValueNoNamed(
 			break;
 		}
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-static	byte	*
+static	size_t
 _RFC822_UnPackValueNamed(
 	CONVOPT		*opt,
 	byte		*p,
@@ -609,10 +615,12 @@ _RFC822_UnPackValueNamed(
 	char	*vname
 	,		*rname;
 	byte	*q
+	,		*pp
 	,		ch;
 	ValueStruct	*e;
 	size_t	len;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		while	(  *p  !=  0  ) {
 			q = str;
@@ -664,16 +672,16 @@ _RFC822_UnPackValueNamed(
 			}
 		}
 	}					
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 RFC822_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value)
 {
-	char	*ret;
+	size_t	ret;
 	char	buff[SIZE_BUFF];
 
 	if		(  opt->fName  ) {
@@ -684,7 +692,7 @@ RFC822_UnPackValue(
 	return	(ret);
 }
 
-static	byte	*
+static	size_t
 _RFC822_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -695,7 +703,9 @@ _RFC822_PackValue(
 {
 	int		i;
 	char	*str;
+	byte	*pp;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		if		(  name  ==  NULL  ) { 
 			name = longname + strlen(longname);
@@ -725,14 +735,14 @@ _RFC822_PackValue(
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(name,"[%d]",i);
-				p = _RFC822_PackValue(opt,p,ValueArrayItem(value,i),
+				p += _RFC822_PackValue(opt,p,ValueArrayItem(value,i),
 									  name+strlen(name),longname,buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				sprintf(name,".%s",ValueRecordName(value,i));
-				p = _RFC822_PackValue(opt,p,ValueRecordItem(value,i),
+				p += _RFC822_PackValue(opt,p,ValueRecordItem(value,i),
 									  name+strlen(name),longname,buff);
 			}
 			break;
@@ -742,10 +752,10 @@ _RFC822_PackValue(
 		}
 	}
 	*p = 0;
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 RFC822_PackValue(
 	CONVOPT	*opt,
 	byte		*p,
@@ -753,17 +763,17 @@ RFC822_PackValue(
 {
 	char	buff[SIZE_BUFF]
 	,		longname[SIZE_LONGNAME+1];
-	byte	*q;
+	size_t	ret;
 
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
 	}
-	q = _RFC822_PackValue(opt,p,value,NULL,longname,buff);
-	if		(  q  >  p  ) {
-		*(q-1) = 0;
+	ret = _RFC822_PackValue(opt,p,value,NULL,longname,buff);
+	if		(  ret  >  0  ) {
+		*(p+ret-1) = 0;
 	}
-	return	(q);
+	return	(ret);
 }
 
 static	size_t
@@ -858,7 +868,7 @@ CGI_SkipNext(
 	return	(p);
 }
 
-static	byte	*
+static	size_t
 _CGI_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
@@ -870,8 +880,10 @@ _CGI_UnPackValue(
 	,		*rname;
 	char	*q
 	,		ch;
+	byte	*pp;
 	ValueStruct	*e;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		while	(  *p  !=  0  ) {
 			q = str;
@@ -902,23 +914,23 @@ _CGI_UnPackValue(
 			}
 		}
 	}					
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 CGI_UnPackValue(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value)
 {
-	char	*ret;
+	size_t	ret;
 
 	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	ret = _CGI_UnPackValue(opt,p,value);
 	return	(ret);
 }
 
-static	byte	*
+static	size_t
 _CGI_PackValue(
 	CONVOPT	*opt,
 	byte		*p,
@@ -927,8 +939,10 @@ _CGI_PackValue(
 	char		*longname)
 {
 	int		i;
-	byte	*q;
+	byte	*q
+	,		*pp;
 
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_CHAR:
@@ -963,14 +977,14 @@ _CGI_PackValue(
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(name,"[%d]",i);
-				p = _CGI_PackValue(opt,p,ValueArrayItem(value,i),
+				p += _CGI_PackValue(opt,p,ValueArrayItem(value,i),
 								   name+strlen(name),longname);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				sprintf(name,".%s",ValueRecordName(value,i));
-				p = _CGI_PackValue(opt,p,ValueRecordItem(value,i),
+				p += _CGI_PackValue(opt,p,ValueRecordItem(value,i),
 								   name+strlen(name),longname);
 			}
 			break;
@@ -979,28 +993,28 @@ _CGI_PackValue(
 			break;
 		}
 	}
-	return	(p);
+	return	(p-pp);
 }
 
-extern	byte	*
+extern	size_t
 CGI_PackValue(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value)
 {
 	char	longname[SIZE_LONGNAME+1];
-	byte	*q;
+	size_t	ret;
 
 	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
 	}
-	q = _CGI_PackValue(opt,p,value,(longname + strlen(longname)),longname);
-	if		(  q  >  p  ) {
-		*(q-1) = 0;
+	ret = _CGI_PackValue(opt,p,value,(longname + strlen(longname)),longname);
+	if		(  ret  >  0  ) {
+		*(p+ret-1) = 0;
 	}
-	return	(q);
+	return	(ret);
 }
 
 static	size_t

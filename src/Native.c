@@ -43,7 +43,7 @@ copies.
 #include	"Native_v.h"
 #include	"debug.h"
 
-extern	byte	*
+extern	size_t
 NativeUnPackValue(
 	CONVOPT	*opt,
 	byte	*p,
@@ -55,8 +55,10 @@ NativeUnPackValue(
 	Bool	fName;
 	PacketDataType	type;
 	ValueAttributeType	attr;
+	byte	*q;
 
 dbgmsg(">NativeUnPackValue");
+	q = p; 
 	if		(  value  !=  NULL  ) {
 		if		(  opt  !=  NULL  ) { 
 			fName = opt->fName;
@@ -124,7 +126,7 @@ dbgmsg(">NativeUnPackValue");
 			ValueArraySize(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = NativeUnPackValue(opt,p,ValueArrayItem(value,i));
+				p += NativeUnPackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -144,7 +146,7 @@ dbgmsg(">NativeUnPackValue");
 					}
 				}
 				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
-				p = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
+				p += NativeUnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -153,10 +155,10 @@ dbgmsg(">NativeUnPackValue");
 		}
 	}
 dbgmsg("<NativeUnPackValue");
-	return	(p);
+	return	(p-q);
 }
 
-extern	byte	*
+extern	size_t
 NativePackValue(
 	CONVOPT	*opt,
 	byte	*p,
@@ -165,8 +167,10 @@ NativePackValue(
 	int		i;
 	Bool	fName;
 	size_t	size;
+	byte	*pp;
 
 dbgmsg(">NativePackValue");
+	pp = p;
 	if		(  value  !=  NULL  ) {
 		if		(  opt  !=  NULL  ) { 
 			fName = opt->fName;
@@ -220,7 +224,7 @@ dbgmsg(">NativePackValue");
 			*(size_t *)p = ValueArraySize(value);
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = NativePackValue(opt,p,ValueArrayItem(value,i));
+				p += NativePackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -233,7 +237,7 @@ dbgmsg(">NativePackValue");
 					strcpy(p,ValueRecordName(value,i));
 					p += strlen(ValueRecordName(value,i))+1;
 				}
-				p = NativePackValue(opt,p,ValueRecordItem(value,i));
+				p += NativePackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -241,7 +245,7 @@ dbgmsg(">NativePackValue");
 		}
 	}
 dbgmsg("<NativePackValue");
-	return	(p);
+	return	(p-pp);
 }
 
 extern	size_t

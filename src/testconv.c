@@ -37,6 +37,8 @@ copies.
 #define	TEST_XML2
 #define	TEST_NATIVE1
 #define	TEST_NATIVE2
+#define	TEST_OPENCOBOL
+#define	TEST_DOTCOBOL
 #define	TEST_CSV1
 #define	TEST_CSV2
 #define	TEST_CSV3
@@ -91,11 +93,11 @@ main(
 	,		j;
 	ValueStruct	*val
 	,			*e;
-	size_t	size;
+	size_t	size
+	,		size1;
 	FILE	*fp;
 	CONVOPT	*opt;
-	byte	*buff
-	,		*q;
+	byte	*buff;
 
 	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
@@ -248,16 +250,16 @@ main(
 	ConvSetType(opt,FALSE);
 	ConvSetXmlType(opt,XML_TYPE1);
 
-	//ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY|XML_OUT_TAILER));
+	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY|XML_OUT_TAILER));
 	//	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_TAILER));
 	//	ConvSetOutput(opt,XML_OUT_BODY);
-	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY));
+	//	ConvSetOutput(opt,(XML_OUT_HEADER|XML_OUT_BODY));
 
 	printf("***** XML Size(1) *****\n");
 	size = XML_SizeValue(opt,val);
-	q = XML_PackValue(opt,buff,val);
+	size1 = XML_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.xml1","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
@@ -282,9 +284,9 @@ main(
 
 	printf("***** XML Size(2) *****\n");
 	size = XML_SizeValue(opt,val);
-	q = XML_PackValue(opt,buff,val);
+	size1 = XML_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.xml2","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
@@ -309,9 +311,9 @@ main(
 
 	printf("***** Native Size(1) *****\n");
 	size = NativeSizeValue(opt,val);
-	q = NativePackValue(opt,buff,val);
+	size1 = NativePackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.native1","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -334,9 +336,9 @@ main(
 
 	printf("***** Native Size(2) *****\n");
 	size = NativeSizeValue(opt,val);
-	q = NativePackValue(opt,buff,val);
+	size1 = NativePackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.native2","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -350,6 +352,56 @@ main(
 	xfree(buff);
 #endif
 
+#ifdef	TEST_OPENCOBOL
+	ConvSetSize(opt,100,100);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** OpenCOBOL *****\n");
+
+	printf("***** OpenCOBOL Size *****\n");
+	size = OpenCOBOL_SizeValue(opt,val);
+	size1 = OpenCOBOL_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",size1);
+
+	if		(  ( fp = fopen("test.oc","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** OpenCOBOL UnPack *****\n");
+	InitializeValue(val);
+	OpenCOBOL_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** OpenCOBOL end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_DOTCOBOL
+	ConvSetSize(opt,100,100);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** dotCOBOL *****\n");
+
+	printf("***** dotCOBOL Size *****\n");
+	size = dotCOBOL_SizeValue(opt,val);
+	size1 = dotCOBOL_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",size1);
+
+	if		(  ( fp = fopen("test.dc","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** dotCOBOL UnPack *****\n");
+	InitializeValue(val);
+	dotCOBOL_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** dotCOBOL end *****\n");
+	xfree(buff);
+#endif
+
 #ifdef	TEST_CSV1
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
@@ -359,9 +411,9 @@ main(
 
 	printf("***** CSV Size(1) *****\n");
 	size = CSV1_SizeValue(opt,val);
-	q = CSV1_PackValue(opt,buff,val);
+	size1 = CSV1_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.csv1","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -384,9 +436,9 @@ main(
 
 	printf("***** CSV Size(2) *****\n");
 	size = CSV2_SizeValue(opt,val);
-	q = CSV2_PackValue(opt,buff,val);
+	size1 = CSV2_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.csv2","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -409,9 +461,9 @@ main(
 
 	printf("***** CSV Size(3) *****\n");
 	size = CSV3_SizeValue(opt,val);
-	q = CSV3_PackValue(opt,buff,val);
+	size1 = CSV3_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.csv3","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -434,9 +486,9 @@ main(
 
 	printf("***** CSV Size(E) *****\n");
 	size = CSVE_SizeValue(opt,val);
-	q = CSVE_PackValue(opt,buff,val);
+	size1 = CSVE_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.csve","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -463,9 +515,9 @@ main(
 
 	printf("***** RFC822 Size(with name) *****\n");
 	size = RFC822_SizeValue(opt,val);
-	q = RFC822_PackValue(opt,buff,val);
+	size1 = RFC822_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.822n","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -491,9 +543,9 @@ main(
 
 	printf("***** RFC822 Size(without name) *****\n");
 	size = RFC822_SizeValue(opt,val);
-	q = RFC822_PackValue(opt,buff,val);
+	size1 = RFC822_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.822o","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
@@ -519,9 +571,9 @@ main(
 
 	printf("***** CGI Size *****\n");
 	size = CGI_SizeValue(opt,val);
-	q = CGI_PackValue(opt,buff,val);
+	size1 = CGI_PackValue(opt,buff,val);
 	printf("size = %d\n",size);
-	printf("size = %d\n",(int)(q - buff));
+	printf("size = %d\n",size1);
 
 	if		(  ( fp = fopen("test.CGI","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);

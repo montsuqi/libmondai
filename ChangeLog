@@ -1,3 +1,7 @@
+2003-12-10  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Pack/UnPackの復帰値をsize_tにした
+
 2003-12-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c (NativePackValue): 文字列末尾の\0はpackの時に含める。

@@ -23,12 +23,12 @@ copies.
 
 #include	"valueconv.h"
 
-extern	byte	*CSV_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	CSV_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 
-extern	byte	*CSV1_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	byte	*CSV2_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	byte	*CSV3_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	byte	*CSVE_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CSV1_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CSV2_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CSV3_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CSVE_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 
 extern	size_t	CSV1_SizeValue(CONVOPT *opt,ValueStruct *val);
 extern	size_t	CSV2_SizeValue(CONVOPT *opt,ValueStruct *val);
@@ -38,12 +38,12 @@ extern	size_t	CSVE_SizeValue(CONVOPT *opt,ValueStruct *val);
 #define	CSV_SizeValue	CSV3_SizeValue
 #define	CSV_PackValue	CSV3_PackValue
 
-extern	byte	*RFC822_UnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	byte	*RFC822_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	RFC822_UnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	RFC822_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 extern	size_t	RFC822_SizeValue(CONVOPT *opt,ValueStruct *value);
 
-extern	byte	*CGI_UnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	byte	*CGI_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CGI_UnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	CGI_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 extern	size_t	CGI_SizeValue(CONVOPT *opt,ValueStruct *value);
 
 #endif
