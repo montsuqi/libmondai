@@ -81,9 +81,9 @@ FixedC2Cobol(
 
 extern	char	*
 dotCOBOL_UnPackValue(
+	CONVOPT *opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
 	char	buff[SIZE_BUFF];
@@ -92,54 +92,54 @@ dbgmsg(">dotCOBOL_UnPackValue");
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_INT:
-			value->body.IntegerData = *(int *)p;
-			dotCOBOL_IntegerCobol2C(&value->body.IntegerData);
+			ValueInteger(value) = *(int *)p;
+			dotCOBOL_IntegerCobol2C(&ValueInteger(value));
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_BOOL:
-			value->body.BoolData = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(ValueByte(value),p,ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			if		(  value->body.CharData.sval  !=  NULL  ) {
-				if		(  value->body.CharData.len  <  textsize  ) {
-					xfree(value->body.CharData.sval);
-					value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-					value->body.CharData.len = textsize;
+			if		(  ValueString(value)  !=  NULL  ) {
+				if		(  ValueStringLength(value)  <  opt->textsize  ) {
+					xfree(ValueString(value));
+					ValueString(value) = (char *)xmalloc(opt->textsize + 1);
+					ValueStringLength(value) = opt->textsize;
 				}
 			} else {
-				value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-				value->body.CharData.len = textsize;
+				ValueString(value) = (char *)xmalloc(opt->textsize + 1);
+				ValueStringLength(value) = opt->textsize;
 			}
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += textsize;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+			memcpy(ValueString(value),p,ValueStringLength(value));
+			p += opt->textsize;
+			StringCobol2C(ValueString(value),ValueStringLength(value));
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+			memcpy(ValueString(value),p,ValueStringLength(value));
+			p += ValueStringLength(value);
+			StringCobol2C(ValueString(value),ValueStringLength(value));
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(buff,p,ValueFixed(value)->flen);
-			FixedCobol2C(buff,ValueFixed(value)->flen);
-			strcpy(ValueFixed(value)->sval,buff);
-			p += value->body.FixedData.flen;
+			memcpy(buff,p,ValueFixedLength(value));
+			FixedCobol2C(buff,ValueFixedLength(value));
+			strcpy(ValueFixedBody(value),buff);
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = dotCOBOL_UnPackValue(p,value->body.ArrayData.item[i],textsize);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p = dotCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = dotCOBOL_UnPackValue(p,value->body.RecordData.item[i],textsize);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = dotCOBOL_UnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -152,9 +152,9 @@ dbgmsg("<dotCOBOL_UnPackValue");
 
 extern	char	*
 dotCOBOL_PackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
@@ -163,45 +163,45 @@ dbgmsg(">dotCOBOL_PackValue");
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_INT:
-			*(int *)p = value->body.IntegerData;
+			*(int *)p = ValueInteger(value);
 			dotCOBOL_IntegerC2Cobol((int *)p);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_BOOL:
-			*(char *)p = value->body.BoolData ? 'T' : 'F';
+			*(char *)p = ValueBool(value) ? 'T' : 'F';
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueByte(value),ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			size = ( textsize < value->body.CharData.len ) ? textsize :
-				value->body.CharData.len;
-			memcpy(p,value->body.CharData.sval,size);
-			StringC2Cobol(p,textsize);
-			p += textsize;
+			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize :
+				ValueStringLength(value);
+			memcpy(p,ValueString(value),size);
+			StringC2Cobol(p,opt->textsize);
+			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			StringC2Cobol(p,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueString(value),ValueStringLength(value));
+			StringC2Cobol(p,ValueStringLength(value));
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixed(value)->sval,ValueFixed(value)->flen);
-			FixedC2Cobol(p,ValueFixed(value)->flen);
-			p += value->body.FixedData.flen;
+			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+			FixedC2Cobol(p,ValueFixedLength(value));
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = dotCOBOL_PackValue(p,value->body.ArrayData.item[i],textsize);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p = dotCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = dotCOBOL_PackValue(p,value->body.RecordData.item[i],textsize);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = dotCOBOL_PackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -214,13 +214,11 @@ dbgmsg("<dotCOBOL_PackValue");
 
 extern	size_t
 dotCOBOL_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
 	int		i
-	,		n
-	,		size;
+	,		n;
 	size_t	ret;
 
 	if		(  value  ==  NULL  )	return	(0);
@@ -236,30 +234,29 @@ dbgmsg(">dotCOBOL_SizeValue");
 		ret = 1;
 		break;
 	  case	GL_TYPE_BYTE:
-		size = ( textsize < value->body.CharData.len ) ? textsize :
-			value->body.CharData.len;
-		ret = size;
+		ret = ( opt->textsize < ValueByteLength(value) ) ? opt->textsize :
+			ValueByteLength(value);
 		break;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		ret = value->body.CharData.len;
+		ret = ValueStringLength(value);
 		break;
 	  case	GL_TYPE_NUMBER:
-		ret = value->body.FixedData.flen;
+		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_ARRAY:
-		if		(  value->body.ArrayData.count  >  0  ) {
-			n = value->body.ArrayData.count;
+		if		(  ValueArraySize(value)  >  0  ) {
+			n = ValueArraySize(value);
 		} else {
-			n = arraysize;
+			n = opt->arraysize;
 		}
-		ret = dotCOBOL_SizeValue(value->body.ArrayData.item[0],arraysize,textsize) * n;
+		ret = dotCOBOL_SizeValue(opt,ValueArrayItem(value,0)) * n;
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
-		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-			ret += dotCOBOL_SizeValue(value->body.RecordData.item[i],arraysize,textsize);
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			ret += dotCOBOL_SizeValue(opt,ValueRecordItem(value,i));
 		}
 		break;
 	  default:

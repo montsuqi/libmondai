@@ -18,11 +18,20 @@ responsibilities.  It should be in a file named COPYING.  Among other
 things, the copyright notice and this notice must be preserved on all
 copies. 
 */
-#ifndef	_OPENCOBOL_VALUE_H
-#define	_OPENCOBOL_VALUE_H
-#include	"valueconv.h"
 
-extern	char	*OpenCOBOL_UnPackValue(CONVOPT	*opt, char *p, ValueStruct *value);
-extern	char	*OpenCOBOL_PackValue(CONVOPT *opt, char *p, ValueStruct *value);
-extern	size_t	OpenCOBOL_SizeValue(CONVOPT *opt, ValueStruct *value);
+#ifndef	_INC_GETSET_H
+#define	_INC_GETSET_H
+
+extern	Bool		SetValueString(ValueStruct *val, char *str);
+extern	Bool		SetValueInteger(ValueStruct *val, int ival);
+extern	Bool		SetValueBool(ValueStruct *val, Bool bval);
+extern	Bool		SetValueFloat(ValueStruct *val, double bval);
+extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
+
+extern	int			ValueToInteger(ValueStruct *val);
+extern	double		ValueToFloat(ValueStruct *val);
+extern	Fixed		*ValueToFixed(ValueStruct *val);
+extern	Bool		ValueToBool(ValueStruct *val);
+extern	char		*ValueToString(ValueStruct *value);
+
 #endif

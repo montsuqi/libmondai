@@ -81,12 +81,12 @@ FixedC2Cobol(
 
 extern	char	*
 OpenCOBOL_UnPackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
-	char	buff[SIZE_BUFF];
+	char	buff[SIZE_NUMBUF+1];
 
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
@@ -105,17 +105,17 @@ OpenCOBOL_UnPackValue(
 			break;
 		  case	GL_TYPE_TEXT:
 			if		(  ValueString(value)  !=  NULL  ) {
-				if		(  ValueStringLength(value)  <  textsize  ) {
+				if		(  ValueStringLength(value)  <  opt->textsize  ) {
 					xfree(ValueString(value));
-					ValueString(value) = (char *)xmalloc(textsize + 1);
-					ValueStringLength(value) = textsize;
+					ValueString(value) = (char *)xmalloc(opt->textsize + 1);
+					ValueStringLength(value) = opt->textsize;
 				}
 			} else {
-				ValueString(value) = (char *)xmalloc(textsize + 1);
-				ValueStringLength(value) = textsize;
+				ValueString(value) = (char *)xmalloc(opt->textsize + 1);
+				ValueStringLength(value) = opt->textsize;
 			}
 			memcpy(ValueString(value),p,ValueStringLength(value));
-			p += textsize;
+			p += opt->textsize;
 			StringCobol2C(ValueString(value),ValueStringLength(value));
 			break;
 		  case	GL_TYPE_CHAR:
@@ -133,12 +133,12 @@ OpenCOBOL_UnPackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = OpenCOBOL_UnPackValue(p,value->body.ArrayData.item[i],textsize);
+				p = OpenCOBOL_UnPackValue(opt,p,value->body.ArrayData.item[i]);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = OpenCOBOL_UnPackValue(p,value->body.RecordData.item[i],textsize);
+				p = OpenCOBOL_UnPackValue(opt,p,value->body.RecordData.item[i]);
 			}
 			break;
 		  default:
@@ -150,9 +150,9 @@ OpenCOBOL_UnPackValue(
 
 extern	char	*
 OpenCOBOL_PackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
@@ -173,11 +173,11 @@ OpenCOBOL_PackValue(
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			size = ( textsize < ValueStringLength(value) ) ? textsize :
+			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize :
 				ValueStringLength(value);
 			memcpy(p,ValueString(value),size);
-			StringC2Cobol(p,textsize);
-			p += textsize;
+			StringC2Cobol(p,opt->textsize);
+			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
@@ -193,12 +193,12 @@ OpenCOBOL_PackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = OpenCOBOL_PackValue(p,value->body.ArrayData.item[i],textsize);
+				p = OpenCOBOL_PackValue(opt,p,value->body.ArrayData.item[i]);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = OpenCOBOL_PackValue(p,value->body.RecordData.item[i],textsize);
+				p = OpenCOBOL_PackValue(opt,p,value->body.RecordData.item[i]);
 			}
 			break;
 		  default:
@@ -210,13 +210,11 @@ OpenCOBOL_PackValue(
 
 extern	size_t
 OpenCOBOL_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
 	int		i
-	,		n
-	,		size;
+	,		n;
 	size_t	ret;
 
 	if		(  value  ==  NULL  )	return	(0);
@@ -232,9 +230,8 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = 1;
 		break;
 	  case	GL_TYPE_TEXT:
-		size = ( textsize > ValueStringLength(value) ) ? textsize :
+		ret = ( opt->textsize > ValueStringLength(value) ) ? opt->textsize :
 			ValueStringLength(value);
-		ret = size;
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -249,14 +246,14 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		if		(  value->body.ArrayData.count  >  0  ) {
 			n = value->body.ArrayData.count;
 		} else {
-			n = arraysize;
+			n = opt->arraysize;
 		}
-		ret = OpenCOBOL_SizeValue(value->body.ArrayData.item[0],arraysize,textsize) * n;
+		ret = OpenCOBOL_SizeValue(opt,value->body.ArrayData.item[0]) * n;
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
 		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-			ret += OpenCOBOL_SizeValue(value->body.RecordData.item[i],arraysize,textsize);
+			ret += OpenCOBOL_SizeValue(opt,value->body.RecordData.item[i]);
 		}
 		break;
 	  default:

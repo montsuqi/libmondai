@@ -42,64 +42,64 @@ copies.
 
 extern	char	*
 NativeUnPackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
 
 dbgmsg(">NativeUnPackValue");
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			memcpy(&value->body.IntegerData,p,sizeof(int));
+			ValueInteger(value) = *(int *)p;
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_BOOL:
-			value->body.BoolData = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(ValueByte(value),p,ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			value->body.CharData.sval[value->body.CharData.len] = 0;
-			p += value->body.CharData.len;
+			memcpy(ValueString(value),p,ValueStringLength(value));
+			ValueString(value)[ValueStringLength(value)] = 0;
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
 			memcpy(&size,p,sizeof(size_t));
 			p += sizeof(size_t);
-			if		(  size  !=  value->body.CharData.len  ) {
-				xfree(value->body.CharData.sval);
-				value->body.CharData.sval = (char *)xmalloc(size+1);
-				value->body.CharData.len = size;
+			if		(  size  !=  ValueStringLength(value)  ) {
+				xfree(ValueString(value));
+				ValueString(value) = (char *)xmalloc(size+1);
+				ValueStringLength(value) = size;
 			}
-			memcpy(value->body.CharData.sval,p,size);
+			memcpy(ValueString(value),p,size);
 			p += size;
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(value->body.FixedData.sval,p,value->body.FixedData.flen);
-			p += value->body.FixedData.flen;
+			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			memcpy(&value->body.Object.apsid,p,sizeof(int));
+			ValueObjectPlace(value) = *(int *)p;
 			p += sizeof(int);
-			memcpy(&value->body.Object.oid,p,sizeof(int));
+			ValueObjectID(value) = *(int *)p;
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.ArrayData.item[i],textsize);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p = NativeUnPackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.RecordData.item[i],textsize);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -112,57 +112,57 @@ dbgmsg("<NativeUnPackValue");
 
 extern	char	*
 NativePackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	int		i;
 
 dbgmsg(">NativePackValue");
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			memcpy(p,&value->body.IntegerData,sizeof(int));
+			*(int *)p = ValueInteger(value);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_BOOL:
-			*(char *)p = value->body.BoolData ? 'T' : 'F';
+			*(char *)p = ValueBool(value) ? 'T' : 'F';
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueByte(value),ValueByteLength(value));
+			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueString(value),ValueStringLength(value));
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			memcpy(p,&value->body.CharData.len,sizeof(size_t));
+			*(size_t *)p = ValueStringLength(value);
 			p += sizeof(size_t);
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueString(value),ValueStringLength(value));
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixed(value)->sval,ValueFixed(value)->flen);
-			p += value->body.FixedData.flen;
+			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			memcpy(p,&value->body.Object.apsid,sizeof(int));
+			*(int *)p = ValueObjectPlace(value);
 			p += sizeof(int);
-			memcpy(p,&value->body.Object.oid,sizeof(int));
+			*(int *)p = ValueObjectID(value);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.ArrayData.item[i],textsize);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p = NativePackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.RecordData.item[i],textsize);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = NativePackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -175,9 +175,8 @@ dbgmsg("<NativePackValue");
 
 extern	size_t
 NativeSizeValue(
-	ValueStruct	*val,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT	*opt,
+	ValueStruct	*val)
 {
 	int		i
 	,		n;
@@ -185,7 +184,7 @@ NativeSizeValue(
 
 	if		(  val  ==  NULL  )	return	(0);
 dbgmsg(">NativeSizeValue");
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_INT:
 		ret = sizeof(int);
 		break;
@@ -196,33 +195,35 @@ dbgmsg(">NativeSizeValue");
 		ret = 1;
 		break;
 	  case	GL_TYPE_BYTE:
+		ret = ValueByteLength(val);
+		break;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		ret = val->body.CharData.len;
+		ret = ValueStringLength(val);
 		break;
 	  case	GL_TYPE_NUMBER:
-		ret = val->body.FixedData.flen;
+		ret = ValueFixedLength(val);
 		break;
 	  case	GL_TYPE_TEXT:
-		if		(  textsize  >  0  ) {
-			ret = textsize;
+		if		(  opt->textsize  >  0  ) {
+			ret = opt->textsize;
 		} else {
-			ret = val->body.CharData.len + sizeof(size_t);
+			ret = ValueStringLength(val) + sizeof(size_t);
 		}
 		break;
 	  case	GL_TYPE_ARRAY:
-		if		(  val->body.ArrayData.count  >  0  ) {
-			n = val->body.ArrayData.count;
+		if		(  ValueArraySize(val)  >  0  ) {
+			n = ValueArraySize(val);
 		} else {
 			n = arraysize;
 		}
-		ret = NativeSizeValue(val->body.ArrayData.item[0],arraysize,textsize) * n;
+		ret = NativeSizeValue(opt,ValueArrayItem(val,0)) * n;
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
-		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
-			ret += NativeSizeValue(val->body.RecordData.item[i],arraysize,textsize);
+		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+			ret += NativeSizeValue(opt,ValueRecordItem(val,i));
 		}
 		break;
 	  default:

@@ -37,18 +37,17 @@ copies.
 
 #include	"types.h"
 #include	"misc.h"
+#include	"value.h"
 #include	"monstring.h"
 #include	"others.h"
 #include	"debug.h"
-
-#define	SIZE_BUFF		8192
 
 extern	char	**
 ParCommandLine(
 	char	*line)
 {
 	int			n;
-	char		buff[SIZE_BUFF];
+	char		buff[SIZE_LONGNAME+1];
 	char		*p
 	,			*q;
 	char		**cmd;
@@ -110,9 +109,9 @@ ParPort(
 {
 	Port	*ret;
 	char	*p;
-	char	dup[SIZE_BUFF+1];
+	char	dup[SIZE_LONGNAME+1];
 
-	strncpy(dup,str,SIZE_BUFF);
+	strncpy(dup,str,SIZE_LONGNAME);
 	ret = New(Port);
 	if		(  dup[0]  ==  '['  ) {
 		if		(  ( p = strchr(dup,']') )  !=  NULL  ) {
@@ -193,7 +192,7 @@ ExpandPath(
 	char	*org,
 	char	*base)
 {
-	static	char	path[SIZE_BUFF+1];
+	static	char	path[SIZE_LONGNAME+1];
 	char	*p
 	,		*q;
 

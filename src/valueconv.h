@@ -24,6 +24,19 @@ copies.
 
 #include	"value.h"
 
+#define	STRING_ENCODING_NULL	0
+#define	STRING_ENCODING_URL		1
+#define	STRING_ENCODING_MIME	2
+
+typedef	struct {
+	char	*locale;
+	char	*recname;
+	int		encode;
+	size_t	textsize;
+	size_t	arraysize;
+	Bool	fName;
+}	CONVOPT;
+
 #undef	GLOBAL
 #ifdef	_VALUECONV
 #define	GLOBAL		/*	*/
@@ -31,13 +44,20 @@ copies.
 #define	GLOBAL		extern
 #endif
 
-GLOBAL	char	*(*PackValue)(char *p, ValueStruct *value, size_t textsize);
-GLOBAL	char	*(*UnPackValue)(char *p, ValueStruct *value, size_t textsize);
-GLOBAL	size_t	(*SizeValue)(ValueStruct *value, size_t arraysize, size_t textsize);
+GLOBAL	char	*(*PackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+GLOBAL	char	*(*UnPackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 
 #undef	GLOBAL
 
-extern	void	SetLanguage(char *name);
+extern	void	ConvSetLanguage(char *name);
+extern	CONVOPT	*NewConvOpt(void);
+
+#define	ConvSetSize(opt,ts,rs)		(opt->textsize = (ts), (opt)->arraysize = (rs)
+#define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)
+#define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
+#define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
+#define	ConvSetUseFileName(opt,f)	(opt)->fName = (en)
 
 #endif
 

@@ -20,6 +20,7 @@ libmondaiinclude_HEADERS =	\
 	others.h		\
 	numerici.h		\
 	hash.h			\
+	getset.h		\
 	value.h			\
 	valueconv.h		\
 	libmondai.h		\
@@ -43,6 +44,7 @@ libmondai_la_SOURCES	=			\
 	Native.c		Native_v.h		\
 	Text.c			Text_v.h		\
 	hash.c			hash.h			\
+	getset.c		getset.h		\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
 	numerici.c		numerici.h		\

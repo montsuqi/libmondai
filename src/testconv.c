@@ -57,6 +57,7 @@ main(
 	size_t	size
 	,		size1;
 	FILE	*fp;
+	CONVOPT	*opt;
 
 	RecordDir = ".";
 	SetLanguage(argv[1]);
@@ -107,25 +108,26 @@ main(
 	}
 	DumpValueStruct(rec);
 
+	opt = NewConvOpt();
 	printf("***** CSV Pack *****\n");
-	size = CSV1_SizeValue(rec,0,0);
+	size = CSV1_SizeValue(opt,rec);
 	printf("CSV1 size = %d\n",size);
-	size = CSV2_SizeValue(rec,0,0);
+	size = CSV2_SizeValue(opt,rec);
 	printf("CSV2 size = %d\n",size);
-	size = CSV3_SizeValue(rec,0,0);
+	size = CSV3_SizeValue(opt,rec);
 	printf("CSV3 size = %d\n",size);
-	size = CSVE_SizeValue(rec,0,0);
+	size = CSVE_SizeValue(opt,rec);
 	printf("CSVE size = %d\n",size);
 	buff = (char *)xmalloc(SIZE_BUFF);
 
 	if		(  ( fp = fopen("test.csv","w") )  ==  NULL  ) 	exit(1);
-	CSV1_PackValue(buff,rec,0);
+	CSV1_PackValue(opt,buff,rec);
 	fprintf(fp,"%s\n",buff);
-	CSV2_PackValue(buff,rec,0);
+	CSV2_PackValue(opt,buff,rec);
 	fprintf(fp,"%s\n",buff);
-	CSV3_PackValue(buff,rec,0);
+	CSV3_PackValue(opt,buff,rec);
 	fprintf(fp,"%s\n",buff);
-	CSVE_PackValue(buff,rec,0);
+	CSVE_PackValue(opt,buff,rec);
 	fprintf(fp,"%s\n",buff);
 	fclose(fp);
 	xfree(buff);
@@ -136,30 +138,30 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	fgets(buff,SIZE_BUFF,fp);
-	CSV_UnPackValue(buff,rec,0);
-	CSV3_PackValue(buff,rec,0);
+	CSV_UnPackValue(opt,buff,rec);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
-	CSV_UnPackValue(buff,rec,0);
-	CSV3_PackValue(buff,rec,0);
+	CSV_UnPackValue(opt,buff,rec);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
-	CSV_UnPackValue(buff,rec,0);
-	CSV3_PackValue(buff,rec,0);
+	CSV_UnPackValue(opt,buff,rec);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
-	CSV_UnPackValue(buff,rec,0);
-	CSV3_PackValue(buff,rec,0);
+	CSV_UnPackValue(opt,buff,rec);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
 	xfree(buff);
 	fclose(fp);
 
 	printf("***** Native Pack *****\n");
-	size =  NativeSizeValue(rec,0,0);
+	size =  NativeSizeValue(opt,rec);
 	printf("size = %d\n",size);
 	buff = (char *)xmalloc(size);
-	NativePackValue(buff,rec,0);
+	NativePackValue(opt,buff,rec);
 	if		(  ( fp = fopen("test.native","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
@@ -171,28 +173,29 @@ main(
 	memset(buff,0,SIZE_BUFF);
 	fgets(buff,SIZE_BUFF,fp);
 	fclose(fp);
-	NativeUnPackValue(buff,rec,0);
+	NativeUnPackValue(opt,buff,rec);
 	DumpValueStruct(rec);
 	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(buff,rec,0);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
 	printf("***** RFC822 Pack *****\n");
 	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);
-	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,TRUE);
-	size =  RFC822_SizeValue(rec,0,0);
+	ConvSetRecName(opt,"testrec");
+	ConvSetUseFileName(opt,TRUE);
+	size =  RFC822_SizeValue(opt,rec);
 	size1 = size;
 	printf("size = %d\n",size);
 	buff = (char *)xmalloc(size);
-	RFC822_PackValue(buff,rec,0);
+	RFC822_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 	fwrite(buff,size,1,fp);
 
-	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,FALSE);
-	size =  RFC822_SizeValue(rec,0,0);
+	ConvSetUseFileName(opt,FALSE);
+	size =  RFC822_SizeValue(opt,rec);
 	printf("size = %d\n",size);
 	buff = (char *)xmalloc(size);
-	RFC822_PackValue(buff,rec,0);
+	RFC822_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 	fwrite(buff,size,1,fp);
 
@@ -200,25 +203,25 @@ main(
 	xfree(buff);
 
 	printf("***** RFC822 UnPack *****\n");
-	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,TRUE);
+	ConvSetUseFileName(opt,TRUE);
 	InitializeValue(rec);
 	if		(  ( fp = fopen("test.822","r") )  ==  NULL  )	exit(1);
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	fread(buff,size1,1,fp);
-	RFC822_UnPackValue(buff,rec,0);
+	RFC822_UnPackValue(opt,buff,rec);
 	DumpValueStruct(rec);
 
-	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,FALSE);
+	ConvSetUseFileName(opt,FALSE);
 	InitializeValue(rec);
 	fread(buff,size,1,fp);
 	fclose(fp);
-	RFC822_UnPackValue(buff,rec,0);
+	RFC822_UnPackValue(opt,buff,rec);
 	DumpValueStruct(rec);
 
 	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(buff,rec,0);
+	CSV3_PackValue(opt,buff,rec);
 	printf("%s\n",buff);
 
 	printf("***** end *****\n");

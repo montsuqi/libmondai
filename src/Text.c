@@ -40,16 +40,18 @@ copies.
 #include	"monstring.h"
 #include	"others.h"
 #include	"value.h"
+#include	"getset.h"
 #include	"Text_v.h"
 #include	"debug.h"
 
 static	char	*
 _CSV_UnPackValue(
+	CONVOPT		*opt,
 	char		*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	char		*buff)
 {
 	int		i;
-	char	buff[SIZE_BUFF];
 	char	*q
 	,		*s;
 
@@ -161,12 +163,12 @@ _CSV_UnPackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = _CSV_UnPackValue(p,ValueArrayItem(value,i));
+				p = _CSV_UnPackValue(opt,p,ValueArrayItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _CSV_UnPackValue(p,ValueRecordItem(value,i));
+				p = _CSV_UnPackValue(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
 		  default:
@@ -179,19 +181,21 @@ _CSV_UnPackValue(
 
 extern	char	*
 CSV_UnPackValue(
+	CONVOPT		*opt,
 	char		*p,
-	ValueStruct	*value,
-	size_t		textsize)
+	ValueStruct	*value)
 {
-	return	(_CSV_UnPackValue(p,value));
+	char	buff[SIZE_BUFF];
+
+	return	(_CSV_UnPackValue(opt,p,value,buff));
 }
 
-static	char	*
+static	void
 CSV_Encode(
 	char	*str,
-	char	fSsep)
+	char	fSsep,
+	char	*buff)
 {
-	static	char	buff[SIZE_BUFF+1];
 	char	*p;
 
 	p = buff;
@@ -217,7 +221,6 @@ CSV_Encode(
 		}
 	}
 	*p = 0;
-	return	(buff);
 }
 
 static	Bool
@@ -242,14 +245,15 @@ IsComma(
 
 static	char	*
 __CSV_PackValue(
+	CONVOPT		*opt,
 	char		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
-	Bool		fCesc)
+	Bool		fCesc,
+	char		*buff)
 {
 	int		i;
-	char	*str;
 
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
@@ -259,14 +263,14 @@ __CSV_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BOOL:
-			str = CSV_Encode(ToString(value),fSsep);
+			CSV_Encode(ValueToString(value),fSsep,buff);
 			if		(  fSsep  ) {
-				p += sprintf(p,"\"%s\",",str);
+				p += sprintf(p,"\"%s\",",buff);
 			} else {
-				if		(  IsComma(str)  ) {
-					p += sprintf(p,"\"%s\",",str);
+				if		(  IsComma(buff)  ) {
+					p += sprintf(p,"\"%s\",",buff);
 				} else {
-					p += sprintf(p,"%s,",str);
+					p += sprintf(p,"%s,",buff);
 				}
 			}
 			break;
@@ -274,19 +278,19 @@ __CSV_PackValue(
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 			if		(  fNsep  ) {
-				p += sprintf(p,"\"%s\",",ToString(value));
+				p += sprintf(p,"\"%s\",",ValueToString(value));
 			} else {
-				p += sprintf(p,"%s,",ToString(value));
+				p += sprintf(p,"%s,",ValueToString(value));
 			}
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = __CSV_PackValue(p,ValueArrayItem(value,i),fNsep,fSsep,fCesc);
+				p = __CSV_PackValue(opt,p,ValueArrayItem(value,i),fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = __CSV_PackValue(p,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
+				p = __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  default:
@@ -298,15 +302,17 @@ __CSV_PackValue(
 
 static	char	*
 _CSV_PackValue(
+	CONVOPT		*opt,
 	char	*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
-	Bool		fCesc)
+	Bool		fCesc,
+	char		*buff)
 {
 	char	*ret;
 
-	ret = __CSV_PackValue(p,value,fNsep,fSsep,fCesc);
+	ret = __CSV_PackValue(opt,p,value,fNsep,fSsep,fCesc,buff);
 	ret --;
 	*ret = 0;
 	return	(ret);
@@ -314,42 +320,47 @@ _CSV_PackValue(
 
 extern	char	*
 CSV1_PackValue(
+	CONVOPT		*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
-	return	(_CSV_PackValue(p,value,TRUE,TRUE,FALSE));
+	char	buff[SIZE_BUFF+1];
+	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff));
 }
 
 extern	char	*
 CSV2_PackValue(
+	CONVOPT		*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
-	return	(_CSV_PackValue(p,value,FALSE,FALSE,FALSE));
+	char	buff[SIZE_BUFF+1];
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
 extern	char	*
 CSV3_PackValue(
+	CONVOPT		*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
-	return	(_CSV_PackValue(p,value,FALSE,TRUE,FALSE));
+	char	buff[SIZE_BUFF+1];
+	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff));
 }
 
 extern	char	*
 CSVE_PackValue(
+	CONVOPT		*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
-	return	(_CSV_PackValue(p,value,FALSE,FALSE,FALSE));
+	char	buff[SIZE_BUFF+1];
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
-extern	size_t
+static	size_t
 _CSV_SizeValue(
+	CONVOPT		*opt,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
@@ -369,7 +380,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BOOL:
-		str = ToString(value);
+		str = ValueToString(value);
 		ret = strlen(str) + 1;
 		if		(  fSsep  )	ret += 2;
 		fComma = FALSE;
@@ -395,19 +406,19 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = strlen(ToString(value)) + 1;
+		ret = strlen(ValueToString(value)) + 1;
 		if		(  fNsep  )	ret += 2;
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret = 0;
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-			ret += _CSV_SizeValue(ValueArrayItem(value,i),fNsep,fSsep,fCesc);
+			ret += _CSV_SizeValue(opt,ValueArrayItem(value,i),fNsep,fSsep,fCesc);
 		}
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
 		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			ret += _CSV_SizeValue(ValueRecordItem(value,i),fNsep,fSsep,fCesc);
+			ret += _CSV_SizeValue(opt,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
 		}
 		break;
 	  case	GL_TYPE_OBJECT:
@@ -421,55 +432,46 @@ dbgmsg("<_CSV_SizeValue");
 
 extern	size_t
 CSV1_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(value,TRUE,TRUE,FALSE));
+	return	(_CSV_SizeValue(opt,value,TRUE,TRUE,FALSE));
 }
 
 extern	size_t
 CSV2_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(value,FALSE,FALSE,FALSE));
+	return	(_CSV_SizeValue(opt,value,FALSE,FALSE,FALSE));
 }
 
 extern	size_t
 CSV3_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(value,FALSE,TRUE,FALSE));
+	return	(_CSV_SizeValue(opt,value,FALSE,TRUE,FALSE));
 }
 
 extern	size_t
 CSVE_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT		*opt,
+	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(value,FALSE,FALSE,TRUE));
+	return	(_CSV_SizeValue(opt,value,FALSE,FALSE,TRUE));
 }
 
 /*
  *	RFC822 type conversion
  */
 
-static	char	longname[SIZE_BUFF];
-static	char	*RecName = NULL;
-static	int		StringEncoding = STRING_ENCODING_URL;
-static	char	*Locale;
-static	Bool	fName = TRUE;
-
 static	char	*
 SkipNext(
+	CONVOPT	*opt,
 	char	*p)
 {
-	switch	(StringEncoding) {
+	switch	(opt->encode) {
 	  case	STRING_ENCODING_URL:
 		while	(	(  *p  !=  0     )
 				&&	(  *p  !=  '\n'  ) )	p ++;
@@ -486,11 +488,13 @@ DecodeName(
 	char	**vname,
 	char	*p)
 {
+	while	(  isspace(*p)  )	p ++;
 	*rname = p;
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '.'   ) )	p ++;
 	*p = 0;
 	p ++;
+	while	(  isspace(*p)  )	p ++;
 	*vname = p;
 	if		(  *p  !=  0  ) {
 		while	(	(  *p  !=  0     )
@@ -501,11 +505,12 @@ DecodeName(
 
 static	char	*
 _RFC822_UnPackValueNoNamed(
+	CONVOPT		*opt,
 	char		*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	char		*buff)
 {
 	int		i;
-	char	str[SIZE_BUFF+1];
 	char	*q;
 	int		c;
 
@@ -520,30 +525,30 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
-			switch	(StringEncoding) {
+			switch	(opt->encode) {
 			  case	STRING_ENCODING_URL:
 				q = p;
 				while	(	(  *p  !=  0     )
 						&&	(  *p  !=  '\n'  ) )	p ++;
 				c = *p;
 				*p = 0;
-				DecodeStringURL(str,q);
+				DecodeStringURL(buff,q);
 				*p = c;
 				p ++;
 				break;
 			  default:
 				break;
 			}
-			SetValueString(value,str);
+			SetValueString(value,buff);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = _RFC822_UnPackValueNoNamed(p,ValueArrayItem(value,i));
+				p = _RFC822_UnPackValueNoNamed(opt,p,ValueArrayItem(value,i),buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _RFC822_UnPackValueNoNamed(p,ValueRecordItem(value,i));
+				p = _RFC822_UnPackValueNoNamed(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
 		  default:
@@ -555,11 +560,12 @@ _RFC822_UnPackValueNoNamed(
 
 static	char	*
 _RFC822_UnPackValueNamed(
+	CONVOPT		*opt,
 	char		*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	char		*buff)
 {
-	char	buff[SIZE_BUFF+1];
-	char	str[SIZE_BUFF+1];
+	char	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
 	char	*q;
@@ -568,7 +574,7 @@ _RFC822_UnPackValueNamed(
 
 	if		(  value  !=  NULL  ) {
 		while	(  *p  !=  0  ) {
-			q = buff;
+			q = str;
 			while	(	(  *p  !=  0    )
 					&&	(  *p  !=  ':'  ) ) {
 				*q ++ = *p ++;
@@ -577,28 +583,28 @@ _RFC822_UnPackValueNamed(
 			p ++;
 			while	(	(  *p  !=  0    )
 					&&	(  isspace(*p)  ) )	p ++;
-			DecodeName(&rname,&vname,buff);
-			if		(  strcmp(rname,RecName)  ) {
-				p = SkipNext(p);
+			DecodeName(&rname,&vname,str);
+			if		(  strcmp(rname,opt->recname)  ) {
+				p = SkipNext(opt,p);
 			} else {
 				if		(  ( e = GetItemLongName(value,vname) )  !=  NULL  ) {
-					switch	(StringEncoding) {
+					switch	(opt->encode) {
 					  case	STRING_ENCODING_URL:
 						q = p;
 						while	(	(  *p  !=  0     )
 								&&	(  *p  !=  '\n'  ) )	p ++;
 						c = *p;
 						*p = 0;
-						DecodeStringURL(str,q);
+						DecodeStringURL(buff,q);
 						*p = c;
 						p ++;
 						break;
 					  default:
 						break;
 					}
-					SetValueString(e,str);
+					SetValueString(e,buff);
 				} else {
-					p = SkipNext(p);
+					p = SkipNext(opt,p);
 				}
 			}
 		}
@@ -608,28 +614,31 @@ _RFC822_UnPackValueNamed(
 
 extern	char	*
 RFC822_UnPackValue(
+	CONVOPT		*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
 	char	*ret;
+	char	buff[SIZE_BUFF];
 
-	if		(  fName  ) {
-		ret = _RFC822_UnPackValueNamed(p,value);
+	if		(  opt->fName  ) {
+		ret = _RFC822_UnPackValueNamed(opt,p,value,buff);
 	} else {
-		ret = _RFC822_UnPackValueNoNamed(p,value);
+		ret = _RFC822_UnPackValueNoNamed(opt,p,value,buff);
 	}
 	return	(ret);
 }
 
 static	char	*
 _RFC822_PackValue(
+	CONVOPT		*opt,
 	char		*p,
 	ValueStruct	*value,
-	char		*name)
+	char		*name,
+	char		*longname,
+	char		*buff)
 {
 	int		i;
-	char	buff[SIZE_BUFF+1];
 
 	if		(  value  !=  NULL  ) {
 		if		(  name  ==  NULL  ) { 
@@ -641,10 +650,10 @@ _RFC822_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
-			switch	(StringEncoding) {
+			switch	(opt->encode) {
 			  case	STRING_ENCODING_URL:
-				EncodeStringURL(buff,ToString(value));
-				if		(  fName  ) {
+				EncodeStringURL(buff,ValueToString(value));
+				if		(  opt->fName  ) {
 					p+= sprintf(p,"%s: ",longname);
 				}
 				p += sprintf(p,"%s\n",buff);
@@ -657,21 +666,23 @@ _RFC822_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
-			if		(  fName  ) {
+			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
 			}
-			p += sprintf(p,"%s\n",ToString(value));
+			p += sprintf(p,"%s\n",ValueToString(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(name,"[%d]",i);
-				p = _RFC822_PackValue(p,ValueArrayItem(value,i),name+strlen(name));
+				p = _RFC822_PackValue(opt,p,ValueArrayItem(value,i),
+									  name+strlen(name),longname,buff);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				sprintf(name,".%s",ValueRecordName(value,i));
-				p = _RFC822_PackValue(p,ValueRecordItem(value,i),name+strlen(name));
+				p = _RFC822_PackValue(opt,p,ValueRecordItem(value,i),
+									  name+strlen(name),longname,buff);
 			}
 			break;
 		  default:
@@ -684,21 +695,26 @@ _RFC822_PackValue(
 
 extern	char	*
 RFC822_PackValue(
+	CONVOPT	*opt,
 	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	ValueStruct	*value)
 {
-	memclear(longname,SIZE_BUFF);
-	if		(  RecName  !=  NULL  ) {
-		strcpy(longname,RecName);
+	char	buff[SIZE_BUFF]
+	,		longname[SIZE_LONGNAME+1];
+
+	memclear(longname,SIZE_LONGNAME);
+	if		(  opt->recname  !=  NULL  ) {
+		strcpy(longname,opt->recname);
 	}
-	return	(_RFC822_PackValue(p,value,NULL));
+	return	(_RFC822_PackValue(opt,p,value,NULL,longname,buff));
 }
 
 static	size_t
 _RFC822_SizeValue(
+	CONVOPT	*opt,
 	ValueStruct	*value,
-	char		*name)
+	char		*name,
+	char		*longname)
 {
 	int		i;
 	size_t	ret;
@@ -708,19 +724,19 @@ dbgmsg(">_RFC822_SizeValue");
 	if		(  name  ==  NULL  ) { 
 		name = longname + strlen(longname);
 	}
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
 		ret = 1;
-		if		(  fName  ) {
+		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
-		switch	(StringEncoding) {
+		switch	(opt->encode) {
 		  case	STRING_ENCODING_URL:
-			ret += EncodeStringLengthURL(ToString(value));
+			ret += EncodeStringLengthURL(ValueToString(value));
 			break;
 		  default:
 			break;
@@ -730,8 +746,8 @@ dbgmsg(">_RFC822_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = strlen(ToString(value)) + 1;
-		if		(  fName  ) {
+		ret = strlen(ValueToString(value)) + 1;
+		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
 		break;
@@ -739,14 +755,16 @@ dbgmsg(">_RFC822_SizeValue");
 		ret = 0;
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 			sprintf(name,"[%d]",i);
-			ret += _RFC822_SizeValue(ValueArrayItem(value,i),name+strlen(name));
+			ret += _RFC822_SizeValue(opt,ValueArrayItem(value,i),
+									 name+strlen(name),longname);
 		}
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
 		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 			sprintf(name,".%s",ValueRecordName(value,i));
-			ret += _RFC822_SizeValue(ValueRecordItem(value,i),name+strlen(name));
+			ret += _RFC822_SizeValue(opt,ValueRecordItem(value,i),
+									 name+strlen(name),longname);
 		}
 		break;
 	  case	GL_TYPE_OBJECT:
@@ -760,35 +778,159 @@ dbgmsg("<_RFC822_SizeValue");
 
 extern	size_t
 RFC822_SizeValue(
-	ValueStruct	*value,
-	size_t		arraysize,
-	size_t		textsize)
+	CONVOPT	*opt,
+	ValueStruct	*value)
 {
-	memclear(longname,SIZE_BUFF);
-	if		(  RecName  !=  NULL  ) {
-		strcpy(longname,RecName);
+	char	longname[SIZE_LONGNAME+1];
+
+	memclear(longname,SIZE_LONGNAME);
+	if		(  opt->recname  !=  NULL  ) {
+		strcpy(longname,opt->recname);
 	}
-	return	(_RFC822_SizeValue(value,NULL));
+	return	(_RFC822_SizeValue(opt,value,NULL,longname));
 }
 
-extern	void
-RFC822_SetOptions(
-	char	*rname,
-	char	*locale,
-	int		encode,
-	Bool	fname)
+/*
+ *	CGI format
+ */
+
+static	char	*
+_CGI_PackValue(
+	CONVOPT	*opt,
+	char		*p,
+	ValueStruct	*value,
+	char		*name,
+	char		*longname,
+	char		*buff)
 {
-	if		(  rname  !=  NULL  ) {
-		if		(  RecName  !=  NULL  ) {
-			xfree(RecName);
+	int		i;
+
+	if		(  value  !=  NULL  ) {
+		if		(  name  ==  NULL  ) { 
+			name = longname + strlen(longname);
 		}
-		RecName = StrDup(rname);
+		switch	(value->type) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_BYTE:
+			switch	(opt->encode) {
+			  case	STRING_ENCODING_URL:
+				EncodeStringURL(buff,ValueToString(value));
+				if		(  opt->fName  ) {
+					p+= sprintf(p,"%s: ",longname);
+				}
+				p += sprintf(p,"%s\n",buff);
+				break;
+			  default:
+				break;
+			}
+			break;
+		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+			if		(  opt->fName  ) {
+				p+= sprintf(p,"%s: ",longname);
+			}
+			p += sprintf(p,"%s\n",ValueToString(value));
+			break;
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				sprintf(name,"[%d]",i);
+				p = _CGI_PackValue(opt,p,ValueArrayItem(value,i),
+								   name+strlen(name),longname,buff);
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				sprintf(name,".%s",ValueRecordName(value,i));
+				p = _CGI_PackValue(opt,p,ValueRecordItem(value,i),
+								   name+strlen(name),longname,buff);
+			}
+			break;
+		  default:
+			break;
+		}
 	}
-	if		(  encode  !=  STRING_ENCODING_NULL  ) {
-		StringEncoding = encode;
+	*p = 0;
+	return	(p);
+}
+
+extern	char	*
+CGI_PackValue(
+	CONVOPT	*opt,
+	char	*p,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF]
+	,		longname[SIZE_LONGNAME+1];
+
+	memclear(longname,SIZE_LONGNAME);
+	if		(  opt->recname  !=  NULL  ) {
+		strcpy(longname,opt->recname);
 	}
-	if		(  locale  !=  NULL  ) {
-		Locale = locale;
+	return	(_CGI_PackValue(opt,p,value,NULL,longname,buff));
+}
+
+static	size_t
+_CGI_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value,
+	char		*name,
+	char		*longname)
+{
+	int		i;
+	size_t	ret;
+
+dbgmsg(">_CGI_SizeValue");
+	if		(  value  ==  NULL  )	return	(0);
+	if		(  name  ==  NULL  ) { 
+		name = longname + strlen(longname);
 	}
-	fName = fname;
+	switch	(ValueType(value)) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_NUMBER:
+	  case	GL_TYPE_INT:
+	  case	GL_TYPE_FLOAT:
+		ret = EncodeStringLengthURL(ValueToString(value)) + strlen(longname) + 1;
+		break;
+	  case	GL_TYPE_ARRAY:
+		ret = 0;
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			sprintf(name,"[%d]",i);
+			ret += _CGI_SizeValue(opt,ValueArrayItem(value,i),name+strlen(name),longname);
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			sprintf(name,".%s",ValueRecordName(value,i));
+			ret += _CGI_SizeValue(opt,ValueRecordItem(value,i),name+strlen(name),longname);
+		}
+		break;
+	  case	GL_TYPE_OBJECT:
+	  default:
+		ret = 0;
+		break;
+	}
+dbgmsg("<_CGI_SizeValue");
+	return	(ret);
+}
+
+extern	size_t
+CGI_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	char	longname[SIZE_LONGNAME+1];
+
+	memclear(longname,SIZE_LONGNAME+1);
+	return	(_CGI_SizeValue(opt,value,NULL,longname));
 }

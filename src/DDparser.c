@@ -577,8 +577,8 @@ ReadRecordDefine(
 {
 	RecordStruct	*rec;
 	ValueStruct		*ret;
-	char		buf[SIZE_BUFF]
-	,			dir[SIZE_BUFF];
+	char		buf[SIZE_LONGNAME+1]
+	,			dir[SIZE_LONGNAME+1];
 	char		*p
 	,			*q;
 	Bool		fExit;

@@ -50,9 +50,9 @@ copies.
 
 typedef	struct {
 	char	*name;
-	char	*(*Pack)(char *p, ValueStruct *value, size_t textsize);
-	char	*(*UnPack)(char *p, ValueStruct *value, size_t textsize);
-	size_t	(*Size)(ValueStruct *value, size_t arraysize, size_t textsize);
+	char	*(*Pack)(CONVOPT *opt, char *p, ValueStruct *value);
+	char	*(*UnPack)(CONVOPT *opt, char *p, ValueStruct *value);
+	size_t	(*Size)(CONVOPT *opt, ValueStruct *value);
 }	ConvFuncs;
 
 static	ConvFuncs	funcs[] = {
@@ -83,7 +83,7 @@ static	ConvFuncs	funcs[] = {
 static	GHashTable	*FuncTable = NULL;
 
 extern	void
-SetLanguage(
+ConvSetLanguage(
 	char	*name)
 {
 	int		i;
@@ -109,4 +109,19 @@ dbgmsg(">SetLanguage");
 		SizeValue = func->Size;
 	}
 dbgmsg("<SetLanguage");
+}
+
+extern	CONVOPT	*
+NewConvOpt(void)
+{
+	CONVOPT	*ret;
+
+	ret = New(CONVOPT);
+	ret->locale = NULL;
+	ret->recname = NULL;
+	ret->textsize = 100;
+	ret->arraysize = 10;
+	ret->encode = STRING_ENCODE_URL;
+
+	return	(ret);
 }

@@ -30,6 +30,13 @@ copies.
 
 #define	SIZE_NUMBUF	60
 
+#ifndef	SIZE_NAME
+#define	SIZE_NAME			64
+#endif
+#ifndef	SIZE_LONGNAME
+#define	SIZE_LONGNAME		1024
+#endif
+
 #include	<stdio.h>
 #include	<glib.h>
 #include	"types.h"
@@ -150,6 +157,8 @@ typedef	struct _RecordStruct	{
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_STRUCTURE) == GL_TYPE_STRUCTURE)
 
+#define	ValueType(v)			((v)->type)
+
 #define	ValueString(v)			((v)->body.CharData.sval)
 #define	ValueStringLength(v)	((v)->body.CharData.len)
 
@@ -158,8 +167,10 @@ typedef	struct _RecordStruct	{
 #define	ValueInteger(v)			((v)->body.IntegerData)
 #define	ValueBool(v)			((v)->body.BoolData)
 #define	ValueFloat(v)			((v)->body.FloatData)
-#define	ValueFixed(v)			(&(v)->body.FixedData)
+
+#define	ValueFixed(v)			((v)->body.FixedData)
 #define	ValueFixedLength(v)		((v)->body.FixedData.flen)
+#define	ValueFixedSlen(v)		((v)->body.FixedData.slen)
 #define	ValueFixedBody(v)		((v)->body.FixedData.sval)
 
 #define	ValueArraySize(v)		((v)->body.ArrayData.count)
@@ -169,7 +180,9 @@ typedef	struct _RecordStruct	{
 #define	ValueRecordSize(v)		((v)->body.RecordData.count)
 #define	ValueRecordItems(v)		((v)->body.RecordData.item)
 #define	ValueRecordItem(v,i)	((v)->body.RecordData.item[(i)])
+#define	ValueRecordNames(v)		((v)->body.RecordData.names)
 #define	ValueRecordName(v,i)	((v)->body.RecordData.names[(i)])
+#define	ValueRecordMembers(v)	((v)->body.RecordData.members)
 
 #define	ValueObject(v)			(&(v)->body.Object)
 #define	ValueObjectPlace(v)		((v)->body.Object.apsid)
@@ -184,11 +197,6 @@ extern	ValueStruct	*DuplicateValue(ValueStruct *template);
 extern	ValueStruct	*GetRecordItem(ValueStruct *value, char *name);
 extern	ValueStruct	*GetArrayItem(ValueStruct *value, int i);
 extern	ValueStruct	*GetItemLongName(ValueStruct *root, char *longname);
-extern	Bool		SetValueString(ValueStruct *val, char *str);
-extern	Bool		SetValueInteger(ValueStruct *val, int ival);
-extern	Bool		SetValueBool(ValueStruct *val, Bool bval);
-extern	Bool		SetValueFloat(ValueStruct *val, double bval);
-extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
 
 extern	int			FixedToInt(Fixed *xval);
 extern	void		FloatToFixed(Fixed *xval, double fval);
@@ -200,11 +208,6 @@ extern	void		FreeFixed(Fixed *xval);
 extern	void		InitializeValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
 
-extern	int			ToInteger(ValueStruct *val);
-extern	double		ToFloat(ValueStruct *val);
-extern	Fixed		*ToFixed(ValueStruct *val);
-extern	Bool		ToBool(ValueStruct *val);
-extern	char		*ToString(ValueStruct *value);
 extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
 
 extern	void		FreeValueStruct(ValueStruct *val);

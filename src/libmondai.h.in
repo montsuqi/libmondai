@@ -22,6 +22,7 @@ copies.
 #define	_INC_LIBMONDAI_H
 
 #include	"value.h"
+#include	"getset.h"
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"

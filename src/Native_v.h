@@ -21,7 +21,7 @@ copies.
 #ifndef	_INC_NATIVE_VALUE_H
 #define	_INC_NATIVE_VALUE_H
 
-extern	char	*NativeUnPackValue(char *p, ValueStruct *value, size_t textsize);
-extern	char	*NativePackValue(char *p, ValueStruct *value, size_t textsize);
-extern	size_t	NativeSizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
+extern	char	*NativeUnPackValue(CONVOPT *opt,char *p, ValueStruct *value);
+extern	char	*NativePackValue(CONVOPT *opt, char *p, ValueStruct *value);
+extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 #endif

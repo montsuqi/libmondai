@@ -116,10 +116,10 @@ DoInclude(
 	char	*fn)
 {
 	INCFILE	*back;
-	char	name[SIZE_BUFF];
-	char		buff[SIZE_BUFF];
-	char		*p
-	,			*q;
+	char	name[SIZE_LONGNAME+1];
+	char	buff[SIZE_LONGNAME+1];
+	char	*p
+	,		*q;
 
 dbgmsg(">DoInclude");
 	back = New(INCFILE);
@@ -172,8 +172,8 @@ dbgmsg("<ExitInclude");
 static	void
 ReadyDirective(void)
 {
-	char	buff[SIZE_BUFF];
-	char	fn[SIZE_BUFF];
+	char	buff[SIZE_LONGNAME+1];
+	char	fn[SIZE_LONGNAME+1];
 	char	*s;
 	int		c;
 
