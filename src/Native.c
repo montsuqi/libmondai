@@ -353,3 +353,152 @@ ENTER_FUNC;
 LEAVE_FUNC;
 	return	(ret);
 }
+
+extern	size_t
+NativeSaveValue(
+	byte		*p,
+	ValueStruct	*value)
+{
+	CONVOPT	opt;
+	size_t	size;
+
+ENTER_FUNC;
+	ConvSetUseName(&opt,TRUE);
+	size = NativePackValue(&opt,p,value);
+LEAVE_FUNC;
+	return	(size);
+}
+
+
+extern	size_t
+NativeRestoreValue(
+	byte		*p,
+	ValueStruct	**ret)
+{
+	ValueStruct	*value
+		,		*lower;
+	int		i;
+	size_t	size
+	,		len;
+	PacketDataType	type;
+	ValueAttributeType	attr;
+	byte	*q;
+	char	*name;
+
+ENTER_FUNC;
+	q = p; 
+	if		(  ( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
+		value = NewValue(type);
+		*ret = value;
+		p += sizeof(PacketDataType);
+		attr = *(ValueAttributeType *)p;
+		p += sizeof(ValueAttributeType);
+		ValueAttribute(value) = attr;
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_INT:
+			ValueInteger(value) = *(int *)p;
+			p += sizeof(int);
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+			p ++;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(value) = *(double *)p;
+			p += sizeof(double);
+			break;
+		  case	GL_TYPE_NUMBER:
+			size = *(size_t *)p;
+			p += sizeof(size_t);
+			if		(  size  >  0  ) {
+				ValueFixedBody(value) = (char *)xmalloc(size+1);
+				ValueFixedLength(value) = size;
+				ValueFixedSlen(value) = *(size_t *)p;
+				p += sizeof(size_t);
+				memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
+				ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+				p += ValueFixedLength(value);
+			} else {
+				p += sizeof(size_t);
+			}
+			break;
+		  case	GL_TYPE_BYTE:
+			memcpy(ValueByte(value),p,ValueByteLength(value));
+			p += ValueByteLength(value);
+			break;
+		  case	GL_TYPE_BINARY:
+			size = *(size_t *)p;
+			p += sizeof(size_t);
+			if		(  size  >  0  )	{
+				ValueByteSize(value) = size;
+				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+			}
+			if		(  size  >  0  ) {
+				memclear(ValueByte(value),size);
+				memcpy(ValueByte(value),p,size);
+				p += size;
+			}
+			ValueByteLength(value) = size;
+			break;
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			size = *(size_t *)p;
+			p += sizeof(size_t);
+			len = *(size_t *)p;
+			p += sizeof(size_t);
+			if		(  size  >  0  )	{
+				ValueStringSize(value) = size;
+				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+				memclear(ValueString(value),size);
+				memcpy(ValueString(value),p,size);
+				p += size;
+			}
+			ValueStringLength(value) = len;
+			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObject(value) = *(MonObjectType *)p;
+			p += sizeof(MonObjectType);
+			break;
+		  case	GL_TYPE_ARRAY:
+			size = *(size_t *)p;
+			ValueArraySize(value) = size;
+			p += sizeof(size_t);
+			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += NativeRestoreValue(p,&ValueArrayItem(value,i));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			size = *(size_t *)p;
+			ValueRecordSize(value) = size;
+			p += sizeof(size_t);
+			ValueRecordItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
+			ValueRecordNames(value) = (char **)xmalloc(sizeof(char *) * size);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				if		(  *p  ==  0xFF  ) {
+					p ++;
+					name = StrDup(p);
+					p += strlen(name)+1;
+				} else {
+					name = NULL;
+				}
+				p += NativeRestoreValue(p,&lower);
+				ValueRecordItem(value,i) = lower;
+				ValueRecordName(value,i) = name;
+				g_hash_table_insert(ValueRecordMembers(value),
+									(gpointer)ValueRecordName(value,i),
+									(gpointer)(i+1));
+				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
+			}
+			break;
+		  default:
+			ValueIsNil(value);
+			break;
+		}
+	}
+LEAVE_FUNC;
+	return	(p-q);
+}
+

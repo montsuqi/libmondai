@@ -25,4 +25,8 @@ copies.
 extern	size_t	NativeUnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 extern	size_t	NativePackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
+
+extern	size_t	NativeRestoreValue(byte *p, ValueStruct **ret);
+extern	size_t	NativeSaveValue(byte *p, ValueStruct *value);
+
 #endif

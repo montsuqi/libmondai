@@ -1,3 +1,7 @@
+2004-10-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: ValueStructのload/store
+
 2004-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/DDparser.c (DD_ParseValueMem): メモリ領域のparse

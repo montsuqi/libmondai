@@ -172,7 +172,8 @@ main(
 	char	name[SIZE_DATA];
 	byte	*p;
 	int		i;
-	ValueStruct	*val;
+	ValueStruct	*val
+		,		*val2;
 	FILE	*fp;
 	CONVOPT	*opt;
 	byte	*buff;
@@ -232,16 +233,30 @@ printf("** variable size (end)**\n");fflush(stdout);
 	printf("***** Value setting (end)*****\n");
 		
 
+	buff = xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+	size = NativeSaveValue(buff,val);
+	printf("***** Value Pack (end)*****\n");
+	NativeRestoreValue(buff,&val2);
+
 	opt = NewConvOpt();
 	ConvSetCodeset(opt,TEST_CODE);
-#ifdef	USE_XML
+
 	ConvSetXmlType(opt,XML_TYPE2);
 	ConvSetIndent(opt,TRUE);
 	ConvSetType(opt,FALSE);
 	ConvSetRecName(opt,"mcparea");
 
+	printf("***** before pack ****\n");
+	XML_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+	printf("***** after pack ****\n");
+	XML_PackValue(opt,buff,val2);
+	printf("%s\n",buff);
+
 	XML_PackValue(opt,buff,val);
 
+	printf("***** converting *****\n");
 	if		(  ( fp = fopen("test.value","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
 	fclose(fp);
@@ -268,7 +283,5 @@ printf("** variable size (end)**\n");fflush(stdout);
 	XML_PackValue(opt,buff,val);
 	printf("%s\n",buff);
 
-	xfree(buff);
-#endif
 	return	(0);
 }
