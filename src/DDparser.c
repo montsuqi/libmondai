@@ -42,7 +42,6 @@ copies.
 #include	"DDlex.h"
 #include	"DDparser.h"
 #include	"SQLparser.h"
-#include	"option.h"
 #include	"debug.h"
 
 
@@ -565,6 +564,22 @@ InitPathStruct(void)
 	g_hash_table_insert(ret->opHash,"DBDELETE",(gpointer)(DBOP_DELETE+1));
 	ret->ocount = 5;
 	return	(ret);
+}
+
+static	char	*
+GetExt(
+	char	*name)
+{
+	char	*p;
+
+	p = name + strlen(name);
+	while	(	(  p   !=  name  )
+			 &&	(  *p  !=  '\\'  )
+			 &&	(  *p  !=  '/'   )
+			 &&	(  *p  !=  '.'   ) )	{
+		p --;
+	}
+	return	(p);
 }
 
 extern	RecordStruct	*

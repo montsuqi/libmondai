@@ -21,14 +21,39 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA  02111-1307, USA.
 */
 
-#ifndef	_INC_TCP_H
-#define	_INC_TCP_H
-#include	<stdio.h>
-#include	<sys/socket.h>
+/*
+*	91.09.30.	Ogochan	load from dviprt
+*	91.10.01.	Ogochan	modify to my style
+*	91.12.04.	Ogochan	add file name list
+*	99.01.19	Ogochan unix type configuration file
+*/
 
-extern	int		BindSocket(char *port, int type);
-extern	int		ConnectSocket(char *port, int type, char *host);
-extern	FILE	*OpenPort(char *url, int port);
-extern	int		InitServerPort(char *port, int back);
-
+#ifdef	MSDOS
+#define	CONFIG_TRAILER			".CFG"
+#else
+#define	CONFIG_TRAILER			".conf"
 #endif
+#define	COMMAND_SWITCH			'-'
+#define	RESPONSE_FILE_SWITCH	'@'
+
+typedef enum ARG_TYPE {
+    BOOLEAN, INTEGER, LONGINT, STRING, PROCEDURE
+} ARG_TYPE;
+
+typedef struct {
+	char		*option;
+	ARG_TYPE	type;
+	Bool		defval;
+	void		*var;
+	char		*message;
+}	ARG_TABLE;
+
+typedef	struct	FILE_LIST_S	{
+	struct	FILE_LIST_S	*next;
+	char	*name;
+}	FILE_LIST;
+
+extern	FILE_LIST	*GetOption(ARG_TABLE *,int,char**);
+extern	char		*GetExt(char *name);
+extern	void		ChangeExt(char *,char *,char *);
+extern	void		PrintUsage(ARG_TABLE *,char *);

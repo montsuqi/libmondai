@@ -7,7 +7,6 @@ libmondai_la_LDFLAGS	=	\
 libmondaiincludedir = $(includedir)/libmondai
 libmondaiinclude_HEADERS =	\
 	misc.h			\
-	option.h		\
 	LBSfunc.h		\
 	OpenCOBOL_v.h	\
 	dotCOBOL_v.h	\
@@ -18,11 +17,6 @@ libmondaiinclude_HEADERS =	\
 	libmondai.h		\
 	SQLparser.h		\
 	DDparser.h		\
-	comm.h			\
-	comms.h			\
-	tcp.h			\
-	pty.h			\
-	queue.h			\
 	types.h
 
 INCLUDES 			= 		\
@@ -32,7 +26,6 @@ INCLUDES 			= 		\
 
 libmondai_la_SOURCES	=		\
 	misc.c			misc.h			\
-	option.c		option.h		\
 	LBSfunc.c		LBSfunc.h		\
 	cobolvalue.c	cobolvalue.h	\
 	OpenCOBOL.c		OpenCOBOL_v.h	\
@@ -44,10 +37,5 @@ libmondai_la_SOURCES	=		\
 	SQLparser.c		SQLparser.h		\
 	DDparser.c		DDparser.h		\
 	DDlex.c			DDlex.h			\
-	comm.c			comm.h			\
-	comms.c			comms.h			\
-	tcp.c			tcp.h			\
-	pty.c			pty.h			\
-	queue.c			queue.h			\
 	types.h							\
 	debug.h
