@@ -1,0 +1,31 @@
+General Information
+===================
+
+This library is libmondai vesion 0.01 It is a common function set for MON-suite.
+It is written in C.
+
+MONDAI: MON Data Access Interface.
+
+The official web site is:
+  http://www.montsuqi.org
+
+Mirrors:
+
+       
+
+
+Installation
+============
+
+See the file 'INSTALL'
+
+Documentation
+=============
+
+In preparation. Read the header files and test programs in the directory 
+./src for further information and examples.
+
+Patches
+=======
+
+If you use libglade or glade, you can use patches from paches/ directory.

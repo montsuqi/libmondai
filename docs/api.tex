@@ -1,0 +1,165 @@
+\chapter{API}
+
+\section{SetLanguage}
+\begin{function}
+
+\ititle{名前}
+{\tt SetLanguage} - シリアライズに対応した言語の設定
+
+\ititle{書式}
+\begin{verbatim}
+extern  void    SetLanguage(char *name);
+\end{verbatim}
+
+\ititle{説明}
+
+{\tt SetLanguage}は、シリアライズ処理を行うターゲットの言語を指定する。
+{\tt PackVakue}, {\tt UnPackValue}の呼び出しに先立って呼び出す。
+
+\ititle{オプション}
+
+\begin{variables}
+\variable{char *name}
+	言語の名称を文字列で指定する。
+	現在有効なものは、{\tt OpenCOBOL},{\tt dotCOBOL}である。
+\end{variables}
+
+\ititle{例}
+
+\begin{verbatim}
+    SetLanguage("dotCOBOL");
+\end{verbatim}
+
+dot COBOLに合った規則でシリアライズを行うことを指定する。
+
+\ititle{バグ}
+
+\begin{itemize}
+\item	現バージョンはthread safeおよびreentrantではない
+\end{itemize}
+
+\ititle{注意}
+
+\ititle{参照}
+
+{\tt PackValue},{\tt UnPackValue},
+{\tt OpenCOBOL\_PackValue},
+{\tt OpenCOBOL\_UnPackValue},
+{\tt dotCOBOL\_PackValue},
+{\tt dotCOBOL\_UnPackValue}
+
+\end{function}
+
+\section{PackValue}
+\begin{function}
+
+\ititle{名前}
+{\tt PackValue} - ValueStructをシリアライズする
+
+\ititle{書式}
+\begin{verbatim}
+char    *PackValue(char *p, ValueStruct *value, size\_t textsize);
+\end{verbatim}
+
+\ititle{説明}
+
+{\tt PackValue}は、シリアライズ処理を行う。
+
+\ititle{オプション}
+
+\begin{variables}
+\variable{char *p}
+	シリアライズした結果を格納する文字列
+\variable{ValueStruct *value}
+	元になるValueStruct構造体。NULLの時は何も行わない
+\variable{size\_t textsize}
+	text型の時の最長文字列長。COBOLのような文字列長が固定になる言語の
+	時のみ有効
+\variable{復帰値}
+	シリアライズした文字列の末尾の次のポインタ。連続してシリアライズす
+	る時には、この値を次の呼び出しのpとして使う
+\end{variables}
+
+\ititle{例}
+
+\begin{verbatim}
+	p = PackValue(p,value1,TextSize);
+	p = PackValue(p,value2,TextSize);
+\end{verbatim}
+
+value1, value2を連続してシリアライズする
+
+\ititle{バグ}
+
+\ititle{注意}
+
+\begin{itemize}
+\item	処理はValueStructのポインタをたぐりながら行われるため、ポイン
+		タがループしていてはならない
+\item	再帰呼び出しを多用している
+\end{itemize}
+
+\ititle{参照}
+
+{\tt UnPackValue},
+{\tt OpenCOBOL\_PackValue},
+{\tt dotCOBOL\_PackValue}
+
+\end{function}
+
+\section{UnPackValue}
+\begin{function}
+
+\ititle{名前}
+{\tt UnPackValue} - ValueStructにアンシリアライズする
+
+\ititle{書式}
+\begin{verbatim}
+char    *UnPackValue(char *p, ValueStruct *value, size_t textsize);
+\end{verbatim}
+
+\ititle{説明}
+
+{\tt UnPackValue}は、アンシリアライズ処理を行う。
+
+\ititle{オプション}
+
+\begin{variables}
+\variable{char *p}
+	アンシリアライズする元の文字列
+\variable{ValueStruct *value}
+	アンシリアライズ先になるValueStruct構造体。NULLの時は何も行わない
+\variable{size\_t textsize}
+	text型の時の最長文字列長。COBOLのような文字列長が固定になる言語の
+	時のみ有効
+\variable{復帰値}
+	アンシリアライズした文字列の末尾の次のポインタ。連続してアンシリア
+	ライズする時には、この値を次の呼び出しのpとして使う
+\end{variables}
+
+\ititle{例}
+
+\begin{verbatim}
+	p = UnPackValue(p,value1,TextSize);
+	p = UnPackValue(p,value2,TextSize);
+\end{verbatim}
+
+value1, value2を連続してアンシリアライズする
+
+\ititle{バグ}
+
+\ititle{注意}
+
+\begin{itemize}
+\item	処理はValueStructのポインタをたぐりながら行われるため、ポイン
+		タがループしていてはならない
+\item	再帰呼び出しを多用している
+\end{itemize}
+
+\ititle{参照}
+
+{\tt PackValue},
+{\tt OpenCOBOL\_UnPackValue},
+{\tt dotCOBOL\_UnPackValue}
+
+\end{function}
