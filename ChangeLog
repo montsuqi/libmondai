@@ -1,3 +1,7 @@
+2004-02-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (PushLexInfo): エラーメッセージの制御を可能にした
+
 2004-02-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c: nil objectの処理を追加

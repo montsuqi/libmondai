@@ -69,7 +69,9 @@ PushLexInfo(
 		info->next = InfoRoot.curr;
 		InfoRoot.curr = info;
 	} else {
-		fprintf(stderr,"file not found [%s]\n",name);
+		if		(  fLexVerbose  ) {
+			fprintf(stderr,"file not found [%s]\n",name);
+		}
 		info = NULL;
 	}
 	return	(info);
@@ -152,6 +154,7 @@ extern	void
 LexInit(void)
 {
 	InfoRoot.curr = NULL;
+	fLexVerbose = FALSE;
 }
 
 extern	GHashTable	*

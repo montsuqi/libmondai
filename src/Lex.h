@@ -66,6 +66,7 @@ typedef	struct _LexInfo	{
 #define	GLOBAL	extern
 #endif
 GLOBAL	LexInfo	InfoRoot;
+GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
 extern	CURFILE			*PushLexInfo(char *name, char *path, GHashTable *res);
