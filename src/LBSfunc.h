@@ -49,6 +49,7 @@ extern	void	*LBS_FetchPointer(LargeByteString *lbs);
 extern	int		LBS_FetchInt(LargeByteString *lbs);
 extern	size_t	LBS_StringLength(LargeByteString *lbs);
 extern	char	*LBS_ToString(LargeByteString *lbs);
+extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)		((lbs)->ptr = 0)
 #define	LBS_EmitSpace(lbs)	LBS_EmitChar((lbs),' ')
