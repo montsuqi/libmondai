@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
+Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
 
 This module is part of PANDA.
 
@@ -331,8 +331,8 @@ SetValueStringWithLength(
 	,		sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
-	char	*q;
 #ifdef	WITH_I18N
+	char	*q;
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
