@@ -83,9 +83,9 @@ LBS_ReserveSize(
 			xfree(lbs->body);
 		}
 		lbs->body = body;
-		lbs->size = size;
 		lbs->asize = size;
 	}
+	lbs->size = size;
 	lbs->ptr = size;
 }
 
@@ -279,3 +279,16 @@ LBS_ToString(
 	*p = 0;
 	return	(ret);
 }
+
+extern	LargeByteString	*
+LBS_Duplicate(
+	LargeByteString	*lbs)
+{
+	LargeByteString	*ret;
+
+	ret = NewLBS();
+	LBS_ReserveSize(ret,lbs->size,FALSE);
+	memcpy(ret->body,lbs->body,lbs->size);
+	return	(ret);
+}
+
