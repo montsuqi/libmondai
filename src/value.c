@@ -608,8 +608,8 @@ FixedToNumeric(
 	,		value2;
 	Bool	fMinus;
 
-	if		(  *xval->sval  >=  0x70  ) {
-		*xval->sval ^= 0x40;
+	if		(  ( xval->sval[0] & 0x40 )  !=  0  ) {
+		xval->sval[0] &= 0x3F;
 		fMinus = TRUE;
 	} else {
 		fMinus = FALSE;
@@ -619,6 +619,7 @@ FixedToNumeric(
 	NumericFree(value);
 	if		(  fMinus  ) {
 		value = NumericUMinus(value2);
+		NumericFree(value2);
 	} else {
 		value = value2;
 	}
