@@ -58,7 +58,6 @@ ValueToInteger(
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		ret = StrToInt(ValueString(val),strlen(ValueString(val)));
 		break;
@@ -89,7 +88,6 @@ ValueToFloat(
 	switch	(val->type) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		ret = atof(ValueString(val));
 		break;
@@ -121,7 +119,6 @@ ValueToFixed(
 	switch	(val->type) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		ret = NewFixed(0,0);
 		IntToFixed(ret,StrToInt(ValueString(val),strlen(ValueString(val))));
@@ -158,7 +155,6 @@ ValueToBool(
 	switch	(val->type) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		ret = ( *ValueString(val) == 'T' ) ? TRUE : FALSE;
 		break;
@@ -187,7 +183,7 @@ ValueToString(
 {
 	char	work[SIZE_NUMBUF+1];
 	char	work2[SIZE_NUMBUF+2];
-	char	*p
+	byte	*p
 	,		*q;
 	int		i;
 	int		size;
@@ -229,17 +225,22 @@ ENTER_FUNC;
 		}
 		break;
 	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 		p = ValueByte(val);
 		for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
-			if		(  *p  ==  '%'  ) {
+			switch	(*p) {
+			  case	'%':
 				LBS_EmitChar(ValueStr(val),'%');
 				LBS_EmitChar(ValueStr(val),'%');
-			} else
-			if		(  isprint(*p)  ) {
-				LBS_EmitChar(ValueStr(val),*p);
-			} else {
-				sprintf(work,"%02X",(int)*p);
-				LBS_EmitString(ValueStr(val),work);
+				break;
+			  default:
+				if		(  isalnum(*p)  ) {
+					LBS_EmitChar(ValueStr(val),*p);
+				} else {
+					sprintf(work,"%%%02X",(int)*p);
+					LBS_EmitString(ValueStr(val),work);
+				}
+				break;
 			}
 		}
 		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
@@ -296,54 +297,19 @@ LEAVE_FUNC;
 	return	(ValueStrBody(val));
 }
 
-static	void
-FixedRescale(
-	Fixed	*to,
-	Fixed	*fr)
-{
-	char	*p
-	,		*q;
-	size_t	len;
-	Bool	fMinus;
-
-	if		(  ( *fr->sval & 0x40 )  ==  0x40  ) {
-		fMinus = TRUE;
-	} else {
-		fMinus = FALSE;
-	}
-	memset(to->sval,'0',to->flen);
-	to->sval[to->flen] = 0;
-	p = fr->sval + ( fr->flen - fr->slen );
-	q = to->sval + ( to->flen - to->slen );
-	len = ( fr->slen > to->slen ) ? to->slen : fr->slen;
-	for	( ; len > 0 ; len -- ) {
-		*q ++ = ( *p & 0x3F );
-		p ++;
-	}
-	p = fr->sval + ( fr->flen - fr->slen ) - 1;
-	q = to->sval + ( to->flen - to->slen ) - 1;
-	len = ( ( fr->flen - fr->slen ) > ( to->flen - to->slen ) )
-		? ( to->flen - to->slen ) : ( fr->flen - fr->slen );
-	for	( ; len > 0 ; len -- ) {
-		*q -- = ( *p & 0x3F );
-		p --;
-	}
-	if		(  fMinus  ) {
-		*to->sval |= 0x40;
-	}
-}
 
 extern	Bool
-SetValueString(
+SetValueStringWithLength(
 	ValueStruct	*val,
 	char		*str,
+	size_t		slen,
 	char		*codeset)
 {
 	Bool	rc
 	,		fMinus
 	,		fPoint;
-	size_t	len;
 	int		i;
+	size_t	len;
 	char	*p;
 	char	buff[SIZE_NUMBUF+1]
 	,		sbuff[SIZE_LONGNAME+1];
@@ -374,8 +340,8 @@ ENTER_FUNC;
 		  case	GL_TYPE_DBCODE:
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
-				len = ValueStringLength(val) < strlen(str) ?
-					ValueStringLength(val) : strlen(str);
+				len = ValueStringLength(val) < slen ?
+					ValueStringLength(val) : slen;
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
 					istr = str;
@@ -398,7 +364,7 @@ ENTER_FUNC;
 				*q = 0;
 			} else {
 #endif
-				size = strlen(str) + 1;
+				size = slen + 1;
 				if		(  size  >  ValueStringSize(val)  ) {
 					if		(  ValueString(val)  !=  NULL  ) {
 						xfree(ValueString(val));
@@ -414,7 +380,7 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_TEXT:
-			len = strlen(str);
+			len = slen;
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
@@ -459,7 +425,8 @@ ENTER_FUNC;
 		  case	GL_TYPE_BYTE:
 			p = ValueByte(val);
 			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
-				if		(  *str  ==  '%'  ) {
+				switch	(*str) {
+				  case	'%':
 					str ++;
 					if		(  *str  ==  '%'  ) {
 						*p = '%';
@@ -468,11 +435,60 @@ ENTER_FUNC;
 						*p = (unsigned char)HexToInt(str,2);
 						str += 2;
 					}
-				} else {
+					break;
+				  default:
 					*p = *str;
 					str ++;
+					break;
 				}
 			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BINARY:
+			size = 0;
+			for	( p = str ; *p != 0 ; ) {
+				if		(  *p  ==  '%'  ) {
+					p ++;
+					if		(  *p  ==  '%'  ) {
+						size ++;
+						p ++;
+					} else {
+						size ++;
+						p += 2;
+					}
+				} else {
+					p ++;
+					size ++;
+				}
+			}
+			if		(  size  >  ValueByteSize(val)  ) {
+				if		(  ValueByte(val)  !=  NULL  ) {
+						xfree(ValueByte(val));
+				}
+				ValueByteSize(val) = size;
+				ValueByte(val) = (char *)xmalloc(size);
+			}
+			memclear(ValueByte(val),ValueByteSize(val));
+			p = ValueByte(val);
+			for	( i = 0 ; i < size ; i ++ , p ++ ) {
+				switch	(*str) {
+				  case	'%':
+					str ++;
+					if		(  *str  ==  '%'  ) {
+						*p = '%';
+						str ++;
+					} else {
+						*p = (unsigned char)HexToInt(str,2);
+						str += 2;
+					}
+					break;
+				  default:
+					*p = *str;
+					str ++;
+					break;
+				}
+			}
+			ValueByteLength(val) = size;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
@@ -497,7 +513,7 @@ ENTER_FUNC;
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				istr = str;
-				sib = strlen(str);
+				sib = slen;
 				sob = SIZE_NUMBUF;
 				p = sbuff;
 				iconv(cd,&istr,&sib,&p,&sob);
@@ -543,7 +559,7 @@ ENTER_FUNC;
 				rc = TRUE;
 				break;
 			  case	GL_TYPE_INT:
-				ValueInteger(val) = StrToInt(str,strlen(str));
+				ValueInteger(val) = StrToInt(str,slen);
 				rc = TRUE;
 				break;
 			  case	GL_TYPE_FLOAT:
@@ -802,3 +818,146 @@ SetValueFixed(
 	return	(rc);
 }
 
+extern	Bool
+SetValueBinary(
+	ValueStruct	*val,
+	byte		*str,
+	size_t		slen)
+{
+	Bool	rc;
+	size_t	size;
+
+	if		(  val  ==  NULL  ) {
+		fprintf(stderr,"no ValueStruct\n");
+		return	(FALSE);
+	}
+ENTER_FUNC;
+	if		(	(  str   ==  NULL      )
+			||	(  *str  ==  CHAR_NIL  )
+			||	(  slen  ==  0         ) ) {
+		ValueIsNil(val);
+		rc = TRUE;
+	} else {
+		ValueIsNonNil(val);
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			size = slen + 1;
+			if		(  size  >  ValueStringSize(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
+				}
+				ValueStringSize(val) = size;
+				ValueString(val) = (char *)xmalloc(size);
+			}
+			memclear(ValueString(val),ValueStringSize(val));
+			strcpy(ValueString(val),str);
+			if		(  ValueType(val)  ==  GL_TYPE_TEXT  ) {
+				ValueStringLength(val) = slen;
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BYTE:
+			size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
+			memcpy(ValueByte(val),str,size);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BINARY:
+			if		(  slen  >  ValueByteSize(val)  ) {
+				if		(  ValueByte(val)  !=  NULL  ) {
+					xfree(ValueByte(val));
+				}
+				ValueByteSize(val) = slen;
+				ValueByte(val) = (char *)xmalloc(slen);
+			}
+			memclear(ValueByte(val),ValueByteSize(val));
+			memcpy(ValueByte(val),str,slen);
+			ValueByteLength(val) = slen;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_NUMBER:
+			memcpy(&ValueFixed(val),str,sizeof(Fixed));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_INT:
+			memcpy(&ValueInteger(val),str,sizeof(int));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_OBJECT:
+			memcpy(ValueObject(val),str,sizeof(MonObjectType));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			memcpy(&ValueFloat(val),str,sizeof(double));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			memcpy(&ValueBool(val),str,sizeof(Bool));
+			rc = TRUE;
+			break;
+		  default:
+			rc = FALSE;	  
+		}
+	}
+LEAVE_FUNC;
+	return	(rc);
+}
+
+extern	byte	*
+ValueToBinary(
+	ValueStruct	*val)
+{
+ENTER_FUNC;
+	dbgprintf("type = %X\n",(int)ValueType(val));
+	if		(  ValueStr(val)  ==  NULL  ) {
+		ValueStr(val) = NewLBS();
+	}
+	LBS_EmitStart(ValueStr(val));
+	if		(  IS_VALUE_NIL(val)  ) {
+		LBS_EmitChar(ValueStr(val),CHAR_NIL);
+	} else
+	switch	(ValueType(val)) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		if		(  ValueString(val)  !=  NULL  ) {
+			LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
+			strcpy(ValueStrBody(val),ValueString(val));
+		} else {
+			LBS_EmitChar(ValueStr(val),CHAR_NIL);
+		}
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+		LBS_ReserveSize(ValueStr(val),ValueByteLength(val),FALSE);
+		memcpy(ValueStrBody(val),ValueByte(val),ValueByteLength(val));
+		break;
+	  case	GL_TYPE_NUMBER:
+		LBS_ReserveSize(ValueStr(val),sizeof(Fixed),FALSE);
+		memcpy(ValueStrBody(val),&ValueFixed(val),sizeof(Fixed));
+		break;
+	  case	GL_TYPE_INT:
+		LBS_ReserveSize(ValueStr(val),sizeof(int),FALSE);
+		memcpy(ValueStrBody(val),&ValueInteger(val),sizeof(int));
+		break;
+	  case	GL_TYPE_OBJECT:
+		LBS_ReserveSize(ValueStr(val),sizeof(MonObjectType),FALSE);
+		memcpy(ValueStrBody(val),ValueObject(val),sizeof(MonObjectType));
+		break;
+	  case	GL_TYPE_FLOAT:
+		LBS_ReserveSize(ValueStr(val),sizeof(double),FALSE);
+		memcpy(ValueStrBody(val),&ValueFloat(val),sizeof(double));
+		break;
+	  case	GL_TYPE_BOOL:
+		LBS_ReserveSize(ValueStr(val),sizeof(Bool),FALSE);
+		memcpy(ValueStrBody(val),&ValueBool(val),sizeof(Bool));
+		break;
+	  default:
+		break;
+	}
+LEAVE_FUNC;
+	return	(ValueStrBody(val));
+}

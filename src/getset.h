@@ -22,17 +22,22 @@ copies.
 #ifndef	_INC_GETSET_H
 #define	_INC_GETSET_H
 
-extern	Bool		SetValueString(ValueStruct *val, char *str, char *locale);
+extern	Bool		SetValueStringWithLength(ValueStruct *val, char *str, size_t slen,
+											 char *locale);
 extern	Bool		SetValueInteger(ValueStruct *val, int ival);
 extern	Bool		SetValueChar(ValueStruct *val, char cval);
 extern	Bool		SetValueBool(ValueStruct *val, Bool bval);
 extern	Bool		SetValueFloat(ValueStruct *val, double bval);
 extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
+extern	Bool		SetValueBinary(ValueStruct *val, byte *str, size_t slen);
 
 extern	int			ValueToInteger(ValueStruct *val);
 extern	double		ValueToFloat(ValueStruct *val);
 extern	Fixed		*ValueToFixed(ValueStruct *val);
 extern	Bool		ValueToBool(ValueStruct *val);
 extern	char		*ValueToString(ValueStruct *value, char *locale);
+extern	byte		*ValueToBinary(ValueStruct *val);
+
+#define	SetValueString(val,st,loc)	SetValueStringWithLength((val),(st),strlen(st),(loc))
 
 #endif

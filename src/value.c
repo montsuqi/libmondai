@@ -60,7 +60,9 @@ dbgmsg(">NewValue");
 	ValueType(ret) = type;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 		ValueByteLength(ret) = 0;
+		ValueByteSize(ret) = 0;
 		ValueByte(ret) = NULL;
 		break;
 	  case	GL_TYPE_CHAR:
@@ -134,6 +136,7 @@ FreeValueStruct(
 			}
 			break;
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 			if		(  ValueByte(val)  !=  NULL  ) {
 				xfree(ValueByte(val));
 			}
@@ -186,6 +189,43 @@ NewFixed(
 		xval->sval = (char *)xmalloc(flen+1);
 	}
 	return	(xval);
+}
+
+extern	void
+FixedRescale(
+	Fixed	*to,
+	Fixed	*fr)
+{
+	char	*p
+	,		*q;
+	size_t	len;
+	Bool	fMinus;
+
+	if		(  ( *fr->sval & 0x40 )  ==  0x40  ) {
+		fMinus = TRUE;
+	} else {
+		fMinus = FALSE;
+	}
+	memset(to->sval,'0',to->flen);
+	to->sval[to->flen] = 0;
+	p = fr->sval + ( fr->flen - fr->slen );
+	q = to->sval + ( to->flen - to->slen );
+	len = ( fr->slen > to->slen ) ? to->slen : fr->slen;
+	for	( ; len > 0 ; len -- ) {
+		*q ++ = ( *p & 0x3F );
+		p ++;
+	}
+	p = fr->sval + ( fr->flen - fr->slen ) - 1;
+	q = to->sval + ( to->flen - to->slen ) - 1;
+	len = ( ( fr->flen - fr->slen ) > ( to->flen - to->slen ) )
+		? ( to->flen - to->slen ) : ( fr->flen - fr->slen );
+	for	( ; len > 0 ; len -- ) {
+		*q -- = ( *p & 0x3F );
+		p --;
+	}
+	if		(  fMinus  ) {
+		*to->sval |= 0x40;
+	}
 }
 
 extern	ValueStruct	*
@@ -463,6 +503,14 @@ DumpValueStruct(
 			}
 			fflush(stdout);
 			break;
+		  case	GL_TYPE_BINARY:
+			printf("binary(%d,%d)",ValueByteLength(val),ValueByteSize(val));
+			fflush(stdout);
+			if		(  !IS_VALUE_NIL(val)  ) {
+				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
+			}
+			fflush(stdout);
+			break;
 		  case	GL_TYPE_OBJECT:
 			printf("object [%d:",ValueObjectSource(val));
 			p = (byte *)&ValueObjectID(val);
@@ -543,6 +591,14 @@ dbgmsg(">InitializeValue");
 		ValueStringLength(value) = 0;
 		ValueStringSize(value) = 0;
 		break;
+	  case	GL_TYPE_BINARY:
+		if		(  ValueByte(value)  !=  NULL  ) {
+			xfree(ValueByte(value));
+		}
+		ValueByte(value) = NULL;
+		ValueByteLength(value) = 0;
+		ValueByteSize(value) = 0;
+		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(value)  >  0  ) {
 			memset(ValueFixedBody(value),'0',ValueFixedLength(value));
@@ -600,6 +656,21 @@ ENTER_FUNC;
 			ValueStringLength(to) = ValueStringLength(from);
 		}
 		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+		if		(  ValueByteSize(from)  >  ValueByteSize(to)  ) {
+			if		(  ValueByte(to)  !=  NULL  ) {
+				xfree(ValueByte(to));
+			}
+			ValueByteSize(to) = ValueByteSize(from);
+			ValueByte(to) = (char *)xmalloc(ValueByteSize(to));
+		}
+		memclear(ValueByte(to),ValueByteSize(to));
+		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(to));
+		if		(  ValueType(to)  ==  GL_TYPE_BINARY  ) {
+			ValueByteLength(to) = ValueByteLength(from);
+		}
+		break;
 	  case	GL_TYPE_NUMBER:
 		xval = ValueToFixed(from);
 		SetValueFixed(to,xval);
@@ -649,10 +720,13 @@ ENTER_FUNC;
 		ValueObjectID(vd) = ValueObjectID(vs);
 		break;
 	  case	GL_TYPE_TEXT:
-	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
+		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vd));
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vd));
 		break;
 	  case	GL_TYPE_NUMBER:
@@ -714,7 +788,6 @@ DuplicateValue(
 	ValueStr(p) = NULL;
 
 	switch	(ValueType(template)) {
-	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -725,6 +798,15 @@ DuplicateValue(
 		}
 		ValueStringLength(p) = ValueStringLength(template);
 		ValueStringSize(p) = ValueStringSize(template);
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+		if		(  ValueByteSize(template)  >  0  ) {
+			ValueByte(p) = (char *)xmalloc(ValueByteSize(template));
+			memclear(ValueByte(p),ValueByteSize(template));
+		}
+		ValueByteLength(p) = ValueByteLength(template);
+		ValueByteSize(p) = ValueByteSize(template);
 		break;
 	  case	GL_TYPE_NUMBER:
 		ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);

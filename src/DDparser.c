@@ -62,12 +62,14 @@ copies.
 #define	T_FLOAT			(T_YYBASE +12)
 #define	T_VIRTUAL		(T_YYBASE +13)
 #define	T_ALIAS			(T_YYBASE +14)
+#define	T_BINARY		(T_YYBASE +15)
 
 static	void	ParValueDefines(ValueStruct *upper);
 
 static	TokenTable	tokentable[] = {
 	{	"bool"		,T_BOOL		},
 	{	"byte"		,T_BYTE		},
+	{	"binary"	,T_BINARY	},
 	{	"char"		,T_CHAR		},
 	{	"varchar"	,T_VARCHAR	},
 	{	"float"		,T_FLOAT	},
@@ -94,16 +96,6 @@ SetValueAttribute(
 
 	val->attr |= attr;
 	switch	(ValueType(val)) {
-	  case	GL_TYPE_NUMBER:
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_INT:
-	  case	GL_TYPE_BOOL:
-	  case	GL_TYPE_TEXT:
-	  case	GL_TYPE_OBJECT:
-		break;
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 			SetValueAttribute(ValueArrayItem(val,i),attr);
@@ -242,21 +234,33 @@ ParValueDefine(void)
 			  default:
 				break;
 			}
-			if		(  value->type  ==  GL_TYPE_NUMBER  ) {
+			switch(ValueType(value)) {
+			  case	GL_TYPE_NUMBER:
 				ValueFixedLength(value) = size;
 				ValueFixedSlen(value) = ssize;
 				ValueFixedBody(value) = (char *)xmalloc(size + 1);
 				ValueFixedBody(value)[size] = 0;
 				memset(ValueFixedBody(value),'0',size);
-			} else {
+				break;
+			  case	GL_TYPE_BYTE:
+				ValueByteLength(value) = size;
+				ValueByteSize(value) = size;
+				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+				memclear(ValueByte(value),ValueByteSize(value));
+			  default:
 				ValueStringLength(value) = size;
 				ValueStringSize(value) = size+1;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),ValueStringSize(value));
+				break;
 			}
 		} else {
 			value = NULL;
 		}
+		break;
+	  case	T_BINARY:
+		value = NewValue(GL_TYPE_BINARY);
+		GetSymbol;
 		break;
 	  case	T_TEXT:
 		value = NewValue(GL_TYPE_TEXT);

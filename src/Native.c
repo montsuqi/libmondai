@@ -95,6 +95,23 @@ dbgmsg(">NativeUnPackValue");
 			memcpy(ValueByte(value),p,ValueByteLength(value));
 			p += ValueByteLength(value);
 			break;
+		  case	GL_TYPE_BINARY:
+			size = *(size_t *)p;
+			p += sizeof(size_t);
+			if		(  size  >  ValueByteSize(value)  ) {
+				if		(  ValueByte(value)  !=  NULL  ) {
+					xfree(ValueByte(value));
+				}
+				ValueByteSize(value) = size;
+				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+			}
+			if		(  size  >  0  ) {
+				memclear(ValueByte(value),size);
+				memcpy(ValueByte(value),p,size);
+				p += size;
+			}
+			ValueByteLength(value) = size;
+			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
@@ -205,6 +222,13 @@ dbgmsg(">NativePackValue");
 			memcpy(p,ValueByte(value),ValueByteLength(value));
 			p += ValueByteLength(value);
 			break;
+		  case	GL_TYPE_BINARY:
+			size = ValueByteLength(value);
+			*(size_t *)p = size;
+			p += sizeof(size_t);
+			memcpy(p,ValueByte(value),size);
+			p += size;
+			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
@@ -283,6 +307,9 @@ dbgmsg(">NativeSizeValue");
 		break;
 	  case	GL_TYPE_BYTE:
 		ret += ValueByteLength(val);
+		break;
+	  case	GL_TYPE_BINARY:
+		ret += sizeof(size_t) + ValueByteLength(val);
 		break;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:

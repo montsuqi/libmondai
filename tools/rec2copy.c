@@ -191,6 +191,7 @@ _COBOL(
 		PutString(buff);
 		break;
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_BINARY:
 		sprintf(buff,"PIC X(%d)",Conv->textsize);
 		PutString(buff);
 		break;

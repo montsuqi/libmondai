@@ -83,13 +83,12 @@ BuildMcpArea(
 	fprintf(fp,	"mcparea	{");
 	fprintf(fp,		"func varchar(%d);",SIZE_FUNC);
 	fprintf(fp,		"obj object;");
+	fprintf(fp,		"bin binary;");
 	fprintf(fp,		"rc int;");
 	fprintf(fp,		"dc	{");
-	//	fprintf(fp,			"window	 varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"window	 varchar(%d);",4);
 	fprintf(fp,			"widget	 varchar(%d);",SIZE_NAME);
-	//fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
-	fprintf(fp,			"event	 varchar(%d);",35);
+	fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
 	fprintf(fp,			"module	 varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"fromwin varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"status	 varchar(%d);",SIZE_STATUS);
@@ -130,6 +129,7 @@ main(
 #define	SIZE_DATA		128
 
 	char	name[SIZE_DATA];
+	byte	*p;
 	int		i;
 	ValueStruct	*val;
 	FILE	*fp;
@@ -149,10 +149,8 @@ main(
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
 	SetValueString(GetItemLongName(val,"rc"),"0",SRC_CODE);
 
-	//SetValueString(GetItemLongName(val,"dc.window"),"window",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.window"),"1 男",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.widget"),"widget",SRC_CODE);
-	//SetValueString(GetItemLongName(val,"dc.event"),"event",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.event"),"1002 医療機関情報ー所在地、連絡先",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.fromwin"),"fromwin",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.status"),"status",SRC_CODE);
@@ -180,12 +178,17 @@ main(
 	SetValueString(GetItemLongName(val,"private.pstatus"),"1",SRC_CODE);
 	SetValueString(GetItemLongName(val,"private.pputtype"),"2",SRC_CODE);
 	SetValueString(GetItemLongName(val,"private.prc"),"3",SRC_CODE);
+	buff = xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+	for	( p = buff, i = 0 ; i < 256 ; i ++ , p ++) {
+		*p = (byte)i;
+	}
+	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
+		
 
 	opt = NewConvOpt();
 	ConvSetCodeset(opt,TEST_CODE);
 #ifdef	USE_XML
-	buff = xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
 	ConvSetXmlType(opt,XML_TYPE2);
 	ConvSetIndent(opt,TRUE);
 	ConvSetType(opt,FALSE);
@@ -202,6 +205,7 @@ main(
 	if		(  ( fp = fopen("test.oc","w") )  ==  NULL  ) 	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
+
 	InitializeValue(val);
 	OpenCOBOL_UnPackValue(opt,buff,val);
 	XML_PackValue(opt,buff,val);
@@ -212,6 +216,7 @@ main(
 	if		(  ( fp = fopen("test.na","w") )  ==  NULL  ) 	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
+
 	InitializeValue(val);
 	NativeUnPackValue(opt,buff,val);
 	XML_PackValue(opt,buff,val);

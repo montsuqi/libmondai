@@ -118,6 +118,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_VARCHAR			(PacketDataType)0x23
 #define	GL_TYPE_BYTE			(PacketDataType)0x24
 #define	GL_TYPE_DBCODE			(PacketDataType)0x25
+#define	GL_TYPE_BINARY			(PacketDataType)0x26
 
 #define	GL_TYPE_OBJECT			(PacketDataType)0x40
 
@@ -222,6 +223,7 @@ extern	void		IntToFixed(Fixed *xval, int ival);
 extern	double		FixedToFloat(Fixed *xval);
 extern	Fixed		*NewFixed(int flen, int slen);
 extern	void		FreeFixed(Fixed *xval);
+extern	void		FixedRescale(Fixed *to, Fixed *fr);
 
 extern	void		InitializeValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);

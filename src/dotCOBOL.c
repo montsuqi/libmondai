@@ -116,6 +116,13 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			memcpy(ValueByte(value),p,ValueByteLength(value));
 			p += ValueByteLength(value);
 			break;
+		  case	GL_TYPE_BINARY:
+			str = (char *)xmalloc((opt->textsize)*sizeof(byte));
+			memcpy(str,p,opt->textsize);
+			p += opt->textsize;
+			SetValueBinary(value,str,opt->textsize);
+			xfree(str);
+			break;
 		  case	GL_TYPE_TEXT:
 			str = (char *)xmalloc((opt->textsize+1)*sizeof(char));
 			memcpy(str,p,opt->textsize);
@@ -198,6 +205,12 @@ dbgmsg(">dotCOBOL_PackValue");
 			memcpy(p,ValueByte(value),ValueByteLength(value));
 			p += ValueByteLength(value);
 			break;
+		  case	GL_TYPE_BINARY:
+			memclear(p,opt->textsize);
+			size = ( opt->textsize < ValueByteLength(value) ) ? opt->textsize : ValueByteLength(value);
+			memcpy(p,ValueToBinary(value),size);
+			p += opt->textsize;
+			break;
 		  case	GL_TYPE_TEXT:
 			memclear(p,opt->textsize);
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
@@ -262,6 +275,7 @@ dbgmsg(">dotCOBOL_SizeValue");
 	  case	GL_TYPE_BOOL:
 		ret = 1;
 		break;
+	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_TEXT:
 		ret = opt->textsize;
 		break;

@@ -224,7 +224,10 @@ _XML_PackValue1(
 					p += sprintf(p,"\"bool\"");
 					break;
 				  case	GL_TYPE_BYTE:
-					p += sprintf(p,"\"byte\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"byte\" size=\"%d\"",ValueByteLength(value));
+					break;
+				  case	GL_TYPE_BINARY:
+					p += sprintf(p,"\"binary\" size=\"%d\"",ValueByteLength(value));
 					break;
 				  case	GL_TYPE_CHAR:
 					p += sprintf(p,"\"char\" size=\"%d\"",ValueStringLength(value));
@@ -332,7 +335,10 @@ _XML_PackValue2(
 				p += sprintf(p,"\"bool\"");
 				break;
 			  case	GL_TYPE_BYTE:
-				p += sprintf(p,"\"byte\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"byte\" size=\"%d\"",ValueByteLength(value));
+				break;
+			  case	GL_TYPE_BINARY:
+				p += sprintf(p,"\"binary\" size=\"%d\"",ValueByteLength(value));
 				break;
 			  case	GL_TYPE_CHAR:
 				p += sprintf(p,"\"char\" size=\"%d\"",ValueStringLength(value));
@@ -1025,17 +1031,6 @@ SetNil(
 	int		i;
 
 	switch	(ValueType(val)) {
-	  case	GL_TYPE_NUMBER:
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_INT:
-	  case	GL_TYPE_BOOL:
-	  case	GL_TYPE_TEXT:
-	  case	GL_TYPE_OBJECT:
-		val->attr |= GL_ATTR_NIL;
-		break;
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 			SetNil(ValueArrayItem(val,i));
@@ -1047,6 +1042,7 @@ SetNil(
 		}
 		break;
 	  default:
+		val->attr |= GL_ATTR_NIL;
 		break;
 	}
 }
@@ -1144,7 +1140,11 @@ _XML_SizeValue1(
 					break;
 				  case	GL_TYPE_BYTE:
 					size += sprintf(buff,
-									"\"byte\" size=\"%d\"",ValueStringLength(value));
+									"\"byte\" size=\"%d\"",ValueByteLength(value));
+					break;
+				  case	GL_TYPE_BINARY:
+					size += sprintf(buff,
+									"\"binary\" size=\"%d\"",ValueByteLength(value));
 					break;
 				  case	GL_TYPE_CHAR:
 					size += sprintf(buff,
@@ -1256,7 +1256,11 @@ _XML_SizeValue2(
 				break;
 			  case	GL_TYPE_BYTE:
 				size += sprintf(buff,
-								"\"byte\" size=\"%d\"",ValueStringLength(value));
+								"\"byte\" size=\"%d\"",ValueByteLength(value));
+				break;
+			  case	GL_TYPE_BINARY:
+				size += sprintf(buff,
+								"\"binary\" size=\"%d\"",ValueByteLength(value));
 				break;
 			  case	GL_TYPE_CHAR:
 				size += sprintf(buff,

@@ -26,6 +26,7 @@ testrec	{
 		}	[2];
 	}	[5];
 	i	object;
+	j	binary;
 #	h	{
 #		d	char;
 #		e	char(2);

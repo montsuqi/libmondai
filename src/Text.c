@@ -115,6 +115,7 @@ _CSV_UnPackValue(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_OBJECT:
 			SetValueString(value,buff,ConvCodeset(opt));
 			break;
@@ -219,6 +220,7 @@ __CSV_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_BOOL:
 		  case	GL_TYPE_OBJECT:
 			CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
@@ -339,6 +341,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_OBJECT:
 		str = ValueToString(value,ConvCodeset(opt));
@@ -564,6 +567,7 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 			q = p;
 			while	(	(  *p  !=  0     )
 					&&	(  *p  !=  '\n'  ) )	p ++;
@@ -649,6 +653,7 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_DBCODE:
 					  case	GL_TYPE_TEXT:
 					  case	GL_TYPE_BYTE:
+					  case	GL_TYPE_BINARY:
 						ch = *p;
 						*p = 0;
 						len = DecodeString(opt,buff,q);
@@ -720,6 +725,7 @@ _RFC822_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 			str = ValueToString(value,ConvCodeset(opt));
 			EncodeString(opt,buff,str);
 			if		(  opt->fName  ) {
@@ -802,6 +808,7 @@ dbgmsg(">_RFC822_SizeValue");
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 		ret = 1;
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
@@ -955,6 +962,7 @@ _CGI_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_BOOL:
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
@@ -962,22 +970,7 @@ _CGI_PackValue(
 		  case	GL_TYPE_OBJECT:
 			q = ValueToString(value,ConvCodeset(opt));
 			p += sprintf(p,"%s=",longname);
-#if	1
 			p += EncodeString(opt,p,q);
-#else
-			while	(  *q  !=  0  ) {
-				if		(  *q  ==  0x20  ) {
-					*p ++ = '+';
-				} else
-				if		(  isalnum(*q)  ) {
-					*p ++ = *q;
-				} else {
-					*p ++ = '%';
-					p += sprintf(p,"%02X",(int)(*q & 0xFF));
-				}
-				q ++;
-			}
-#endif
 			*p ++ = '&';
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -1041,6 +1034,7 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:

@@ -88,7 +88,7 @@ main(
 
 	char	name[SIZE_DATA]
 	,		str[SIZE_DATA];
-	char	*p;
+	byte	*p;
 	int		i
 	,		j;
 	ValueStruct	*val
@@ -232,6 +232,22 @@ main(
 	MoveValue(e,GetItemLongName(val,"q"));
 	printf("buff [%s]\n",ValueStringPointer(e));
 	printf("out  [%s]\n",ValueToString(e,TEST_CODE));
+	printf("********************\n");
+
+	printf("***** binary *****\n");
+	buff = xmalloc(256);
+	memset(buff,0,256);
+	for	( p = buff, i = 0 ; i < 256 ; i ++ , p ++) {
+		*p = (byte)i;
+	}
+	e = GetItemLongName(val,"j");
+	for	( i = 0 ; i < 256 ; i ++ ) {
+		SetValueBinary(e,buff,i);
+		printf("size   = %d\n",ValueByteSize(e));
+		printf("length = %d\n",ValueByteLength(e));
+	}
+	SetValueBinary(e,buff,256);
+	xfree(buff);
 	printf("********************\n");
 
 #endif
