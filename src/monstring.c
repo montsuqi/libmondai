@@ -42,15 +42,14 @@ extern	int
 stricmp(
 	char	*s1,
 	char	*s2)
-{	int		ret;
-
-	ret = 0;
+{
 	for	( ; *s1  !=  0 ; s1 ++ , s2 ++ )	{
-		if		(  ( ret = toupper(*s1) - toupper(*s2) )  !=  0  )
+		if		(  toupper(*s1) - toupper(*s2)  !=  0  )
 			break;
 	}
-	return	(ret);
+	return	(toupper(*s1) - toupper(*s2));
 }
+
 extern	int
 strnicmp(
 	char	*s1,

@@ -2,6 +2,8 @@ testrec	{
 	a	char(3);
 	b	char(2);
 	g	varchar(3);
+#	n	number(10,3);
+	n	int;
 	l	text;
 	m	text;
 	c	{
@@ -22,6 +24,10 @@ testrec	{
 			j	bool;
 		}	[2];
 	}	[5];
+#	h	{
+#		d	char;
+#		e	char(2);
+#	};
 #	i	{
 #		d	char;
 #		e	char(2);
