@@ -12,3 +12,4 @@ libtool
 ltmain.sh
 stamp-h
 stamp-h.in
+libmondai-*.tar.gz

@@ -1,5 +1,7 @@
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 
+	* src/Makefile.am (libmondai_la_SOURCES): Added `debug.h'.
+
 	* makecopyright: Removed file.
 	* Makefile.am (EXTRA_DIST): Removed makecopyright.
 

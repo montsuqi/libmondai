@@ -47,4 +47,5 @@ libmondai_la_SOURCES	=		\
 	tcp.c			tcp.h			\
 	pty.c			pty.h			\
 	queue.c			queue.h			\
-	types.h
+	types.h						\
+	debug.h
