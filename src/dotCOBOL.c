@@ -93,7 +93,8 @@ dotCOBOL_UnPackValue(
 
 dbgmsg(">dotCOBOL_UnPackValue");
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		ValueIsNonNil(value);
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
 			dotCOBOL_IntegerCobol2C(&ValueInteger(value));
@@ -144,6 +145,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			}
 			break;
 		  default:
+			ValueIsNil(value);
 			break;
 		}
 	}

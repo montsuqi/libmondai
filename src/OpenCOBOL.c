@@ -93,6 +93,7 @@ OpenCOBOL_UnPackValue(
 
 ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
+		ValueIsNonNil(value);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			value->body.IntegerData = *(int *)p;
@@ -144,6 +145,7 @@ ENTER_FUNC;
 			}
 			break;
 		  default:
+			ValueIsNil(value);
 			break;
 		}
 	}
