@@ -375,6 +375,7 @@ Lex(
 	int		c;
 	char	*p
 		,	*q;
+	Bool	fDot;
 
 ENTER_FUNC;
   retry:
@@ -483,18 +484,25 @@ ENTER_FUNC;
 		} else
 		if		(  isdigit(c) )	{
 			p = GetPos(in)-1;
+			fDot = FALSE;
 			do {
 				c = GetChar(in);
+				if		(  c  ==  '.'  )
+					fDot = TRUE;
 			}	while	(	(  isalpha(c)  )
 						||	(  isdigit(c)  )
-						||	(  c  ==  '_'  ) );
+						||	(  c  ==  '.'  ) );
 			UnGetChar(in);
 			q = GetPos(in);
 			in->Symbol = (char *)xmalloc(q-p+1);
 			memcpy(in->Symbol,p,q-p);
 			in->Symbol[q-p] = 0;
-			in->Int = atol(in->Symbol);
-			in->Token = T_ICONST;
+			if		(  fDot  ) {
+				in->Token = T_NCONST;
+			} else {
+				in->Int = atol(in->Symbol);
+				in->Token = T_ICONST;
+			}
 		} else {
 			switch	(c) {
 			  case	EOF:

@@ -28,12 +28,14 @@ copies.
 #define	T_SYMBOL		(YYBASE +2)
 #define	T_SCONST		(YYBASE +3)
 #define	T_ICONST		(YYBASE +4)
+#define	T_NCONST		(YYBASE +5)
+
 #define	T_LT			'<'
-#define	T_LE			(YYBASE +6)
+#define	T_LE			(YYBASE +10)
 #define	T_EQ			'='
-#define	T_GE			(YYBASE +8)
+#define	T_GE			(YYBASE +12)
 #define	T_GT			'>'
-#define	T_NE			(YYBASE +10)
+#define	T_NE			(YYBASE +14)
 
 #define	T_YYBASE		(YYBASE +20)
 
