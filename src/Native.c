@@ -312,7 +312,6 @@ ENTER_FUNC;
 		fName = FALSE;
 	}
 	ret = sizeof(PacketDataType) + sizeof(ValueAttributeType);
-DumpValueStruct(val);
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_INT:
 		ret += sizeof(int);
@@ -366,6 +365,92 @@ DumpValueStruct(val);
 	}
 LEAVE_FUNC;
 	return	(ret);
+}
+
+extern	size_t
+NativeSaveSize(
+	ValueStruct	*value,
+	Bool		fData)
+{
+	size_t	esize
+		,	size;
+	int		i;
+
+ENTER_FUNC;
+	esize = 0;
+	if		(  value  !=  NULL  ) {
+		esize += sizeof(PacketDataType);
+		esize += sizeof(ValueAttributeType);
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_INT:
+			if		(  fData  ) {
+				esize += sizeof(int);
+			}
+			break;
+		  case	GL_TYPE_BOOL:
+			if		(  fData  ) {
+				esize ++;
+			}
+			break;
+		  case	GL_TYPE_FLOAT:
+			if		(  fData  ) {
+				esize += sizeof(double);
+			}
+			break;
+		  case	GL_TYPE_NUMBER:
+			esize += sizeof(size_t);
+			esize += sizeof(size_t);
+			if		(  fData  ) {
+				esize += ValueFixedLength(value);
+			}
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			size = ValueByteLength(value);
+			esize += size;
+			esize += sizeof(size_t);
+			if		(  fData  ) {
+				esize += size;
+			}
+			break;
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+			esize += ValueStringSize(value);
+			esize += sizeof(size_t);
+			esize += sizeof(size_t);
+			if		(  fData  ) {
+				esize += strlen(ValueString(value)) + 1;
+			}
+			break;
+		  case	GL_TYPE_OBJECT:
+			if		(  fData  ) {
+				esize += sizeof(MonObjectType);
+			}
+			break;
+		  case	GL_TYPE_ARRAY:
+			esize += sizeof(size_t);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				esize += NativeSaveSize(ValueArrayItem(value,i),fData);
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			esize += sizeof(size_t);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				esize += strlen(ValueRecordName(value,i))+1;
+				esize += NativeSaveSize(ValueRecordItem(value,i),fData);
+			}
+			break;
+		  case	GL_TYPE_ALIAS:
+			esize += strlen(ValueAliasName(value))+1;
+			break;
+		  default:
+			break;
+		}
+	}
+LEAVE_FUNC;
+	return	(esize);
 }
 
 extern	size_t

@@ -20,8 +20,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA  02111-1307, USA.
 */
 
-/*
 #define	TRACE
+/*
 */
 
 #ifdef HAVE_CONFIG_H
@@ -201,7 +201,10 @@ _ReleasePool(
 
 dbgmsg(">ReleasePool");
 	if		(  pool  !=  NULL  ) {
-		g_hash_table_remove(PoolTable,pool->name);
+		if		(  pool->name  !=  NULL  ) {
+			g_hash_table_remove(PoolTable,pool->name);
+			xfree(pool->name);
+		}
 		if		(  ( np = pool->head )  !=  NULL  ) {
 			rp = np->next;
 			np->next = NULL;
@@ -210,11 +213,10 @@ dbgmsg(">ReleasePool");
 				if		(  rp->final  !=  NULL  ) {
 					(*rp->final)((void *)&rp[1],rp->data);
 				}
-				free(rp);
+				//free(rp);
 				rp = np;
 			}
 		}
-		xfree(pool->name);
 		xfree(pool);
 	}
 dbgmsg("<ReleasePool");
@@ -227,6 +229,11 @@ NewPool(
 	POOL	*pool;
 
 dbgmsg(">NewPool");
+	if		(  name  ==  NULL  ) {
+		pool = (POOL *)xmalloc(sizeof(POOL));
+		pool->name = NULL;
+		pool->head = NULL;
+	} else
 	if		(  g_hash_table_lookup(PoolTable,name)  ==  NULL  ) {
 		pool = (POOL *)xmalloc(sizeof(POOL));
 		pool->name = StrDup(name);

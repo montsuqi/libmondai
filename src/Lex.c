@@ -122,6 +122,7 @@ PushLexInfoMem(
 {
 	CURFILE	*info;
 
+ENTER_FUNC;
 	info = New(CURFILE);
 	info->fn = StrDup("** memory **");
 	info->cLine = 1;
@@ -135,6 +136,7 @@ PushLexInfoMem(
 	info->Symbol = NULL;
 	info->ValueName = NULL;
 	info->next = in;
+LEAVE_FUNC;
 	return	(info);
 }
 
@@ -416,6 +418,48 @@ ENTER_FUNC;
 		memcpy(in->Symbol,p,q-p);
 		in->Symbol[q-p] = 0;
 		in->Token = T_SCONST;
+		break;
+	  case	'<':
+		if		(  GetChar(in) ==  '='  ) {
+			in->Token = T_LE;
+		} else {
+			in->Token = T_LT;
+			UnGetChar(in);
+		}
+		break;
+	  case	'>':
+		if		(  GetChar(in) ==  '='  ) {
+			in->Token = T_GE;
+		} else {
+			in->Token = T_GT;
+			UnGetChar(in);
+		}
+		break;
+	  case	'=':
+		switch(GetChar(in))	{
+		  case	'=':
+			in->Token = T_EQ;
+			break;
+		  case	'>':
+			in->Token = T_GE;
+			break;
+		  case	'<':
+			in->Token = T_LE;
+			break;
+			break;
+		  default:
+			in->Token = T_EQ;
+			UnGetChar(in);
+			break;
+		}
+		break;
+	  case	'!':
+		if		(  GetChar(in) ==  '='  ) {
+			in->Token = T_NE;
+		} else {
+			in->Token = '!';
+			UnGetChar(in);
+		}
 		break;
 	  default:
 		if		(  isalpha(c)  ) {

@@ -192,8 +192,8 @@ ValueToBool(
 	return	(ret);
 }
 
-extern	char	*
-ValueToString(
+extern	LargeByteString	*
+ValueToLBS(
 	ValueStruct	*val,
 	char		*codeset)
 {
@@ -203,11 +203,11 @@ ValueToString(
 	,		*q;
 	int		i;
 	int		size;
-	char	*ret;
+	LargeByteString	*ret;
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
-		ret = "0x01";
+		ret = NULL;
 	} else {
 		dbgprintf("type = %X\n",(int)ValueType(val));
 		if		(  ValueStr(val)  ==  NULL  ) {
@@ -236,6 +236,7 @@ ENTER_FUNC;
 					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
 					strcpy(ValueStrBody(val),ValueString(val));
 				} else {
+					RewindLBS(ValueStr(val));
 					LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 										  ValueStringSize(val),
 										  0,codeset);
@@ -307,12 +308,26 @@ ENTER_FUNC;
 			break;
 		}
 		LBS_EmitEnd(ValueStr(val));
-		ret = ValueStrBody(val);
+		ret = ValueStr(val);
 	}
 LEAVE_FUNC;
 	return	(ret);
 }
 
+extern	char	*
+ValueToString(
+	ValueStruct	*val,
+	char		*codeset)
+{
+	char	*ret;
+
+	if		(  ValueToLBS(val,codeset)  ==  NULL  ) {
+		ret = NULL;
+	} else {
+		ret = ValueStrBody(val);
+	}
+	return	(ret);
+}
 
 extern	Bool
 SetValueStringWithLength(

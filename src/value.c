@@ -39,6 +39,8 @@ copies.
 #include	"types.h"
 #include	"misc_v.h"
 #include	"monstring.h"
+#include	"numeric.h"
+#include	"numerici.h"
 #include	"value.h"
 #include	"memory_v.h"
 #include	"getset.h"
@@ -316,7 +318,11 @@ DumpItem(
 	char		*name,
 	ValueStruct	*value)
 {
-	printf("%s:",name);
+	if		(  name  !=  NULL  ) {
+		printf("%s:",name);
+	} else {
+		printf(":");
+	}
 	printf("%s",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
 	printf("%s",((value->attr&GL_ATTR_ALIAS) == GL_ATTR_ALIAS) ? " ALIAS" : "");
 	printf("%s",((value->attr&GL_ATTR_NIL) == GL_ATTR_NIL) ? " NIL:" : ":");
@@ -640,6 +646,103 @@ ENTER_FUNC;
 		break;
 	}
 LEAVE_FUNC;
+}
+
+/*
+ *	compare same structure
+ */
+extern	int
+CompareValue(
+	ValueStruct	*vl,
+	ValueStruct	*vr)
+{
+	int		i;
+	int		res;
+
+ENTER_FUNC;
+	res = 0;
+	if		(  vl  ==  NULL  ) {
+		res = -1;
+	} else
+	if		(  vr  ==  NULL  )	{
+		res = 1;
+	} else
+	if		(  IS_VALUE_NIL(vl)  )	{
+		res = -1;
+	} else
+	if		(  IS_VALUE_NIL(vr)  )	{
+		res = 1;
+	} else
+	if		(  ( ValueType(vl) - ValueType(vr) )  !=  0  ) {
+		res = ValueType(vl) - ValueType(vr);
+	} else
+	switch	(ValueType(vr)) {
+	  case	GL_TYPE_INT:
+		if		(  IS_VALUE_DESC(vr)  ) {
+			res = ValueInteger(vr) - ValueInteger(vl);
+		} else {
+			res = ValueInteger(vl) - ValueInteger(vr);
+		}
+		break;
+	  case	GL_TYPE_FLOAT:
+		if		(  IS_VALUE_DESC(vr)  ) {
+			res = (int)(ValueFloat(vr) - ValueFloat(vl));
+		} else {
+			res = (int)(ValueFloat(vl) - ValueFloat(vr));
+		}
+		break;
+	  case	GL_TYPE_BOOL:
+		if		(  IS_VALUE_DESC(vr)  ) {
+			res = (int)(ValueBool(vr) - ValueBool(vl));
+		} else {
+			res = (int)(ValueBool(vl) - ValueBool(vr));
+		}
+		break;
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+		if		(  IS_VALUE_DESC(vr)  ) {
+			res = strcmp(ValueToString(vr,NULL),ValueToString(vl,NULL));
+		} else {
+			res = strcmp(ValueToString(vl,NULL),ValueToString(vr,NULL));
+		}
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  IS_VALUE_DESC(vr)  ) {
+			res = NumericCmp(FixedToNumeric(&ValueFixed(vr)),FixedToNumeric(&ValueFixed(vl)));
+		} else {
+			res = NumericCmp(FixedToNumeric(&ValueFixed(vl)),FixedToNumeric(&ValueFixed(vr)));
+		}
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(vr) ; i ++ ) {
+			if		( ( res = CompareValue(ValueArrayItem(vl,i),ValueArrayItem(vr,i)) )
+					  !=  0  )	break;
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(vr) ; i ++ ) {
+			if		(  ( res = CompareValue(ValueValuesItem(vl,i),ValueValuesItem(vr,i)) )
+					   !=  0  )	break;
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(vr) ; i ++ ) {
+			if		(  ( res = CompareValue(ValueRecordItem(vl,i),ValueRecordItem(vr,i)) )
+					   !=  0  )	break;
+		}
+		break;
+	  case	GL_TYPE_OBJECT:
+	  case	GL_TYPE_ALIAS:
+	  default:
+		res = 0;
+		break;
+	}
+LEAVE_FUNC;
+	return	(res);
 }
 
 extern	ValueStruct	**

@@ -42,6 +42,7 @@ typedef	struct {
 
 typedef	struct {
 	char	*name;
+	Bool	fBinary;
 	char	*fsep;
 	char	*bsep;
 	size_t	(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
@@ -74,7 +75,7 @@ extern	void		DestroyConvOpt(CONVOPT *opt);
 #define	ConvSetUseName(opt,f)		(opt)->fName = (f)
 #define	ConvSetAppendix(opt,a)		(opt)->appendix = (a)
 
-#define	ConvCodeset(opt)			((opt)->codeset)
+#define	ConvCodeset(opt)			(((opt) == NULL)? NULL : ((opt)->codeset))
 
 #endif
 

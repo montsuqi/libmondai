@@ -147,7 +147,7 @@ ENTER_FUNC;
 	value = NULL;
 	switch	(GetSymbol) {
 	  case	T_ALIAS:
-	  case	'=':
+	  case	T_EQ:
 		value = NewValue(GL_TYPE_ALIAS);
 		p = buff;
 		while	(	(  GetSymbol  !=  ','  )

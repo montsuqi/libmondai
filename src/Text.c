@@ -429,6 +429,287 @@ CSVE_SizeValue(
 }
 
 /*
+ *	SQL conversion
+ */
+
+extern	size_t
+SQL_UnPackValue(
+	CONVOPT		*opt,
+	byte		*p,
+	ValueStruct	*value)
+{
+	int		i;
+	char	*q;
+	byte	*pp;
+	char	buff[SIZE_BUFF];
+
+	pp = p;
+	if		(  value  !=  NULL  ) {
+		if		(  !IS_VALUE_STRUCTURE(value)  ) {
+			memset(buff,0,SIZE_BUFF);
+			q = buff;
+			if		(  *p  ==  '\''  ) {
+				p ++;
+				while	(  *p  !=  0  ) {
+					if		(	(  *p      ==  '\''  )
+							&&	(  *(p+1)  ==  ','  ) )	break;
+					switch	(*p) {
+					  case	'\\':
+						p ++;
+						*q = *p;
+						break;
+					  case	'\'':
+						p ++;
+						switch	(*p) {
+						  case	'\'':
+							*q = '\'';
+							break;
+						  default:
+							break;
+						}
+					  default:
+						*q = *p ++;
+						break;
+					}
+					q ++;
+				}
+				p ++;
+				while	(	(  *p  !=  0    )
+						&&	(  *p  !=  ','  ) ) p ++;
+				p ++;
+			} else {
+				while	(	(  *p  !=  0    )
+						&&	(  *p  !=  ','  ) ) {
+					*q ++ = *p ++;
+				}
+				p ++;
+			}
+			*q = 0;
+		}
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+		  case	GL_TYPE_OBJECT:
+			SetValueString(value,buff,ConvCodeset(opt));
+			break;
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += SQL_UnPackValue(opt,p,ValueArrayItem(value,i));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += SQL_UnPackValue(opt,p,ValueRecordItem(value,i));
+			}
+			break;
+		  case	GL_TYPE_ALIAS:
+		  default:
+			printf("invalid flag [%d]\n",value->type);
+			break;
+		}
+	}
+	return	(p-pp);
+}
+
+static	void
+SQL_Encode(
+	char	*str,
+	char	*p)
+{
+	for	( ; *str != 0 ; str ++ ) {
+		switch	(*str) {
+		  case	'\'':
+			*p ++ = '\\';
+			*p ++ = '\'';
+			break;
+		  case	'\\':
+			*p ++ = '\\';
+			*p ++ = '\\';
+			break;
+		  default:
+			*p ++ = *str;
+			break;
+		}
+	}
+	*p = 0;
+}
+
+static	size_t
+_SQL_PackValue(
+	CONVOPT		*opt,
+	char		*p,
+	ValueStruct	*value,
+	Bool		*fFirst)
+{
+	int		i;
+	char	*pp;
+	char	buff[SIZE_BUFF];
+
+	pp = p;
+	if		(  value  !=  NULL  ) {
+		if		(  IS_VALUE_NIL(value)  ) {
+			if		(  !*fFirst  ) {
+				p += sprintf(p,",");
+			}
+			*fFirst = FALSE;
+			p += sprintf(p,"null");
+		} else
+		switch	(value->type) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_OBJECT:
+			if		(  !*fFirst  ) {
+				p += sprintf(p,",");
+			}
+			*fFirst = FALSE;
+			SQL_Encode(ValueToString(value,ConvCodeset(opt)),buff);
+			p += sprintf(p,"\'%s\'",buff);
+			break;
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+			if		(  !*fFirst  ) {
+				p += sprintf(p,",");
+			}
+			*fFirst = FALSE;
+			p += sprintf(p,"%s",ValueToString(value,ConvCodeset(opt)));
+			break;
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += _SQL_PackValue(opt,p,ValueArrayItem(value,i),fFirst);
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += _SQL_PackValue(opt,p,ValueRecordItem(value,i),fFirst);
+			}
+			break;
+		  case	GL_TYPE_ALIAS:
+		  default:
+			break;
+		}
+	}
+	return	(p-pp);
+}
+
+extern	size_t
+SQL_PackValue(
+	CONVOPT		*opt,
+	byte		*p,
+	ValueStruct	*value)
+{
+	Bool	fFirst;
+	size_t	ret;
+
+	fFirst = TRUE;
+	ret = _SQL_PackValue(opt,p,value,&fFirst);
+
+	return	(ret);
+}
+
+static	size_t
+_SQL_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value,
+	Bool		*fFirst)
+{
+	int		i;
+	size_t	ret;
+	char	*str;
+
+ENTER_FUNC;
+	if		(  value  ==  NULL  )	return	(0);
+	if		(  IS_VALUE_NIL(value)  ) {
+		ret = 4;
+		if		(  !*fFirst  ) {
+			ret ++;
+		}
+		*fFirst = FALSE;
+	} else
+	switch	(value->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_BINARY:
+	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_OBJECT:
+		str = ValueToString(value,ConvCodeset(opt));
+		ret = 2;
+		for	( ; *str != 0 ; str ++ ) {
+			switch	(*str) {
+			  case	'\'':
+			  case	'\\':
+				ret += 2;
+				break;
+			  default:
+				ret ++;
+				break;
+			}
+		}
+		if		(  !*fFirst  ) {
+			ret ++;
+		}
+		*fFirst = FALSE;
+		break;
+	  case	GL_TYPE_NUMBER:
+	  case	GL_TYPE_INT:
+	  case	GL_TYPE_FLOAT:
+		ret = strlen(ValueToString(value,ConvCodeset(opt)));
+		if		(  !*fFirst  ) {
+			ret ++;
+		}
+		*fFirst = FALSE;
+		break;
+	  case	GL_TYPE_ARRAY:
+		ret = 0;
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			ret += _SQL_SizeValue(opt,ValueArrayItem(value,i),fFirst);
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			ret += _SQL_SizeValue(opt,ValueRecordItem(value,i),fFirst);
+		}
+		break;
+	  case	GL_TYPE_ALIAS:
+	  default:
+		ret = 0;
+		break;
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
+extern	size_t
+SQL_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	Bool		fFirst;
+	size_t		ret;
+
+	fFirst = TRUE;
+	ret = _SQL_SizeValue(opt,value,&fFirst);
+	return	(ret);
+}
+
+/*
  *	RFC822 type conversion
  */
 

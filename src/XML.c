@@ -462,6 +462,7 @@ ENTER_FUNC;
 		}
 		break;
 	  case	XML_TYPE2:
+	  default:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
@@ -478,6 +479,95 @@ ENTER_FUNC;
 			p += sprintf(p,"</%s:data>",opt->recname);
 		}
 		break;
+	}
+	*p = 0;
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+XML1_PackValue(
+	CONVOPT		*opt,
+	 byte		*p,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+	byte	*pp;
+
+ENTER_FUNC;
+	pp = p;
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		p += sprintf(p,"<?xml version=\"1.0\"");
+#ifdef	USE_XML2
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+		}
+#else
+		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+#endif
+		p += sprintf(p,"?>");
+		p += PutCR(opt,p);
+		nIndent = 0;
+	} else {
+		nIndent = -1;
+	}
+
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		p += sprintf(p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+		p += PutCR(opt,p);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+		p +=_XML_PackValue1(opt,p,opt->recname,value,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		p += sprintf(p,"</lm:block>");
+	}
+	*p = 0;
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+XML2_PackValue(
+	CONVOPT		*opt,
+	 byte		*p,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+	byte	*pp;
+
+ENTER_FUNC;
+	pp = p;
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		p += sprintf(p,"<?xml version=\"1.0\"");
+#ifdef	USE_XML2
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+		}
+#else
+		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+#endif
+		p += sprintf(p,"?>");
+		p += PutCR(opt,p);
+		nIndent = 0;
+	} else {
+		nIndent = -1;
+	}
+
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		if		(  opt->recname  !=  NULL  ) {
+			p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+						 ,opt->recname,opt->recname,NS_URI,opt->recname);
+		} else {
+			p += sprintf(p,"<data>");
+		}
+		p += PutCR(opt,p);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+		p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		p += sprintf(p,"</%s:data>",opt->recname);
 	}
 	*p = 0;
 LEAVE_FUNC;
@@ -1111,9 +1201,68 @@ ENTER_FUNC;
 		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
 		break;
 	  case	XML_TYPE2:
+	  default:
 		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
 		break;
 	}
+    xmlCleanupParser();
+	xfree(ctx->buff);
+	xfree(ctx);
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+XML1_UnPackValue(
+	CONVOPT		*opt,
+	byte		*p,
+	ValueStruct	*value)
+{
+	ValueContext	*ctx;
+	byte	*pp;
+
+ENTER_FUNC;
+	ctx = New(ValueContext);
+	ctx->root = value;
+	ctx->buff = (char *)xmalloc(1);
+	ctx->size = 1;
+	ctx->fStart = FALSE;
+	ctx->opt = opt;
+	ctx->value = NULL;
+	memset(ctx->longname,0,SIZE_LONGNAME+1);
+
+	SetNil(value);
+	pp = p;
+	xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
+    xmlCleanupParser();
+	xfree(ctx->buff);
+	xfree(ctx);
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+XML2_UnPackValue(
+	CONVOPT		*opt,
+	byte		*p,
+	ValueStruct	*value)
+{
+	ValueContext	*ctx;
+	byte	*pp;
+
+ENTER_FUNC;
+	ctx = New(ValueContext);
+	ctx->root = value;
+	ctx->buff = (char *)xmalloc(1);
+	ctx->size = 1;
+	ctx->fStart = FALSE;
+	ctx->opt = opt;
+	ctx->value = NULL;
+	memset(ctx->longname,0,SIZE_LONGNAME+1);
+
+	SetNil(value);
+	pp = p;
+	xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
     xmlCleanupParser();
 	xfree(ctx->buff);
 	xfree(ctx);
@@ -1410,6 +1559,7 @@ XML_SizeValue(
 		}
 		break;
 	  case	XML_TYPE2:
+	  default:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
@@ -1430,6 +1580,99 @@ XML_SizeValue(
 			}
 		}
 		break;
+	}
+	return	(size);
+}
+
+extern	size_t
+XML1_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+	size_t	size;
+
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		size = 19;			//	<?xml version="1.0"
+#ifdef	USE_XML2
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			size += 12 + strlen(ConvCodeset(opt));	
+			//	" encoding=\"%s\"",ConvCodeset(opt)
+		}
+#else
+		size += 12 + strlen(LIBXML_CODE);
+#endif
+		size += 2;			//	?>
+		size += PutCR(opt,buff);
+		nIndent = 0;
+	} else
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		size = 0;
+		nIndent = 0;
+	} else {
+		size = 0;
+		nIndent = -1;
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+		size += PutCR(opt,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+		size += _XML_SizeValue1(opt,opt->recname,value,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		size += 11;			//	</lm:block>
+	}
+	return	(size);
+}
+
+extern	size_t
+XML2_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+	size_t	size;
+
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		size = 19;			//	<?xml version="1.0"
+#ifdef	USE_XML2
+		if		(  ConvCodeset(opt)  !=  NULL  ) {
+			size += 12 + strlen(ConvCodeset(opt));	
+			//	" encoding=\"%s\"",ConvCodeset(opt)
+		}
+#else
+		size += 12 + strlen(LIBXML_CODE);
+#endif
+		size += 2;			//	?>
+		size += PutCR(opt,buff);
+		nIndent = 0;
+	} else
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		size = 0;
+		nIndent = 0;
+	} else {
+		size = 0;
+		nIndent = -1;
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
+		if		(  opt->recname  !=  NULL  ) {
+			size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+							,opt->recname,opt->recname,NS_URI,opt->recname);
+		} else {
+			size += sprintf(buff,"<data>");
+		}
+		size += PutCR(opt,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
+		size += _XML_SizeValue2(opt,opt->recname,value,buff);
+	}
+	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
+		if		(  opt->recname  !=  NULL  ) {
+			size += sprintf(buff,"</%s:data>",opt->recname);
+		} else {
+			size += sprintf(buff,"</data>");
+		}
 	}
 	return	(size);
 }

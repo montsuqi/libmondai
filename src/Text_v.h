@@ -38,6 +38,10 @@ extern	size_t	CSVE_SizeValue(CONVOPT *opt,ValueStruct *val);
 #define	CSV_SizeValue	CSV3_SizeValue
 #define	CSV_PackValue	CSV3_PackValue
 
+extern	size_t	SQL_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	SQL_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	SQL_SizeValue(CONVOPT *opt, ValueStruct *value);
+
 extern	size_t	RFC822_UnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 extern	size_t	RFC822_PackValue(CONVOPT *opt,byte *p, ValueStruct *value);
 extern	size_t	RFC822_SizeValue(CONVOPT *opt,ValueStruct *value);

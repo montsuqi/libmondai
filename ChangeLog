@@ -1,3 +1,7 @@
+2005-01-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (CompareValue): ValueStructの値の比較関数
+
 2004-12-22  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c: 文字列の保存の無駄をなくした

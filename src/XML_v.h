@@ -55,4 +55,13 @@ extern	void	ConvSetOutput(CONVOPT *opt, byte v);
 extern	size_t	XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	XML_SizeValue(CONVOPT *opt, ValueStruct *value);
+
+extern	size_t	XML1_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML1_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML1_SizeValue(CONVOPT *opt, ValueStruct *value);
+
+extern	size_t	XML2_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML2_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML2_SizeValue(CONVOPT *opt, ValueStruct *value);
+
 #endif

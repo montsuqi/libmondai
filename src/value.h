@@ -118,14 +118,13 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_VALUES			(PacketDataType)0x84
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
+#define	GL_ATTR_NIL				(ValueAttributeType)0x80
+#define	GL_ATTR_DESC			(ValueAttributeType)0x20
 #define	GL_ATTR_ALIAS			(ValueAttributeType)0x10
 #define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x08
 #define	GL_ATTR_INPUT			(ValueAttributeType)0x04
 #define	GL_ATTR_OUTPUT			(ValueAttributeType)0x02
 #define	GL_ATTR_UPDATE			(ValueAttributeType)0x01
-
-#define	GL_ATTR_NIL				(ValueAttributeType)0x80
-
 
 #define	CHAR_NIL				0x01
 
@@ -133,6 +132,7 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
 #define	IS_VALUE_ALIAS(v)		(((v)->attr & GL_ATTR_ALIAS) == GL_ATTR_ALIAS)
 #define	IS_VALUE_UPDATE(v)		(((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
+#define	IS_VALUE_DESC(v)		(((v)->attr & GL_ATTR_DESC) == GL_ATTR_DESC)
 
 #define	GL_OBJ_NULL				0
 
@@ -151,6 +151,8 @@ typedef	struct _ValueStruct	{
 #define	ValueIsNonNil(v)		((v)->attr &= ~GL_ATTR_NIL)
 #define	ValueIsUpdate(v)		((v)->attr |= GL_ATTR_UPDATE)
 #define	ValueIsNotUpdate(v)		((v)->attr &= ~GL_ATTR_UPDATE)
+#define	ValueOrderIsDesc(v)		((v)->attr |= GL_ATTR_DESC)
+#define	ValueOrderIsAsc(v)		((v)->attr &= ~GL_ATTR_DESC)
 
 #ifdef	__VALUE_DIRECT
 #define	ValueString(v)			((v)->body.CharData.sval)
@@ -209,6 +211,7 @@ extern	ValueStruct	*GetItemLongName(ValueStruct *root, char *longname);
 
 extern	void		InitializeValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
+extern	int			CompareValue(ValueStruct *vl, ValueStruct *vr);
 
 extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
 

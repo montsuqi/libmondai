@@ -43,6 +43,8 @@ copies.
 #define	RETURN(v)			return(v)
 #endif
 
+#define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
+
 #ifdef	_INC_MESSAGE_H
 #define	Error(...)                                                      \
 do {                                                                    \

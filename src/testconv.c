@@ -46,6 +46,7 @@ copies.
 #define	TEST_RFC822_1
 #define	TEST_RFC822_2
 #define	TEST_CGI
+#define	TEST_SQL
 /*
 #define	TEST_CODE		"shift-jis"
 */
@@ -600,6 +601,34 @@ main(
 	CGI_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
 	printf("***** CGI end *****\n");
+	xfree(buff);
+#endif
+
+#ifdef	TEST_SQL
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	printf("***** SQL *****\n");
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
+	ConvSetCodeset(opt,TEST_CODE);
+	ConvSetRecName(opt,"testrec");
+	ConvSetUseName(opt,FALSE);
+
+	printf("***** SQL Size *****\n");
+	size = SQL_SizeValue(opt,val);
+	size1 = SQL_PackValue(opt,buff,val);
+	printf("size = %d\n",size);
+	printf("size = %d\n",size1);
+
+	if		(  ( fp = fopen("test.SQL","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+
+	printf("***** SQL UnPack *****\n");
+	InitializeValue(val);
+	SQL_UnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	printf("***** SQL end *****\n");
 	xfree(buff);
 #endif
 

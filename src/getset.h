@@ -35,6 +35,7 @@ extern	int			ValueToInteger(ValueStruct *val);
 extern	double		ValueToFloat(ValueStruct *val);
 extern	Fixed		*ValueToFixed(ValueStruct *val);
 extern	Bool		ValueToBool(ValueStruct *val);
+extern	LargeByteString	*ValueToLBS(ValueStruct *val, char *codeset);
 extern	char		*ValueToString(ValueStruct *value, char *locale);
 extern	byte		*ValueToBinary(ValueStruct *val);
 
