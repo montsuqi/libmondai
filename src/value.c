@@ -723,7 +723,6 @@ DuplicateValue(
 		ValueRecordMembers(p) = NewNameHash();
 		ValueRecordNames(p) =
 			(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
-		ValueRecordNames(p) = ValueRecordNames(template);
 		/*	duplicate data space	*/
 		ValueRecordItems(p) = 
 			(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueRecordSize(template));
