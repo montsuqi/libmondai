@@ -20,9 +20,9 @@ copies.
 */
 
 /*
+*/
 #define	DEBUG
 #define	TRACE
-*/
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -51,7 +51,7 @@ ValueToInteger(
 {
 	int		ret;
 
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -397,6 +397,12 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
+#if	1
+						if		(  errno  ==  EINVAL  ) {
+							dbgprintf("illigal string[%s]\n",istr);
+							break;
+						} else
+#endif
 							break;
 					} else {
 						ValueStringSize(val) = 1;
@@ -437,6 +443,12 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
+#if	1
+						if		(  errno  ==  EINVAL  ) {
+							dbgprintf("illigal string[%s]\n",istr);
+							break;
+						} else
+#endif
 							break;
 					} else {
 						ValueStringSize(val) = 1;
