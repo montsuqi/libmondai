@@ -88,6 +88,17 @@ dbgmsg(">NativeUnPackValue");
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_NUMBER:
+			size = *(size_t *)p;
+			p += sizeof(size_t);
+			if		(  size  >  ValueFixedLength(value)  ) {
+				if		(  ValueFixedBody(value)  !=  NULL  ) {
+					xfree(ValueFixedBody(value));
+				}
+				ValueFixedBody(value) = (char *)xmalloc(size+1);
+			}
+			ValueFixedLength(value) = size;
+			ValueFixedSlen(value) = *(size_t *)p;
+			p += sizeof(size_t);
 			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
 			p += ValueFixedLength(value);
 			break;
@@ -217,6 +228,10 @@ dbgmsg(">NativePackValue");
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_NUMBER:
+			*(size_t *)p = ValueFixedLength(value);
+			p += sizeof(size_t);
+			*(size_t *)p = ValueFixedSlen(value);
+			p += sizeof(size_t);
 			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
 			p += ValueFixedLength(value);
 			break;
@@ -309,7 +324,7 @@ dbgmsg(">NativeSizeValue");
 		ret += sizeof(double);
 		break;
 	  case	GL_TYPE_NUMBER:
-		ret += ValueFixedLength(val);
+		ret += ValueFixedLength(val) + sizeof(size_t) + sizeof(size_t);
 		break;
 	  case	GL_TYPE_BYTE:
 		ret += ValueByteLength(val);

@@ -53,6 +53,7 @@ extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			(((LargeByteString *)lbs)->ptr = 0)
+#define	LBS_UnFetchChar(lbs)	LBS_Seek((lbs),-1,SEEK_CUR)
 #define	LBS_Peek(lbs)			(((LargeByteString *)lbs)->body[((LargeByteString *)lbs)->ptr])
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
