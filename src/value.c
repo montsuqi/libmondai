@@ -55,7 +55,7 @@ NewValue(
 
 dbgmsg(">NewValue");
 	ret = New(ValueStruct);
-	ValueAttribute(ret) = GL_ATTR_NULL;
+	ValueAttribute(ret) = GL_ATTR_NIL;
 	ValueStr(ret) = NULL;
 	ValueType(ret) = type;
 	switch	(type) {
@@ -96,19 +96,23 @@ dbgmsg(">NewValue");
 		ValueRecordMembers(ret) = NewNameHash();
 		ValueRecordItems(ret) = NULL;
 		ValueRecordNames(ret) = NULL;
+		ValueAttribute(ret) = GL_ATTR_NULL;
 		break;
 	  case	GL_TYPE_ARRAY:
 		ValueArraySize(ret) = 0;
 		ValueArrayExpandable(ret) = FALSE;
 		ValueArrayPrototype(ret) = NULL;
 		ValueArrayItems(ret) = NULL;
+		ValueAttribute(ret) = GL_ATTR_NULL;
 		break;
 	  case	GL_TYPE_ALIAS:
 		ValueAliasName(ret) = NULL;
+		ValueAttribute(ret) = GL_ATTR_NULL;
 		break;
 	  case	GL_TYPE_VALUES:
 		ValueValuesSize(ret) = 0;
 		ValueValuesItems(ret) = NULL;
+		ValueAttribute(ret) = GL_ATTR_NULL;
 		break;
 	  default:
 		xfree(ret);
