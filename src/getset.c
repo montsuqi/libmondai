@@ -41,10 +41,10 @@ copies.
 
 #define		__VALUE_DIRECT
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"monstring.h"
 #include	"value.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"others.h"
 #include	"getset.h"
 #include	"debug.h"

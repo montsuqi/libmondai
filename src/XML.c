@@ -41,10 +41,10 @@ copies.
 #endif
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"value.h"
 #include	"getset.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"monstring.h"
 #include	"XML_v.h"
 #include	"debug.h"

@@ -37,12 +37,12 @@ copies.
 
 #define	__VALUE_DIRECT
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"monstring.h"
 #include	"value.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"getset.h"
-#include	"hash.h"
+#include	"hash_v.h"
 #include	"debug.h"
 
 #define	DUMP_LOCALE		"euc-jp"

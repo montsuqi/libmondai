@@ -13,17 +13,17 @@ libmondai.h: libmondai.h.in
 libmondaiincludedir = $(includedir)/libmondai
 
 libmondaiinclude_HEADERS =	\
-	misc.h			\
+	misc_v.h		\
 	LBSfunc.h		\
-	OpenCOBOL_v.h		\
-	dotCOBOL_v.h		\
+	OpenCOBOL_v.h	\
+	dotCOBOL_v.h	\
 	Native_v.h		\
 	Text_v.h		\
 	XML_v.h			\
-	cobolvalue.h		\
+	cobolvalue.h	\
 	others.h		\
 	numerici.h		\
-	hash.h			\
+	hash_v.h		\
 	getset.h		\
 	value.h			\
 	valueconv.h		\
@@ -31,7 +31,7 @@ libmondaiinclude_HEADERS =	\
 	Lex.h			\
 	DDparser.h		\
 	monstring.h		\
-	memory.h		\
+	memory_v.h		\
 	types.h
 
 INCLUDES 			= 		\

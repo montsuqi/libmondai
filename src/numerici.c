@@ -36,8 +36,8 @@ copies.
 #include	<math.h>
 
 #include	"types.h"
-#include	"misc.h"
-#include	"memory.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
 #include	"value.h"
 #include	"numeric.h"
 #include	"debug.h"

@@ -38,11 +38,11 @@ copies.
 #define	_DD_PARSER
 #define	__VALUE_DIRECT
 #include	"types.h"
-#include	"hash.h"
+#include	"hash_v.h"
 #include	"value.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"monstring.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"others.h"
 #include	"Lex.h"
 #include	"DDparser.h"

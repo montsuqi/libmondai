@@ -33,7 +33,7 @@ copies.
 #include	<glib.h>
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 
 #include	"value.h"
 #include	"cobolvalue.h"

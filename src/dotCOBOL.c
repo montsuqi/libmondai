@@ -35,13 +35,13 @@ copies.
 #include    <sys/types.h>
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"monstring.h"
 #include	"others.h"
 #include	"dotCOBOL_v.h"
-#include	"memory.h"
+#include	"memory_v.h"
 #include	"getset.h"
 #include	"debug.h"
 

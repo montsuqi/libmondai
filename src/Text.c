@@ -36,7 +36,7 @@ copies.
 #include    <sys/types.h>
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"monstring.h"
 #include	"others.h"
 #include	"value.h"

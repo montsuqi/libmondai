@@ -35,8 +35,8 @@ copies.
 #include    <sys/types.h>
 
 #include	"types.h"
-#include	"misc.h"
-#include	"memory.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
 #include	"value.h"
 #include	"cobolvalue.h"
 #include	"others.h"

@@ -36,10 +36,10 @@ copies.
 #include	<math.h>
 #define	_VALUECONV
 #include	"types.h"
-#include	"misc.h"
-#include	"memory.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
 #include	"value.h"
-#include	"hash.h"
+#include	"hash_v.h"
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"

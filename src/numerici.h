@@ -23,7 +23,7 @@ copies.
 #define	_INC_NUMRICI_H
 #include	<numeric.h>
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"value.h"
 
 extern	Numeric		FixedToNumeric(Fixed *xval);

@@ -15,3 +15,6 @@ stamp-h
 stamp-h.in
 libmondai-*.tar.gz
 aclocal.m4
+stamp-h1
+decomp
+autom4te.cache

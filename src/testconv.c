@@ -71,10 +71,10 @@ copies.
 #include	"valueconv.h"
 #include	"DDparser.h"
 #include	"numerici.h"
-#include	"hash.h"
+#include	"hash_v.h"
 #include	"monstring.h"
-#include	"memory.h"
-#include	"misc.h"
+#include	"memory_v.h"
+#include	"misc_v.h"
 #include	"others.h"
 
 #include	"debug.h"

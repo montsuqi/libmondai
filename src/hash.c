@@ -36,10 +36,10 @@ copies.
 #include	<math.h>
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
 #include	"monstring.h"
-#include	"memory.h"
-#include	"hash.h"
+#include	"memory_v.h"
+#include	"hash_v.h"
 #include	"debug.h"
 
 static	guint

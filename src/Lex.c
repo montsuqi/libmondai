@@ -33,11 +33,11 @@ copies.
 #include	<ctype.h>
 #include	<glib.h>
 #include	"types.h"
-#include	"misc.h"
-#include	"memory.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
 #include	"monstring.h"
 #include	"others.h"
-#include	"hash.h"
+#include	"hash_v.h"
 #include	"value.h"
 #define		_LEX
 #include	"Lex.h"

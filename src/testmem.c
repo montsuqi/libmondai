@@ -39,8 +39,8 @@ copies.
 #include	"types.h"
 
 #include	"value.h"
-#include	"memory.h"
-#include	"misc.h"
+#include	"memory_v.h"
+#include	"misc_v.h"
 #include	"others.h"
 #include	"debug.h"
 
