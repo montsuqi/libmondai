@@ -206,18 +206,10 @@ dbgmsg(">NativeSizeValue");
 		ret = ValueFixedLength(val);
 		break;
 	  case	GL_TYPE_TEXT:
-		if		(  opt->textsize  >  0  ) {
-			ret = opt->textsize;
-		} else {
-			ret = ValueStringLength(val) + sizeof(size_t);
-		}
+		ret = ValueStringLength(val) + sizeof(size_t);
 		break;
 	  case	GL_TYPE_ARRAY:
-		if		(  ValueArraySize(val)  >  0  ) {
-			n = ValueArraySize(val);
-		} else {
-			n = opt->arraysize;
-		}
+		n = ValueArraySize(val);
 		ret = NativeSizeValue(opt,ValueArrayItem(val,0)) * n;
 		break;
 	  case	GL_TYPE_RECORD:
