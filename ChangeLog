@@ -1,3 +1,8 @@
+2003-07-19  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/valueconv.c: パラメータの変更をした(ただし、機能的に未実装の
+	もの多数)
+
 2003-07-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822の名前無しに対応
