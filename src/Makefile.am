@@ -13,6 +13,7 @@ libmondaiinclude_HEADERS =	\
 	dotCOBOL_v.h	\
 	Native_v.h		\
 	cobolvalue.h	\
+	hash.h			\
 	value.h			\
 	valueconv.h		\
 	libmondai.h		\
@@ -22,10 +23,10 @@ libmondaiinclude_HEADERS =	\
 
 INCLUDES 			= 		\
 	-I$(top_srcdir)			\
-	$(GLIB_CFLAGS) \
+	$(GLIB_CFLAGS) 			\
 	$(FIXED_CFLAGS)
 
-libmondai_la_SOURCES	=		\
+libmondai_la_SOURCES	=			\
 	option.c		option.h		\
 	misc.c			misc.h			\
 	LBSfunc.c		LBSfunc.h		\
@@ -33,6 +34,7 @@ libmondai_la_SOURCES	=		\
 	OpenCOBOL.c		OpenCOBOL_v.h	\
 	dotCOBOL.c		dotCOBOL_v.h	\
 	Native.c		Native_v.h		\
+	hash.c			hash.h			\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
 	SQLlex.c		SQLlex.h		\

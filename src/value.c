@@ -38,118 +38,62 @@ copies.
 #include	"types.h"
 #include	"misc.h"
 #include	"value.h"
+#include	"hash.h"
 #include	"debug.h"
 
 #define	NUM_BUFF	60
 
-static	guint
-NameHash(
-	gconstpointer	key)
+extern	ValueStruct	*
+NewValue(
+	PacketDataType	type)
 {
-	char	*p;
-	guint	ret;
+	ValueStruct	*ret;
 
-	ret = 0;
-	if		(  key  !=  NULL  ) {
-		for	( p = (char *)key ; *p != 0 ; p ++ ) {
-			ret = ( ret << 4 ) | *p;
-		}
+dbgmsg(">NewValue");
+	ret = New(ValueStruct);
+	ret->fUpdate = FALSE;
+	ret->attr = GL_ATTR_NULL;
+	ret->type = type;
+	switch	(type) {
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		ret->body.CharData.len = 0;
+		ret->body.CharData.sval = NULL;
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret->body.FixedData.flen = 0;
+		ret->body.FixedData.slen = 0;
+		ret->body.FixedData.sval = NULL;
+		break;
+	  case	GL_TYPE_INT:
+		ret->body.IntegerData = 0;
+		break;
+	  case	GL_TYPE_BOOL:
+		ret->body.BoolData = FALSE;
+		break;
+	  case	GL_TYPE_OBJECT:
+		ret->body.Object.apsid = 0;
+		ret->body.Object.oid = 0;
+		break;
+	  case	GL_TYPE_RECORD:
+		ret->body.RecordData.count = 0;
+		ret->body.RecordData.members = NewNameHash();
+		ret->body.RecordData.item = NULL;
+		ret->body.RecordData.names = NULL;
+		break;
+	  case	GL_TYPE_ARRAY:
+		ret->body.ArrayData.count = 0;
+		ret->body.ArrayData.item = NULL;
+		break;
+	  default:
+		xfree(ret);
+		ret = NULL;
+		break;
 	}
-	return	(ret);
-}
-
-static	gint
-NameCompare(
-	gconstpointer	s1,
-	gconstpointer	s2)
-{
-	return	(!strcmp((char *)s1,(char *)s2));
-}
-
-extern	GHashTable	*
-NewNameHash(void)
-{
-	GHashTable	*ret;
-
-	ret = g_hash_table_new((GHashFunc)NameHash,(GCompareFunc)NameCompare);
-
-	return	(ret);
-}
-
-static	guint
-NameiHash(
-	gconstpointer	key)
-{
-	char	*p;
-	guint	ret;
-
-	ret = 0;
-	if		(  key  !=  NULL  ) {
-		for	( p = (char *)key ; *p != 0 ; p ++ ) {
-			ret = ( ret << 4 ) | toupper(*p);
-		}
-	}
-	return	(ret);
-}
-
-static	gint
-NameiCompare(
-	gconstpointer	s1,
-	gconstpointer	s2)
-{
-	return	(!stricmp((char *)s1,(char *)s2));
-}
-
-extern	GHashTable	*
-NewNameiHash(void)
-{
-	GHashTable	*ret;
-
-	ret = g_hash_table_new((GHashFunc)NameiHash,(GCompareFunc)NameiCompare);
-
-	return	(ret);
-}
-
-static	void
-DestroySymbols(
-	GHashTable		*sym)
-{
-	void	ClearNames(
-		gpointer	key,
-		gpointer	value,
-		gpointer	user_data)
-		{
-			xfree(key);
-		}
-
-	if		(  sym  !=  NULL  ) {
-		g_hash_table_foreach(sym,(GHFunc)ClearNames,NULL);
-		g_hash_table_destroy(sym);
-	}
-}
-
-static	guint
-IntHash(
-	gconstpointer	key)
-{
-	return	((guint)key);
-}
-
-static	gint
-IntCompare(
-	gconstpointer	s1,
-	gconstpointer	s2)
-{
-	return	( (int)s1 == (int)s2 );
-}
-
-extern	GHashTable	*
-NewIntHash(void)
-{
-	GHashTable	*ret;
-
-	ret = g_hash_table_new((GHashFunc)IntHash,(GCompareFunc)IntCompare);
-
+dbgmsg("<NewValue");
 	return	(ret);
 }
 
@@ -923,6 +867,182 @@ dbgmsg(">InitializeValue");
 dbgmsg("<InitializeValue");
 }
 
+extern	void
+CopyValue(
+	ValueStruct	*vd,
+	ValueStruct	*vs)
+{
+	int		i;
+
+dbgmsg(">CopyValue");
+	if		(  vd  ==  NULL  )	return;
+	if		(  vs  ==  NULL  )	return;
+	switch	(vs->type) {
+	  case	GL_TYPE_INT:
+		vd->body.IntegerData = vs->body.IntegerData;
+		break;
+	  case	GL_TYPE_FLOAT:
+		vd->body.FloatData = vs->body.FloatData;
+		break;
+	  case	GL_TYPE_BOOL:
+		vd->body.BoolData = vs->body.BoolData;
+		break;
+	  case	GL_TYPE_OBJECT:
+		vd->body.Object.apsid = vs->body.Object.apsid;
+		vd->body.Object.oid = vs->body.Object.oid;
+		break;
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		memcpy(vd->body.CharData.sval,vs->body.CharData.sval,vs->body.CharData.len+1);
+		vd->body.CharData.len = vs->body.CharData.len;
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  vd->body.FixedData.flen  >  0  ) {
+			memcpy(vd->body.FixedData.sval,vs->body.FixedData.sval,vs->body.FixedData.flen);
+		}
+		vd->body.FixedData.sval[vd->body.FixedData.flen] = 0;
+		vd->body.FixedData.slen = vs->body.FixedData.slen;
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < vs->body.ArrayData.count ; i ++ ) {
+			CopyValue(vd->body.ArrayData.item[i],vs->body.ArrayData.item[i]);
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < vs->body.RecordData.count ; i ++ ) {
+			CopyValue(vd->body.RecordData.item[i],vs->body.RecordData.item[i]);
+		}
+		break;
+	  default:
+		break;
+	}
+dbgmsg("<CopyValue");
+}
+
+extern	ValueStruct	**
+MakeValueArray(
+	ValueStruct	*template,
+	size_t		count)
+{
+	ValueStruct	**ret;
+	int			i;
+
+	ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * count);
+	for	( i = 0 ; i < count ; i ++ ) {
+		ret[i] = DuplicateValue(template);
+	}
+	return	(ret);
+}
+
+extern	ValueStruct	*
+DuplicateValue(
+	ValueStruct	*template)
+{
+	ValueStruct	*p;
+	int			i;
+
+	p = New(ValueStruct);
+	memcpy(p,template,sizeof(ValueStruct));
+	switch	(template->type) {
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+		if		(  template->body.CharData.len  >  0  ) {
+			p->body.CharData.sval = (char *)xmalloc(template->body.CharData.len+1);
+			memclear(p->body.CharData.sval,template->body.CharData.len+1);
+		}
+		p->body.CharData.len = template->body.CharData.len;
+		break;
+	  case	GL_TYPE_NUMBER:
+		p->body.FixedData.sval = (char *)xmalloc(template->body.FixedData.flen+1);
+		memcpy(p->body.FixedData.sval,
+			   template->body.FixedData.sval,
+			   template->body.FixedData.flen+1);
+		p->body.FixedData.flen = template->body.FixedData.flen;
+		p->body.FixedData.slen = template->body.FixedData.slen;
+		break;
+	  case	GL_TYPE_ARRAY:
+		p->body.ArrayData.item = 
+			MakeValueArray(template->body.ArrayData.item[0],
+						   template->body.ArrayData.count);
+		p->body.ArrayData.count = template->body.ArrayData.count;
+		break;
+	  case	GL_TYPE_INT:
+		p->body.IntegerData = 0;
+		break;
+	  case	GL_TYPE_BOOL:
+		p->body.BoolData = FALSE;
+		break;
+	  case	GL_TYPE_OBJECT:
+		p->body.Object.apsid = 0;
+		p->body.Object.oid = 0;
+		break;
+	  case	GL_TYPE_RECORD:
+		/*	share name table		*/
+		p->body.RecordData.members = template->body.RecordData.members;
+		p->body.RecordData.names = template->body.RecordData.names;
+		/*	duplicate data space	*/
+		p->body.RecordData.item = 
+			(ValueStruct **)xmalloc(sizeof(ValueStruct *) * template->body.RecordData.count);
+		p->body.RecordData.count = template->body.RecordData.count;
+		for	( i = 0 ; i < template->body.RecordData.count ; i ++ ) {
+			p->body.RecordData.item[i] = 
+				DuplicateValue(template->body.RecordData.item[i]);
+		}
+		break;
+	  default:
+		break;
+	}
+	return	(p);
+}
+
+extern	void
+ValueAddRecordItem(
+	ValueStruct	*upper,
+	char		*name,
+	ValueStruct	*value)
+{
+	ValueStruct	**item;
+	char		**names;
+
+dbgmsg(">ValueAddRecordItem");
+#ifdef	TRACE
+	printf("name = [%s]\n",name); 
+#endif
+	item = (ValueStruct **)
+		xmalloc(sizeof(ValueStruct *) * ( upper->body.RecordData.count + 1 ) );
+	names = (char **)
+		xmalloc(sizeof(char *) * ( upper->body.RecordData.count + 1 ) );
+	if		(  upper->body.RecordData.count  >  0  ) {
+		memcpy(item, upper->body.RecordData.item, 
+			   sizeof(ValueStruct *) * upper->body.RecordData.count );
+		memcpy(names, upper->body.RecordData.names, 
+			   sizeof(char *) * upper->body.RecordData.count );
+		xfree(upper->body.RecordData.item);
+		xfree(upper->body.RecordData.names);
+	}
+	upper->body.RecordData.item = item;
+	upper->body.RecordData.names = names;
+	item[upper->body.RecordData.count] = value;
+	names[upper->body.RecordData.count] = StrDup(name);
+	if		(  name  !=  NULL  ) {
+		if		(  g_hash_table_lookup(upper->body.RecordData.members,name)  ==  NULL  ) {
+			g_hash_table_insert(upper->body.RecordData.members,
+								(gpointer)names[upper->body.RecordData.count],
+								(gpointer)upper->body.RecordData.count+1);
+		} else {
+			printf("name = [%s]\t",name);
+			Error("name duplicate");
+		}
+	}
+	upper->body.RecordData.count ++;
+dbgmsg("<ValueAddRecordItem");
+}
 
 extern	void
 DestroyPort(

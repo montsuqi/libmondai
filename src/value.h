@@ -169,9 +169,11 @@ typedef	struct _RecordStruct	{
 #define	ValueFixed(v)			(&(v)->body.FixedData)
 #define	ValueObject(v)			(&(v)->body.Object)
 
-extern	GHashTable	*NewNameHash(void);
-extern	GHashTable	*NewNameiHash(void);
-extern	GHashTable	*NewIntHash(void);
+extern	ValueStruct	*NewValue(PacketDataType type);
+extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,
+									   ValueStruct *value);
+extern	ValueStruct	**MakeValueArray(ValueStruct *template, size_t count);
+extern	ValueStruct	*DuplicateValue(ValueStruct *template);
 
 extern	ValueStruct	*GetRecordItem(ValueStruct *value, char *name);
 extern	ValueStruct	*GetArrayItem(ValueStruct *value, int i);
@@ -190,6 +192,8 @@ extern	Numeric		FixedToNumeric(Fixed *xval);
 extern	char		*NumericToFixed(Numeric value, int precision, int scale);
 
 extern	void		InitializeValue(ValueStruct *value);
+extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
+
 extern	char		*ToString(ValueStruct *value);
 
 
@@ -205,8 +209,4 @@ extern	char		*ExpandPath(char *org,char *base);
 extern	void		DecodeString(char *q, char *p);
 extern	void		EncodeString(char *q, char *p);
 
-#define	g_int_hash_table_insert(h,i,d)		g_hash_table_insert((h),(void *)(i),(d))
-#define	g_int_hash_table_foreach(h,p,a)		g_hash_table_foreach((h),(p),(a))
-#define	g_int_hash_table_lookup(h,i)		g_hash_table_lookup((h),(void *)(i))
-#define	g_int_hash_table_remove(h,i)		g_hash_table_remove((h),(void *)(i))
 #endif

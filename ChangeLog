@@ -1,3 +1,7 @@
+2003-05-15  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/hash.c: hash関係関数を別ファイルにした
+
 2003-05-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/LBSfunc.c (LBS_Duplicate): LBSの複写機能追加

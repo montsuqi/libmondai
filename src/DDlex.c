@@ -34,6 +34,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"misc.h"
+#include	"hash.h"
 #include	"value.h"
 #include	"DDlex.h"
 #include	"DDparser.h"

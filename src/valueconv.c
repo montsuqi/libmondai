@@ -38,6 +38,7 @@ copies.
 #include	"types.h"
 #include	"misc.h"
 #include	"value.h"
+#include	"hash.h"
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"

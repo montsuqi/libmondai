@@ -19,21 +19,17 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#ifndef	_INC_DD_PARSER_H
-#define	_INC_DD_PARSER_H
+#ifndef	_INC_HASH_H
+#define	_INC_HASH_H
 #include	<glib.h>
 
-extern	void			 DD_ParserInit(void);
-extern	RecordStruct	*DD_ParserDataDefines(char *name);
-extern	ValueStruct		*ReadRecordDefine(char *name);
+extern	GHashTable	*NewNameHash(void);
+extern	void		DestroySymbols(GHashTable *sym);
+extern	GHashTable	*NewNameiHash(void);
+extern	GHashTable	*NewIntHash(void);
 
-#undef	GLOBAL
-#ifdef	_DD_PARSER
-#define	GLOBAL		/*	*/
-#else
-#define	GLOBAL		extern
-#endif
-
-GLOBAL	char	*RecordDir;
-#undef	GLOBAL
+#define	g_int_hash_table_insert(h,i,d)		g_hash_table_insert((h),(void *)(i),(d))
+#define	g_int_hash_table_foreach(h,p,a)		g_hash_table_foreach((h),(p),(a))
+#define	g_int_hash_table_lookup(h,i)		g_hash_table_lookup((h),(void *)(i))
+#define	g_int_hash_table_remove(h,i)		g_hash_table_remove((h),(void *)(i))
 #endif
