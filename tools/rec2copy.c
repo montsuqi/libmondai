@@ -55,7 +55,9 @@ static	char	namebuff[SIZE_BUFF];
 static	int		Col;
 static	int		is_return = FALSE;
 
-static	void	_COBOL(ValueStruct *val, size_t arraysize, size_t textsize);
+static	CONVOPT	*Conv;
+
+static	void	_COBOL(ValueStruct *val);
 
 static	void
 PutLevel(
@@ -150,9 +152,7 @@ static	int		PrevCount;
 static	char	*PrevSuffix[] = { "X","Y","Z" };
 static	void
 _COBOL(
-	ValueStruct	*val,
-	size_t		arraysize,
-	size_t		textsize)
+	ValueStruct	*val)
 {
 	int		i
 	,		n;
@@ -188,21 +188,21 @@ _COBOL(
 		PutString(buff);
 		break;
 	  case	GL_TYPE_TEXT:
-		sprintf(buff,"PIC X(%d)",textsize);
+		sprintf(buff,"PIC X(%d)",Conv->textsize);
 		PutString(buff);
 		break;
 	  case	GL_TYPE_ARRAY:
 		tmp = val->body.ArrayData.item[0];
 		n = val->body.ArrayData.count;
 		if		(  n  ==  0  ) {
-			n = arraysize;
+			n = Conv->arraysize;
 		}
 		switch	(tmp->type) {
 		  case	GL_TYPE_RECORD:
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
-			_COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp);
 			break;
 		  case	GL_TYPE_ARRAY:
 			sprintf(buff,"OCCURS  %d TIMES",n);
@@ -212,10 +212,10 @@ _COBOL(
 			sprintf(buff,"%s-%s",PrevName,PrevSuffix[PrevCount]);
 			ValueAddRecordItem(dummy,buff,tmp);
 			PrevCount ++;
-			_COBOL(dummy,arraysize,textsize);
+			_COBOL(dummy);
 			break;
 		  default:
-			_COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp);
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
@@ -256,7 +256,7 @@ _COBOL(
 			if		(  tmp->type  !=  GL_TYPE_RECORD  ) {
 				PutTab(4);
 			}
-			_COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp);
 			*name = 0;
 		}
 		level --;
@@ -268,19 +268,15 @@ _COBOL(
 
 static	void
 COBOL(
-	ValueStruct	*val,
-	size_t		arraysize,
-	size_t		textsize)
+	ValueStruct	*val)
 {
 	*namebuff = 0;
-	_COBOL(val,arraysize,textsize);
+	_COBOL(val);
 }
 
 static	void
 SIZE(
-	ValueStruct	*val,
-	size_t		arraysize,
-	size_t		textsize)
+	ValueStruct	*val)
 {
 	char	buff[SIZE_BUFF+1];
 
@@ -289,7 +285,7 @@ SIZE(
 	PutLevel(level,TRUE);
 	PutName("filler");
 	PutTab(8);
-	sprintf(buff,"PIC X(%d)",SizeValue(val,arraysize,textsize));
+	sprintf(buff,"PIC X(%d)",SizeValue(Conv,val));
 	PutString(buff);
 	level --;
 }
@@ -312,9 +308,9 @@ dbgmsg(">MakeFromRecord");
 		}
 		if		(  fFiller  ) {
 			printf(".\n");
-			SIZE(rec->rec,ArraySize,TextSize);
+			SIZE(rec->rec);
 		} else {
-			COBOL(rec->rec,ArraySize,TextSize);
+			COBOL(rec->rec);
 		}
 		printf(".\n");
 	}
@@ -365,7 +361,9 @@ main(
 
 	SetDefault();
 	fl = GetOption(option,argc,argv);
-	SetLanguage(Lang);
+	ConvSetLanguage(Lang);
+	Conv = NewConvOpt();
+	ConvSetSize(Conv,TextSize,ArraySize);
 	if		(  fl  !=  NULL  ) {
 		name = fl->name;
 		ext = GetExt(name);

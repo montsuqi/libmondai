@@ -53,7 +53,7 @@ GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 extern	void	ConvSetLanguage(char *name);
 extern	CONVOPT	*NewConvOpt(void);
 
-#define	ConvSetSize(opt,ts,rs)		(opt->textsize = (ts), (opt)->arraysize = (rs)
+#define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
 #define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
