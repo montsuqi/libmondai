@@ -34,7 +34,7 @@ copies.
 #include	<ctype.h>
 #include	<glib.h>
 #include	<math.h>
-
+#define	_VALUECONV
 #include	"types.h"
 #include	"misc.h"
 #include	"value.h"
@@ -43,7 +43,6 @@ copies.
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"
 #include	"Text_v.h"
-#define	_VALUECONV
 #include	"valueconv.h"
 #include	"debug.h"
 

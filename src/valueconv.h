@@ -57,7 +57,7 @@ extern	CONVOPT	*NewConvOpt(void);
 #define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
-#define	ConvSetUseFileName(opt,f)	(opt)->fName = (en)
+#define	ConvSetUseFileName(opt,f)	(opt)->fName = (f)
 
 #endif
 

@@ -60,7 +60,7 @@ main(
 	CONVOPT	*opt;
 
 	RecordDir = ".";
-	SetLanguage(argv[1]);
+	ConvSetLanguage(argv[1]);
 	DD_ParserInit();
 	if		( ( rec = ReadRecordDefine("testrec") )  ==  NULL  )	{
 		printf("file not found.\n");
