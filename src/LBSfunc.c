@@ -203,7 +203,9 @@ LBS_Emit(
 	}
 	lbs->body[lbs->ptr] = code;
 	lbs->ptr ++;
-	lbs->size ++;
+	if		(  lbs->ptr  >  lbs->size  ) {
+		lbs->size ++;
+	}
 }
 
 extern	void
