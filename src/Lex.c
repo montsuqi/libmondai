@@ -90,6 +90,27 @@ DropLexInfo(void)
 }
 
 static	void
+ExitInclude(void)
+{
+	INCFILE	*back;
+	CURFILE	*info = InfoRoot.curr;
+
+dbgmsg(">ExitInclude");
+	if		(  info->fp  !=  NULL  ) {
+		fclose(info->fp);
+	}
+	back = info->ftop;
+	info->fp = fopen(back->fn,"r");
+	xfree(info->fn);
+	info->fn = back->fn;
+	fsetpos(info->fp,&back->pos);
+	info->cLine = back->cLine;
+	info->ftop = back->next;
+	xfree(back);
+dbgmsg("<ExitInclude");
+}
+
+static	void
 DoInclude(
 	char	*fn)
 {
@@ -117,32 +138,15 @@ dbgmsg(">DoInclude");
 		if		(  ( CURR->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
-	if		(  CURR->fp  ==  NULL  ) {
-		Error("include not found");
-	}
 	CURR->cLine = 1;
 	CURR->fn = StrDup(name);
+	if		(  CURR->fp  ==  NULL  ) {
+		printf("include not found\n");
+		ExitInclude();
+	}
 dbgmsg("<DoInclude");
 }
 
-static	void
-ExitInclude(void)
-{
-	INCFILE	*back;
-	CURFILE	*info = InfoRoot.curr;
-
-dbgmsg(">ExitInclude");
-	fclose(info->fp);
-	back = info->ftop;
-	info->fp = fopen(back->fn,"r");
-	xfree(info->fn);
-	info->fn = back->fn;
-	fsetpos(info->fp,&back->pos);
-	info->cLine = back->cLine;
-	info->ftop = back->next;
-	xfree(back);
-dbgmsg("<ExitInclude");
-}
 
 extern	void
 LexInit(void)
