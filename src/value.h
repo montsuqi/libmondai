@@ -84,6 +84,10 @@ typedef	struct _ValueStruct	{
 			int		apsid;
 			int		oid;
 		}	Object;
+		struct {
+			size_t					count;
+			struct	_ValueStruct	**item;
+		}	ValuesData;
 		char	*AliasName;
 		Fixed	FixedData;
 		int		IntegerData;
@@ -114,6 +118,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_ARRAY			(PacketDataType)0x81
 #define	GL_TYPE_RECORD			(PacketDataType)0x82
 #define	GL_TYPE_ALIAS			(PacketDataType)0x83
+#define	GL_TYPE_VALUES			(PacketDataType)0x84
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
 #define	GL_ATTR_ALIAS			(ValueAttributeType)0x10
@@ -188,6 +193,10 @@ typedef	struct _ValueStruct	{
 
 #define	ValueAliasName(v)		((v)->body.AliasName)
 
+#define	ValueValuesSize(v)		((v)->body.ValuesData.count)
+#define	ValueValuesItems(v)		((v)->body.ValuesData.item)
+#define	ValueValuesItem(v,i)	((v)->body.ValuesData.item[(i)])
+
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,
 									   ValueStruct *value);
@@ -196,6 +205,8 @@ extern	ValueStruct	*DuplicateValue(ValueStruct *template);
 
 extern	ValueStruct	*GetRecordItem(ValueStruct *value, char *name);
 extern	ValueStruct	*GetArrayItem(ValueStruct *value, int i);
+extern	ValueStruct	*GetValuesItem(ValueStruct *value, int i);
+
 extern	ValueStruct	*GetItemLongName(ValueStruct *root, char *longname);
 
 extern	int			FixedToInt(Fixed *xval);

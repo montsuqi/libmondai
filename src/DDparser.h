@@ -23,7 +23,9 @@ copies.
 #define	_INC_DD_PARSER_H
 #include	<glib.h>
 
-extern	void		 DD_ParserInit(void);
+extern	ValueStruct	*ParValueDefine(void);
+extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
+extern	void		DD_ParserInit(void);
 extern	ValueStruct	*DD_ParseValue(char *name);
 extern	ValueStruct	*DD_ParseMain(void);
 

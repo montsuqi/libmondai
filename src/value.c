@@ -102,6 +102,10 @@ dbgmsg(">NewValue");
 	  case	GL_TYPE_ALIAS:
 		ValueAliasName(ret) = NULL;
 		break;
+	  case	GL_TYPE_VALUES:
+		ValueValuesSize(ret) = 0;
+		ValueValuesItems(ret) = NULL;
+		break;
 	  default:
 		xfree(ret);
 		ret = NULL;
@@ -215,6 +219,22 @@ GetArrayItem(
 	if		(	(  i  >=  0                      )
 			&&	(  i  <   ValueArraySize(value)  ) )	{
 		item = ValueArrayItem(value,i);
+	} else {
+		item = NULL;
+	}
+	return	(item);
+}
+
+extern	ValueStruct	*
+GetValuesItem(
+	ValueStruct	*value,
+	int			i)
+{
+	ValueStruct	*item;
+	
+	if		(	(  i  >=  0                      )
+			&&	(  i  <   ValueValuesSize(value)  ) )	{
+		item = ValueValuesItem(value,i);
 	} else {
 		item = NULL;
 	}
@@ -447,6 +467,13 @@ DumpValueStruct(
 				DumpValueStruct(ValueArrayItem(val,i));
 			}
 			break;
+		  case	GL_TYPE_VALUES:
+			printf("values size = %d\n",ValueValuesSize(val));
+			fflush(stdout);
+			for	( i = 0 ; i < ValueValuesSize(val) ; i ++ ) {
+				DumpValueStruct(ValueValuesItem(val,i));
+			}
+			break;
 		  case	GL_TYPE_RECORD:
 			printf("record members = %d\n",ValueRecordSize(val));
 			fflush(stdout);
@@ -514,6 +541,11 @@ dbgmsg(">InitializeValue");
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 			InitializeValue(ValueArrayItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(value) ; i ++ ) {
+			InitializeValue(ValueValuesItem(value,i));
 		}
 		break;
 	  case	GL_TYPE_RECORD:
@@ -624,6 +656,11 @@ ENTER_FUNC;
 			CopyValue(ValueArrayItem(vd,i),ValueArrayItem(vs,i));
 		}
 		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(vs) ; i ++ ) {
+			CopyValue(ValueValuesItem(vd,i),ValueValuesItem(vs,i));
+		}
+		break;
 	  case	GL_TYPE_RECORD:
 		for	( i = 0 ; i < ValueRecordSize(vs) ; i ++ ) {
 			CopyValue(ValueRecordItem(vd,i),ValueRecordItem(vs,i));
@@ -713,6 +750,15 @@ DuplicateValue(
 		for	( i = 0 ; i < ValueRecordSize(template) ; i ++ ) {
 			ValueRecordItem(p,i) = 
 				DuplicateValue(ValueRecordItem(template,i));
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		ValueValuesItems(p) = 
+			(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueValuesSize(template));
+		ValueValuesSize(p) = ValueValuesSize(template);
+		for	( i = 0 ; i < ValueValuesSize(template) ; i ++ ) {
+			ValueValuesItem(p,i) = 
+				DuplicateValue(ValueValuesItem(template,i));
 		}
 		break;
 	  case	GL_TYPE_ALIAS:

@@ -1,3 +1,11 @@
+2003-12-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: SIZE_SQLの定義を除いた(不要)
+
+2003-12-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory.c : 半自動GC付きメモリ管理ルーチン
+
 2003-12-10  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* Pack/UnPackの復帰値をsize_tにした

@@ -63,6 +63,8 @@ copies.
 #define	T_VIRTUAL		(T_YYBASE +13)
 #define	T_ALIAS			(T_YYBASE +14)
 
+static	void	ParValueDefines(ValueStruct *upper);
+
 static	TokenTable	tokentable[] = {
 	{	"bool"		,T_BOOL		},
 	{	"byte"		,T_BYTE		},
@@ -83,9 +85,9 @@ static	TokenTable	tokentable[] = {
 
 static	GHashTable	*Reserved;
 
-static	void
-SetAttribute(
-	ValueStruct	*val,
+extern	void
+SetValueAttribute(
+	ValueStruct			*val,
 	ValueAttributeType	attr)
 {
 	int		i;
@@ -104,12 +106,12 @@ SetAttribute(
 		break;
 	  case	GL_TYPE_ARRAY:
 		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-			SetAttribute(ValueArrayItem(val,i),attr);
+			SetValueAttribute(ValueArrayItem(val,i),attr);
 		}
 		break;
 	  case	GL_TYPE_RECORD:
 		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-			SetAttribute(ValueRecordItem(val,i),attr);
+			SetValueAttribute(ValueRecordItem(val,i),attr);
 		}
 		break;
 	  default:
@@ -133,193 +135,205 @@ typedef	struct _ArrayDimension	{
 	struct	_ArrayDimension	*next;
 }	ArrayDimension;
 
-static	void
-ParValueDefine(
-	ValueStruct	*upper)
+extern	ValueStruct	*
+ParValueDefine(void)
 {
 	size_t		size
 	,			ssize;
-	char		name[SIZE_SYMBOL+1]
-	,			buff[SIZE_LONGNAME+1];
+	char		buff[SIZE_LONGNAME+1];
 	char		*p;
 	ValueStruct	*value
 	,			*array;
-	ValueAttributeType	attr;
 	int			token;
 	ArrayDimension	*next
 	,				*curr;
 
-dbgmsg(">ParValueDefine");
+	SetReserved(Reserved); 
 	value = NULL;
-	while	(  ComToken  ==  T_SYMBOL  ) {
-		attr = ValueAttribute(upper);
-		strcpy(name,ComSymbol);
-		switch	(GetSymbol) {
-		  case	T_ALIAS:
-		  case	'=':
-			value = NewValue(GL_TYPE_ALIAS);
-			p = buff;
-			while	(	(  GetSymbol  !=  ','  )
-					&&	(  ComToken   !=  ';'  ) ) {
-				switch	(ComToken) {
-				  case	T_SYMBOL:
-					p += sprintf(p,"%s",ComSymbol);
-					break;
-				  case	'[':
-					if		(  GetSymbol  ==  T_ICONST  ) {
-						size = ComInt;
-						GetSymbol;
-					} else {
-						size = 0;
-					}
-					if		(  ComToken  ==  ']'  ) {
-						p += sprintf(p,"[%d]",size);
-					} else {
-						Error("invalid sufix");
-					}
-					break;
-				  case	'.':
-					p += sprintf(p,".");
-					break;
-				  default:
-					Error("invalid char in alias");
-					break;
-				}
-				ValueAliasName(value) = StrDup(buff);
-			}
-			break;
-		  case	T_BYTE:
-		  case	T_CHAR:
-		  case	T_NUMBER:
-		  case	T_DBCODE:
-		  case	T_VARCHAR:
-			token = ComToken;
-			size = 0;
-			ssize = 0;
-			if		(  GetSymbol  ==  '('  ) {
+	switch	(GetSymbol) {
+	  case	T_ALIAS:
+	  case	'=':
+		value = NewValue(GL_TYPE_ALIAS);
+		p = buff;
+		while	(	(  GetSymbol  !=  ','  )
+				&&	(  ComToken   !=  ';'  ) ) {
+			switch	(ComToken) {
+			  case	T_SYMBOL:
+				p += sprintf(p,"%s",ComSymbol);
+				break;
+			  case	'[':
 				if		(  GetSymbol  ==  T_ICONST  ) {
 					size = ComInt;
-					if		(  token  ==  T_NUMBER  ) {
-						switch	(GetSymbol) {
-						  case	')':
-							ssize = 0;
-							break;
-						  case	',':
-							if		(  GetSymbol  ==  T_ICONST  ) {
-								ssize = ComInt;
-							} else {
-								Error("field size invalud");
-							}
-							GetSymbol;
-							break;
-						}
-					} else {
-						GetSymbol;
-					}
-					if		(  ComToken  !=  ')'  ) {
-						Error("not closed left paren");
-					}
+					GetSymbol;
 				} else {
-					Error("invalid size definition");
+					size = 0;
 				}
-				GetSymbol;
-			} else {
-				size = 1;
-			}
-			if		(  !CURR->fError  ) {
-				switch	(token) {
-				  case	T_BYTE:
-					value = NewValue(GL_TYPE_BYTE);
-					break;
-				  case	T_CHAR:
-					value = NewValue(GL_TYPE_CHAR);
-					break;
-				  case	T_VARCHAR:
-					value = NewValue(GL_TYPE_VARCHAR);
-					break;
-				  case	T_DBCODE:
-					value = NewValue(GL_TYPE_DBCODE);
-					break;
-				  case	T_NUMBER:
-					value = NewValue(GL_TYPE_NUMBER);
-					break;
-				  default:
-					break;
-				}
-				if		(  value->type  ==  GL_TYPE_NUMBER  ) {
-					ValueFixedLength(value) = size;
-					ValueFixedSlen(value) = ssize;
-					ValueFixedBody(value) = (char *)xmalloc(size + 1);
-					ValueFixedBody(value)[size] = 0;
-					memset(ValueFixedBody(value),'0',size);
+				if		(  ComToken  ==  ']'  ) {
+					p += sprintf(p,"[%d]",size);
 				} else {
-					ValueStringLength(value) = size;
-					ValueStringSize(value) = size+1;
-					ValueString(value) = (char *)xmalloc(ValueStringSize(value));
-					memclear(ValueString(value),ValueStringSize(value));
+					Error("invalid sufix");
 				}
-			}
-			break;
-		  case	T_TEXT:
-			value = NewValue(GL_TYPE_TEXT);
-			GetSymbol;
-			break;
-		  case	T_INT:
-			value = NewValue(GL_TYPE_INT);
-			GetSymbol;
-			break;
-		  case	T_FLOAT:
-			value = NewValue(GL_TYPE_FLOAT);
-			GetSymbol;
-			break;
-		  case	T_BOOL:
-			value = NewValue(GL_TYPE_BOOL);
-			GetSymbol;
-			break;
-		  case	T_OBJECT:
-			value = NewValue(GL_TYPE_OBJECT);
-			GetSymbol;
-			break;
-		  case	'{':
-			value = NewValue(GL_TYPE_RECORD);
-			GetName;
-			ParValueDefine(value);
-			break;
-		  default:
-			value = NULL;
-			Error("not supported");
-			break;
-		}
-		next = NULL;
-		while	(  ComToken  ==  '['  ) {	
-			curr = New(ArrayDimension);
-			if		(  GetSymbol  == T_ICONST  ) {
-				curr->count = ComInt;
-				GetSymbol;
-			} else {
-				curr->count = 0;
-			}
-			curr->next = next;
-			next = curr;
-			if		(  ComToken  !=  ']'  ) {
-				Error("unmatch lbracket");
+				break;
+			  case	'.':
+				p += sprintf(p,".");
+				break;
+			  default:
+				Error("invalid char in alias");
 				break;
 			}
-			GetSymbol;
+			ValueAliasName(value) = StrDup(buff);
 		}
-		for	( curr = next ; curr != NULL ; ) {
-			array = NewValue(GL_TYPE_ARRAY);
-			ValueArraySize(array) = curr->count;
-			if		(  curr->count  >  0  ) {
-				ValueArrayItems(array) = MakeValueArray(value,curr->count);
+		break;
+	  case	T_BYTE:
+	  case	T_CHAR:
+	  case	T_NUMBER:
+	  case	T_DBCODE:
+	  case	T_VARCHAR:
+		token = ComToken;
+		size = 0;
+		ssize = 0;
+		if		(  GetSymbol  ==  '('  ) {
+			if		(  GetSymbol  ==  T_ICONST  ) {
+				size = ComInt;
+				if		(  token  ==  T_NUMBER  ) {
+					switch	(GetSymbol) {
+					  case	')':
+						ssize = 0;
+						break;
+					  case	',':
+						if		(  GetSymbol  ==  T_ICONST  ) {
+							ssize = ComInt;
+						} else {
+							Error("field size invalud");
+						}
+						GetSymbol;
+						break;
+					}
+				} else {
+					GetSymbol;
+				}
+				if		(  ComToken  !=  ')'  ) {
+					Error("not closed left paren");
+				}
 			} else {
-				ValueArrayItems(array) = MakeValueArray(value,1);
+				Error("invalid size definition");
 			}
-			next = curr->next;
-			xfree(curr);
-			curr = next;
-			value = array;
+			GetSymbol;
+		} else {
+			size = 1;
 		}
+		if		(  !CURR->fError  ) {
+			switch	(token) {
+			  case	T_BYTE:
+				value = NewValue(GL_TYPE_BYTE);
+				break;
+			  case	T_CHAR:
+				value = NewValue(GL_TYPE_CHAR);
+				break;
+			  case	T_VARCHAR:
+				value = NewValue(GL_TYPE_VARCHAR);
+				break;
+			  case	T_DBCODE:
+				value = NewValue(GL_TYPE_DBCODE);
+				break;
+			  case	T_NUMBER:
+				value = NewValue(GL_TYPE_NUMBER);
+				break;
+			  default:
+				break;
+			}
+			if		(  value->type  ==  GL_TYPE_NUMBER  ) {
+				ValueFixedLength(value) = size;
+				ValueFixedSlen(value) = ssize;
+				ValueFixedBody(value) = (char *)xmalloc(size + 1);
+				ValueFixedBody(value)[size] = 0;
+				memset(ValueFixedBody(value),'0',size);
+			} else {
+				ValueStringLength(value) = size;
+				ValueStringSize(value) = size+1;
+				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+				memclear(ValueString(value),ValueStringSize(value));
+			}
+		} else {
+			value = NULL;
+		}
+		break;
+	  case	T_TEXT:
+		value = NewValue(GL_TYPE_TEXT);
+		GetSymbol;
+		break;
+	  case	T_INT:
+		value = NewValue(GL_TYPE_INT);
+		GetSymbol;
+		break;
+	  case	T_FLOAT:
+		value = NewValue(GL_TYPE_FLOAT);
+		GetSymbol;
+		break;
+	  case	T_BOOL:
+		value = NewValue(GL_TYPE_BOOL);
+		GetSymbol;
+		break;
+	  case	T_OBJECT:
+		value = NewValue(GL_TYPE_OBJECT);
+		GetSymbol;
+		break;
+	  case	'{':
+		value = NewValue(GL_TYPE_RECORD);
+		GetName;
+		ParValueDefines(value);
+		break;
+	  default:
+		value = NULL;
+		Error("not supported");
+		break;
+	}
+	next = NULL;
+	while	(  ComToken  ==  '['  ) {	
+		curr = New(ArrayDimension);
+		if		(  GetSymbol  == T_ICONST  ) {
+			curr->count = ComInt;
+			GetSymbol;
+		} else {
+			curr->count = 0;
+		}
+		curr->next = next;
+		next = curr;
+		if		(  ComToken  !=  ']'  ) {
+			Error("unmatch lbracket");
+			break;
+		}
+		GetSymbol;
+	}
+	for	( curr = next ; curr != NULL ; ) {
+		array = NewValue(GL_TYPE_ARRAY);
+		ValueArraySize(array) = curr->count;
+		if		(  curr->count  >  0  ) {
+			ValueArrayItems(array) = MakeValueArray(value,curr->count);
+		} else {
+			ValueArrayItems(array) = MakeValueArray(value,1);
+		}
+		next = curr->next;
+		xfree(curr);
+		curr = next;
+		value = array;
+	}
+	return	(value);
+}
+
+static	void
+ParValueDefines(
+	ValueStruct	*upper)
+{
+	ValueAttributeType	attr;
+	ValueStruct			*value;
+	char				name[SIZE_SYMBOL+1];
+
+dbgmsg(">ParValueDefine");
+	while	(  ComToken  ==  T_SYMBOL  ) {
+		strcpy(name,ComSymbol);
+		value = ParValueDefine();
+		attr = ValueAttribute(upper);
 		while	(  ComToken  ==  ','  ) {
 			switch	(GetSymbol) {
 			  case	T_INPUT:
@@ -345,12 +359,12 @@ dbgmsg(">ParValueDefine");
 		}
 		if		(  !CURR->fError  ) {
 			ValueAttribute(value) = GL_ATTR_NULL;
-			SetAttribute(value,attr);
+			SetValueAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
 	}
 	if		(	(  !CURR->fError      )
-			 &&	(  ComToken  ==  '}'  ) ) {
+			&&	(  ComToken  ==  '}'  ) ) {
 		GetSymbol;
 		/*	OK	*/
 	} else {
@@ -391,7 +405,7 @@ dbgmsg(">DD_ParseMain");
 			ret = NewValue(GL_TYPE_RECORD);
 			ValueAttribute(ret) = attr;
 			GetName;
-			ParValueDefine(ret);
+			ParValueDefines(ret);
 			if		(  CURR->fError  ) {
 				ret = NULL;
 			}
