@@ -41,18 +41,6 @@ copies.
 typedef	unsigned char	PacketDataType;
 typedef	unsigned char	ValueAttributeType;
 
-typedef	struct	{
-	char	*protocol;
-	char	*host;
-	char	*port;
-	char	*file;
-}	URL;
-
-typedef	struct {
-	char	*host;
-	char	*port;
-}	Port;
-
 typedef	struct {
 	size_t		flen;
 	size_t		slen;
@@ -199,14 +187,5 @@ extern	char		*ToString(ValueStruct *value);
 
 extern	void		FreeValueStruct(ValueStruct *val);
 extern	void		DumpValueStruct(ValueStruct *val);
-
-extern	void		ParseURL(URL *url, char *str);
-extern	void		DestroyPort(Port *port);
-extern	Port		*ParPort(char *str, int def);
-extern	char		**ParCommandLine(char *line);
-extern	char		*ExpandPath(char *org,char *base);
-
-extern	void		DecodeString(char *q, char *p);
-extern	void		EncodeString(char *q, char *p);
 
 #endif

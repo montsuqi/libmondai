@@ -13,6 +13,7 @@ libmondaiinclude_HEADERS =	\
 	dotCOBOL_v.h	\
 	Native_v.h		\
 	cobolvalue.h	\
+	others.h		\
 	hash.h			\
 	value.h			\
 	valueconv.h		\
@@ -37,6 +38,7 @@ libmondai_la_SOURCES	=			\
 	hash.c			hash.h			\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
+	others.c		others.h		\
 	SQLlex.c		SQLlex.h		\
 	SQLparser.c		SQLparser.h		\
 	DDparser.c		DDparser.h		\
