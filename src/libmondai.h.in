@@ -24,6 +24,7 @@ copies.
 #include	"value.h"
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
+#include	"Native_v.h"
 #include	"cobolvalue.h"
 #include	"valueconv.h"
 #include	"DDparser.h"
