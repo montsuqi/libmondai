@@ -96,7 +96,6 @@ dbgmsg(">NewValue");
 		break;
 	  case	GL_TYPE_ALIAS:
 		ValueAliasName(ret) = NULL;
-		ValueAlias(ret) = NULL;
 		break;
 	  default:
 		xfree(ret);
@@ -439,9 +438,6 @@ DumpValueStruct(
 		  case	GL_TYPE_ALIAS:
 			printf("alias name = [%s]\n",ValueAliasName(val));
 			fflush(stdout);
-			if		(  ValueAlias(val)  !=  NULL  ) {
-				DumpValueStruct(ValueAlias(val));
-			}
 			break;
 		  default:
 			break;

@@ -85,10 +85,7 @@ typedef	struct _ValueStruct	{
 			int		apsid;
 			int		oid;
 		}	Object;
-		struct {
-			char		*name;
-			struct	_ValueStruct	*value;
-		}	Alias;
+		char	*AliasName;
 		Fixed	FixedData;
 		int		IntegerData;
 		Bool	BoolData;
@@ -170,8 +167,7 @@ typedef	struct _ValueStruct	{
 #define	ValueObjectPlace(v)		((v)->body.Object.apsid)
 #define	ValueObjectID(v)		((v)->body.Object.oid)
 
-#define	ValueAliasName(v)		((v)->body.Alias.name)
-#define	ValueAlias(v)			((v)->body.Alias.value)
+#define	ValueAliasName(v)		((v)->body.AliasName)
 
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,

@@ -60,14 +60,15 @@ PushLexInfo(
 		info->ftop = NULL;
 		info->Reserved = res;
 		info->fError = FALSE;
-		info->next = InfoRoot.curr;
 		if		(  path  ==  NULL  ) {
 			path = ".";
 		}
 		info->path = StrDup(path);
 		info->Symbol = (char *)xmalloc(SIZE_SYMBOL+1);
+		info->next = InfoRoot.curr;
 		InfoRoot.curr = info;
 	} else {
+		printf("file not found [%s]\n",name);
 		info = NULL;
 	}
 	return	(info);

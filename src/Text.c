@@ -171,6 +171,7 @@ _CSV_UnPackValue(
 				p = _CSV_UnPackValue(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			printf("invalid flag [%d]\n",value->type);
 			break;
@@ -293,6 +294,7 @@ __CSV_PackValue(
 				p = __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
 		}
@@ -421,6 +423,7 @@ dbgmsg(">_CSV_SizeValue");
 			ret += _CSV_SizeValue(opt,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
 		}
 		break;
+	  case	GL_TYPE_ALIAS:
 	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;
@@ -553,6 +556,7 @@ _RFC822_UnPackValueNoNamed(
 				p = _RFC822_UnPackValueNoNamed(opt,p,ValueRecordItem(value,i),buff);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
 		}
@@ -695,6 +699,7 @@ _RFC822_PackValue(
 									  name+strlen(name),longname,buff);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
 		}
@@ -776,6 +781,7 @@ dbgmsg(">_RFC822_SizeValue");
 									 name+strlen(name),longname);
 		}
 		break;
+	  case	GL_TYPE_ALIAS:
 	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;
@@ -914,6 +920,7 @@ _CGI_PackValue(
 								   name+strlen(name),longname,buff);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
 		}
@@ -980,6 +987,7 @@ dbgmsg(">_CGI_SizeValue");
 			ret += _CGI_SizeValue(opt,ValueRecordItem(value,i),name+strlen(name),longname);
 		}
 		break;
+	  case	GL_TYPE_ALIAS:
 	  case	GL_TYPE_OBJECT:
 	  default:
 		ret = 0;

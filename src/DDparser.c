@@ -121,6 +121,7 @@ ResolveAlias(
 {
 	char		*name;
 	int			i;
+	ValueStruct	*item;
 
 	if		(  val  !=  NULL  ) {
 		switch	(val->type) {
@@ -131,14 +132,21 @@ ResolveAlias(
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-				ResolveAlias(root,ValueRecordItem(val,i));
+				item = ValueRecordItem(val,i);
+				if		(  ValueType(item)  ==  GL_TYPE_ALIAS  ) {
+					name = ValueAliasName(item);
+					if		(  *name  ==  '.'  ) {
+						ValueRecordItem(val,i) = GetItemLongName(root,name+1);
+						xfree(name);
+						xfree(item);
+					}
+					ValueAttribute(ValueRecordItem(val,i)) |= GL_ATTR_ALIAS;
+				} else {
+					ResolveAlias(root,item);
+				}
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
-			name = ValueAliasName(val);
-			if		(  *name  ==  '.'  ) {
-				ValueAlias(val) = GetItemLongName(root,name+1);
-			}
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_CHAR:
@@ -222,7 +230,6 @@ dbgmsg(">ParValueDefine");
 				}
 				ValueAliasName(value) = StrDup(buff);
 			}
-			attr |= GL_ATTR_ALIAS;
 			break;
 		  case	T_BYTE:
 		  case	T_CHAR:
