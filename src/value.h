@@ -64,8 +64,9 @@ typedef	struct {
 
 typedef	struct _ValueStruct	{
 	PacketDataType		type;
-	Bool				fUpdate;
 	ValueAttributeType	attr;
+	char				*str;
+	size_t				asize;
 	union {
 		struct {
 			size_t					count;
@@ -122,6 +123,7 @@ typedef	struct _ValueStruct	{
 #define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x08
 #define	GL_ATTR_INPUT			(ValueAttributeType)0x04
 #define	GL_ATTR_OUTPUT			(ValueAttributeType)0x02
+#define	GL_ATTR_UPDATE			(ValueAttributeType)0x01
 
 #define	GL_ATTR_NIL				(ValueAttributeType)0x80
 #define	CHAR_NIL				0x01
@@ -129,6 +131,7 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
 #define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
 #define	IS_VALUE_ALIAS(v)		(((v)->attr & GL_ATTR_ALIAS) == GL_ATTR_ALIAS)
+#define	IS_VALUE_UPDATE(v)		(((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
 
 #define	GL_OBJ_NULL				0
 #define	GL_OBJ_INACTIVE			-1
@@ -138,11 +141,15 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
-
 #define	ValueType(v)			((v)->type)
+#define	ValueSize(v)			((v)->asize)
+#define	ValueStr(v)				((v)->str)
+
 #define	ValueAttribute(v)		((v)->attr)
 #define	ValueIsNil(v)			((v)->attr |= GL_ATTR_NIL)
 #define	ValueIsNonNil(v)		((v)->attr &= ~GL_ATTR_NIL)
+#define	ValueIsUpdate(v)		((v)->attr |= GL_ATTR_UPDATE)
+#define	ValueIsNotUpdate(v)		((v)->attr &= ~GL_ATTR_UPDATE)
 
 #ifdef	__VALUE_DIRECT
 #define	ValueString(v)			((v)->body.CharData.sval)

@@ -307,14 +307,12 @@ dbgmsg(">ParValueDefine");
 			GetSymbol;
 		}
 		for	( curr = next ; curr != NULL ; ) {
-			array = New(ValueStruct);
-			array->type = GL_TYPE_ARRAY;
-			array->attr = GL_ATTR_NULL;
-			array->body.ArrayData.count = curr->count;
+			array = NewValue(GL_TYPE_ARRAY);
+			ValueArraySize(array) = curr->count;
 			if		(  curr->count  >  0  ) {
-				array->body.ArrayData.item = MakeValueArray(value,curr->count);
+				ValueArrayItems(array) = MakeValueArray(value,curr->count);
 			} else {
-				array->body.ArrayData.item = MakeValueArray(value,1);
+				ValueArrayItems(array) = MakeValueArray(value,1);
 			}
 			next = curr->next;
 			xfree(curr);
@@ -345,7 +343,7 @@ dbgmsg(">ParValueDefine");
 			Error("; missing");
 		}
 		if		(  !CURR->fError  ) {
-			value->attr = GL_ATTR_NULL;
+			ValueAttribute(value) = GL_ATTR_NULL;
 			SetAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}

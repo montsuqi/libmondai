@@ -48,7 +48,8 @@ NativeUnPackValue(
 	ValueStruct	*value)
 {
 	int		i;
-	size_t	size;
+	size_t	size
+	,		len;
 	Bool	fName;
 	PacketDataType	type;
 	ValueAttributeType	attr;
@@ -65,7 +66,7 @@ dbgmsg(">NativeUnPackValue");
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		if		(  type  !=  ValueType(value)  ) {
-			fprintf(stderr,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
+			fprintf(stdout,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 		}
 		ValueAttribute(value) =	( ValueAttribute(value) & ~GL_ATTR_NIL )
 			| ( attr & GL_ATTR_NIL );
@@ -85,20 +86,23 @@ dbgmsg(">NativeUnPackValue");
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(ValueString(value),p,ValueStringLength(value));
-			ValueString(value)[ValueStringLength(value)] = 0;
-			p += ValueStringLength(value);
-			break;
 		  case	GL_TYPE_TEXT:
-			memcpy(&size,p,sizeof(size_t));
-			p += sizeof(size_t);
-			if		(  size  !=  ValueStringLength(value)  ) {
-				xfree(ValueString(value));
-				ValueString(value) = (char *)xmalloc(size+1);
-				ValueStringLength(value) = size;
+			len = *(size_t *)p;
+			size = len + 1;
+			if		(  size  >  ValueStringSize(value)  ) {
+				if		(  ValueString(value)  !=  NULL  ) {
+					xfree(ValueString(value));
+				}
+				ValueStringSize(value) = size;
+				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 			}
-			memcpy(ValueString(value),p,size);
-			p += size;
+			p += sizeof(size_t);
+			memcpy(ValueString(value),p,len);
+			ValueString(value)[len] = 0;
+			p += len;
+			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
+				ValueStringLength(value) = len;
+			}
 			break;
 		  case	GL_TYPE_NUMBER:
 			memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
@@ -153,6 +157,7 @@ NativePackValue(
 {
 	int		i;
 	Bool	fName;
+	size_t	size;
 
 dbgmsg(">NativePackValue");
 	if		(  value  !=  NULL  ) {
@@ -181,14 +186,12 @@ dbgmsg(">NativePackValue");
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,ValueString(value),ValueStringLength(value));
-			p += ValueStringLength(value);
-			break;
 		  case	GL_TYPE_TEXT:
-			*(size_t *)p = ValueStringLength(value);
+			size = strlen(ValueString(value));
+			*(size_t *)p = size;
 			p += sizeof(size_t);
-			memcpy(p,ValueString(value),ValueStringLength(value));
-			p += ValueStringLength(value);
+			memcpy(p,ValueString(value),size);
+			p += size;
 			break;
 		  case	GL_TYPE_NUMBER:
 			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
@@ -258,16 +261,14 @@ dbgmsg(">NativeSizeValue");
 	  case	GL_TYPE_BYTE:
 		ret += ValueByteLength(val);
 		break;
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-		ret += ValueStringLength(val);
-		break;
 	  case	GL_TYPE_NUMBER:
 		ret += ValueFixedLength(val);
 		break;
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		ret = ValueStringLength(val) + sizeof(size_t);
+		ret += strlen(ValueString(val)) + sizeof(size_t);
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret += sizeof(size_t);

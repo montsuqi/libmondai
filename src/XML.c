@@ -47,7 +47,7 @@ typedef struct	{
 	ValueStruct	*root
 	,			*value;
 	char		longname[SIZE_LONGNAME+1];
-	char		*buff;
+	xmlChar		*buff;
 	size_t		size;
 	Bool		fStart;
 	CONVOPT		*opt;
@@ -535,18 +535,19 @@ characters_(
 {
 
 	if		(  ctx->fStart  ) {
-		if		(  ctx->size  <  len*sizeof(xmlChar)  ) {
+		if		(  ctx->size  <  len  ) {
 			xfree(ctx->buff);
-			ctx->buff = (char *)xmalloc((len+1)*sizeof(xmlChar));
-			ctx->size = len*sizeof(xmlChar);
+			ctx->size = ( len + 1 );
+			ctx->buff = (xmlChar *)xmalloc(ctx->size * sizeof(xmlChar));
 		}
 		memcpy(ctx->buff,ch,len*sizeof(xmlChar));
-		ctx->buff[len*sizeof(xmlChar)] = 0;
+		ctx->buff[len] = 0;
 #ifdef	DEBUG
-		printf("characters_[%s]\n",ctx->buff);
+		printf("characters_[%s]\n",(char *)ctx->buff);
 #endif
+		printf("len = [%d:%d]\n",len,strlen((char *)ctx->buff));
 		if		(  ctx->value  !=  NULL  ) {
-			SetValueString(ctx->value,ctx->buff,NULL);
+			SetValueString(ctx->value,(char *)ctx->buff,NULL);
 			ValueIsNonNil(ctx->value);
 		}
 	}

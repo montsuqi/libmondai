@@ -19,10 +19,10 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#define	TEST_VALUE
 #define	CONV_TEST
-#define	XML_TEST
 /*
+#define	TEST_VALUE
+#define	XML_TEST
 */
 
 #define	DEBUG
@@ -146,6 +146,7 @@ main(
 		printf("[%s]\n",ValueToString(e,NULL));
 		printf("[%s]\n",ValueStringPointer(e));
 	}
+	e = GetItemLongName(val,"q");
 	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
@@ -165,14 +166,26 @@ main(
 		printf("[%s]\n",ValueToString(e,NULL));
 		printf("[%s]\n",ValueStringPointer(e));
 	}
+	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
 		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
 		str[i*2] = 0;
 		printf("[%s]\n",str);fflush(stdout);
 		SetValueString(e,str,"euc-jp");
 		printf("[%s]\n",ValueToString(e,"euc-jp"));
-		//		printf("[%s]\n",ValueStringPointer(e));
+		printf("[%s]\n",ValueStringPointer(e));
 	}
+
+	strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
+printf("*\n");fflush(stdout);
+	SetValueString(GetItemLongName(val,"q"),str,"euc-jp");
+	printf("[%s]\n",ValueToString(GetItemLongName(val,"q"),"euc-jp"));
+printf("*\n");fflush(stdout);
+
+	MoveValue(GetItemLongName(val,"p"),GetItemLongName(val,"q"));
+	printf("[%s]\n",ValueToString(GetItemLongName(val,"p"),"euc-jp"));
+printf("*\n");fflush(stdout);
+
 #endif
 	DumpValueStruct(val);
 
@@ -201,6 +214,7 @@ main(
 #endif
 
 #ifdef	CONV_TEST
+
 	printf("***** Native Pack(1) *****\n");
 	ConvSetUseName(opt,FALSE);
 	size =  NativeSizeValue(opt,val);
@@ -216,7 +230,7 @@ main(
 	if		(  ( fp = fopen("test.native1","r") )  ==  NULL  )	exit(1);
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
-	fgets(buff,SIZE_BUFF,fp);
+	fread(buff,SIZE_BUFF,1,fp);
 	fclose(fp);
 	NativeUnPackValue(opt,buff,val);
 	DumpValueStruct(val);
@@ -239,7 +253,7 @@ main(
 	if		(  ( fp = fopen("test.native2","r") )  ==  NULL  )	exit(1);
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
-	fgets(buff,SIZE_BUFF,fp);
+	fread(buff,SIZE_BUFF,1,fp);
 	fclose(fp);
 	NativeUnPackValue(opt,buff,val);
 	DumpValueStruct(val);
@@ -341,7 +355,6 @@ main(
 	printf("%s\n",buff);
 
 	printf("***** end *****\n");
-
 	printf("***** CGI Pack *****\n");
 	if		(  ( fp = fopen("test.CGI","w") )  ==  NULL  )	exit(1);
 	ConvSetRecName(opt,"testrec");
@@ -371,6 +384,7 @@ main(
 	printf("%s\n",buff);
 
 	printf("***** end *****\n");
+
 #endif
 	return	(0);
 }

@@ -54,8 +54,9 @@ NewValue(
 
 dbgmsg(">NewValue");
 	ret = New(ValueStruct);
-	ret->fUpdate = FALSE;
-	ret->attr = GL_ATTR_NULL;
+	ValueAttribute(ret) = GL_ATTR_NULL;
+	ValueStr(ret) = NULL;
+	ValueSize(ret) = 0;
 	ValueType(ret) = type;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
@@ -149,6 +150,9 @@ FreeValueStruct(
 		  case	GL_TYPE_ALIAS:
 		  default:
 			break;
+		}
+		if		(  ValueStr(val)  !=  NULL  ) {
+			xfree(ValueStr(val));
 		}
 		xfree(val);
 	}
@@ -424,9 +428,10 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_TEXT:
-			printf("text(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
-			PrintFixString(ValueToString(val,DUMP_LOCALE),ValueStringLength(val));
-			printf("]\n");
+			printf("text(%d,%d)",ValueStringSize(val),ValueStringLength(val));
+			if		(  !IS_VALUE_NIL(val)  ) {
+				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
+			}
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
@@ -466,7 +471,12 @@ InitializeValue(
 
 dbgmsg(">InitializeValue");
 	if		(  value  ==  NULL  )	return;
-	switch	(value->type) {
+	if		(  ValueStr(value)  !=  NULL  ) {
+		xfree(ValueStr(value));
+	}
+	ValueStr(value) = NULL;
+	ValueSize(value) = 0;
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_INT:
 		ValueInteger(value) = 0;
 		break;
@@ -517,19 +527,47 @@ dbgmsg(">InitializeValue");
 dbgmsg("<InitializeValue");
 }
 
+/*
+ *	moves simple data only
+ */
 extern	void
 MoveValue(
 	ValueStruct	*to,
 	ValueStruct	*from)
 {
 	Fixed	*xval;
+	char	*str;
+	size_t	len;
 
 	switch	(to->type) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
+		str = ValueToString(from,NULL);
+		len = strlen(str);
+		if		(  len + 1  >  ValueStringSize(to)  ) {
+			if		(  ValueString(to)  !=  NULL  ) {
+				xfree(ValueString(to));
+			}
+			ValueStringSize(to) = len + 1;
+			ValueString(to) = (char *)xmalloc(ValueStringSize(to));
+		}
+		memclear(ValueString(to),ValueStringSize(to));
+		strcpy(ValueString(to),str);
+		break;
 	  case	GL_TYPE_TEXT:
-		SetValueString(to,ValueToString(from,NULL),NULL);
+		str = ValueToString(from,NULL);
+		len = strlen(str);
+		if		(  len + 1  >  ValueStringSize(to)  ) {
+			if		(  ValueString(to)  !=  NULL  ) {
+				xfree(ValueString(to));
+			}
+			ValueStringSize(to) = len + 1;
+			ValueString(to) = (char *)xmalloc(ValueStringSize(to));
+		}
+		memclear(ValueString(to),ValueStringSize(to));
+		strcpy(ValueString(to),str);
+		ValueStringLength(to) = len;
 		break;
 	  case	GL_TYPE_NUMBER:
 		xval = ValueToFixed(from);
@@ -551,6 +589,9 @@ MoveValue(
 	}
 }
 
+/*
+ *	copies same structure
+ */
 extern	void
 CopyValue(
 	ValueStruct	*vd,
@@ -580,9 +621,7 @@ dbgmsg(">CopyValue");
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vs));
-		ValueStringLength(vd) = ValueStringLength(vs);
-		ValueStringSize(vd) = ValueStringSize(vs);
+		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vd));
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(vd)  >  0  ) {
@@ -633,7 +672,11 @@ DuplicateValue(
 	int			i;
 
 	p = New(ValueStruct);
-	memcpy(p,template,sizeof(ValueStruct));
+	ValueType(p) = ValueType(template);
+	ValueAttribute(p) = ValueAttribute(template);
+	ValueStr(p) = NULL;
+	ValueSize(p) = 0;
+
 	switch	(ValueType(template)) {
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:

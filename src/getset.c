@@ -181,14 +181,15 @@ ValueToString(
 	ValueStruct	*val,
 	char		*locale)
 {
-	static	char	buff[SIZE_BUFF];
+	char	buff[SIZE_BUFF];
 	char	work[SIZE_NUMBUF+1];
 	char	*p
 	,		*q;
 	int		i;
 	iconv_t	cd;
 	size_t	len
-	,		sob;
+	,		sob
+	,		size;
 
 ENTER_FUNC;
 	memset(buff,0,SIZE_BUFF);
@@ -197,20 +198,20 @@ ENTER_FUNC;
 	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
 		if		(  locale  ==  NULL  ) {
 			memcpy(buff,ValueString(val),ValueStringLength(val));
 		} else {
 			cd = iconv_open(locale,"utf8");
 			p = ValueString(val);
-			len = ValueStringLength(val);
+			len = strlen(p);
 			q = buff;
-			sob = SIZE_BUFF;
+			sob = ValueStringLength(val);
 			iconv(cd,&p,&len,&q,&sob);
 			*q = 0;
 			iconv_close(cd);
 		}
 		break;
-	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(val)  !=  NULL  ) {
@@ -219,7 +220,7 @@ ENTER_FUNC;
 			} else {
 				cd = iconv_open(locale,"utf8");
 				p = ValueString(val);
-				len = ValueStringSize(val);
+				len = strlen(p);
 				q = buff;
 				sob = SIZE_BUFF;
 				iconv(cd,&p,&len,&q,&sob);
@@ -280,8 +281,19 @@ ENTER_FUNC;
 	  default:
 		*buff = 0;
 	}
+	len = strlen(buff) < ValueStringLength(val) ? ValueStringLength(val) : strlen(buff);
+	size = len + 1;
+	if		(  ValueSize(val)  <  size  ) {
+		if		(  ValueStr(val)  !=  NULL  ) {
+			xfree(ValueStr(val));
+		}
+		ValueSize(val) = size;
+		ValueStr(val) = (char *)xmalloc(ValueSize(val));
+		memclear(ValueStr(val),ValueSize(val));
+	}
+	strcpy(ValueStr(val),buff);
 LEAVE_FUNC;
-	return	(buff);
+	return	(ValueStr(val));
 }
 
 static	void
@@ -360,10 +372,11 @@ ENTER_FUNC;
 		  case	GL_TYPE_DBCODE:
 			if		(  locale  !=  NULL  ) {
 				cd = iconv_open("utf8",locale);
-				len = ValueStringLength(val);
-				q = sbuff;
-				sob = SIZE_BUFF;
+				len = ValueStringLength(val) < strlen(str) ?
+					ValueStringLength(val) : strlen(str);
 				istr = str;
+				sob = SIZE_BUFF;
+				q = sbuff;
 				iconv(cd,&istr,&len,&q,&sob);
 				iconv_close(cd);
 				*q = 0;
@@ -385,9 +398,9 @@ ENTER_FUNC;
 			len = strlen(str);
 			if		(  locale  !=  NULL  ) {
 				cd = iconv_open("utf8",locale);
-				q = sbuff;
-				sob = SIZE_BUFF;
 				sib = len;
+				sob = SIZE_BUFF;
+				q = sbuff;
 				iconv(cd,&str,&sib,&q,&sob);
 				iconv_close(cd);
 				*q = 0;

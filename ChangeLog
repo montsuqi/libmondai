@@ -1,3 +1,8 @@
+2003-10-21  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: 文字列の格納方法を変更した(内部表現を直接保存する
+	ため)
+
 2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/getset.c: ValueStructの内部表現をutf8にして、全体的に国際化
