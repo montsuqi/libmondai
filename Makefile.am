@@ -10,7 +10,6 @@ AUTOMAKE_OPTIONS = 1.4
 
 EXTRA_DIST = \
 	TODO \
-	acconfig.h \
 	libmondai.m4
 
 release:

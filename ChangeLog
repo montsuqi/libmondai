@@ -1,3 +1,7 @@
+2003-05-19  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* Makefile.am (EXTRA_DIST): acconfig.h を EXTRA_DIST から削除
+
 2003-05-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/ : options.c, options.h, options.docを削除した(ここにあるべきではない)
