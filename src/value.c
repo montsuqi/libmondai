@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
 
 This module is part of PANDA.
 
@@ -53,7 +53,7 @@ NewValue(
 {
 	ValueStruct	*ret;
 
-dbgmsg(">NewValue");
+ENTER_FUNC;
 	ret = New(ValueStruct);
 	ValueAttribute(ret) = GL_ATTR_NIL;
 	ValueStr(ret) = NULL;
@@ -121,7 +121,7 @@ dbgmsg(">NewValue");
 		ret = NULL;
 		break;
 	}
-dbgmsg("<NewValue");
+LEAVE_FUNC;
 	return	(ret);
 }
 
@@ -421,7 +421,7 @@ GetItemLongName(
 	int		n;
 	ValueStruct	*val;
 
-dbgmsg(">GetItemLongName");
+ENTER_FUNC;
 	if		(  root  ==  NULL  ) { 
 		printf("no root ValueStruct [%s]\n",longname);
 		return	(FALSE);
@@ -458,7 +458,7 @@ dbgmsg(">GetItemLongName");
 			break;
 		}
 	}
-dbgmsg("<GetItemLongName");
+LEAVE_FUNC;
 	return	(val); 
 }
 
@@ -583,7 +583,7 @@ InitializeValue(
 {
 	int		i;
 
-dbgmsg(">InitializeValue");
+ENTER_FUNC;
 	if		(  value  ==  NULL  )	return;
 	if		(  ValueStr(value)  !=  NULL  ) {
 		FreeLBS(ValueStr(value));
@@ -660,7 +660,7 @@ dbgmsg(">InitializeValue");
 	  default:
 		break;
 	}
-dbgmsg("<InitializeValue");
+LEAVE_FUNC;
 }
 
 /*
@@ -911,7 +911,7 @@ ValueAddRecordItem(
 	char		*dname;
 	size_t		nsize;
 
-dbgmsg(">ValueAddRecordItem");
+ENTER_FUNC;
 #ifdef	TRACE
 	printf("name = [%s]\n",name); 
 #endif
@@ -944,6 +944,6 @@ dbgmsg(">ValueAddRecordItem");
 	ValueRecordItems(upper) = items;
 	ValueRecordNames(upper) = names;
 	ValueRecordSize(upper) = nsize;
-dbgmsg("<ValueAddRecordItem");
+LEAVE_FUNC;
 }
 

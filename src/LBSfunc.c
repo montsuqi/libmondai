@@ -306,10 +306,6 @@ ENTER_FUNC;
 			iconv_close(cd);
 		} else {
 #endif
-#if	0
-			LBS_ReserveSize(lbs,isize,FALSE);
-			memcpy(LBS_Body(lbs),str,isize);
-#else
 			while	(  isize  >  0  )	{
 				LBS_Emit(lbs,*str);
 				str ++;
@@ -317,7 +313,6 @@ ENTER_FUNC;
 				osize --;
 				if		(  osize  ==  0  )	break;
 			}
-#endif
 #ifdef	WITH_I18N
 		}
 #endif

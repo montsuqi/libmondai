@@ -4,14 +4,12 @@ bin_PROGRAMS = rec2copy monconv
 
 LDADD 		=	\
 	$(GLIB_LIBS)						\
-	$(FIXED_LIBS)						\
 	$(XML_LIBS)						\
 	$(top_builddir)/src/libmondai.la
 
 INCLUDES 			= 					\
 	-I$(top_srcdir)/src					\
-	$(GLIB_CFLAGS)						\
-	$(FIXED_CFLAGS)
+	$(GLIB_CFLAGS)
 
 DEPENDENCIES	=						\
 	$(top_srcdir)/src/libmondai.la

@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 1989-2003 Ogochan.
+Copyright (C) 1989-2004 Ogochan.
 
 This module is part of PANDA.
 
@@ -30,6 +30,12 @@ Boston, MA  02111-1307, USA.
 
 #include	<stdio.h>
 #include	<stdlib.h>
+#include	<strings.h>
+#ifdef	TRACE
+#include	<glib.h>
+#include	"hash_v.h"
+#endif
+#include	"monstring.h"
 #include	"libmondai.h"
 #include	"memory_v.h"
 #include	"debug.h"
@@ -39,6 +45,7 @@ static	GHashTable	*PoolTable = NULL;
 
 #ifdef	TRACE
 static	size_t	total = 0;
+static	GHashTable	*PoolHash;
 #endif
 
 extern	void	*
@@ -60,6 +67,10 @@ _xmalloc(
 	*area = size;
 	ret = (void *)&area[1];
 	printf("allocate = %p, total = %d\n",ret,(int)total);fflush(stdout);
+	if		(  PoolHash  ==  NULL  ) {
+		PoolHash = NewIntHash();
+	}
+	g_hash_table_insert(PoolHash,ret,ret);
 #else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
@@ -78,6 +89,11 @@ _xfree(
 #ifdef	TRACE
 	size_t	*area;
 
+	if		(  g_hash_table_lookup(PoolHash,p)  ==  NULL  ) {
+		fprintf(stderr,"free duplicate in %s(%d)\n",fn,line);
+		exit(1);
+	}
+	g_hash_table_remove(PoolHash,p);
 	area = (size_t *)p;
 	total -= area[-1];
 	printf("xfree %d byte in %s(%d)\n",(int)area[-1],fn,line);

@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
 
 This module is part of PANDA.
 
@@ -339,7 +339,7 @@ ParValueDefines(
 	ValueStruct			*value;
 	char				name[SIZE_SYMBOL+1];
 
-dbgmsg(">ParValueDefine");
+ENTER_FUNC;
 	while	(  ComToken  ==  T_SYMBOL  ) {
 		strcpy(name,ComSymbol);
 		value = ParValueDefine();
@@ -380,7 +380,7 @@ dbgmsg(">ParValueDefine");
 		printf("token = %d [%c]\n",ComToken,ComToken);
 		Error("syntax error");
 	}
-dbgmsg("<ParValueDefine");
+LEAVE_FUNC;
 }
 
 
@@ -398,7 +398,7 @@ DD_ParseMain(void)
 	ValueStruct	*ret;
 	ValueAttributeType	attr;
 
-dbgmsg(">DD_ParseMain");
+ENTER_FUNC;
 	SetReserved(Reserved); 
 	ret = NULL;
 	if		(  GetSymbol  ==  T_VIRTUAL  ) {
@@ -425,7 +425,7 @@ dbgmsg(">DD_ParseMain");
 	} else {
 		ret = NULL;
 	}
-dbgmsg("<DD_ParseMain");
+LEAVE_FUNC;
 	return	(ret);
 }
 
@@ -435,13 +435,13 @@ DD_ParseValue(
 {
 	ValueStruct	*ret;
 
-dbgmsg(">DD_ParseValue");
+ENTER_FUNC;
 	if		(  PushLexInfo(name,RecordDir,Reserved)  !=  NULL  ) {
 		ret = DD_ParseMain();
 		DropLexInfo();
 	} else {
 		ret = NULL;
 	}
-dbgmsg("<DD_ParseValue");
+LEAVE_FUNC;
 	return	(ret);
 }

@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+Copyright (C) 2001-2004 Ogochan & JMA (Japan Medical Association).
 
 This module is part of PANDA.
 
@@ -58,7 +58,7 @@ NativeUnPackValue(
 	ValueAttributeType	attr;
 	byte	*q;
 
-dbgmsg(">NativeUnPackValue");
+ENTER_FUNC;
 	q = p; 
 	if		(  value  !=  NULL  ) {
 		if		(  opt  !=  NULL  ) { 
@@ -184,7 +184,7 @@ dbgmsg(">NativeUnPackValue");
 			break;
 		}
 	}
-dbgmsg("<NativeUnPackValue");
+LEAVE_FUNC;
 	return	(p-q);
 }
 
@@ -199,7 +199,7 @@ NativePackValue(
 	size_t	size;
 	byte	*pp;
 
-dbgmsg(">NativePackValue");
+ENTER_FUNC;
 	pp = p;
 	if		(  value  !=  NULL  ) {
 		if		(  opt  !=  NULL  ) { 
@@ -283,7 +283,7 @@ dbgmsg(">NativePackValue");
 			break;
 		}
 	}
-dbgmsg("<NativePackValue");
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
@@ -297,7 +297,7 @@ NativeSizeValue(
 	Bool	fName;
 
 	if		(  val  ==  NULL  )	return	(0);
-dbgmsg(">NativeSizeValue");
+ENTER_FUNC;
 	if		(  opt  !=  NULL  ) { 
 		fName = opt->fName;
 	} else {
@@ -350,6 +350,6 @@ dbgmsg(">NativeSizeValue");
 	  default:
 		break;
 	}
-dbgmsg("<NativeSizeValue");
+LEAVE_FUNC;
 	return	(ret);
 }
