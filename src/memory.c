@@ -30,7 +30,7 @@ Boston, MA  02111-1307, USA.
 
 #include	<stdio.h>
 #include	<stdlib.h>
-#include	<strings.h>
+#include	<string.h>
 #ifdef	TRACE
 #include	<glib.h>
 #include	"hash_v.h"

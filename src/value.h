@@ -27,7 +27,7 @@ copies.
 #define	SIZE_OID		4
 
 #define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
-#define	SIZE_BUFF		65538
+#define	SIZE_BUFF		65536
 
 #define	SIZE_SYMBOL			255
 #define	SIZE_NUMBUF			60

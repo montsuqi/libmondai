@@ -23,7 +23,7 @@ Boston, MA  02111-1307, USA.
 #ifndef	_INC_MONDAI_STRING_H
 #define	_INC_MONDAI_STRING_H
 
-#include	<strings.h>
+#include	<string.h>
 #include	"types.h"
 
 #define	memclear(b,s)	memset((b),0,(s))
