@@ -64,7 +64,7 @@ dbgmsg(">NativeUnPackValue");
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		if		(  type  !=  ValueType(value)  ) {
-			fprintf(stderr,"unmatch type.\n");
+			fprintf(stdout,"unmatch type [%X].\n",(int)type);
 		}
 		ValueAttribute(value) =	( ValueAttribute(value) & ~GL_ATTR_NIL )
 			| ( attr & GL_ATTR_NIL );

@@ -140,8 +140,9 @@ main(
 	buff = xmalloc(SIZE_BUFF);
 	printf("***** XML Pack *****\n");
 	ConvSetRecName(opt,"testrec");
-	ConvSetIndent(opt,FALSE);
-	ConvSetType(opt,TRUE);
+	ConvSetIndent(opt,TRUE);
+	//ConvSetIndent(opt,FALSE);
+	ConvSetType(opt,FALSE);
 	XML_PackValue(opt,buff,val);
 	if		(  ( fp = fopen("test.xml","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
@@ -152,6 +153,7 @@ main(
 	InitializeValue(val);
 	XML_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
+	printf("********************\n");
 #endif
 
 #ifdef	CONV_TEST

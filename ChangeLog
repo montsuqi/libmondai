@@ -1,3 +1,7 @@
+2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: フィールド名変更(XMLのタグに合わせる)
+
 2003-10-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/XML.c: XMLに対応(正しく動くが不完全)

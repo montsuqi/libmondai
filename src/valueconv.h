@@ -41,7 +41,7 @@ typedef	struct {
 typedef	struct {
 	char	*name;
 	char	*fsep;
-	char	*rsep;
+	char	*bsep;
 	byte	*(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 	byte	*(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
