@@ -403,7 +403,7 @@ ENTER_FUNC;
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
 					istr = str;
-					sib = len;
+					sib = len + 1;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						*q = 0;
@@ -420,7 +420,7 @@ ENTER_FUNC;
 					memclear(ValueString(val),ValueStringSize(val));
 				};
 				iconv_close(cd);
-				*q = 0;
+				len = ValueStringSize(val) - sob - 1;
 			} else {
 #endif
 				size = len + 1;
