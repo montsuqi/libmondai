@@ -406,128 +406,139 @@ GetExt(
 }
 
 extern	RecordStruct	*
-DD_ParserDataDefines(
+DD_Parse(
+	FILE	*fp,
 	char	*name)
 {
-	FILE	*fp;
 	RecordStruct	*ret;
-	struct	stat	stbuf;
 	int		ix
 	,		pcount;
 	PathStruct		**path;
 	LargeByteString	**ops;
 
+	DD_FileName = StrDup(name);
+	DD_cLine = 1;
+	DD_File = fp;
+	ret = New(RecordStruct);
+	ret->rec = NULL;
+	ret->name = NULL;
+	if		(  !stricmp(GetExt(name),".db")  ) {
+		ret->type = RECORD_DB;
+		ret->opt.db = InitDB_Struct();
+	} else {
+		ret->type = RECORD_NULL;
+	}
+	while	(  	GetSymbol  !=  T_EOF  ) {
+		switch	(DD_Token) {
+		  case	T_SYMBOL:
+			ret->name = StrDup(DD_ComSymbol);
+			if		(  GetSymbol  == '{'  ) {
+				ret->rec = NewValue(GL_TYPE_RECORD);
+				ret->rec->attr = GL_ATTR_NULL;
+				GetName;
+				ParValue(ret->rec);
+			} else {
+				Error("syntax error");
+			}
+			break;
+		  case	T_PRIMARY:
+			dbgmsg("primary");
+			if		(  ret->type  ==  RECORD_NULL  ) {
+				ret->type = RECORD_DB;
+				ret->opt.db = InitDB_Struct();
+			}
+			if		(  GetSymbol  == '{'  ) {
+				ret->opt.db = ParKey(ret->opt.db);
+				if		(  GetSymbol  !=  ';'  ) {
+					Error("; missing");
+				}
+			} else {
+				Error("syntax error");
+			}
+			break;
+		  case	T_PATH:
+			dbgmsg("path");
+			if		(  GetName  !=  T_SYMBOL  ) {
+				Error("path name invalid");
+			}
+			pcount = ret->opt.db->pcount;
+			path = (PathStruct **)xmalloc(sizeof(PathStruct *) * (pcount + 1));
+			if		(  pcount  >  0  ) {
+				memcpy(path,ret->opt.db->path,(sizeof(PathStruct *) * pcount));
+				xfree(ret->opt.db->path);
+			}
+			path[pcount] = InitPathStruct();
+			path[pcount]->name = StrDup(DD_ComSymbol);
+			g_hash_table_insert(ret->opt.db->paths,path[pcount]->name,(void *)(pcount+1));
+			ret->opt.db->pcount ++;
+			ret->opt.db->path = path;
+			if		(  GetSymbol  !=  '{'  ) {
+				Error("{ missing");
+			}
+			while	(  GetName  ==  T_SYMBOL  ) {
+				if		(  ( ix = (int)g_hash_table_lookup(
+								 path[pcount]->opHash,DD_ComSymbol) )  ==  0  ) {
+					ix = path[pcount]->ocount;
+					ops = (LargeByteString **)xmalloc(sizeof(LargeByteString *) * ( ix + 1 ));
+					memcpy(ops,path[pcount]->ops,(sizeof(LargeByteString *) * ix));
+					xfree(path[pcount]->ops);
+					path[pcount]->ops = ops;
+					g_hash_table_insert(path[pcount]->opHash,
+										StrDup(DD_ComSymbol),
+										(gpointer)(ix + 1));
+					path[pcount]->ocount ++;
+				} else {
+					ix --;
+				}
+				if		(  GetSymbol  == '{'  ) {
+					path[pcount]->ops[ix] = ParSQL(ret);
+					if		(  GetSymbol  !=  ';'  ) {
+						Error("; missing");
+					}
+				} else {
+					Error("{ missing");
+				}
+			}
+			if		(  DD_Token  ==  '}'  ) {
+				if		(  GetSymbol  !=  ';'  ) {
+					Error("; missing");
+				}
+			} else {
+				Error("} missing");
+			}
+			break;
+		  default:
+			Error("syntax error");
+			printf("token = [%X]\n",DD_Token);
+			break;
+		}
+	}
+
+	if		(  fDD_Error  ) {
+		FreeValueStruct(ret->rec);
+		if		(  ret->name  !=  NULL ) {
+			xfree(ret->name);
+		}
+		xfree(ret);
+		ret = NULL;
+	}
+	return	(ret);
+}
+
+extern	RecordStruct	*
+DD_ParserDataDefines(
+	char	*name)
+{
+	FILE	*fp;
+	struct	stat	stbuf;
+	RecordStruct	*ret;
+
 dbgmsg(">ParserDataDefines");
 	if		(  stat(name,&stbuf)  ==  0  ) { 
 		fDD_Error = FALSE;
-
 		if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
-			DD_FileName = StrDup(name);
-			DD_cLine = 1;
-			DD_File = fp;
-			ret = New(RecordStruct);
-			ret->rec = NULL;
-			ret->name = NULL;
-			if		(  !stricmp(GetExt(name),".db")  ) {
-				ret->type = RECORD_DB;
-				ret->opt.db = InitDB_Struct();
-			} else {
-				ret->type = RECORD_NULL;
-			}
-			while	(  	GetSymbol  !=  T_EOF  ) {
-				switch	(DD_Token) {
-				  case	T_SYMBOL:
-					ret->name = StrDup(DD_ComSymbol);
-					if		(  GetSymbol  == '{'  ) {
-						ret->rec = NewValue(GL_TYPE_RECORD);
-						ret->rec->attr = GL_ATTR_NULL;
-						GetName;
-						ParValue(ret->rec);
-					} else {
-						Error("syntax error");
-					}
-					break;
-				  case	T_PRIMARY:
-					dbgmsg("primary");
-					if		(  ret->type  ==  RECORD_NULL  ) {
-						ret->type = RECORD_DB;
-						ret->opt.db = InitDB_Struct();
-					}
-					if		(  GetSymbol  == '{'  ) {
-						ret->opt.db = ParKey(ret->opt.db);
-						if		(  GetSymbol  !=  ';'  ) {
-							Error("; missing");
-						}
-					} else {
-						Error("syntax error");
-					}
-					break;
-				  case	T_PATH:
-					dbgmsg("path");
-					if		(  GetName  !=  T_SYMBOL  ) {
-						Error("path name invalid");
-					}
-					pcount = ret->opt.db->pcount;
-					path = (PathStruct **)xmalloc(sizeof(PathStruct *) * (pcount + 1));
-					if		(  pcount  >  0  ) {
-						memcpy(path,ret->opt.db->path,(sizeof(PathStruct *) * pcount));
-						xfree(ret->opt.db->path);
-					}
-					path[pcount] = InitPathStruct();
-					path[pcount]->name = StrDup(DD_ComSymbol);
-					g_hash_table_insert(ret->opt.db->paths,path[pcount]->name,(void *)(pcount+1));
-					ret->opt.db->pcount ++;
-					ret->opt.db->path = path;
-					if		(  GetSymbol  !=  '{'  ) {
-						Error("{ missing");
-					}
-					while	(  GetName  ==  T_SYMBOL  ) {
-						if		(  ( ix = (int)g_hash_table_lookup(
-										 path[pcount]->opHash,DD_ComSymbol) )  ==  0  ) {
-							ix = path[pcount]->ocount;
-							ops = (LargeByteString **)xmalloc(sizeof(LargeByteString *) * ( ix + 1 ));
-							memcpy(ops,path[pcount]->ops,(sizeof(LargeByteString *) * ix));
-							xfree(path[pcount]->ops);
-							path[pcount]->ops = ops;
-							g_hash_table_insert(path[pcount]->opHash,
-												StrDup(DD_ComSymbol),
-												(gpointer)(ix + 1));
-							path[pcount]->ocount ++;
-						} else {
-							ix --;
-						}
-						if		(  GetSymbol  == '{'  ) {
-							path[pcount]->ops[ix] = ParSQL(ret);
-							if		(  GetSymbol  !=  ';'  ) {
-								Error("; missing");
-							}
-						} else {
-							Error("{ missing");
-						}
-					}
-					if		(  DD_Token  ==  '}'  ) {
-						if		(  GetSymbol  !=  ';'  ) {
-							Error("; missing");
-						}
-					} else {
-						Error("} missing");
-					}
-					break;
-				  default:
-					Error("syntax error");
-					printf("token = [%X]\n",DD_Token);
-					break;
-				}
-			}
-			fclose(DD_File);
-			if		(  fDD_Error  ) {
-				FreeValueStruct(ret->rec);
-				if		(  ret->name  !=  NULL ) {
-					xfree(ret->name);
-				}
-				xfree(ret);
-				ret = NULL;
-			}
+			ret = DD_Parse(fp,name);
+			fclose(fp);
 		} else {
 			ret = NULL;
 		}

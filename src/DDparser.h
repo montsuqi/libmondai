@@ -24,6 +24,7 @@ copies.
 #include	<glib.h>
 
 extern	void			 DD_ParserInit(void);
+extern	RecordStruct	*DD_Parse(FILE *fp, char *name);
 extern	RecordStruct	*DD_ParserDataDefines(char *name);
 extern	ValueStruct		*ReadRecordDefine(char *name);
 
