@@ -22,6 +22,8 @@ copies.
 #ifndef	_INC_VALUE_H
 #define	_INC_VALUE_H
 
+#include	<stdint.h>
+
 #define	SIZE_OID		4
 
 #define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
@@ -48,20 +50,9 @@ copies.
 
 typedef	unsigned char	PacketDataType;
 typedef	unsigned char	ValueAttributeType;
+typedef	uint64_t		MonObjectType;
 
-typedef	struct {
-	unsigned int	el[SIZE_OID/sizeof(unsigned int)];
-}	OidType;
-
-typedef	struct {
-	int		source;
-	OidType	id;
-}	MonObjectType;
-
-#define	ObjectID(obj)		((obj)->id.el[0])
-#define	ObjectSource(obj)	((obj)->source)
-
-#define	IS_OBJECT_NULL(obj)	(((obj)->source ==  0) && ((obj)->id.el[0] == 0))
+#define	IS_OBJECT_NULL(obj)	((obj) ==  0)
 
 typedef	struct {
 	size_t		flen;
@@ -149,7 +140,6 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_UPDATE(v)		(((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
 
 #define	GL_OBJ_NULL				0
-#define	GL_OBJ_INACTIVE			-1
 
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
 #define	IS_VALUE_NUMERIC(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
@@ -200,9 +190,7 @@ typedef	struct _ValueStruct	{
 #define	ValueRecordName(v,i)	((v)->body.RecordData.names[(i)])
 #define	ValueRecordMembers(v)	((v)->body.RecordData.members)
 
-#define	ValueObject(v)			(&(v)->body.Object)
-#define	ValueObjectSource(v)	((v)->body.Object.source)
-#define	ValueObjectID(v)		((v)->body.Object.id)
+#define	ValueObject(v)			((v)->body.Object)
 
 #define	ValueAliasName(v)		((v)->body.AliasName)
 

@@ -289,12 +289,8 @@ ENTER_FUNC;
 			LBS_EmitString(ValueStr(val),work);
 			break;
 		  case	GL_TYPE_OBJECT:
-			sprintf(work,"%d",ValueObjectSource(val));
+			sprintf(work,"%lld",ValueObject(val));
 			LBS_EmitString(ValueStr(val),work);
-			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
-				sprintf(work,"_%u",ValueObjectID(val).el[i]);
-				LBS_EmitString(ValueStr(val),work);
-			}
 			break;
 		  case	GL_TYPE_FLOAT:
 			sprintf(work,"%g",ValueFloat(val));
@@ -509,16 +505,12 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
-			strcpy(buff,str);
-			q = strchr(buff,'_');
-			*q = 0;
-			ValueObjectSource(val) = atoi(buff);
-			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
-				p = q + 1;
-				if		(  ( q = strchr(p,'_') )  !=  NULL  ) {
-					*q = 0;
+			ValueObject(val) = 0;
+			for	( ; slen > 0 ; slen -- )	{
+				if		(  isdigit(*str)  )	{
+					ValueObject(val) = ValueObject(val) * 10 + ( *str - '0' );
 				}
-				ValueObjectID(val).el[i] = (unsigned int)atol(p);
+				str ++;
 			}
 			rc = TRUE;
 			break;
@@ -646,6 +638,10 @@ SetValueInteger(
 			break;
 		  case	GL_TYPE_BOOL:
 			ValueBool(val) = ( ival == 0 ) ? FALSE : TRUE;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObject(val) = ival;
 			rc = TRUE;
 			break;
 		  default:
@@ -937,9 +933,9 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			if		(  str  !=  NULL  ) {
-				memcpy(ValueObject(val),str,sizeof(MonObjectType));
+				memcpy(&ValueObject(val),str,sizeof(MonObjectType));
 			} else {
-				memclear(ValueObject(val),sizeof(MonObjectType));
+				ValueObject(val) = 0;
 			}
 			rc = TRUE;
 			break;
@@ -1014,7 +1010,7 @@ ENTER_FUNC;
 				break;
 			  case	GL_TYPE_OBJECT:
 				LBS_ReserveSize(ValueStr(val),sizeof(MonObjectType),FALSE);
-				memcpy(ValueStrBody(val),ValueObject(val),sizeof(MonObjectType));
+				memcpy(ValueStrBody(val),&ValueObject(val),sizeof(MonObjectType));
 				break;
 			  case	GL_TYPE_FLOAT:
 				LBS_ReserveSize(ValueStr(val),sizeof(double),FALSE);

@@ -88,8 +88,7 @@ dbgmsg(">NewValue");
 		ValueBool(ret) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectSource(ret) = 0;
-		memclear(&ValueObjectID(ret),sizeof(ValueObjectID(ret)));
+		ValueObject(ret) = 0;
 		break;
 	  case	GL_TYPE_RECORD:
 		ValueRecordSize(ret) = 0;
@@ -480,7 +479,6 @@ DumpValueStruct(
 	ValueStruct	*val)
 {
 	int		i;
-	byte	*p;
 
 	if		(  val  ==  NULL  )	{
 		printf("null value\n");
@@ -543,12 +541,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
-			printf("object [%d_",ValueObjectSource(val));
-			p = (byte *)&ValueObjectID(val);
-			for	( i = 0 ; i < sizeof(ValueObjectID(val)) ; i ++ , p ++ ) {
-				printf("%02X",(int)*p);
-			}
-			printf("]\n");
+			printf("object [%lld]\n",ValueObject(val));
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -618,7 +611,7 @@ dbgmsg(">InitializeValue");
 		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		memclear(ValueObject(value),sizeof(MonObjectType));
+		ValueObject(value) = 0;
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -761,8 +754,7 @@ ENTER_FUNC;
 		ValueBool(vd) = ValueBool(vs);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectSource(vd) = ValueObjectSource(vs);
-		ValueObjectID(vd) = ValueObjectID(vs);
+		ValueObject(vd) = ValueObject(vs);
 		break;
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_CHAR:
@@ -877,8 +869,7 @@ DuplicateValue(
 		ValueBool(p) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectSource(p) = 0;
-		memclear(&ValueObjectID(p),sizeof(OidType));
+		ValueObject(p) = 0;
 		break;
 	  case	GL_TYPE_RECORD:
 		/*	share name table		*/

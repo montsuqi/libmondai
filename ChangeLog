@@ -1,3 +1,7 @@
+2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: MonObjectTypeをlonglongにした
+
 2004-06-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* tools/option.c (GetOption): ヘルプメッセージの強化(ちょっとだけ)

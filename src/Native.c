@@ -148,12 +148,8 @@ dbgmsg(">NativeUnPackValue");
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
-			if		(  ( ValueObjectSource(value) = *(int *)p )  ==  GL_OBJ_INACTIVE  ) {
-				ValueIsNil(value);
-			}
-			p += sizeof(int);
-			ValueObjectID(value) = *(OidType *)p;
-			p += sizeof(OidType);
+			ValueObject(value) = *(MonObjectType *)p;
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArraySize(value) = *(size_t *)p;
@@ -259,14 +255,8 @@ dbgmsg(">NativePackValue");
 			p += size;
 			break;
 		  case	GL_TYPE_OBJECT:
-			if		(  IS_VALUE_NIL(value)  ) {
-				*(int *)p = GL_OBJ_INACTIVE;
-			} else {
-				*(int *)p = ValueObjectSource(value);
-			}
-			p += sizeof(int);
-			*(OidType *)p = ValueObjectID(value);
-			p += sizeof(OidType);
+			*(MonObjectType *)p = ValueObject(value);
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			*(size_t *)p = ValueArraySize(value);
@@ -339,7 +329,7 @@ dbgmsg(">NativeSizeValue");
 		ret += sizeof(size_t) + sizeof(size_t) + ValueStringSize(val);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret += sizeof(*ValueObject(val));
+		ret += sizeof(MonObjectType);
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret += sizeof(size_t);

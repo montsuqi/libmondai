@@ -150,10 +150,8 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectSource(value) = *(int *)p;
-			p += sizeof(int);
-			ValueObjectID(value) = *(OidType *)p;
-			p += sizeof(OidType);
+			ValueObject(value) = *(MonObjectType *)p;
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -235,10 +233,8 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(int *)p = ValueObjectSource(value);
-			p += sizeof(int);
-			*(OidType *)p = ValueObjectID(value);
-			p += sizeof(OidType);
+			*(MonObjectType *)p = ValueObject(value);
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -293,7 +289,7 @@ dbgmsg(">dotCOBOL_SizeValue");
 		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret = sizeof(*ValueObject(value));
+		ret = sizeof(MonObjectType);
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  ValueArraySize(value)  >  0  ) {

@@ -113,10 +113,8 @@ ENTER_FUNC;
 			p ++;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectSource(value) = *(int *)p;
-			p += sizeof(int);
-			ValueObjectID(value) = *(OidType *)p;
-			p += sizeof(OidType);
+			ValueObject(value) = *(MonObjectType *)p;
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(ValueByte(value),p,ValueByteLength(value));
@@ -235,10 +233,8 @@ ENTER_FUNC;
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(int *)p = ValueObjectSource(value);
-			p += sizeof(int);
-			*(OidType *)p = ValueObjectID(value);
-			p += sizeof(OidType);
+			*(MonObjectType *)p = ValueObject(value);
+			p += sizeof(MonObjectType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -293,7 +289,7 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret = sizeof(*ValueObject(value));
+		ret = sizeof(MonObjectType);
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  value->body.ArrayData.count  >  0  ) {
