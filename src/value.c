@@ -44,6 +44,8 @@ copies.
 #include	"hash.h"
 #include	"debug.h"
 
+#define	DUMP_LOCALE		"euc-jp"
+
 extern	ValueStruct	*
 NewValue(
 	PacketDataType	type)
@@ -396,13 +398,18 @@ DumpValueStruct(
 			break;
 		  case	GL_TYPE_CHAR:
 			printf("char(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
-			PrintFixString(ValueString(val),ValueStringLength(val));
+			if		(  !IS_VALUE_NIL(val)  ) {
+				PrintFixString(ValueToString(val,DUMP_LOCALE),ValueStringLength(val));
+			}
 			printf("]\n");
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_VARCHAR:
-			printf("varchar(%d,%d) [%s]\n",ValueStringSize(val),ValueStringLength(val),
-				   ValueString(val));
+			printf("varchar(%d,%d)",ValueStringSize(val),ValueStringLength(val));
+			if		(  !IS_VALUE_NIL(val)  ) {
+				printf(" [%s]",ValueToString(val,DUMP_LOCALE));
+			}
+			printf("\n");
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_DBCODE:
@@ -418,7 +425,7 @@ DumpValueStruct(
 			break;
 		  case	GL_TYPE_TEXT:
 			printf("text(%d,%d) [",ValueStringSize(val),ValueStringLength(val));
-			PrintFixString(ValueString(val),ValueStringLength(val));
+			PrintFixString(ValueToString(val,DUMP_LOCALE),ValueStringLength(val));
 			printf("]\n");
 			fflush(stdout);
 			break;
@@ -522,7 +529,7 @@ MoveValue(
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		SetValueString(to,ValueToString(from));
+		SetValueString(to,ValueToString(from,NULL),NULL);
 		break;
 	  case	GL_TYPE_NUMBER:
 		xval = ValueToFixed(from);

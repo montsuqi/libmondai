@@ -1,5 +1,8 @@
 2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
+	* src/getset.c: ValueStructの内部表現をutf8にして、全体的に国際化
+	した(utf8がベストかどうかはわからじ)
+
 	* src/debug.h: pandaのものを持って来た(こっちが便利)
 
 2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>

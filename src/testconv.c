@@ -19,6 +19,7 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+#define	TEST_VALUE
 #define	CONV_TEST
 #define	XML_TEST
 /*
@@ -59,7 +60,7 @@ copies.
 
 #include	"debug.h"
 
-
+static	char	*locale = "EUC-JP";
 extern	int
 main(
 	int		argc,
@@ -89,15 +90,15 @@ main(
 	}
 
 	/*	set	*/
-	SetValueString(GetItemLongName(val,"a"),"aaa");
-	SetValueString(GetItemLongName(val,"b"),"bb");
-	SetValueString(GetItemLongName(val,"g"),"NIL");
+	SetValueString(GetItemLongName(val,"a"),"aaa",locale);
+	SetValueString(GetItemLongName(val,"b"),"bb",locale);
+	SetValueString(GetItemLongName(val,"g"),"NIL",locale);
 	ValueAttribute(GetItemLongName(val,"g")) |= GL_ATTR_NIL;
 
-	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop");
-	SetValueString(GetItemLongName(val,"m"),"$B4A;z$rF~$l$?(B");
-	SetValueString(GetItemLongName(val,"n"),"200.003");
-	SetValueString(GetItemLongName(val,"c.d"),"d");
+	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop",locale);
+	SetValueString(GetItemLongName(val,"m"),"´Á»ú¤òÆþ¤ì¤¿",locale);
+	SetValueString(GetItemLongName(val,"n"),"200.003",NULL);
+	SetValueString(GetItemLongName(val,"c.d"),"d",locale);
 	SetValueInteger(GetItemLongName(val,"c.e"),100);
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"c.g")) ; i ++ ) {
 		sprintf(name,"c.g[%d].h",i);
@@ -107,23 +108,23 @@ main(
 			*p = '0' + ( j % 10 );
 		}
 		sprintf(name,"c.g[%d].i",i);
-		SetValueString(GetItemLongName(val,name),str);
+		SetValueString(GetItemLongName(val,name),str,locale);
 		sprintf(name,"c.g[%d].j",i);
-		SetValueString(GetItemLongName(val,name),str);
+		SetValueString(GetItemLongName(val,name),str,locale);
 	}
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"f")) ; i ++ ) {
 		sprintf(name,"f[%d].d",i);
-		SetValueString(GetItemLongName(val,name),"d");
+		SetValueString(GetItemLongName(val,name),"d",locale);
 		sprintf(name,"f[%d].e",i);
-		SetValueString(GetItemLongName(val,name),"e");
+		SetValueString(GetItemLongName(val,name),"e",locale);
 		sprintf(name,"f[%d].g",i);
 		e = GetItemLongName(val,name);
 		for	( j = 0 ; j < ValueArraySize(e) ; j ++ ) {
 			sprintf(str,"%d%d",i,j);
 			sprintf(name,"f[%d].g[%d].h",i,j);
-			SetValueString(GetItemLongName(val,name),str);
+			SetValueString(GetItemLongName(val,name),str,locale);
 			sprintf(name,"f[%d].g[%d].i",i,j);
-			SetValueString(GetItemLongName(val,name),str);
+			SetValueString(GetItemLongName(val,name),str,locale);
 			sprintf(name,"f[%d].g[%d].j",i,j);
 			if		(  j % 2  ==  1  ) {
 				SetValueBool(GetItemLongName(val,name),TRUE);
@@ -132,10 +133,52 @@ main(
 			}
 		}
 	}
-	DumpValueStruct(val);
-	opt = NewConvOpt();
-	ConvSetLocale(opt,"iso-2022-jp");
 
+#ifdef	TEST_VALUE
+	e = GetItemLongName(val,"q");
+	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
+		p = str;
+		for	( j = 0 ; j < i ; j ++ ) {
+			*p ++= j + '@';
+		}
+		*p = 0;
+		SetValueString(e,str,NULL);
+		printf("[%s]\n",ValueToString(e,NULL));
+		printf("[%s]\n",ValueStringPointer(e));
+	}
+	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
+		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
+		str[i*2] = 0;
+		printf("[%s]\n",str);fflush(stdout);
+		SetValueString(e,str,"euc-jp");
+		printf("[%s]\n",ValueToString(e,"euc-jp"));
+		//		printf("[%s]\n",ValueStringPointer(e));
+	}
+	e = GetItemLongName(val,"m");
+	for	( i = 0 ; i < 20 ; i ++ ) {
+		p = str;
+		for	( j = 0 ; j < i ; j ++ ) {
+			*p ++= j + '@';
+		}
+		*p = 0;
+		SetValueString(e,str,NULL);
+		printf("[%s]\n",ValueToString(e,NULL));
+		printf("[%s]\n",ValueStringPointer(e));
+	}
+	for	( i = 0 ; i < 20 ; i ++ ) {
+		strcpy(str,"£±£²£³£´£µ£¶£·£¸£¹£°£±£²£³£´£µ£¶£·£¸£¹£°");
+		str[i*2] = 0;
+		printf("[%s]\n",str);fflush(stdout);
+		SetValueString(e,str,"euc-jp");
+		printf("[%s]\n",ValueToString(e,"euc-jp"));
+		//		printf("[%s]\n",ValueStringPointer(e));
+	}
+#endif
+	DumpValueStruct(val);
+
+	opt = NewConvOpt();
+	ConvSetLocale(opt,"shift-jis");
+	ConvSetLocale(opt,"euc-jp");
 #ifdef	XML_TEST
 	buff = xmalloc(SIZE_BUFF);
 	printf("***** XML Pack *****\n");
@@ -152,6 +195,7 @@ main(
 	printf("********************\n");
 	InitializeValue(val);
 	XML_UnPackValue(opt,buff,val);
+	printf("********************\n");
 	DumpValueStruct(val);
 	printf("********************\n");
 #endif

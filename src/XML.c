@@ -50,6 +50,7 @@ typedef struct	{
 	char		*buff;
 	size_t		size;
 	Bool		fStart;
+	CONVOPT		*opt;
 }	ValueContext;
 #define	NextName(ctx)	(((ctx)->longname)+strlen((ctx)->longname))
 
@@ -82,6 +83,7 @@ XML_Encode(
 	char	*str,
 	char	*buff)
 {
+#if	0
 	char	*p;
 
 	p = buff;
@@ -102,6 +104,9 @@ XML_Encode(
 	}
 	*p = 0;
 	return	(buff);
+#else
+	return	(str);
+#endif
 }
 
 static	size_t
@@ -131,6 +136,7 @@ _XML_PackValue(
 	char	num[SIZE_NAME+1];
 	int		i;
 
+	if		(  IS_VALUE_NIL(value)  )	return	(p);
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
@@ -206,7 +212,7 @@ _XML_PackValue(
 				p += sprintf(p," />");
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
-				p += sprintf(p,"%s",XML_Encode(ValueToString(value),buff));
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->locale),buff));
 			}
 			if		(  ConvIndent(opt)  ) {
 				p += sprintf(p,"</lm:item>");
@@ -410,21 +416,27 @@ setDocumentLocator_(
 	ValueContext			*value,
 	xmlSAXLocatorPtr	loc)
 {
+#ifdef	DEBUG
 	fprintf(stderr, "SAX.setDocumentLocator()\n");
+#endif
 }
 
 static	void
 startDocument_(
 	ValueContext	*value)
 {
+#ifdef	DEBUG
     fprintf(stderr, "SAX.startDocument()\n");
+#endif
 }
 
 static	void
 endDocument_(
 	ValueContext	*value)
 {
+#ifdef	DEBUG
     fprintf(stderr, "SAX.endDocument()\n");
+#endif
 }
 
 static	xmlChar	*
@@ -518,38 +530,24 @@ endElement_(
 static	void
 characters_(
 	ValueContext	*ctx,
-	char	*ch,
+	xmlChar	*ch,
 	size_t	len)
 {
-#if	1
-	iconv_t	cd;
-	char	*p;
-	size_t	sob;
-#endif
 
 	if		(  ctx->fStart  ) {
-#if	1
-
-		if		(  ctx->size  <  len  ) {
+		if		(  ctx->size  <  len*sizeof(xmlChar)  ) {
 			xfree(ctx->buff);
-			ctx->buff = (char *)xmalloc((len+1)*sizeof(char));
-			ctx->size = len;
+			ctx->buff = (char *)xmalloc((len+1)*sizeof(xmlChar));
+			ctx->size = len*sizeof(xmlChar);
 		}
-		cd = iconv_open("EUC-JP","utf8");
-		p = ctx->buff;
-		sob = ctx->size;
-		iconv(cd,&ch,&len,&p,&sob);
-		iconv_close(cd);
-		*p = 0;
-#else
-		memcpy(ctx->buff,ch,len*sizeof(char));
-		ctx->buff[len] = 0;
-#endif
+		memcpy(ctx->buff,ch,len*sizeof(xmlChar));
+		ctx->buff[len*sizeof(xmlChar)] = 0;
 #ifdef	DEBUG
 		printf("characters_[%s]\n",ctx->buff);
 #endif
 		if		(  ctx->value  !=  NULL  ) {
-			SetValueString(ctx->value,ctx->buff);
+			SetValueString(ctx->value,ctx->buff,NULL);
+			ValueIsNonNil(ctx->value);
 		}
 	}
 }
@@ -677,6 +675,39 @@ static	xmlSAXHandler mondaiSAXHandlerStruct = {
 
 static	xmlSAXHandlerPtr	mondaiSAXHandler = &mondaiSAXHandlerStruct;
 
+static	void
+SetNil(
+	ValueStruct	*val)
+{
+	int		i;
+
+	switch	(ValueType(val)) {
+	  case	GL_TYPE_NUMBER:
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_INT:
+	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_OBJECT:
+		val->attr |= GL_ATTR_NIL;
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+			SetNil(ValueArrayItem(val,i));
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+			SetNil(ValueRecordItem(val,i));
+		}
+		break;
+	  default:
+		break;
+	}
+}
+
 extern	byte	*
 XML_UnPackValue(
 	CONVOPT		*opt,
@@ -691,8 +722,9 @@ ENTER_FUNC;
 	ctx->buff = (char *)xmalloc(1);
 	ctx->size = 1;
 	ctx->fStart = FALSE;
+	ctx->opt = opt;
 	memset(ctx->longname,0,SIZE_LONGNAME+1);
-
+	SetNil(value);
 	xmlSAXUserParseMemory(mondaiSAXHandler,ctx,p,strlen(p));
     xmlCleanupParser();
     xmlMemoryDump();
@@ -715,6 +747,7 @@ _XML_SizeValue(
 
 	size = 0;
 	if		(  value  !=  NULL  ) {
+		if		(  IS_VALUE_NIL(value)  )	return	(0);
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
 			size += nIndent;
@@ -794,7 +827,7 @@ _XML_SizeValue(
 				size += 3;		//	" />"
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
-				size += strlen(XML_Encode(ValueToString(value),buff));
+				size += strlen(XML_Encode(ValueToString(value,opt->locale),buff));
 			}
 			if		(  ConvIndent(opt)  ) {
 				size += 10;		//	"</lm:item>"

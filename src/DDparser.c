@@ -90,7 +90,7 @@ SetAttribute(
 	int		i;
 
 	val->attr |= attr;
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -102,13 +102,13 @@ SetAttribute(
 	  case	GL_TYPE_OBJECT:
 		break;
 	  case	GL_TYPE_ARRAY:
-		for	( i = 0 ; i < val->body.ArrayData.count ; i ++ ) {
-			SetAttribute(val->body.ArrayData.item[i],attr);
+		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+			SetAttribute(ValueArrayItem(val,i),attr);
 		}
 		break;
 	  case	GL_TYPE_RECORD:
-		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
-			SetAttribute(val->body.RecordData.item[i],attr);
+		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+			SetAttribute(ValueRecordItem(val,i),attr);
 		}
 		break;
 	  default:

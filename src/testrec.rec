@@ -5,6 +5,7 @@ testrec	{
 	n	number(10,3);
 	l	text;
 	m	text;
+	q	varchar(20);
 	c	{
 		d	char;
 		e	int;

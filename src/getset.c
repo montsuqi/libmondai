@@ -32,6 +32,8 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<iconv.h>
+#include	<wchar.h>
 #include	<glib.h>
 #include	<math.h>
 
@@ -176,27 +178,54 @@ ValueToBool(
 
 extern	char	*
 ValueToString(
-	ValueStruct	*val)
+	ValueStruct	*val,
+	char		*locale)
 {
 	static	char	buff[SIZE_BUFF];
 	char	work[SIZE_NUMBUF+1];
 	char	*p
 	,		*q;
 	int		i;
+	iconv_t	cd;
+	size_t	len
+	,		sob;
 
+ENTER_FUNC;
 	memset(buff,0,SIZE_BUFF);
 	if		(  IS_VALUE_NIL(val)  ) {
 		*buff = CHAR_NIL;
 	} else
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
-		memcpy(buff,ValueString(val),ValueStringLength(val));
+		if		(  locale  ==  NULL  ) {
+			memcpy(buff,ValueString(val),ValueStringLength(val));
+		} else {
+			cd = iconv_open(locale,"utf8");
+			p = ValueString(val);
+			len = ValueStringLength(val);
+			q = buff;
+			sob = SIZE_BUFF;
+			iconv(cd,&p,&len,&q,&sob);
+			*q = 0;
+			iconv_close(cd);
+		}
 		break;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(val)  !=  NULL  ) {
-			strcpy(buff,ValueString(val));
+			if		(  locale  ==  NULL  ) {
+				strcpy(buff,ValueString(val));
+			} else {
+				cd = iconv_open(locale,"utf8");
+				p = ValueString(val);
+				len = ValueStringSize(val);
+				q = buff;
+				sob = SIZE_BUFF;
+				iconv(cd,&p,&len,&q,&sob);
+				iconv_close(cd);
+				*q = 0;
+			}
 		} else {
 			*buff = CHAR_NIL;
 		}
@@ -251,6 +280,7 @@ ValueToString(
 	  default:
 		*buff = 0;
 	}
+LEAVE_FUNC;
 	return	(buff);
 }
 
@@ -294,21 +324,30 @@ FixedRescale(
 extern	Bool
 SetValueString(
 	ValueStruct	*val,
-	char		*str)
+	char		*str,
+	char		*locale)
 {
 	Bool	rc
 	,		fMinus
 	,		fPoint;
 	size_t	len;
 	int		i;
-	char	*p;
+	char	*p
+	,		*q
+	,		*istr;
 	char	buff[SIZE_NUMBUF+1];
+	char	sbuff[SIZE_BUFF+1];
 	Fixed	from;
+	size_t	size;
+	iconv_t	cd;
+	size_t	sob
+	,		sib;
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
+ENTER_FUNC;
 	if		(	(  str   ==  NULL      )
 			||	(  *str  ==  CHAR_NIL  ) ) {
 		ValueIsNil(val);
@@ -319,8 +358,52 @@ SetValueString(
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
+			if		(  locale  !=  NULL  ) {
+				cd = iconv_open("utf8",locale);
+				len = ValueStringLength(val);
+				q = sbuff;
+				sob = SIZE_BUFF;
+				istr = str;
+				iconv(cd,&istr,&len,&q,&sob);
+				iconv_close(cd);
+				*q = 0;
+				str = sbuff;
+			}
+			size = strlen(str) + 1;
+			if		(  size  >  ValueStringSize(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
+				}
+				ValueStringSize(val) = size;
+				ValueString(val) = (char *)xmalloc(size);
+			}
 			memclear(ValueString(val),ValueStringSize(val));
-			strncpy(ValueString(val),str,ValueStringLength(val));
+			strcpy(ValueString(val),str);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_TEXT:
+			len = strlen(str);
+			if		(  locale  !=  NULL  ) {
+				cd = iconv_open("utf8",locale);
+				q = sbuff;
+				sob = SIZE_BUFF;
+				sib = len;
+				iconv(cd,&str,&sib,&q,&sob);
+				iconv_close(cd);
+				*q = 0;
+				str = sbuff;
+			}
+			size = strlen(str) + 1;
+			if		(  size  >  ValueStringSize(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
+				}
+				ValueStringSize(val) = size;
+				ValueString(val) = (char *)xmalloc(size);
+			}
+			memclear(ValueString(val),ValueStringSize(val));
+			strcpy(ValueString(val),str);
+			ValueStringLength(val) = len;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_NUMBER:
@@ -351,20 +434,6 @@ SetValueString(
 				*buff |= 0x40;
 			}
 			FixedRescale(&ValueFixed(val),&from);
-			rc = TRUE;
-			break;
-		  case	GL_TYPE_TEXT:
-			len = strlen(str);
-			if		(  ( len + 1 )  >  ValueStringSize(val)  ) {
-				if		(  ValueString(val)  !=  NULL  ) {
-					xfree(ValueString(val));
-				}
-				ValueStringSize(val) = len + 1;
-				ValueStringLength(val) = len;
-				ValueString(val) = (char *)xmalloc(ValueStringSize(val));
-			}
-			memset(ValueString(val),0,ValueStringSize(val));
-			strcpy(ValueString(val),str);
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_INT:
@@ -402,6 +471,7 @@ SetValueString(
 			rc = FALSE;	  
 		}
 	}
+LEAVE_FUNC;
 	return	(rc);
 }
 
@@ -424,7 +494,7 @@ SetValueInteger(
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		sprintf(str,"%d",ival);
-		rc = SetValueString(val,str);
+		rc = SetValueString(val,str,NULL);
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ival  <  0  ) {
@@ -437,7 +507,7 @@ SetValueInteger(
 		if		(  fMinus  ) {
 			*str |= 0x40;
 		}
-		rc = SetValueString(val,str);
+		rc = SetValueString(val,str,NULL);
 		break;
 	  case	GL_TYPE_INT:
 		ValueInteger(val) = ival;
@@ -476,11 +546,11 @@ SetValueBool(
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		sprintf(str,"%s",(bval ? "TRUE" : "FALSE"));
-		rc = SetValueString(val,str);
+		rc = SetValueString(val,str,NULL);
 		break;
 	  case	GL_TYPE_NUMBER:
 		sprintf(str,"%d",bval);
-		rc = SetValueString(val,str);
+		rc = SetValueString(val,str,NULL);
 		break;
 	  case	GL_TYPE_INT:
 		ValueInteger(val) = bval;
@@ -519,7 +589,7 @@ SetValueFloat(
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 		sprintf(str,"%f",fval);
-		rc = SetValueString(val,str);
+		rc = SetValueString(val,str,NULL);
 		break;
 	  case	GL_TYPE_NUMBER:
 		FloatToFixed(&ValueFixed(val),fval);
@@ -560,7 +630,7 @@ SetValueFixed(
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
-		rc = SetValueString(val,fval->sval);
+		rc = SetValueString(val,fval->sval,NULL);
 		break;
 	  case	GL_TYPE_NUMBER:
 		FixedRescale(&ValueFixed(val),fval);
