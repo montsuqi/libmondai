@@ -216,7 +216,7 @@ dbgmsg(">NativeSizeValue");
 		if		(  ValueArraySize(val)  >  0  ) {
 			n = ValueArraySize(val);
 		} else {
-			n = arraysize;
+			n = opt->arraysize;
 		}
 		ret = NativeSizeValue(opt,ValueArrayItem(val,0)) * n;
 		break;

@@ -20,6 +20,7 @@ copies.
 */
 #ifndef	_INC_NATIVE_VALUE_H
 #define	_INC_NATIVE_VALUE_H
+#include	"valueconv.h"
 
 extern	char	*NativeUnPackValue(CONVOPT *opt,char *p, ValueStruct *value);
 extern	char	*NativePackValue(CONVOPT *opt, char *p, ValueStruct *value);

@@ -121,7 +121,7 @@ NewConvOpt(void)
 	ret->recname = NULL;
 	ret->textsize = 100;
 	ret->arraysize = 10;
-	ret->encode = STRING_ENCODE_URL;
+	ret->encode = STRING_ENCODING_URL;
 
 	return	(ret);
 }
