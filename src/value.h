@@ -61,7 +61,7 @@ typedef	struct {
 #define	ObjectID(obj)		((obj)->id.el[0])
 #define	ObjectSource(obj)	((obj)->source)
 
-#define	IS_OBJECT_NULL		(((obj)->source ==  0) && ((obj)->id.el[0] == 0))
+#define	IS_OBJECT_NULL(obj)	(((obj)->source ==  0) && ((obj)->id.el[0] == 0))
 
 typedef	struct {
 	size_t		flen;
