@@ -28,6 +28,7 @@ copies.
 #include	"cobolvalue.h"
 #include	"valueconv.h"
 #include	"DDparser.h"
+#include	"numerici.h"
 #include	"hash.h"
 #include	"others.h"
 
