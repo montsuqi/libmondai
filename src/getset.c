@@ -292,7 +292,7 @@ ENTER_FUNC;
 			sprintf(work,"%d",ValueObjectSource(val));
 			LBS_EmitString(ValueStr(val),work);
 			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
-				sprintf(work,":%u",ValueObjectID(val).el[i]);
+				sprintf(work,"_%u",ValueObjectID(val).el[i]);
 				LBS_EmitString(ValueStr(val),work);
 			}
 			break;
@@ -510,12 +510,12 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			strcpy(buff,str);
-			q = strchr(buff,':');
+			q = strchr(buff,'_');
 			*q = 0;
 			ValueObjectSource(val) = atoi(buff);
 			for	( i = 0 ; i < SIZE_OID/sizeof(unsigned int) ; i ++ ) {
 				p = q + 1;
-				if		(  ( q = strchr(p,':') )  !=  NULL  ) {
+				if		(  ( q = strchr(p,'_') )  !=  NULL  ) {
 					*q = 0;
 				}
 				ValueObjectID(val).el[i] = (unsigned int)atol(p);

@@ -114,6 +114,9 @@ dbgmsg(">NewValue");
 		ValueValuesItems(ret) = NULL;
 		ValueAttribute(ret) = GL_ATTR_NULL;
 		break;
+	  case	GL_TYPE_POINTER:
+		ValuePointer(ret) = NULL;
+		break;
 	  default:
 		xfree(ret);
 		ret = NULL;
@@ -540,7 +543,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
-			printf("object [%d:",ValueObjectSource(val));
+			printf("object [%d_",ValueObjectSource(val));
 			p = (byte *)&ValueObjectID(val);
 			for	( i = 0 ; i < sizeof(ValueObjectID(val)) ; i ++ , p ++ ) {
 				printf("%02X",(int)*p);

@@ -30,4 +30,5 @@ extern	FILE	*Fopen(char *name, char *mode);
 extern	void	MakeCobolX(char *to, size_t len, char *from);
 extern	void	CopyCobol(char *to, char *from);
 extern	void	AdjustByteOrder(void *to, void *from, size_t size);
+extern	void	PrintFixString(char *s, int len);
 #endif

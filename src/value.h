@@ -61,6 +61,8 @@ typedef	struct {
 #define	ObjectID(obj)		((obj)->id.el[0])
 #define	ObjectSource(obj)	((obj)->source)
 
+#define	IS_OBJECT_NULL		(((obj)->source ==  0) && ((obj)->id.el[0] == 0))
+
 typedef	struct {
 	size_t		flen;
 	size_t		slen;
@@ -99,6 +101,7 @@ typedef	struct _ValueStruct	{
 		int		IntegerData;
 		Bool	BoolData;
 		double	FloatData;
+		struct	_ValueStruct	*Pointer;
 	}	body;
 }	ValueStruct;
 
@@ -118,6 +121,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_BYTE			(PacketDataType)0x24
 #define	GL_TYPE_DBCODE			(PacketDataType)0x25
 #define	GL_TYPE_BINARY			(PacketDataType)0x26
+#define	GL_TYPE_POINTER			(PacketDataType)0x27
 
 #define	GL_TYPE_OBJECT			(PacketDataType)0x40
 
@@ -201,6 +205,8 @@ typedef	struct _ValueStruct	{
 #define	ValueObjectID(v)		((v)->body.Object.id)
 
 #define	ValueAliasName(v)		((v)->body.AliasName)
+
+#define	ValuePointer(v)			((v)->body.Pointer)
 
 #define	ValueValuesSize(v)		((v)->body.ValuesData.count)
 #define	ValueValuesItems(v)		((v)->body.ValuesData.item)
