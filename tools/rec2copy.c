@@ -367,7 +367,7 @@ main(
 	,			*ext;
 
 	SetDefault();
-	fl = GetOption(option,argc,argv);
+	fl = GetOption(option,argc,argv,"");
 	ConvSetLanguage(Lang);
 	Conv = NewConvOpt();
 	ConvSetSize(Conv,TextSize,ArraySize);

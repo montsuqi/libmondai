@@ -77,6 +77,9 @@ static	ConvFuncs	funcs[] = {
 		XML_PackValue,			XML_UnPackValue,		XML_SizeValue		},
 #endif
 
+	{	"native",				"",						"",
+		NativePackValue,		NativeUnPackValue,		NativeSizeValue		},
+
 	{	NULL,					"",						"",
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };

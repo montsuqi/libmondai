@@ -1,3 +1,9 @@
+2004-06-20  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/option.c (GetOption): ヘルプメッセージの強化(ちょっとだけ)
+
+	* tools/monconv.c: データ変換ツール(libmondaiのサポートしている形式間の相互変換)
+
 2004-04-26  Kouji SHIMIZU  <shimizu@netlab.jp>
 
 	* configure.in: Change `--with-i18n' to `--enable-i18n',

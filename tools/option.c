@@ -207,7 +207,8 @@ AnalizeLine(
 extern	void
 PrintUsage(
 	ARG_TABLE	*tbl,
-	char		*comment)
+	char		*comment,
+	char		*help)
 {	int		i;
 
 	printf("%s\n",comment);
@@ -220,13 +221,15 @@ PrintUsage(
 		}
 		printf("\n");	
 	}
+	printf("%s",help);
 }
 
 extern	FILE_LIST	*
 GetOption(
 	ARG_TABLE	*tbl,
 	int			argc,
-	char		**argv)
+	char		**argv,
+	char		*help)
 {	int		c;
 	char	*p
 	,		*q
@@ -285,7 +288,7 @@ GetOption(
 				p ++;
 				if		(  *p  ==  '?'  )	{
 					sprintf(buff,"USAGE:%s <option(s)> files...",cmd);
-					PrintUsage(tbl,buff);
+					PrintUsage(tbl,buff,help);
 					exit(0);
 				} else {
 					isParam = AnalizeLine(tbl,p);

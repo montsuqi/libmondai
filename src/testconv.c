@@ -233,7 +233,6 @@ main(
 	printf("buff [%s]\n",ValueStringPointer(e));
 	printf("out  [%s]\n",ValueToString(e,TEST_CODE));
 	printf("********************\n");
-
 	printf("***** binary *****\n");
 	buff = xmalloc(256);
 	memset(buff,0,256);

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = rec2copy
+bin_PROGRAMS = rec2copy monconv
 
 LDADD 		=	\
 	$(GLIB_LIBS)						\
@@ -13,11 +13,14 @@ INCLUDES 			= 					\
 	$(GLIB_CFLAGS)						\
 	$(FIXED_CFLAGS)
 
-rec2copy_DEPENDENCIES	=				\
+DEPENDENCIES	=						\
 	$(top_srcdir)/src/libmondai.la
 
 rec2copy_SOURCES	=					\
 	option.c	option.h				\
 	rec2copy.c
+monconv_SOURCES	=						\
+	option.c	option.h				\
+	monconv.c
 
 EXTRA_DIST = option.doc

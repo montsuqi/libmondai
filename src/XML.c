@@ -185,7 +185,7 @@ ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -197,7 +197,7 @@ ENTER_FUNC;
 				p += _XML_PackValue1(opt,p,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 			}
 			p += sprintf(p,"</lm:array>");
 			break;
@@ -209,7 +209,7 @@ ENTER_FUNC;
 				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 			}
 			p += sprintf(p,"</lm:record>");
 			break;
@@ -257,11 +257,7 @@ ENTER_FUNC;
 					break;
 				}
 			}
-			if		(  ConvIndent(opt)  ) {
-				p += sprintf(p,">");
-			} else {
-				p += sprintf(p," />");
-			}
+			p += sprintf(p,">");
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
@@ -269,9 +265,7 @@ ENTER_FUNC;
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
 			}
-			if		(  ConvIndent(opt)  ) {
-				p += sprintf(p,"</lm:item>");
-			}
+			p += sprintf(p,"</lm:item>");
 			break;
 		}
 		p += PutCR(opt,p);
@@ -299,11 +293,15 @@ ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
-			p += sprintf(p,"<%s:%s type=\"array\"",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"<%s:%s type=\"array\"",opt->recname,name);
+			} else {
+				p += sprintf(p,"<%s type=\"array\"",name);
+			}
 			p += sprintf(p," count=\"%d\">",ValueArraySize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -311,24 +309,40 @@ ENTER_FUNC;
 				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 			}
-			p += sprintf(p,"</%s:%s>",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"</%s:%s>",opt->recname,name);
+			} else {
+				p += sprintf(p,"</%s>",name);
+			}
 			break;
 		  case	GL_TYPE_RECORD:
-			p += sprintf(p,"<%s:%s type=\"record\"",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"<%s:%s type=\"record\"",opt->recname,name);
+			} else {
+				p += sprintf(p,"<%s type=\"record\"",name);
+			}
 			p += sprintf(p," size=\"%d\">",ValueRecordSize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = '\t';
+				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
 			}
-			p += sprintf(p,"</%s:%s>",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"</%s:%s>",opt->recname,name);
+			} else {
+				p += sprintf(p,"</%s>",name);
+			}
 			break;
 		  default:
-			p += sprintf(p,"<%s:%s",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"<%s:%s",opt->recname,name);
+			} else {
+				p += sprintf(p,"<%s",name);
+			}
 			p += sprintf(p," type=");
 			switch	(ValueType(value)) {
 			  case	GL_TYPE_INT:
@@ -369,11 +383,7 @@ ENTER_FUNC;
 			  default:
 				break;
 			}
-			if		(  ConvIndent(opt)  ) {
-				p += sprintf(p,">");
-			} else {
-				p += sprintf(p," />");
-			}
+			p += sprintf(p,">");
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
@@ -381,8 +391,10 @@ ENTER_FUNC;
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
 			}
-			if		(  ConvIndent(opt)  ) {
+			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",opt->recname,name);
+			} else {
+				p += sprintf(p,"</%s>",name);
 			}
 			break;
 		}
@@ -435,8 +447,12 @@ ENTER_FUNC;
 		break;
 	  case	XML_TYPE2:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-						 ,opt->recname,opt->recname,NS_URI,opt->recname);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+							 ,opt->recname,opt->recname,NS_URI,opt->recname);
+			} else {
+				p += sprintf(p,"<data>");
+			}
 			p += PutCR(opt,p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
@@ -1183,11 +1199,7 @@ _XML_SizeValue1(
 					break;
 				}
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += 1;		//	">"
-			} else {
-				size += 3;		//	" />"
-			}
+			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
@@ -1195,9 +1207,7 @@ _XML_SizeValue1(
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += 10;		//	"</lm:item>"
-			}
+			size += 10;		//	"</lm:item>"
 			break;
 		}
 		size += PutCR(opt,buff);
@@ -1226,8 +1236,13 @@ _XML_SizeValue2(
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
-			size += sprintf(buff,"<%s:%s type=\"array\" count=\"%d\">"
-							,opt->recname,name,ValueArraySize(value));
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"<%s:%s type=\"array\" count=\"%d\">"
+								,opt->recname,name,ValueArraySize(value));
+			} else {
+				size += sprintf(buff,"<%s type=\"array\" count=\"%d\">"
+								,name,ValueArraySize(value));
+			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s:%d",name,i);
@@ -1236,11 +1251,20 @@ _XML_SizeValue2(
 			if		(  ConvIndent(opt)  ) {
 				size += nIndent;
 			}
-			size += sprintf(buff,"</%s:%s>",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"</%s:%s>",opt->recname,name);
+			} else {
+				size += sprintf(buff,"</%s>",name);
+			}
 			break;
 		  case	GL_TYPE_RECORD:
-			size += sprintf(buff,"<%s:%s type=\"record\" size=\"%d\">"
-							,opt->recname,name,ValueRecordSize(value));
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"<%s:%s type=\"record\" size=\"%d\">"
+								,opt->recname,name,ValueRecordSize(value));
+			} else {
+				size += sprintf(buff,"<%s type=\"record\" size=\"%d\">"
+								,name,ValueRecordSize(value));
+			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				size += _XML_SizeValue2(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
@@ -1248,10 +1272,18 @@ _XML_SizeValue2(
 			if		(  ConvIndent(opt)  ) {
 				size += nIndent;
 			}
-			size += sprintf(buff,"</%s:%s>",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"</%s:%s>",opt->recname,name);
+			} else {
+				size += sprintf(buff,"</%s>",name);
+			}
 			break;
 		  default:
-			size += sprintf(buff,"<%s:%s",opt->recname,name);
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"<%s:%s",opt->recname,name);
+			} else {
+				size += sprintf(buff,"<%s",name);
+			}
 			size += 6;		//	" type="
 			switch	(ValueType(value)) {
 			  case	GL_TYPE_INT:
@@ -1298,11 +1330,7 @@ _XML_SizeValue2(
 			  default:
 				break;
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += 1;		//	">"
-			} else {
-				size += 3;		//	" />"
-			}
+			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
@@ -1310,8 +1338,10 @@ _XML_SizeValue2(
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
 			}
-			if		(  ConvIndent(opt)  ) {
+			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
+			} else {
+				size += sprintf(buff,"</%s>",name);
 			}
 			break;
 		}
@@ -1365,15 +1395,23 @@ XML_SizeValue(
 		break;
 	  case	XML_TYPE2:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-							,opt->recname,opt->recname,NS_URI,opt->recname);
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+								,opt->recname,opt->recname,NS_URI,opt->recname);
+			} else {
+				size += sprintf(buff,"<data>");
+			}
 			size += PutCR(opt,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
 			size += _XML_SizeValue2(opt,opt->recname,value,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			size += sprintf(buff,"</%s:data>",opt->recname);
+			if		(  opt->recname  !=  NULL  ) {
+				size += sprintf(buff,"</%s:data>",opt->recname);
+			} else {
+				size += sprintf(buff,"</data>");
+			}
 		}
 		break;
 	}

@@ -765,11 +765,9 @@ ENTER_FUNC;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vd));
-		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
-		memcpy(ValueString(vd),ValueString(vs),ValueStringSize(vd));
+		MoveValue(vd,vs);
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(vd)  >  0  ) {

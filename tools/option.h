@@ -53,7 +53,7 @@ typedef	struct	FILE_LIST_S	{
 	char	*name;
 }	FILE_LIST;
 
-extern	FILE_LIST	*GetOption(ARG_TABLE *,int,char**);
+extern	FILE_LIST	*GetOption(ARG_TABLE *tbl, int argc, char **argv, char *help);
 extern	char		*GetExt(char *name);
 extern	void		ChangeExt(char *,char *,char *);
-extern	void		PrintUsage(ARG_TABLE *,char *);
+extern	void		PrintUsage(ARG_TABLE *tbl, char *comment, char *help);
