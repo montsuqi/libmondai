@@ -11,6 +11,7 @@ libmondaiinclude_HEADERS =	\
 	LBSfunc.h		\
 	OpenCOBOL_v.h	\
 	dotCOBOL_v.h	\
+	Native_v.h		\
 	cobolvalue.h	\
 	value.h			\
 	valueconv.h		\
@@ -36,6 +37,7 @@ libmondai_la_SOURCES	=		\
 	cobolvalue.c	cobolvalue.h	\
 	OpenCOBOL.c		OpenCOBOL_v.h	\
 	dotCOBOL.c		dotCOBOL_v.h	\
+	Native.c		Native_v.h		\
 	value.c			value.h			\
 	valueconv.c		valueconv.h		\
 	SQLlex.c		SQLlex.h		\
@@ -47,5 +49,5 @@ libmondai_la_SOURCES	=		\
 	tcp.c			tcp.h			\
 	pty.c			pty.h			\
 	queue.c			queue.h			\
-	types.h						\
+	types.h							\
 	debug.h

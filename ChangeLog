@@ -1,3 +1,7 @@
+2003-03-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c : valueconv.c から分離した
+
 2003-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/DDparser.c (ReadRecordDefine): move from drive.c
