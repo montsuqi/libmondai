@@ -245,6 +245,9 @@ _XML_PackValue1(
 				  case	GL_TYPE_FLOAT:
 					p += sprintf(p,"\"float\"");
 					break;
+				  case	GL_TYPE_OBJECT:
+					p += sprintf(p,"\"object\"");
+					break;
 				  case	GL_TYPE_ALIAS:
 				  default:
 					break;
@@ -349,6 +352,9 @@ _XML_PackValue2(
 				break;
 			  case	GL_TYPE_FLOAT:
 				p += sprintf(p,"\"float\"");
+				break;
+			  case	GL_TYPE_OBJECT:
+				p += sprintf(p,"\"object\"");
 				break;
 			  case	GL_TYPE_ALIAS:
 			  default:
@@ -1163,6 +1169,9 @@ _XML_SizeValue1(
 				  case	GL_TYPE_FLOAT:
 					size += 7;			//	"float"
 					break;
+				  case	GL_TYPE_OBJECT:
+					size += 8;			//	"object"
+					break;
 				  case	GL_TYPE_ALIAS:
 				  default:
 					break;
@@ -1271,6 +1280,9 @@ _XML_SizeValue2(
 				break;
 			  case	GL_TYPE_FLOAT:
 				size += 7;			//	"float"
+				break;
+			  case	GL_TYPE_OBJECT:
+				size += 8;			//	"object"
 				break;
 			  case	GL_TYPE_ALIAS:
 			  default:

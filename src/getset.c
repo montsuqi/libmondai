@@ -452,6 +452,28 @@ ENTER_FUNC;
 			ValueStringLength(val) = len;
 			rc = TRUE;
 			break;
+		  case	GL_TYPE_BYTE:
+			p = ValueByte(val);
+			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
+				if		(  *str  ==  '%'  ) {
+					str ++;
+					if		(  *str  ==  '%'  ) {
+						*p = '%';
+						str ++;
+					} else {
+						*p = (unsigned char)HexToInt(str,2);
+						str += 2;
+					}
+				} else {
+					*p = *str;
+					str ++;
+				}
+			}
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_OBJECT:
+			p += DecodeBase64(ValueObject(val),str,sizeof(ValueObject(val))*2);
+			break;
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
@@ -521,25 +543,6 @@ ENTER_FUNC;
 				rc = FALSE;
 				break;
 			}
-			break;
-		  case	GL_TYPE_BYTE:
-			p = ValueByte(val);
-			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
-				if		(  *str  ==  '%'  ) {
-					str ++;
-					if		(  *str  ==  '%'  ) {
-						*p = '%';
-						str ++;
-					} else {
-						*p = (unsigned char)HexToInt(str,2);
-						str += 2;
-					}
-				} else {
-					*p = *str;
-					str ++;
-				}
-			}
-			rc = TRUE;
 			break;
 		  default:
 			rc = FALSE;	  

@@ -117,10 +117,10 @@ dbgmsg(">NativeUnPackValue");
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectPlace(value) = *(int *)p;
+			ValueObjectSource(value) = *(int *)p;
 			p += sizeof(int);
-			ValueObjectID(value) = *(int *)p;
-			p += sizeof(int);
+			ValueObjectID(value) = *(OidType *)p;
+			p += sizeof(OidType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArraySize(value) = *(size_t *)p;
@@ -215,10 +215,10 @@ dbgmsg(">NativePackValue");
 			p += size;
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(int *)p = ValueObjectPlace(value);
+			*(int *)p = ValueObjectSource(value);
 			p += sizeof(int);
-			*(int *)p = ValueObjectID(value);
-			p += sizeof(int);
+			*(OidType *)p = ValueObjectID(value);
+			p += sizeof(OidType);
 			break;
 		  case	GL_TYPE_ARRAY:
 			*(size_t *)p = ValueArraySize(value);
