@@ -952,45 +952,45 @@ dbgmsg(">InitializeValue");
 	if		(  value  ==  NULL  )	return;
 	switch	(value->type) {
 	  case	GL_TYPE_INT:
-		value->body.IntegerData = 0;
+		ValueInteger(value) = 0;
 		break;
 	  case	GL_TYPE_FLOAT:
-		value->body.FloatData = 0.0;
+		ValueFloat(value) = 0.0;
 		break;
 	  case	GL_TYPE_BOOL:
-		value->body.BoolData = FALSE;
+		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		value->body.Object.apsid = 0;
-		value->body.Object.oid = 0;
+		ValueObjectPlace(value) = 0;
+		ValueObjectID(value) = 0;
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		memclear(value->body.CharData.sval,value->body.CharData.len+1);
+		memclear(ValueString(value),ValueStringLength(value)+1);
 		break;
 	  case	GL_TYPE_TEXT:
-		if		(  value->body.CharData.sval  !=  NULL  ) {
-			xfree(value->body.CharData.sval);
+		if		(  ValueString(value)  !=  NULL  ) {
+			xfree(ValueString(value));
 		}
-		value->body.CharData.sval = NULL;
-		value->body.CharData.len = 0;
+		ValueString(value) = NULL;
+		ValueStringLength(value) = 0;
 		break;
 	  case	GL_TYPE_NUMBER:
-		if		(  value->body.FixedData.flen  >  0  ) {
-			memset(value->body.FixedData.sval,'0',value->body.FixedData.flen);
+		if		(  ValueFixedLength(value)  >  0  ) {
+			memset(ValueFixedBody(value),'0',ValueFixedLength(value));
 		}
-		value->body.FixedData.sval[value->body.FixedData.flen] = 0;
+		ValueFixedBody(value)[ValueFixedLength(value)] = 0;
 		break;
 	  case	GL_TYPE_ARRAY:
-		for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-			InitializeValue(value->body.ArrayData.item[i]);
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			InitializeValue(ValueArrayItem(value,i));
 		}
 		break;
 	  case	GL_TYPE_RECORD:
-		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-			InitializeValue(value->body.RecordData.item[i]);
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			InitializeValue(ValueRecordItem(value,i));
 		}
 		break;
 	  default:

@@ -152,6 +152,7 @@ typedef	struct _RecordStruct	{
 
 #define	ValueString(v)			((v)->body.CharData.sval)
 #define	ValueStringLength(v)	((v)->body.CharData.len)
+
 #define	ValueByte(v)			((v)->body.CharData.sval)
 #define	ValueByteLength(v)		((v)->body.CharData.len)
 #define	ValueInteger(v)			((v)->body.IntegerData)
@@ -160,7 +161,6 @@ typedef	struct _RecordStruct	{
 #define	ValueFixed(v)			(&(v)->body.FixedData)
 #define	ValueFixedLength(v)		((v)->body.FixedData.flen)
 #define	ValueFixedBody(v)		((v)->body.FixedData.sval)
-#define	ValueObject(v)			(&(v)->body.Object)
 
 #define	ValueArraySize(v)		((v)->body.ArrayData.count)
 #define	ValueArrayItems(v)		((v)->body.ArrayData.item)
@@ -169,6 +169,11 @@ typedef	struct _RecordStruct	{
 #define	ValueRecordSize(v)		((v)->body.RecordData.count)
 #define	ValueRecordItems(v)		((v)->body.RecordData.item)
 #define	ValueRecordItem(v,i)	((v)->body.RecordData.item[(i)])
+#define	ValueRecordName(v,i)	((v)->body.RecordData.names[(i)])
+
+#define	ValueObject(v)			(&(v)->body.Object)
+#define	ValueObjectPlace(v)		((v)->body.Object.apsid)
+#define	ValueObjectID(v)		((v)->body.Object.oid)
 
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,

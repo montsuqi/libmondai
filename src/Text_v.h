@@ -21,6 +21,10 @@ copies.
 #ifndef	_TEXT_VALUE_H
 #define	_TEXT_VALUE_H
 
+#define	STRING_ENCODING_NULL	0
+#define	STRING_ENCODING_URL		1
+#define	STRING_ENCODING_MIME	2
+
 extern	char	*CSV_UnPackValue(char *p, ValueStruct *value, size_t textsize);
 
 extern	char	*CSV1_PackValue(char *p, ValueStruct *value, size_t textsize);
@@ -32,4 +36,13 @@ extern	size_t	CSV1_SizeValue(ValueStruct *val, size_t arraysize, size_t textsize
 extern	size_t	CSV2_SizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
 extern	size_t	CSV3_SizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
 extern	size_t	CSVE_SizeValue(ValueStruct *val, size_t arraysize, size_t textsize);
+
+#define	CSV_SizeValue	CSV3_SizeValue
+#define	CSV_PackValue	CSV3_PackValue
+
+extern	char	*RFC822_UnPackValue(char *p, ValueStruct *value, size_t textsize);
+extern	char	*RFC822_PackValue(char *p, ValueStruct *value, size_t textsize);
+extern	size_t	RFC822_SizeValue(ValueStruct *value, size_t arraysize, size_t textsize);
+extern	void	RFC822_SetOptions(char *rname, char *locale, int encode, Bool fname);
+
 #endif

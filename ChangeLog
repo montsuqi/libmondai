@@ -1,3 +1,11 @@
+2003-07-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822の名前無しに対応
+
+2003-07-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c : CSV, RFC822の形式に対応した
+
 2003-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/misc.c (StringChop): 追加

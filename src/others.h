@@ -42,6 +42,8 @@ extern	void		DestroyPort(Port *port);
 extern	Port		*ParPort(char *str, int def);
 extern	char		*ExpandPath(char *org,char *base);
 
-extern	void		DecodeString(char *q, char *p);
-extern	void		EncodeString(char *q, char *p);
+extern	void		DecodeStringURL(char *q, char *p);
+extern	void		EncodeStringURL(char *q, char *p);
+extern	size_t		EncodeStringLengthURL(char *q);
+
 #endif

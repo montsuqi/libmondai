@@ -54,7 +54,8 @@ main(
 	ValueStruct	*rec
 	,			*e;
 	char	*buff;
-	size_t	size;
+	size_t	size
+	,		size1;
 	FILE	*fp;
 
 	RecordDir = ".";
@@ -172,6 +173,50 @@ main(
 	fclose(fp);
 	NativeUnPackValue(buff,rec,0);
 	DumpValueStruct(rec);
+	memset(buff,0,SIZE_BUFF);
+	CSV3_PackValue(buff,rec,0);
+	printf("%s\n",buff);
+
+	printf("***** RFC822 Pack *****\n");
+	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);
+	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,TRUE);
+	size =  RFC822_SizeValue(rec,0,0);
+	size1 = size;
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	RFC822_PackValue(buff,rec,0);
+	printf("%s\n",buff);
+	fwrite(buff,size,1,fp);
+
+	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,FALSE);
+	size =  RFC822_SizeValue(rec,0,0);
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	RFC822_PackValue(buff,rec,0);
+	printf("%s\n",buff);
+	fwrite(buff,size,1,fp);
+
+	fclose(fp);
+	xfree(buff);
+
+	printf("***** RFC822 UnPack *****\n");
+	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,TRUE);
+	InitializeValue(rec);
+	if		(  ( fp = fopen("test.822","r") )  ==  NULL  )	exit(1);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+
+	fread(buff,size1,1,fp);
+	RFC822_UnPackValue(buff,rec,0);
+	DumpValueStruct(rec);
+
+	RFC822_SetOptions("testrec",NULL,STRING_ENCODING_NULL,FALSE);
+	InitializeValue(rec);
+	fread(buff,size,1,fp);
+	fclose(fp);
+	RFC822_UnPackValue(buff,rec,0);
+	DumpValueStruct(rec);
+
 	memset(buff,0,SIZE_BUFF);
 	CSV3_PackValue(buff,rec,0);
 	printf("%s\n",buff);

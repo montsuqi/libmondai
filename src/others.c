@@ -222,7 +222,7 @@ ExpandPath(
 }
 
 extern	void
-DecodeString(
+DecodeStringURL(
 	char	*q,
 	char	*p)
 {
@@ -244,7 +244,7 @@ DecodeString(
 }
 
 extern	void
-EncodeString(
+EncodeStringURL(
 	char	*q,
 	char	*p)
 {
@@ -261,5 +261,25 @@ EncodeString(
 		p ++;
 	}
 	*q = 0;			
+}
+
+extern	size_t
+EncodeStringLengthURL(
+	char	*p)
+{
+	size_t	ret;
+
+	ret = 0;
+	while	(  *p  !=  0  ) {
+		if		(  *p  ==  0x20  ) {
+		} else
+		if		(  isalnum(*p)  ) {
+		} else {
+			ret += 3;
+		}
+		ret ++;
+		p ++;
+	}
+	return	(ret);
 }
 

@@ -32,11 +32,13 @@ copies.
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
+#include	<ctype.h>
 #include    <sys/types.h>
 
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
+#include	"others.h"
 #include	"value.h"
 #include	"Text_v.h"
 #include	"debug.h"
@@ -239,7 +241,7 @@ IsComma(
 }
 
 static	char	*
-_CSV_PackValue(
+__CSV_PackValue(
 	char		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
@@ -279,12 +281,12 @@ _CSV_PackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p = _CSV_PackValue(p,ValueArrayItem(value,i),fNsep,fSsep,fCesc);
+				p = __CSV_PackValue(p,ValueArrayItem(value,i),fNsep,fSsep,fCesc);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p = _CSV_PackValue(p,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
+				p = __CSV_PackValue(p,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
 			}
 			break;
 		  default:
@@ -294,18 +296,29 @@ _CSV_PackValue(
 	return	(p);
 }
 
+static	char	*
+_CSV_PackValue(
+	char	*p,
+	ValueStruct	*value,
+	Bool		fNsep,
+	Bool		fSsep,
+	Bool		fCesc)
+{
+	char	*ret;
+
+	ret = __CSV_PackValue(p,value,fNsep,fSsep,fCesc);
+	ret --;
+	*ret = 0;
+	return	(ret);
+}
+
 extern	char	*
 CSV1_PackValue(
 	char	*p,
 	ValueStruct	*value,
 	size_t	textsize)
 {
-	char	*ret;
-
-	ret = _CSV_PackValue(p,value,TRUE,TRUE,FALSE);
-	ret --;
-	*ret = 0;
-	return	(ret);
+	return	(_CSV_PackValue(p,value,TRUE,TRUE,FALSE));
 }
 
 extern	char	*
@@ -314,12 +327,7 @@ CSV2_PackValue(
 	ValueStruct	*value,
 	size_t	textsize)
 {
-	char	*ret;
-
-	ret = _CSV_PackValue(p,value,FALSE,FALSE,FALSE);
-	ret --;
-	*ret = 0;
-	return	(ret);
+	return	(_CSV_PackValue(p,value,FALSE,FALSE,FALSE));
 }
 
 extern	char	*
@@ -328,12 +336,7 @@ CSV3_PackValue(
 	ValueStruct	*value,
 	size_t	textsize)
 {
-	char	*ret;
-
-	ret = _CSV_PackValue(p,value,FALSE,TRUE,FALSE);
-	ret --;
-	*ret = 0;
-	return	(ret);
+	return	(_CSV_PackValue(p,value,FALSE,TRUE,FALSE));
 }
 
 extern	char	*
@@ -342,15 +345,10 @@ CSVE_PackValue(
 	ValueStruct	*value,
 	size_t	textsize)
 {
-	char	*ret;
-
-	ret = _CSV_PackValue(p,value,FALSE,FALSE,FALSE);
-	ret --;
-	*ret = 0;
-	return	(ret);
+	return	(_CSV_PackValue(p,value,FALSE,FALSE,FALSE));
 }
 
-static	size_t
+extern	size_t
 _CSV_SizeValue(
 	ValueStruct	*value,
 	Bool		fNsep,
@@ -362,7 +360,7 @@ _CSV_SizeValue(
 	char	*str;
 	Bool	fComma;
 
-dbgmsg(">CSV_SizeValue");
+dbgmsg(">_CSV_SizeValue");
 	if		(  value  ==  NULL  )	return	(0);
 	switch	(value->type) {
 	  case	GL_TYPE_CHAR:
@@ -427,13 +425,7 @@ CSV1_SizeValue(
 	size_t		arraysize,
 	size_t		textsize)
 {
-	size_t	ret;
-
-dbgmsg(">CSV1_SizeValue");
-	if		(  value  ==  NULL  )	return	(0);
-	ret = _CSV_SizeValue(value,TRUE,TRUE,FALSE);
-dbgmsg("<CSV1_SizeValue");
-	return	(ret);
+	return	(_CSV_SizeValue(value,TRUE,TRUE,FALSE));
 }
 
 extern	size_t
@@ -442,13 +434,7 @@ CSV2_SizeValue(
 	size_t		arraysize,
 	size_t		textsize)
 {
-	size_t	ret;
-
-dbgmsg(">CSV1_SizeValue");
-	if		(  value  ==  NULL  )	return	(0);
-	ret = _CSV_SizeValue(value,FALSE,FALSE,FALSE);
-dbgmsg("<CSV1_SizeValue");
-	return	(ret);
+	return	(_CSV_SizeValue(value,FALSE,FALSE,FALSE));
 }
 
 extern	size_t
@@ -457,13 +443,7 @@ CSV3_SizeValue(
 	size_t		arraysize,
 	size_t		textsize)
 {
-	size_t	ret;
-
-dbgmsg(">CSV3_SizeValue");
-	if		(  value  ==  NULL  )	return	(0);
-	ret = _CSV_SizeValue(value,FALSE,TRUE,FALSE);
-dbgmsg("<CSV3_SizeValue");
-	return	(ret);
+	return	(_CSV_SizeValue(value,FALSE,TRUE,FALSE));
 }
 
 extern	size_t
@@ -472,12 +452,343 @@ CSVE_SizeValue(
 	size_t		arraysize,
 	size_t		textsize)
 {
-	size_t	ret;
+	return	(_CSV_SizeValue(value,FALSE,FALSE,TRUE));
+}
 
-dbgmsg(">CSV3_SizeValue");
-	if		(  value  ==  NULL  )	return	(0);
-	ret = _CSV_SizeValue(value,FALSE,FALSE,TRUE);
-dbgmsg("<CSV3_SizeValue");
+/*
+ *	RFC822 type conversion
+ */
+
+static	char	longname[SIZE_BUFF];
+static	char	*RecName = NULL;
+static	int		StringEncoding = STRING_ENCODING_URL;
+static	char	*Locale;
+static	Bool	fName = TRUE;
+
+static	char	*
+SkipNext(
+	char	*p)
+{
+	switch	(StringEncoding) {
+	  case	STRING_ENCODING_URL:
+		while	(	(  *p  !=  0     )
+				&&	(  *p  !=  '\n'  ) )	p ++;
+		break;
+	  default:
+		break;
+	}
+	return	(p);
+}
+
+static	void
+DecodeName(
+	char	**rname,
+	char	**vname,
+	char	*p)
+{
+	*rname = p;
+	while	(	(  *p  !=  0     )
+			&&	(  *p  !=  '.'   ) )	p ++;
+	*p = 0;
+	p ++;
+	*vname = p;
+	if		(  *p  !=  0  ) {
+		while	(	(  *p  !=  0     )
+				&&	(  !isspace(*p)  ) )	p ++;
+	}
+	*p = 0;
+}
+
+static	char	*
+_RFC822_UnPackValueNoNamed(
+	char		*p,
+	ValueStruct	*value)
+{
+	int		i;
+	char	str[SIZE_BUFF+1];
+	char	*q;
+	int		c;
+
+	if		(  value  !=  NULL  ) {
+		switch	(value->type) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+			switch	(StringEncoding) {
+			  case	STRING_ENCODING_URL:
+				q = p;
+				while	(	(  *p  !=  0     )
+						&&	(  *p  !=  '\n'  ) )	p ++;
+				c = *p;
+				*p = 0;
+				DecodeStringURL(str,q);
+				*p = c;
+				p ++;
+				break;
+			  default:
+				break;
+			}
+			SetValueString(value,str);
+			break;
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p = _RFC822_UnPackValueNoNamed(p,ValueArrayItem(value,i));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = _RFC822_UnPackValueNoNamed(p,ValueRecordItem(value,i));
+			}
+			break;
+		  default:
+			break;
+		}
+	}
+	return	(p);
+}
+
+static	char	*
+_RFC822_UnPackValueNamed(
+	char		*p,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+	char	str[SIZE_BUFF+1];
+	char	*vname
+	,		*rname;
+	char	*q;
+	int		c;
+	ValueStruct	*e;
+
+	if		(  value  !=  NULL  ) {
+		while	(  *p  !=  0  ) {
+			q = buff;
+			while	(	(  *p  !=  0    )
+					&&	(  *p  !=  ':'  ) ) {
+				*q ++ = *p ++;
+			}
+			*q = 0;
+			p ++;
+			while	(	(  *p  !=  0    )
+					&&	(  isspace(*p)  ) )	p ++;
+			DecodeName(&rname,&vname,buff);
+			if		(  strcmp(rname,RecName)  ) {
+				p = SkipNext(p);
+			} else {
+				if		(  ( e = GetItemLongName(value,vname) )  !=  NULL  ) {
+					switch	(StringEncoding) {
+					  case	STRING_ENCODING_URL:
+						q = p;
+						while	(	(  *p  !=  0     )
+								&&	(  *p  !=  '\n'  ) )	p ++;
+						c = *p;
+						*p = 0;
+						DecodeStringURL(str,q);
+						*p = c;
+						p ++;
+						break;
+					  default:
+						break;
+					}
+					SetValueString(e,str);
+				} else {
+					p = SkipNext(p);
+				}
+			}
+		}
+	}					
+	return	(p);
+}
+
+extern	char	*
+RFC822_UnPackValue(
+	char	*p,
+	ValueStruct	*value,
+	size_t	textsize)
+{
+	char	*ret;
+
+	if		(  fName  ) {
+		ret = _RFC822_UnPackValueNamed(p,value);
+	} else {
+		ret = _RFC822_UnPackValueNoNamed(p,value);
+	}
 	return	(ret);
 }
 
+static	char	*
+_RFC822_PackValue(
+	char		*p,
+	ValueStruct	*value,
+	char		*name)
+{
+	int		i;
+	char	buff[SIZE_BUFF+1];
+
+	if		(  value  !=  NULL  ) {
+		if		(  name  ==  NULL  ) { 
+			name = longname + strlen(longname);
+		}
+		switch	(value->type) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_BYTE:
+			switch	(StringEncoding) {
+			  case	STRING_ENCODING_URL:
+				EncodeStringURL(buff,ToString(value));
+				if		(  fName  ) {
+					p+= sprintf(p,"%s: ",longname);
+				}
+				p += sprintf(p,"%s\n",buff);
+				break;
+			  default:
+				break;
+			}
+			break;
+		  case	GL_TYPE_BOOL:
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+			if		(  fName  ) {
+				p+= sprintf(p,"%s: ",longname);
+			}
+			p += sprintf(p,"%s\n",ToString(value));
+			break;
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				sprintf(name,"[%d]",i);
+				p = _RFC822_PackValue(p,ValueArrayItem(value,i),name+strlen(name));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				sprintf(name,".%s",ValueRecordName(value,i));
+				p = _RFC822_PackValue(p,ValueRecordItem(value,i),name+strlen(name));
+			}
+			break;
+		  default:
+			break;
+		}
+	}
+	*p = 0;
+	return	(p);
+}
+
+extern	char	*
+RFC822_PackValue(
+	char	*p,
+	ValueStruct	*value,
+	size_t	textsize)
+{
+	memclear(longname,SIZE_BUFF);
+	if		(  RecName  !=  NULL  ) {
+		strcpy(longname,RecName);
+	}
+	return	(_RFC822_PackValue(p,value,NULL));
+}
+
+static	size_t
+_RFC822_SizeValue(
+	ValueStruct	*value,
+	char		*name)
+{
+	int		i;
+	size_t	ret;
+
+dbgmsg(">_RFC822_SizeValue");
+	if		(  value  ==  NULL  )	return	(0);
+	if		(  name  ==  NULL  ) { 
+		name = longname + strlen(longname);
+	}
+	switch	(value->type) {
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_BYTE:
+		ret = 1;
+		if		(  fName  ) {
+			ret += strlen(longname) + 2;
+		}
+		switch	(StringEncoding) {
+		  case	STRING_ENCODING_URL:
+			ret += EncodeStringLengthURL(ToString(value));
+			break;
+		  default:
+			break;
+		}
+		break;
+	  case	GL_TYPE_BOOL:
+	  case	GL_TYPE_NUMBER:
+	  case	GL_TYPE_INT:
+	  case	GL_TYPE_FLOAT:
+		ret = strlen(ToString(value)) + 1;
+		if		(  fName  ) {
+			ret += strlen(longname) + 2;
+		}
+		break;
+	  case	GL_TYPE_ARRAY:
+		ret = 0;
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			sprintf(name,"[%d]",i);
+			ret += _RFC822_SizeValue(ValueArrayItem(value,i),name+strlen(name));
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			sprintf(name,".%s",ValueRecordName(value,i));
+			ret += _RFC822_SizeValue(ValueRecordItem(value,i),name+strlen(name));
+		}
+		break;
+	  case	GL_TYPE_OBJECT:
+	  default:
+		ret = 0;
+		break;
+	}
+dbgmsg("<_RFC822_SizeValue");
+	return	(ret);
+}
+
+extern	size_t
+RFC822_SizeValue(
+	ValueStruct	*value,
+	size_t		arraysize,
+	size_t		textsize)
+{
+	memclear(longname,SIZE_BUFF);
+	if		(  RecName  !=  NULL  ) {
+		strcpy(longname,RecName);
+	}
+	return	(_RFC822_SizeValue(value,NULL));
+}
+
+extern	void
+RFC822_SetOptions(
+	char	*rname,
+	char	*locale,
+	int		encode,
+	Bool	fname)
+{
+	if		(  rname  !=  NULL  ) {
+		if		(  RecName  !=  NULL  ) {
+			xfree(RecName);
+		}
+		RecName = StrDup(rname);
+	}
+	if		(  encode  !=  STRING_ENCODING_NULL  ) {
+		StringEncoding = encode;
+	}
+	if		(  locale  !=  NULL  ) {
+		Locale = locale;
+	}
+	fName = fname;
+}

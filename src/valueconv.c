@@ -56,10 +56,13 @@ typedef	struct {
 }	ConvFuncs;
 
 static	ConvFuncs	funcs[] = {
+
 	{	"OpenCOBOL",
 		OpenCOBOL_PackValue,	OpenCOBOL_UnPackValue,	OpenCOBOL_SizeValue	},
+
 	{	"dotCOBOL",
 		dotCOBOL_PackValue,		dotCOBOL_UnPackValue,	dotCOBOL_SizeValue	},
+
 	{	"CSV1",
 		CSV1_PackValue,			CSV_UnPackValue,		CSV1_SizeValue		},
 	{	"CSV2",
@@ -68,6 +71,11 @@ static	ConvFuncs	funcs[] = {
 		CSV3_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
 	{	"CSVE",
 		CSVE_PackValue,			CSV_UnPackValue,		CSVE_SizeValue		},
+	{	"CSV",
+		CSV_PackValue,			CSV_UnPackValue,		CSV_SizeValue		},
+	{	"RFC822",
+		RFC822_PackValue,		RFC822_UnPackValue,		RFC822_SizeValue	},
+
 	{	NULL,
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };
@@ -82,20 +90,23 @@ SetLanguage(
 	ConvFuncs	*func;
 
 dbgmsg(">SetLanguage");
-	if		(  FuncTable  ==  NULL  ) {
-		FuncTable = NewNameHash();
-		for	( i = 0 ; funcs[i].name  !=  NULL ; i ++ ) {
-			if		(  g_hash_table_lookup(FuncTable,funcs[i].name)  ==  NULL  ) {
-				g_hash_table_insert(FuncTable,funcs[i].name,&funcs[i]);
+	if		(  name  !=  NULL  ) {
+		if		(  FuncTable  ==  NULL  ) {
+			FuncTable = NewNameHash();
+			for	( i = 0 ; funcs[i].name  !=  NULL ; i ++ ) {
+				if		(  g_hash_table_lookup(FuncTable,funcs[i].name)  ==  NULL  ) {
+					g_hash_table_insert(FuncTable,funcs[i].name,&funcs[i]);
+				}
 			}
 		}
+		if		(  ( func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name) )
+				   ==  NULL  ) {
+			fprintf(stderr,"can not found %s convert rule\n",name);
+			exit(1);
+		}
+		PackValue = func->Pack;
+		UnPackValue = func->UnPack;
+		SizeValue = func->Size;
 	}
-	if		(  ( func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name) )  ==  NULL  ) {
-		fprintf(stderr,"can not found %s convert rule\n",name);
-		exit(1);
-	}
-	PackValue = func->Pack;
-	UnPackValue = func->UnPack;
-	SizeValue = func->Size;
 dbgmsg("<SetLanguage");
 }
