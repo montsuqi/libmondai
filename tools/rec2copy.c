@@ -43,6 +43,7 @@ copies.
 
 static	Bool	fNoConv;
 static	Bool	fFiller;
+static	Bool	fFull;
 static	int		TextSize;
 static	int		ArraySize;
 static	char	*Prefix;
@@ -50,15 +51,16 @@ static	char	*RecName;
 static	char	*Lang;
 
 static	int		level;
-
-static	void	COBOL(ValueStruct *val, size_t arraysize, size_t textsize);
-
+static	char	namebuff[SIZE_BUFF];
 static	int		Col;
 static	int		is_return = FALSE;
 
+static	void	_COBOL(ValueStruct *val, size_t arraysize, size_t textsize);
+
 static	void
 PutLevel(
-	int		level)
+	int		level,
+	Bool	fNum)
 {
 	int		n;
 
@@ -69,7 +71,11 @@ PutLevel(
 	for	( ; n > 0 ; n -- ) {
 		fputc(' ',stdout);
 	}
-	printf("%02d  ",level);
+	if		(  fNum  ) {
+		printf("%02d  ",level);
+	} else {
+		printf("    ");
+	}
 	Col = 0;
 }
 
@@ -140,7 +146,7 @@ PutName(
 }
 
 static	void
-COBOL(
+_COBOL(
 	ValueStruct	*val,
 	size_t		arraysize,
 	size_t		textsize)
@@ -149,6 +155,7 @@ COBOL(
 	,		n;
 	ValueStruct	*tmp;
 	char	buff[SIZE_BUFF+1];
+	char	*name;
 
 	if		(  val  ==  NULL  )	return;
 
@@ -190,9 +197,9 @@ COBOL(
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
-			COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp,arraysize,textsize);
 		} else {
-			COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp,arraysize,textsize);
 			sprintf(buff,"OCCURS  %d TIMES",n);
 			PutTab(8);
 			PutString(buff);
@@ -200,34 +207,54 @@ COBOL(
 		break;
 	  case	GL_TYPE_RECORD:
 		level ++;
+		if		(  fFull  ) {
+			name = namebuff + strlen(namebuff);
+		} else {
+			name = namebuff;
+		}
 		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
 			printf(".\n");
-			PutLevel(level);
+			PutLevel(level,TRUE);
+			if		(  fFull  )	{
+				sprintf(name,"%s%s",(( *namebuff == 0 ) ? "": "-"),
+						val->body.RecordData.names[i]);
+			} else {
+				strcpy(namebuff,val->body.RecordData.names[i]);
+			}
+			PutName(namebuff);
 			tmp = val->body.RecordData.item[i];
-			PutName(val->body.RecordData.names[i]);
 			if		(  is_return  ) {
 				/* new line if current ValueStruct children is item and it has
 				   occurs */
 				if		(	(  tmp->type != GL_TYPE_RECORD  )
 						&&	(  tmp->type == GL_TYPE_ARRAY  )
 						&&	(  tmp->body.ArrayData.item[0]->type != GL_TYPE_RECORD  ) ) {
-					fputs("\n",stdout);
-					fputs("        " /* comment */
-					      "                   " /* indent */,stdout);
-					Col = 0;
+					printf("\n");
+					PutLevel(level,FALSE);
 				}
 			  	is_return = FALSE;
 			}
 			if		(  tmp->type  !=  GL_TYPE_RECORD  ) {
 				PutTab(4);
 			}
-			COBOL(tmp,arraysize,textsize);
+			_COBOL(tmp,arraysize,textsize);
+			*name = 0;
 		}
 		level --;
 		break;
 	  default:
 		break;
 	}
+}
+
+static	void
+COBOL(
+	ValueStruct	*val,
+	size_t		arraysize,
+	size_t		textsize)
+{
+	*namebuff = 0;
+	_COBOL(val,arraysize,textsize);
 }
 
 static	void
@@ -240,7 +267,7 @@ SIZE(
 
 	if		(  val  ==  NULL  )	return;
 	level ++;
-	PutLevel(level);
+	PutLevel(level,TRUE);
 	PutName("filler");
 	PutTab(8);
 	sprintf(buff,"PIC X(%d)",SizeValue(val,arraysize,textsize));
@@ -257,7 +284,7 @@ MakeFromRecord(
 	level = 1;
 	DD_ParserInit();
 	if		(  ( rec = DD_ParserDataDefines(name) )  !=  NULL  ) {
-		PutLevel(level);
+		PutLevel(level,TRUE);
 		if		(  *RecName  ==  0  ) {
 			PutString(rec->name);
 		} else {
@@ -286,6 +313,8 @@ static	ARG_TABLE	option[] = {
 		"レコードの名前"								},
 	{	"filler",	BOOLEAN,	TRUE,	(void*)&fFiller,
 		"レコードの中身をFILLERにする"					},
+	{	"full",		BOOLEAN,	TRUE,	(void*)&fFull,
+		"階層構造を名前に反映する"						},
 	{	"noconv",	BOOLEAN,	TRUE,	(void*)&fNoConv,
 		"項目名を大文字に加工しない"					},
 	{	NULL,		0,			FALSE,	NULL,	NULL 	}
@@ -296,6 +325,7 @@ SetDefault(void)
 {
 	fNoConv = FALSE;
 	fFiller = FALSE;
+	fFull = FALSE;
 	ArraySize = -1;
 	TextSize = -1;
 	Prefix = "";

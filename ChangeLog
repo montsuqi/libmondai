@@ -1,3 +1,7 @@
+2003-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c : 変数名に構造体の構造を反映させる機能付加
+
 2003-03-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	* tools/rec2copy.c (is_return): New static variable, for output return
