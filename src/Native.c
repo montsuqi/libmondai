@@ -130,7 +130,7 @@ dbgmsg(">NativeUnPackValue");
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
-				strcpy(ValueString(value),p);
+				memcpy(ValueString(value),p,size);
 				p += size;
 			}
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
