@@ -213,6 +213,11 @@ ENTER_FUNC;
 			}
 			p += sprintf(p,"</lm:record>");
 			break;
+		  case	GL_TYPE_ALIAS:
+			p += sprintf(p,"<lm:alias name=\"%s\">",name);
+			p += sprintf(p,"%s",ValueAliasName(value));
+			p += sprintf(p,"</lm:alias>");
+			break;
 		  default:
 			p += sprintf(p,"<lm:item name=\"%s\"",name);
 			if		(  ConvType(opt)  ) {
@@ -252,7 +257,6 @@ ENTER_FUNC;
 				  case	GL_TYPE_OBJECT:
 					p += sprintf(p,"\"object\"");
 					break;
-				  case	GL_TYPE_ALIAS:
 				  default:
 					break;
 				}
@@ -337,6 +341,19 @@ ENTER_FUNC;
 				p += sprintf(p,"</%s>",name);
 			}
 			break;
+		  case	GL_TYPE_ALIAS:
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"<%s:%s type=\"alias\">",opt->recname,name);
+			} else {
+				p += sprintf(p,"<%s type=\"alias\">",name);
+			}
+			p += sprintf(p,"%s",ValueAliasName(value));
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf(p,"</%s:%s>",opt->recname,name);
+			} else {
+				p += sprintf(p,"</%s>",name);
+			}
+			break;
 		  default:
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"<%s:%s",opt->recname,name);
@@ -379,7 +396,6 @@ ENTER_FUNC;
 			  case	GL_TYPE_OBJECT:
 				p += sprintf(p,"\"object\"");
 				break;
-			  case	GL_TYPE_ALIAS:
 			  default:
 				break;
 			}

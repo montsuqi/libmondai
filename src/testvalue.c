@@ -154,6 +154,10 @@ BuildMcpArea(
 	p += sprintf(p,			"pputtype 	char(1);");
 	p += sprintf(p,			"prc		char(1);");
 	p += sprintf(p,		"};");
+	p += sprintf(p,     "aliases    {");
+	p += sprintf(p,     "  foo = db.path.blocks;");
+	p += sprintf(p,     "  baa = private.count;");
+	p += sprintf(p,		"};");
 	p += sprintf(p,	"};");
 
 	value = DD_ParseValueMem(buff);
@@ -242,7 +246,7 @@ printf("** variable size (end)**\n");fflush(stdout);
 	opt = NewConvOpt();
 	ConvSetCodeset(opt,TEST_CODE);
 
-	ConvSetXmlType(opt,XML_TYPE2);
+	ConvSetXmlType(opt,XML_TYPE1);
 	ConvSetIndent(opt,TRUE);
 	ConvSetType(opt,FALSE);
 	ConvSetRecName(opt,"mcparea");

@@ -1,3 +1,9 @@
+2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (NativeSaveValue): NativePackValueの流用をやめ、型情報のみ保存
+
+	* src/XML.c: aliasの処理追加
+
 2004-10-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c: ValueStructのload/store
