@@ -87,7 +87,7 @@ dbgmsg(">ParSQL");
 	while	( DD_Token != '}' ) {
 		switch	(DD_Token) {
 		  case	T_SYMBOL:
-			if		(  ( val = GetRecordItem(rec->rec,DD_ComSymbol) )  !=  NULL  ) {
+			if		(  ( val = GetRecordItem(rec->value,DD_ComSymbol) )  !=  NULL  ) {
 				do {
 					LBS_EmitString(sql,DD_ComSymbol);
 					if		(  GetSymbol  ==  '.'  ) {
@@ -146,7 +146,7 @@ dbgmsg(">ParSQL");
 				LBS_Emit(sql,SQL_OP_REF);
 			}
 			if		(  GetName  ==  T_SYMBOL  ) {
-				val = rec->rec;
+				val = rec->value;
 				do {
 					val = GetRecordItem(val,DD_ComSymbol);
 					if		(  val  ==  NULL  ) {

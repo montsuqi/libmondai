@@ -308,9 +308,9 @@ dbgmsg(">MakeFromRecord");
 		}
 		if		(  fFiller  ) {
 			printf(".\n");
-			SIZE(rec->rec);
+			SIZE(rec->value);
 		} else {
-			COBOL(rec->rec);
+			COBOL(rec->value);
 		}
 		printf(".\n");
 	}

@@ -1,3 +1,7 @@
+2003-07-30  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/value.h: RecordStructのメンバ名変更(わかりやすい名前に)
+
 2003-07-29  OGOSHI  <ogochan@nurs.or.jp>
 
 	* src/Text.c: CGI形式に対応

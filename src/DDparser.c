@@ -441,7 +441,7 @@ dbgmsg(">DD_Parse");
 	DD_cLine = 1;
 	DD_File = fp;
 	ret = New(RecordStruct);
-	ret->rec = NULL;
+	ret->value = NULL;
 	ret->name = NULL;
 	if		(  !stricmp(GetExt(name),".db")  ) {
 		ret->type = RECORD_DB;
@@ -454,10 +454,10 @@ dbgmsg(">DD_Parse");
 		  case	T_SYMBOL:
 			ret->name = StrDup(DD_ComSymbol);
 			if		(  GetSymbol  == '{'  ) {
-				ret->rec = NewValue(GL_TYPE_RECORD);
-				ret->rec->attr = GL_ATTR_NULL;
+				ret->value = NewValue(GL_TYPE_RECORD);
+				ret->value->attr = GL_ATTR_NULL;
 				GetName;
-				ParValue(ret->rec);
+				ParValue(ret->value);
 			} else {
 				Error("syntax error");
 			}
@@ -536,7 +536,7 @@ dbgmsg(">DD_Parse");
 	}
 
 	if		(  fDD_Error  ) {
-		FreeValueStruct(ret->rec);
+		FreeValueStruct(ret->value);
 		if		(  ret->name  !=  NULL ) {
 			xfree(ret->name);
 		}
@@ -571,21 +571,21 @@ dbgmsg("<ParserDataDefines");
 	return	(ret);
 }
 
-extern	ValueStruct	*
+extern	RecordStruct	*
 ReadRecordDefine(
 	char	*name)
 {
 	RecordStruct	*rec;
-	ValueStruct		*ret;
 	char		buf[SIZE_LONGNAME+1]
 	,			dir[SIZE_LONGNAME+1];
 	char		*p
 	,			*q;
 	Bool		fExit;
 
+dbgmsg(">ReadRecordDefine");
 	strcpy(dir,RecordDir);
 	p = dir;
-	ret = NULL;
+	rec = NULL;
 	do {
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
 			*q = 0;
@@ -595,11 +595,18 @@ ReadRecordDefine(
 		}
 		sprintf(buf,"%s/%s.rec",p,name);
 		if		(  ( rec = DD_ParserDataDefines(buf) )  !=  NULL  ) {
-			ret = rec->rec;
+			rec->name = StrDup(name);
 			break;
 		}
 		p = q + 1;
 	}	while	(  !fExit  );
-	return	(ret);
+	if		(  rec  ==  NULL  ) {
+		rec = New(RecordStruct);
+		rec->name = StrDup(name);
+		rec->value = NULL;
+		rec->type = RECORD_NULL;
+	}
+dbgmsg("<ReadRecordDefine");
+	return	(rec);
 }
 

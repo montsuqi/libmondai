@@ -122,29 +122,34 @@ typedef	struct {
 
 typedef	struct _RecordStruct	{
 	char		*name;
-	ValueStruct	*rec;
+	ValueStruct	*value;
 	int		type;
 	union {
 		DB_Struct	*db;
 	}	opt;
 }	RecordStruct;
 
+#define	GL_TYPE_CLASS			(PacketDataType)0xF0
 #define	GL_TYPE_NULL			(PacketDataType)0x00
-#define	GL_TYPE_INT				(PacketDataType)0x10
-#define	GL_TYPE_BOOL			(PacketDataType)0x11
-#define	GL_TYPE_FLOAT			(PacketDataType)0x20
-#define	GL_TYPE_CHAR			(PacketDataType)0x30
-#define	GL_TYPE_TEXT			(PacketDataType)0x31
-#define	GL_TYPE_VARCHAR			(PacketDataType)0x32
-#define	GL_TYPE_BYTE			(PacketDataType)0x40
-#define	GL_TYPE_NUMBER			(PacketDataType)0x50
 
-#define	GL_TYPE_DBCODE			(PacketDataType)0x60
-#define	GL_TYPE_OBJECT			(PacketDataType)0x61
+#define	GL_TYPE_NUMRIC			(PacketDataType)0x10
+#define	GL_TYPE_INT				(PacketDataType)0x11
+#define	GL_TYPE_BOOL			(PacketDataType)0x12
+#define	GL_TYPE_FLOAT			(PacketDataType)0x13
+#define	GL_TYPE_NUMBER			(PacketDataType)0x14
+
+#define	GL_TYPE_STRING			(PacketDataType)0x20
+#define	GL_TYPE_CHAR			(PacketDataType)0x21
+#define	GL_TYPE_TEXT			(PacketDataType)0x22
+#define	GL_TYPE_VARCHAR			(PacketDataType)0x23
+#define	GL_TYPE_BYTE			(PacketDataType)0x24
+#define	GL_TYPE_DBCODE			(PacketDataType)0x25
+
+#define	GL_TYPE_OBJECT			(PacketDataType)0x40
 
 #define	GL_TYPE_STRUCTURE		(PacketDataType)0x80
-#define	GL_TYPE_ARRAY			(PacketDataType)0x90
-#define	GL_TYPE_RECORD			(PacketDataType)0xA0
+#define	GL_TYPE_ARRAY			(PacketDataType)0x81
+#define	GL_TYPE_RECORD			(PacketDataType)0x82
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
 #define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x80
@@ -155,7 +160,9 @@ typedef	struct _RecordStruct	{
 #define	GL_OBJ_INACTIVE			-1
 
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
-#define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_STRUCTURE) == GL_TYPE_STRUCTURE)
+#define	IS_VALUE_NUMERIC(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
+#define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
+#define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
 #define	ValueType(v)			((v)->type)
 
