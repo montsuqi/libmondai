@@ -52,6 +52,19 @@ fi
 AC_SUBST(LIBMONDAI_I18N)
 
 dnl ***************************************************************************
+dnl Add all the cflags & libs needed for the libfixed modules.
+dnl ***************************************************************************
+
+AC_PATH_PROG(libfixed_config, libfixed-config)
+if test x$libfixed_config = xno; then
+  AC_MSG_ERROR(Couldn't find libfixed-config)
+fi
+FIXED_CFLAGS=`$libfixed_config --cflags 2>/dev/null`
+FIXED_LIBS=`$libfixed_config --libs 2>/dev/null`
+AC_SUBST(FIXED_LIBS)
+AC_SUBST(FIXED_CFLAGS)
+
+dnl ***************************************************************************
 dnl GLib
 dnl ***************************************************************************
 

@@ -1,3 +1,7 @@
+2004-09-29  Noboru Saitou  <noborus@netlab.jp>
+
+	* Ver 1.2.2 release
+
 2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.h: MonObjectTypeをlonglongにした
