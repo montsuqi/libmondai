@@ -39,10 +39,6 @@ copies.
 
 #include	"types.h"
 #include	"libmondai.h"
-//#include	"value.h"
-//#include	"misc_v.h"
-//#include	"monstring.h"
-//#include	"memory_v.h"
 #include	"LBSfunc.h"
 #include	"debug.h"
 
