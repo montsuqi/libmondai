@@ -305,11 +305,12 @@ SetValueString(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	if		(  *str  ==  CHAR_NIL  ) {
-		ValueAttribute(val) |= GL_ATTR_NIL;
+	if		(	(  str   ==  NULL      )
+			||	(  *str  ==  CHAR_NIL  ) ) {
+		ValueIsNil(val);
 		rc = TRUE;
 	} else {
-		ValueAttribute(val) &= ~GL_ATTR_NIL;
+		ValueIsNonNil(val);
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
@@ -431,6 +432,7 @@ SetValueInteger(
 	  default:
 		rc = FALSE;	  
 	}
+	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -473,6 +475,7 @@ SetValueBool(
 	  default:
 		rc = FALSE;	  
 	}
+	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -515,6 +518,7 @@ SetValueFloat(
 	  default:
 		rc = FALSE;	  
 	}
+	ValueIsNonNil(val);
 	return	(rc);
 }
 
@@ -557,6 +561,7 @@ SetValueFixed(
 	  default:
 		rc = FALSE;	  
 	}
+	ValueIsNonNil(val);
 	return	(rc);
 }
 

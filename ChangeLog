@@ -1,3 +1,8 @@
+2003-10-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c (SetValueString): strがNULLの時の処理(NILにしたが、
+	これで正しいかどうかは不明)
+
 2003-10-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Lex.c: 再入可能にして汎用ライブラリにした

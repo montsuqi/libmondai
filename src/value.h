@@ -126,6 +126,7 @@ typedef	struct _ValueStruct	{
 #define	CHAR_NIL				0x01
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
+#define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
 
 #define	GL_OBJ_NULL				0
 #define	GL_OBJ_INACTIVE			-1
@@ -137,6 +138,8 @@ typedef	struct _ValueStruct	{
 
 #define	ValueType(v)			((v)->type)
 #define	ValueAttribute(v)		((v)->attr)
+#define	ValueIsNil(v)			((v)->attr |= GL_ATTR_NIL)
+#define	ValueIsNonNil(v)		((v)->attr &= ~GL_ATTR_NIL)
 
 #define	ValueString(v)			((v)->body.CharData.sval)
 #define	ValueStringLength(v)	((v)->body.CharData.len)
