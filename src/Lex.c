@@ -23,6 +23,7 @@ copies.
 #define	DEBUG
 #define	TRACE
 */
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -31,7 +32,11 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<unistd.h>
 #include	<glib.h>
+#include	<sys/mman.h>
+#include	<sys/stat.h>
+#include	<fcntl.h>
 #include	"types.h"
 #include	"misc_v.h"
 #include	"memory_v.h"
@@ -44,6 +49,33 @@ copies.
 #include	"DDparser.h"
 #include	"debug.h"
 
+static	char	*
+GetFile(
+	char	*name)
+{
+	struct	stat	sb;
+	int		fd;
+	char	*p
+		,	*ret;
+
+ENTER_FUNC;
+	dbgprintf("name = [%s]\n",name);
+	ret = NULL;
+	if		(  ( fd = open(name,O_RDONLY ) )  >=  0  ) {
+		fstat(fd,&sb);
+		if		(  ( p = mmap(NULL,sb.st_size,PROT_READ,MAP_PRIVATE,fd,0) )
+				   !=  NULL  ) {
+			ret = (char *)xmalloc(sb.st_size+1);
+			memcpy(ret,p,sb.st_size);
+			munmap(p,sb.st_size);
+			close(fd);
+			ret[sb.st_size] = 0;
+		}
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
 extern	CURFILE	*
 PushLexInfo(
 	char	*name,
@@ -51,13 +83,14 @@ PushLexInfo(
 	GHashTable	*res)
 {
 	CURFILE	*info;
-	FILE	*fp;
+	char	*str;
 
-	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
+	if		(  ( str = GetFile(name) )  !=  NULL  ) {
 		info = New(CURFILE);
 		info->fn = StrDup(name);
 		info->cLine = 1;
-		info->fp = fp;
+		info->body = str;
+		info->pos = 0;
 		info->ftop = NULL;
 		info->Reserved = res;
 		info->fError = FALSE;
@@ -77,6 +110,32 @@ PushLexInfo(
 	return	(info);
 }
 
+extern	CURFILE	*
+PushLexInfoMem(
+	char	*mem,
+	char	*path,
+	GHashTable	*res)
+{
+	CURFILE	*info;
+
+	info = New(CURFILE);
+	info->fn = StrDup("** memory **");
+	info->cLine = 1;
+	info->body = StrDup(mem);
+	info->pos = 0;
+	info->ftop = NULL;
+	info->Reserved = res;
+	info->fError = FALSE;
+	if		(  path  ==  NULL  ) {
+		path = ".";
+	}
+	info->path = StrDup(path);
+	info->Symbol = (char *)xmalloc(SIZE_SYMBOL+1);
+	info->next = InfoRoot.curr;
+	InfoRoot.curr = info;
+	return	(info);
+}
+
 extern	void
 DropLexInfo(void)
 {
@@ -86,7 +145,7 @@ DropLexInfo(void)
 	xfree(info->fn);
 	xfree(info->Symbol);
 	xfree(info->path);
-	fclose(info->fp);
+	xfree(info->body);
 	InfoRoot.curr = info->next;
 	xfree(info);
 }
@@ -98,14 +157,14 @@ ExitInclude(void)
 	CURFILE	*info = InfoRoot.curr;
 
 dbgmsg(">ExitInclude");
-	if		(  info->fp  !=  NULL  ) {
-		fclose(info->fp);
+	if		(  info->body  !=  NULL  ) {
+		xfree(info->body);
 	}
 	back = info->ftop;
-	info->fp = fopen(back->fn,"r");
+	info->body = GetFile(back->fn);
 	xfree(info->fn);
 	info->fn = back->fn;
-	fsetpos(info->fp,&back->pos);
+	info->pos = back->pos;
 	info->cLine = back->cLine;
 	info->ftop = back->next;
 	xfree(back);
@@ -126,10 +185,12 @@ dbgmsg(">DoInclude");
 	back = New(INCFILE);
 	back->next = CURR->ftop;
 	back->fn =  CURR->fn;
-	fgetpos(CURR->fp,&back->pos);
+	back->pos = CURR->pos;
 	back->cLine = CURR->cLine;
 	CURR->ftop = back;
-	fclose(CURR->fp);
+	if		(  CURR->body  !=  NULL  ) {
+		xfree(CURR->body);
+	}
 	strcpy(buff,CURR->path);
 	p = buff;
 	do {
@@ -137,18 +198,18 @@ dbgmsg(">DoInclude");
 			*q = 0;
 		}
 		sprintf(name,"%s/%s",p,fn);
-		if		(  ( CURR->fp = fopen(name,"r") )  !=  NULL  )	break;
+		if		(  ( CURR->body = GetFile(name) )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
 	CURR->cLine = 1;
+	CURR->pos = 0;
 	CURR->fn = StrDup(name);
-	if		(  CURR->fp  ==  NULL  ) {
+	if		(  CURR->body  ==  NULL  ) {
 		fprintf(stderr,"include not found [%s]\n",name);
 		ExitInclude();
 	}
 dbgmsg("<DoInclude");
 }
-
 
 extern	void
 LexInit(void)
@@ -193,8 +254,7 @@ CheckReserved(
 	return	(ret);
 }
 
-#define	GetChar()			fgetc(CURR->fp)
-#define	UnGetChar(c)		ungetc((c),CURR->fp)
+#define	UnGetChar(c)		CURR->body[-- CURR->pos] =(c)
 #define	SKIP_SPACE	while	(  isspace( c = GetChar() ) ) {	\
 						if		(  c  ==  '\n'  ) {	\
 							c = ' ';\
@@ -202,6 +262,23 @@ CheckReserved(
 						}	\
 					}
 
+#if	0
+#define	GetChar()			CURR->body[CURR->pos ++]
+#else
+static	int
+GetChar(void)
+{
+	int		c;
+
+	if		(  CURR->body  ==  NULL  ) {
+		fprintf(stderr,"nulpo!\n");
+	}
+	if		(  ( c = CURR->body[CURR->pos ++] )  ==  0  ) {
+		c = EOF;
+	}
+	return	(c);
+}
+#endif
 
 static	void
 ReadyDirective(void)

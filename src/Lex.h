@@ -32,7 +32,7 @@ copies.
 
 typedef	struct	INCFILE_S	{
 	struct	INCFILE_S	*next;
-	fpos_t				pos;
+	size_t				pos;
 	int					cLine;
 	char				*fn;
 }	INCFILE;
@@ -40,7 +40,8 @@ typedef	struct	_CURFILE_S {
 	struct	_CURFILE_S	*next;
 	GHashTable			*Reserved;
 	INCFILE	*ftop;
-	FILE	*fp;
+	char	*body;
+	size_t	pos;
 	char	*fn;
 	char	*path;
 	int		cLine;
@@ -70,6 +71,7 @@ GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
 extern	CURFILE			*PushLexInfo(char *name, char *path, GHashTable *res);
+extern	CURFILE			*PushLexInfoMem(char *mem, char *path, GHashTable *res);
 extern	void			DropLexInfo();
 extern	void			LexInit(void);
 extern	GHashTable		*MakeReservedTable(TokenTable *table);

@@ -71,9 +71,10 @@ static	ValueStruct	*
 BuildMcpArea(
 	size_t	stacksize)
 {
+	ValueStruct	*value;
+#if	0
 	FILE	*fp;
 	char	name[SIZE_LONGNAME+1];
-	ValueStruct	*value;
 
 	sprintf(name,"/tmp/mcparea%d.rec",(int)getpid());
 	if		(  ( fp = fopen(name,"w") )  ==  NULL  ) {
@@ -114,9 +115,49 @@ BuildMcpArea(
 	fprintf(fp,		"};");
 	fprintf(fp,	"};");
 	fclose(fp);
-
 	value = DD_ParseValue(name);
 	remove(name);
+#else
+	char	buff[SIZE_BUFF];
+	char	*p;
+
+	p = buff;
+	p += sprintf(p,	"mcparea	{");
+	p += sprintf(p,		"func varchar(%d);",SIZE_FUNC);
+	p += sprintf(p,		"obj object;");
+	p += sprintf(p,		"bin binary;");
+	p += sprintf(p,		"rc int;");
+	p += sprintf(p,		"dc	{");
+	p += sprintf(p,			"window	 varchar(%d);",4);
+	p += sprintf(p,			"widget	 varchar(%d);",SIZE_NAME);
+	p += sprintf(p,			"event	 varchar(%d);",SIZE_EVENT);
+	p += sprintf(p,			"module	 varchar(%d);",SIZE_NAME);
+	p += sprintf(p,			"fromwin varchar(%d);",SIZE_NAME);
+	p += sprintf(p,			"status	 varchar(%d);",SIZE_STATUS);
+	p += sprintf(p,			"puttype varchar(%d);",SIZE_PUTTYPE);
+	p += sprintf(p,			"term	 varchar(%d);",SIZE_TERM);
+	p += sprintf(p,			"user	 varchar(%d);",SIZE_USER);
+	p += sprintf(p,		"};");
+	p += sprintf(p,		"db	{");
+	p += sprintf(p,			"path	{");
+	p += sprintf(p,				"blocks	int;");
+	p += sprintf(p,				"rname	int;");
+	p += sprintf(p,				"pname	int;");
+	p += sprintf(p,			"};");
+	p += sprintf(p,		"};");
+	p += sprintf(p,		"private	{");
+	p += sprintf(p,			"count	int;");
+	p += sprintf(p,			"swindow	char(%d)[];",SIZE_NAME);
+	p += sprintf(p,			"state		char(1)[%d];",stacksize);
+	p += sprintf(p,			"index		int[%d];",stacksize);
+	p += sprintf(p,			"pstatus	char(1);");
+	p += sprintf(p,			"pputtype 	char(1);");
+	p += sprintf(p,			"prc		char(1);");
+	p += sprintf(p,		"};");
+	p += sprintf(p,	"};");
+
+	value = DD_ParseValueMem(buff);
+#endif
 
 	return	(value);
 }

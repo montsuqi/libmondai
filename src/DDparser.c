@@ -445,3 +445,20 @@ ENTER_FUNC;
 LEAVE_FUNC;
 	return	(ret);
 }
+
+extern	ValueStruct	*
+DD_ParseValueMem(
+	char	*mem)
+{
+	ValueStruct	*ret;
+
+ENTER_FUNC;
+	if		(  PushLexInfoMem(mem,RecordDir,Reserved)  !=  NULL  ) {
+		ret = DD_ParseMain();
+		DropLexInfo();
+	} else {
+		ret = NULL;
+	}
+LEAVE_FUNC;
+	return	(ret);
+}

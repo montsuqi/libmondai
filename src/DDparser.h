@@ -27,6 +27,7 @@ extern	ValueStruct	*ParValueDefine(void);
 extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
 extern	void		DD_ParserInit(void);
 extern	ValueStruct	*DD_ParseValue(char *name);
+extern	ValueStruct	*DD_ParseValueMem(char *mem);
 extern	ValueStruct	*DD_ParseMain(void);
 
 #undef	GLOBAL

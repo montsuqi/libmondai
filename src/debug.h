@@ -54,6 +54,12 @@ _MessageLevelPrintf(MESSAGE_WARN,__FILE__,__LINE__,__VA_ARGS__);
 #define	Message(l,...)                                  \
 _MessageLevelPrintf((l),__FILE__,__LINE__,__VA_ARGS__);
 #else
+#define	_MessagePrintf(f,l, ...)				\
+do {                                            \
+    printf("E:%s:%d:",(f),(l));					\
+    printf(__VA_ARGS__);                        \
+    printf("\n");                               \
+} while (0)
 #define	Error(...)                              \
 do {                                            \
     printf("E:%s:%d:",__FILE__,__LINE__);       \

@@ -1,3 +1,10 @@
+2004-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (DD_ParseValueMem): メモリ領域のparse
+
+	* src/Lex.c (GetFile): mmapを使うようにした(メモリ領域をparseする
+	機能を付加するため)
+
 2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.h: MonObjectTypeをlonglongにした
