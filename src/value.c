@@ -833,18 +833,12 @@ dbgmsg("<GetItemLongName");
 
 static	void
 DumpItem(
-	gpointer	key,
-	gpointer	value,
-	gpointer	user_data)
+	char		*name,
+	ValueStruct	*value)
 {
-	ValueStruct	*val = (ValueStruct *)user_data;
-	int			pos = (int)value;
-	ValueStruct	*item;
-
-	printf("%s:",(char *)key);
-	item = val->body.RecordData.item[pos-1];
-	printf("%s:",((item->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
-	DumpValueStruct(item);
+	printf("%s:",name);
+	printf("%s:",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
+	DumpValueStruct(value);
 }
 
 extern	void
@@ -911,7 +905,9 @@ DumpValueStruct(
 	  case	GL_TYPE_RECORD:
 		printf("record members = %d\n",val->body.RecordData.count);
 		fflush(stdout);
-		g_hash_table_foreach(val->body.RecordData.members,(GHFunc)DumpItem,val);
+		for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
+			DumpItem(val->body.RecordData.names[i],val->body.RecordData.item[i]);
+		}
 		printf("--\n");
 		break;
 	  default:

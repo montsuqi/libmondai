@@ -110,10 +110,7 @@ LBS_FetchChar(
 {
 	int		ret;
 
-	if		(  ( ret = LBS_FetchByte(lbs) )  ==  LBS_QUOTE_MSB  ) {
-		ret = 0x80 | LBS_FetchByte(lbs);
-	}
-	if		(  ret  <  0  ) {
+	if		(  ( ret = LBS_FetchByte(lbs) )  <  0  )	{
 		ret = 0;
 	}
 	return	(ret);
@@ -182,19 +179,6 @@ LBS_Emit(
 }
 
 extern	void
-LBS_EmitChar(
-	LargeByteString	*lbs,
-	char			c)
-{
-	if		(  ( c & 0x80 )  ==  0x80  ) {
-		LBS_Emit(lbs,LBS_QUOTE_MSB);
-		LBS_Emit(lbs,(c & 0x7F));
-	} else {
-		LBS_Emit(lbs,c);
-	}
-}
-
-extern	void
 LBS_EmitString(
 	LargeByteString	*lbs,
 	char			*str)
@@ -246,37 +230,16 @@ LBS_EmitFix(
 	lbs->ptr = 0;
 }
 
-extern	size_t
-LBS_StringLength(
-	LargeByteString	*lbs)
-{
-	size_t	size;
-	int		c;
-
-	size = 0;
-	RewindLBS(lbs);
-	while	(  ( c = LBS_FetchByte(lbs) )  >  0  ) {
-		if		(  c  !=  LBS_QUOTE_MSB  ) {
-			size ++;
-		}
-	}
-	return	(size);
-}
-
 extern	char	*
 LBS_ToString(
 	LargeByteString	*lbs)
 {
-	char	*ret
-	,		*p;
+	char	*ret;
 
 	ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
-	p = ret;
 	RewindLBS(lbs);
-	while	(  ( *p = LBS_FetchChar(lbs) )  !=  0  ) {
-		p ++;
-	}
-	*p = 0;
+	strcpy(ret,LBS_Body(lbs));
+	ret[LBS_Size(lbs)] = 0;
 	return	(ret);
 }
 

@@ -1,3 +1,7 @@
+2003-06-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c: 虫取りと一部関数のマクロ化およびデータアクセスマクロの追加
+
 2003-06-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.c (NewValue): 一時的な虫止め(将来的には抜本的な対策をするべき)

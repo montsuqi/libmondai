@@ -150,6 +150,7 @@ dbgmsg(">ParSQL");
 				do {
 					val = GetRecordItem(val,DD_ComSymbol);
 					if		(  val  ==  NULL  ) {
+						printf("[%s]\n",DD_ComSymbol);
 						Error("item name missing");
 					}
 					switch	(GetSymbol) {
