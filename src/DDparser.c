@@ -595,7 +595,6 @@ dbgmsg(">ReadRecordDefine");
 		}
 		sprintf(buf,"%s/%s.rec",p,name);
 		if		(  ( rec = DD_ParserDataDefines(buf) )  !=  NULL  ) {
-			rec->name = StrDup(name);
 			break;
 		}
 		p = q + 1;
