@@ -355,7 +355,7 @@ dbgmsg(">ParValueDefine");
 				attr |= GL_ATTR_VIRTUAL;
 				break;
 			  default:
-				Error("invalit attribute modifier");
+				Error("invalid attribute modifier");
 				break;
 			}
 			GetSymbol;
@@ -367,6 +367,7 @@ dbgmsg(">ParValueDefine");
 			Error("; missing");
 		}
 		if		(  !CURR->fError  ) {
+			SetValueAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
 	}
