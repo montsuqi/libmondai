@@ -1,3 +1,7 @@
+2003-09-05  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: ConvFuncのglobal化
+
 2003-09-03  OGOSHI  <ogochan@nurs.or.jp>
 
 	* src/valueconv.c (GetConvFunc): 追加

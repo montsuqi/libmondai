@@ -48,26 +48,29 @@ copies.
 
 static	ConvFuncs	funcs[] = {
 
-	{	"OpenCOBOL",
+	{	"OpenCOBOL",			"",						"",
 		OpenCOBOL_PackValue,	OpenCOBOL_UnPackValue,	OpenCOBOL_SizeValue	},
 
-	{	"dotCOBOL",
+	{	"dotCOBOL",				"",						"",
 		dotCOBOL_PackValue,		dotCOBOL_UnPackValue,	dotCOBOL_SizeValue	},
 
-	{	"CSV1",
+	{	"CSV1",					",",					"\n",
 		CSV1_PackValue,			CSV_UnPackValue,		CSV1_SizeValue		},
-	{	"CSV2",
+	{	"CSV2",					",",					"\n",
 		CSV2_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
-	{	"CSV3",
+	{	"CSV3",					",",					"\n",
 		CSV3_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
-	{	"CSVE",
+	{	"CSVE",					",",					"\n",
 		CSVE_PackValue,			CSV_UnPackValue,		CSVE_SizeValue		},
-	{	"CSV",
+	{	"CSV",					",",					"\n",
 		CSV_PackValue,			CSV_UnPackValue,		CSV_SizeValue		},
-	{	"RFC822",
+	{	"RFC822",				"\n",					"\n",
 		RFC822_PackValue,		RFC822_UnPackValue,		RFC822_SizeValue	},
 
-	{	NULL,
+	{	"CGI",					"&",					"\n",
+		CGI_PackValue,			CGI_UnPackValue,		CGI_SizeValue		},
+
+	{	NULL,					"",						"",
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };
 
@@ -108,9 +111,9 @@ dbgmsg(">SetLanguage");
 			fprintf(stderr,"can not found %s convert rule\n",name);
 			exit(1);
 		}
-		PackValue = func->Pack;
-		UnPackValue = func->UnPack;
-		SizeValue = func->Size;
+		PackValue = func->PackValue;
+		UnPackValue = func->UnPackValue;
+		SizeValue = func->SizeValue;
 	}
 dbgmsg("<SetLanguage");
 }

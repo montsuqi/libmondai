@@ -39,9 +39,11 @@ typedef	struct {
 
 typedef	struct {
 	char	*name;
-	char	*(*Pack)(CONVOPT *opt, char *p, ValueStruct *value);
-	char	*(*UnPack)(CONVOPT *opt, char *p, ValueStruct *value);
-	size_t	(*Size)(CONVOPT *opt, ValueStruct *value);
+	char	*fsep;
+	char	*rsep;
+	char	*(*PackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+	char	*(*UnPackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 }	ConvFuncs;
 
 #undef	GLOBAL
