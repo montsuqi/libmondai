@@ -26,6 +26,7 @@ copies.
 #include	"dotCOBOL_v.h"
 #include	"cobolvalue.h"
 #include	"valueconv.h"
+#include	"DDparser.h"
 
 /* version infomation */
 

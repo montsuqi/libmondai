@@ -1,5 +1,7 @@
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 
+	* src/libmondai.h.in: Included `DDparser.h'.
+
 	* src/Makefile.am (libmondaiincludedir): 
 	* libmondai-config.in: Changed install headers directory to
 	`$(includedir)/libmondai' from `$(includedir)'.
