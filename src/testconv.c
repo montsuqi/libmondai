@@ -69,7 +69,7 @@ copies.
 #endif
 #include	"cobolvalue.h"
 #include	"valueconv.h"
-#include	"DDparser.h"
+#include	"RecParser.h"
 #include	"numerici.h"
 #include	"hash_v.h"
 #include	"monstring.h"
@@ -105,7 +105,7 @@ main(
 	printf("***** DD_ParserInit *****\n");
 	DD_ParserInit();
 	printf("***** DD_ParseValue *****\n");
-	if		( ( val = DD_ParseValue("testrec.rec") )  ==  NULL  )	{
+	if		( ( val = DD_ParseValue("testrec.rec",NULL) )  ==  NULL  )	{
 		fprintf(stderr,"file not found.\n");
 		exit(1);
 	}

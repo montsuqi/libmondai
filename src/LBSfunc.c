@@ -110,7 +110,7 @@ LBS_Seek(
 			newpos = lbs->ptr + off;
 			break;
 		  case	SEEK_END:
-			newpos = lbs->size + off;
+			newpos = lbs->size - off;
 			break;
 		  default:
 			newpos = lbs->ptr;
@@ -183,6 +183,23 @@ LBS_FetchInt(
 	ret = 0;
 	if		(  lbs  !=  NULL  ) {
 		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
+	}
+	return	(ret);
+}
+
+extern	uint64_t
+LBS_Fetch64(
+	LargeByteString	*lbs)
+{
+	uint64_t	ret;
+	int			i;
+
+	ret = 0;
+	if		(  lbs  !=  NULL  ) {
+		for	( i = 0 ; i < sizeof(uint64_t) ; i ++ ) {
 			ret <<= 8;
 			ret |= LBS_FetchByte(lbs);
 		}
@@ -343,6 +360,23 @@ LBS_EmitInt(
 		LBS_Emit(lbs,((i & 0x00FF0000) >> 16));
 		LBS_Emit(lbs,((i & 0x0000FF00) >>  8));
 		LBS_Emit(lbs,((i & 0x000000FF)      ));
+	}
+}
+
+extern	void
+LBS_Emit64(
+	LargeByteString	*lbs,
+	uint64_t		i)
+{
+ 	if		(  lbs  !=  NULL  ) {
+		LBS_Emit(lbs,((i & 0xFF00000000000000LL) >> 56));
+		LBS_Emit(lbs,((i & 0x00FF000000000000LL) >> 48));
+		LBS_Emit(lbs,((i & 0x0000FF0000000000LL) >> 40));
+		LBS_Emit(lbs,((i & 0x000000FF00000000LL) >> 32));
+		LBS_Emit(lbs,((i & 0x00000000FF000000LL) >> 24));
+		LBS_Emit(lbs,((i & 0x0000000000FF0000LL) >> 16));
+		LBS_Emit(lbs,((i & 0x000000000000FF00LL) >>  8));
+		LBS_Emit(lbs,((i & 0x00000000000000FFLL)      ));
 	}
 }
 

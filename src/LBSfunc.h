@@ -42,12 +42,14 @@ extern	void			LBS_EmitStringCodeset(LargeByteString *lbs, char *str,
 											  size_t isize, size_t osize, char *codeset);
 extern	void			LBS_EmitPointer(LargeByteString *lbs, void *p);
 extern	void			LBS_EmitInt(LargeByteString *lbs, int i);
+extern	void			LBS_Emit64(LargeByteString *lbs, uint64_t i);
 extern	void			LBS_EmitFix(LargeByteString *lbs);
 extern	void			LBS_Trim(LargeByteString *lbs, size_t size);
 extern	int				LBS_FetchByte(LargeByteString *lbs);
 extern	int				LBS_FetchChar(LargeByteString *lbs);
 extern	void			*LBS_FetchPointer(LargeByteString *lbs);
 extern	int				LBS_FetchInt(LargeByteString *lbs);
+extern	uint64_t		LBS_Fetch64(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
@@ -64,7 +66,7 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_StringLength(lbs)	LBS_Size(lbs)
 #define	LBS_Body(lbs)			((void *)((LargeByteString *)lbs)->body)
 
-#define	LBS_Ptr(lbs)			(&((LargeByteString *)lbs)->body[((LargeByteString *)lbs)->ptr])
+#define	LBS_Ptr(lbs)			(&((LargeByteString *)(lbs))->body[((LargeByteString *)(lbs))->ptr])
 #define	LBS_GetPos(lbs)			(((LargeByteString *)lbs)->ptr)
 #define	LBS_SetPos(lbs,pos)		(((LargeByteString *)lbs)->ptr = (pos))
 #define	LBS_Eof(lbs)			(((LargeByteString *)lbs)->ptr >= ((LargeByteString *)lbs)->size)

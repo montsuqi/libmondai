@@ -52,7 +52,7 @@ copies.
 #include	"XML_v.h"
 #include	"OpenCOBOL_v.h"
 #include	"valueconv.h"
-#include	"DDparser.h"
+#include	"RecParser.h"
 #include	"numerici.h"
 #include	"memory_v.h"
 #include	"misc_v.h"
@@ -160,7 +160,7 @@ BuildMcpArea(
 	p += sprintf(p,		"};");
 	p += sprintf(p,	"};");
 
-	value = DD_ParseValueMem(buff);
+	value = DD_ParseValueMem(buff,NULL);
 #endif
 
 	return	(value);

@@ -37,6 +37,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"libmondai.h"
+#include	"RecParser.h"
 #include	"option.h"
 #include	"debug.h"
 
@@ -302,11 +303,12 @@ MakeFromRecord(
 	char	*name)
 {
 	ValueStruct	*value;
+	char		*ValueName;
 
 dbgmsg(">MakeFromRecord");
 	level = 1;
 	DD_ParserInit();
-	if		(  ( value = DD_ParseValue(name) )  !=  NULL  ) {
+	if		(  ( value = DD_ParseValue(name,&ValueName) )  !=  NULL  ) {
 		PutLevel(level,TRUE);
 		if		(  *RecName  ==  0  ) {
 			PutString(ValueName);

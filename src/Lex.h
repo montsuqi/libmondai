@@ -42,6 +42,7 @@ typedef	struct	_CURFILE_S {
 	INCFILE	*ftop;
 	char	*body;
 	size_t	pos;
+	size_t	size;
 	char	*fn;
 	char	*path;
 	int		cLine;
@@ -49,6 +50,7 @@ typedef	struct	_CURFILE_S {
 	char	*Symbol;
 	int		Int;
 	int		Token;
+	char	*ValueName;
 }	CURFILE;
 
 typedef	struct	{
@@ -56,33 +58,27 @@ typedef	struct	{
 	int		token;
 }	TokenTable;
 
-typedef	struct _LexInfo	{
-	CURFILE		*curr;
-}	LexInfo;
-
 #undef	GLOBAL
 #ifdef	_LEX
 #define	GLOBAL	/*	*/
 #else
 #define	GLOBAL	extern
 #endif
-GLOBAL	LexInfo	InfoRoot;
 GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
-extern	CURFILE			*PushLexInfo(char *name, char *path, GHashTable *res);
-extern	CURFILE			*PushLexInfoMem(char *mem, char *path, GHashTable *res);
-extern	void			DropLexInfo();
+extern	CURFILE			*PushLexInfo(CURFILE *in, char *name, char *path, GHashTable *res);
+extern	CURFILE			*PushLexInfoMem(CURFILE *in, char *mem, char *path, GHashTable *res);
+extern	void			DropLexInfo(CURFILE **in);
 extern	void			LexInit(void);
 extern	GHashTable		*MakeReservedTable(TokenTable *table);
-extern	int				Lex(Bool fSymbol);
-extern	void			SetReserved(GHashTable *res);
+extern	int				Lex(CURFILE *in, Bool fSymbol);
+extern	void			SetReserved(CURFILE *in, GHashTable *res);
 
-#define	CURR			(InfoRoot.curr)
-#define	GetSymbol		(ComToken = Lex(FALSE))
-#define	GetName			(ComToken = Lex(TRUE))
-#define	ComToken		(InfoRoot.curr->Token)
-#define	ComInt			(InfoRoot.curr->Int)
-#define	ComSymbol		(InfoRoot.curr->Symbol)
+#define	GetSymbol		(ComToken = Lex(in,FALSE))
+#define	GetName			(ComToken = Lex(in,TRUE))
+#define	ComToken		(in->Token)
+#define	ComInt			(in->Int)
+#define	ComSymbol		(in->Symbol)
 
 #endif

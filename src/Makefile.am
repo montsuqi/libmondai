@@ -32,7 +32,7 @@ libmondaiinclude_HEADERS =	\
 	valueconv.h				\
 	libmondai.h				\
 	Lex.h					\
-	DDparser.h				\
+	RecParser.h				\
 	types.h					\
 	monstring.h				\
 	memory_v.h				\
@@ -59,7 +59,7 @@ libmondai_la_SOURCES	=	\
 	fixed.c					\
 	numerici.c				\
 	others.c				\
-	DDparser.c				\
+	RecParser.c				\
 	Lex.c					\
 	memory.c				\
 	monstring.c				\

@@ -46,12 +46,13 @@ copies.
 #include	"value.h"
 #define		_LEX
 #include	"Lex.h"
-#include	"DDparser.h"
+#include	"RecParser.h"
 #include	"debug.h"
 
 static	char	*
 GetFile(
-	char	*name)
+	char	*name,
+	size_t	*size)
 {
 	struct	stat	sb;
 	int		fd;
@@ -70,6 +71,7 @@ ENTER_FUNC;
 			munmap(p,sb.st_size);
 			close(fd);
 			ret[sb.st_size] = 0;
+			*size = sb.st_size;
 		}
 	}
 LEAVE_FUNC;
@@ -78,29 +80,33 @@ LEAVE_FUNC;
 
 extern	CURFILE	*
 PushLexInfo(
-	char	*name,
-	char	*path,
+	CURFILE		*in,
+	char		*name,
+	char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
 	char	*str;
+	size_t	size;
 
-	if		(  ( str = GetFile(name) )  !=  NULL  ) {
+	if		(  ( str = GetFile(name,&size) )  !=  NULL  ) {
 		info = New(CURFILE);
 		info->fn = StrDup(name);
 		info->cLine = 1;
 		info->body = str;
+		info->size = size;
 		info->pos = 0;
 		info->ftop = NULL;
 		info->Reserved = res;
 		info->fError = FALSE;
+		info->ValueName = NULL;
 		if		(  path  ==  NULL  ) {
 			path = ".";
 		}
 		info->path = StrDup(path);
-		info->Symbol = (char *)xmalloc(SIZE_SYMBOL+1);
-		info->next = InfoRoot.curr;
-		InfoRoot.curr = info;
+		info->Symbol = NULL;
+		info->ValueName = NULL;
+		info->next = in;
 	} else {
 		if		(  fLexVerbose  ) {
 			fprintf(stderr,"file not found [%s]\n",name);
@@ -112,8 +118,9 @@ PushLexInfo(
 
 extern	CURFILE	*
 PushLexInfoMem(
-	char	*mem,
-	char	*path,
+	CURFILE		*in,
+	char		*mem,
+	char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -122,57 +129,67 @@ PushLexInfoMem(
 	info->fn = StrDup("** memory **");
 	info->cLine = 1;
 	info->body = StrDup(mem);
+	info->size = strlen(mem)+1;
 	info->pos = 0;
 	info->ftop = NULL;
 	info->Reserved = res;
 	info->fError = FALSE;
-	if		(  path  ==  NULL  ) {
-		path = ".";
-	}
-	info->path = StrDup(path);
-	info->Symbol = (char *)xmalloc(SIZE_SYMBOL+1);
-	info->next = InfoRoot.curr;
-	InfoRoot.curr = info;
+	info->path = NULL;
+	info->Symbol = NULL;
+	info->ValueName = NULL;
+	info->next = in;
 	return	(info);
 }
 
 extern	void
-DropLexInfo(void)
+DropLexInfo(
+	CURFILE		**in)
 {
 	CURFILE	*info;
 
-	info = InfoRoot.curr;
+	info = (*in);
 	xfree(info->fn);
-	xfree(info->Symbol);
-	xfree(info->path);
-	xfree(info->body);
-	InfoRoot.curr = info->next;
+	if		(  info->Symbol  !=  NULL  ) {
+		xfree(info->Symbol);
+	}
+	if		(  info->path  !=  NULL  ) {
+		xfree(info->path);
+	} else {
+		xfree(info->body);
+	}
+	if		(  info->ValueName  !=  NULL  ) {
+		xfree(info->ValueName);
+	}
+	(*in) = info->next;
 	xfree(info);
 }
 
 static	void
-ExitInclude(void)
+ExitInclude(
+	CURFILE	*in)
 {
 	INCFILE	*back;
-	CURFILE	*info = InfoRoot.curr;
+	size_t	size;
 
 dbgmsg(">ExitInclude");
-	if		(  info->body  !=  NULL  ) {
-		xfree(info->body);
+	if		(  in->body  !=  NULL  ) {
+		xfree(in->body);
 	}
-	back = info->ftop;
-	info->body = GetFile(back->fn);
-	xfree(info->fn);
-	info->fn = back->fn;
-	info->pos = back->pos;
-	info->cLine = back->cLine;
-	info->ftop = back->next;
+	back = in->ftop;
+	in->body = GetFile(back->fn,&size);
+	xfree(in->fn);
+	in->fn = back->fn;
+	in->pos = back->pos;
+	in->size = size;
+	in->cLine = back->cLine;
+	in->ftop = back->next;
 	xfree(back);
 dbgmsg("<ExitInclude");
 }
 
 static	void
 DoInclude(
+	CURFILE	*in,
 	char	*fn)
 {
 	INCFILE	*back;
@@ -180,41 +197,43 @@ DoInclude(
 	char	buff[SIZE_LONGNAME+1];
 	char	*p
 	,		*q;
+	size_t	size;
 
-dbgmsg(">DoInclude");
+ENTER_FUNC;
 	back = New(INCFILE);
-	back->next = CURR->ftop;
-	back->fn =  CURR->fn;
-	back->pos = CURR->pos;
-	back->cLine = CURR->cLine;
-	CURR->ftop = back;
-	if		(  CURR->body  !=  NULL  ) {
-		xfree(CURR->body);
+	back->next = in->ftop;
+	back->fn =  in->fn;
+	back->pos = in->pos;
+	back->cLine = in->cLine;
+	in->ftop = back;
+	if		(  in->body  !=  NULL  ) {
+		xfree(in->body);
 	}
-	strcpy(buff,CURR->path);
+	strcpy(buff,in->path);
 	p = buff;
 	do {
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
 			*q = 0;
 		}
 		sprintf(name,"%s/%s",p,fn);
-		if		(  ( CURR->body = GetFile(name) )  !=  NULL  )	break;
+		if		(  ( in->body = GetFile(name,&size) )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
-	CURR->cLine = 1;
-	CURR->pos = 0;
-	CURR->fn = StrDup(name);
-	if		(  CURR->body  ==  NULL  ) {
+	in->size = size;
+	in->cLine = 1;
+	in->pos = 0;
+	in->fn = StrDup(name);
+	if		(  in->body  ==  NULL  ) {
 		fprintf(stderr,"include not found [%s]\n",name);
-		ExitInclude();
+		ExitInclude(in);
+		exit(1);
 	}
-dbgmsg("<DoInclude");
+LEAVE_FUNC;
 }
 
 extern	void
 LexInit(void)
 {
-	InfoRoot.curr = NULL;
 	fLexVerbose = FALSE;
 }
 
@@ -234,19 +253,21 @@ MakeReservedTable(
 
 extern	void
 SetReserved(
+	CURFILE		*in,
 	GHashTable	*res)
 {
-	InfoRoot.curr->Reserved = res;
+	in->Reserved = res;
 }
 
 static	int
 CheckReserved(
+	CURFILE	*in,
 	char	*str)
 {
 	gpointer	p;
 	int		ret;
 
-	if		(  ( p = g_hash_table_lookup(InfoRoot.curr->Reserved,str) ) !=  NULL  ) {
+	if		(  ( p = g_hash_table_lookup(in->Reserved,str) ) !=  NULL  ) {
 		ret = (int)p;
 	} else {
 		ret = T_SYMBOL;
@@ -254,188 +275,200 @@ CheckReserved(
 	return	(ret);
 }
 
-#define	UnGetChar(c)		CURR->body[-- CURR->pos] =(c)
-#define	SKIP_SPACE	while	(  isspace( c = GetChar() ) ) {	\
-						if		(  c  ==  '\n'  ) {	\
-							c = ' ';\
-							CURR->cLine ++;\
-						}	\
-					}
+#define	UnGetChar(in,c)		(in)->body[-- (in)->pos] =(c)
+#define	GetPos(in)			&(in)->body[(in)->pos]
+#define	SKIP_SPACE(in)		\
+	while	(  isspace( c = GetChar(in) ) ) {	\
+		if		(  c  ==  '\n'  ) {				\
+			c = ' ';							\
+			(in)->cLine ++;						\
+		}										\
+	}
 
-#if	0
-#define	GetChar()			CURR->body[CURR->pos ++]
-#else
 static	int
-GetChar(void)
+GetChar(
+	CURFILE	*in)
 {
 	int		c;
 
-	if		(  CURR->body  ==  NULL  ) {
+	if		(  in->body  ==  NULL  ) {
 		fprintf(stderr,"nulpo!\n");
 	}
-	if		(  ( c = CURR->body[CURR->pos ++] )  ==  0  ) {
+	if		(  in->pos  ==  in->size  ) {
+		c = EOF;
+	} else
+	if		(  ( c = in->body[in->pos ++] )  ==  0  ) {
 		c = EOF;
 	}
 	return	(c);
 }
-#endif
 
 static	void
-ReadyDirective(void)
+ReadyDirective(
+	CURFILE	*in)
 {
-	char	buff[SIZE_LONGNAME+1];
+	char	*p
+		,	*q;
 	char	fn[SIZE_LONGNAME+1];
-	char	*s;
 	int		c;
 
 ENTER_FUNC;
-	SKIP_SPACE;
-	s = buff;
-	do {
-		*s = c;
-		s ++;
-	}	while	(  !isspace( c = GetChar() )  );
-	*s = 0;
-	if		(  !stricmp(buff,"include")  ) {
-		SKIP_SPACE;
-		s = fn;
+	SKIP_SPACE(in);
+	p = GetPos(in)-1;
+	while	(  !isspace(c = GetChar(in))  );
+	UnGetChar(in,c);
+	q = GetPos(in);
+	if		(  !strnicmp(p,"include",q-p)  ) {
+		SKIP_SPACE(in);
+		p = GetPos(in);
 		switch	(c) {
 		  case	'"':
-			while	(  ( c = GetChar() )  !=  '"'  ) {
-				*s ++ = c;
-			}
-			*s = 0;
+			while	(  GetChar(in)  !=  '"'  );
 			break;
 		  case	'<':
-			while	(  ( c = GetChar() )  !=  '>'  ) {
-				*s ++ = c;
-			}
-			*s = 0;
+			while	(  GetChar(in)  !=  '>'  );
 			break;
 		  default:
-			*s = 0;
 			break;
 		}
+		q = GetPos(in)-1;
+		memclear(fn,SIZE_LONGNAME+1);
+		memcpy(fn,p,q-p);
 		if		(  *fn  !=  0  ) {
-			DoInclude(fn);
+			DoInclude(in,fn);
 		}
 	} else {
-		UnGetChar(c);
-		while	(  ( c = GetChar() )  !=  '\n'  );
-		CURR->cLine ++;
+		UnGetChar(in,c);
+		while	(  GetChar(in)  !=  '\n'  );
+		in->cLine ++;
 	}
 LEAVE_FUNC;
 }
 
 extern	int
 Lex(
-	Bool	fSymbol)
-{	int		c
-	,		len;
-	int		token;
-	char	*s;
+	CURFILE	*in,
+	Bool	fName)
+{
+	int		c;
+	char	*p
+		,	*q;
 
 ENTER_FUNC;
   retry:
-	SKIP_SPACE; 
+	SKIP_SPACE(in);
 	if		(  c  ==  '#'  ) {
-		ReadyDirective();
+		ReadyDirective(in);
 		goto	retry;
 	}
 	if		(  c  ==  '!'  ) {
-		while	(  ( c = GetChar() )  !=  '\n'  );
-		CURR->cLine ++;
+		while	(  ( c = GetChar(in) )  !=  '\n'  );
+		in->cLine ++;
 		goto	retry;
 	}
-	if		(  c  ==  '"'  ) {
-		s = ComSymbol;
-		len = 0;
-		while	(  ( c = GetChar() )  !=  '"'  ) {
+	if		(  in->Symbol  !=  NULL  ) {
+		xfree(in->Symbol);
+		in->Symbol = NULL;
+	}
+	switch	(c) {
+	  case	'"':
+		p = GetPos(in);
+		while	(  ( c = GetChar(in) )  !=  '"'  ) {
 			if		(  c  ==  '\\'  ) {
-				c = GetChar();
-			}
-			*s = c;
-			if		(  len  <  SIZE_SYMBOL  ) {
-				s ++;
-				len ++;
+				GetChar(in);
 			}
 		}
-		*s = 0;
-		token = T_SCONST;
-	} else
-	if		(  isalpha(c)  ) {
-		s = ComSymbol;
-		len = 0;
-		do {
-			*s = c;
-			if		(  len  <  SIZE_SYMBOL  ) {
-				s ++;
-				len ++;
+		q = GetPos(in)-1;
+		in->Symbol = (char *)xmalloc(q-p+1);
+		memcpy(in->Symbol,p,q-p);
+		in->Symbol[q-p] = 0;
+		in->Token = T_SCONST;
+		break;
+	  case	'\'':
+		p = GetPos(in);
+		while	(  ( c = GetChar(in) )  !=  '\''  ) {
+			if		(  c  ==  '\\'  ) {
+				GetChar(in);
 			}
-			c = GetChar();
-		}	while	(	(  isalpha(c) )
-					 ||	(  isdigit(c) )
-					 ||	(  c  ==  '_' ) );
-		*s = 0;
-		UnGetChar(c);
-		if		(  fSymbol  ) {
-			token = T_SYMBOL;
-		} else {
-			token = CheckReserved(ComSymbol);
 		}
-	} else
-	if		(  isdigit(c)  )	{
-		s = ComSymbol;
-		len = 0;
-		do {
-			*s = c;
-			if		(  len  <  SIZE_SYMBOL  ) {
-				s ++;
-				len ++;
-			}
-			c = GetChar();
-		}	while	(  isdigit(c)  );
-		*s = 0;
-		UnGetChar(c);
-		token = T_ICONST;
-		ComInt = atoi(ComSymbol);
-	} else {
-		switch	(c) {
-		  case	EOF:
-			if		(  CURR->ftop  ==  NULL  )	{
-				token = T_EOF;
+		q = GetPos(in)-1;
+		in->Symbol = (char *)xmalloc(q-p+1);
+		memcpy(in->Symbol,p,q-p);
+		in->Symbol[q-p] = 0;
+		in->Token = T_SCONST;
+		break;
+	  default:
+		if		(  isalpha(c)  ) {
+			p = GetPos(in)-1;
+			do {
+				c = GetChar(in);
+			}	while	(	(  isalpha(c)  )
+						||	(  isdigit(c)  )
+						||	(  c  ==  '_'  ) );
+			UnGetChar(in,c);
+			q = GetPos(in);
+			in->Symbol = (char *)xmalloc(q-p+1);
+			memcpy(in->Symbol,p,q-p);
+			in->Symbol[q-p] = 0;
+			if		(  fName  ) {
+				in->Token = T_SYMBOL;
 			} else {
-				ExitInclude();
-				goto	retry;
+				in->Token = CheckReserved(in,in->Symbol);
 			}
-			break;
-		  default:
-			token = c;
-			break;
+		} else
+		if		(  isdigit(c) )	{
+			p = GetPos(in)-1;
+			do {
+				c = GetChar(in);
+			}	while	(	(  isalpha(c)  )
+						||	(  isdigit(c)  )
+						||	(  c  ==  '_'  ) );
+			UnGetChar(in,c);
+			q = GetPos(in);
+			in->Symbol = (char *)xmalloc(q-p+1);
+			memcpy(in->Symbol,p,q-p);
+			in->Symbol[q-p] = 0;
+			in->Int = atol(in->Symbol);
+			in->Token = T_ICONST;
+		} else {
+			switch	(c) {
+			  case	EOF:
+				if		(  in->ftop  ==  NULL  )	{
+					in->Token = T_EOF;
+				} else {
+					ExitInclude(in);
+					goto	retry;
+				}
+				break;
+			  default:
+				in->Token = c;
+				break;
+			}
 		}
+		break;
 	}
 #ifdef	DEBUG
 	printf("token = ");
-	switch	(token) {
+	switch	(in->Token) {
 	  case	T_SYMBOL:
-		printf("symbol (%s)\n",ComSymbol);
+		printf("symbol (%s)\n",in->Symbol);
 		break;
 	  case	T_ICONST:
-		printf("iconst (%d)\n",ComInt);
+		printf("iconst (%d)\n",in->Int);
 		break;
 	  case	T_EOF:
 		printf("[EOF]\n");
 		break;
 	  default:
-		if		(  token  <  128  ) {
-			printf("(%c)\n",token);
+		if		(  in->Token  <  128  ) {
+			printf("(%c)\n",in->Token);
 		} else {
-			printf("(%04X)\n",token);
+			printf("(%04X)\n",in->Token);
 		}
 		break;
 	}
 #endif
 LEAVE_FUNC;
-	return	(token);
+	return	(in->Token);
 }
 

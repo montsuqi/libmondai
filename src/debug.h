@@ -59,12 +59,14 @@ do {                                            \
     printf("E:%s:%d:",(f),(l));					\
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+	fflush(stdout);								\
 } while (0)
 #define	Error(...)                              \
 do {                                            \
     printf("E:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+	fflush(stdout);								\
     exit(1);                                    \
 } while (0)
 #define	Warning(...)                            \
@@ -72,12 +74,14 @@ do {                                            \
     printf("W:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+	fflush(stdout);								\
 } while (0)
 #define	Message(l, ...)                         \
 do {                                            \
     printf("M:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+	fflush(stdout);								\
 } while (0)
 #define	MessageDebug(f,l,s)	printf("D:%s:%d:%s\n",(f),(l),(s))
 #endif

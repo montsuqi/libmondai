@@ -41,6 +41,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"libmondai.h"
+#include	"RecParser.h"
 #include	"option.h"
 #include	"debug.h"
 
@@ -121,6 +122,7 @@ main(
 		,		osize;
 	ssize_t		left;
 	int			type;
+	char		*ValueName;
 
 	SetDefault();
 	fl = GetOption(option,argc,argv,
@@ -140,7 +142,7 @@ main(
 
 	DD_ParserInit();
 	if		(	(  fl->name  ==  NULL  )
-			||	(  ( rec = DD_ParseValue(fl->name) )  ==  NULL  ) ) {
+			||	(  ( rec = DD_ParseValue(fl->name,&ValueName) )  ==  NULL  ) ) {
 		fprintf(stderr,"can not found %s input record define.\n",fl->name);
 		exit(1);
 	}

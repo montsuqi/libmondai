@@ -19,26 +19,27 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#ifndef	_INC_DD_PARSER_H
-#define	_INC_DD_PARSER_H
+#ifndef	_INC_REC_PARSER_H
+#define	_INC_REC_PARSER_H
 #include	<glib.h>
 
-extern	ValueStruct	*ParValueDefine(void);
+#include	"Lex.h"
+
+extern	ValueStruct	*ParValueDefine(CURFILE *in);
 extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
 extern	void		DD_ParserInit(void);
-extern	ValueStruct	*DD_ParseValue(char *name);
-extern	ValueStruct	*DD_ParseValueMem(char *mem);
-extern	ValueStruct	*DD_ParseMain(void);
+extern	ValueStruct	*DD_ParseValue(char *name, char **ValueName);
+extern	ValueStruct	*DD_ParseValueMem(char *mem, char **ValueName);
+extern	ValueStruct	*DD_ParseMain(CURFILE *in);
 
 #undef	GLOBAL
-#ifdef	_DD_PARSER
+#ifdef	_REC_PARSER
 #define	GLOBAL		/*	*/
 #else
 #define	GLOBAL		extern
 #endif
 
 GLOBAL	char	*RecordDir;
-GLOBAL	char	*ValueName;
 
 #undef	GLOBAL
 #endif

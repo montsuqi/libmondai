@@ -35,7 +35,7 @@ copies.
 #include	<ctype.h>
 #include	<glib.h>
 
-#define	_DD_PARSER
+#define	_REC_PARSER
 #define	__VALUE_DIRECT
 #include	"types.h"
 #include	"hash_v.h"
@@ -45,7 +45,7 @@ copies.
 #include	"memory_v.h"
 #include	"others.h"
 #include	"Lex.h"
-#include	"DDparser.h"
+#include	"RecParser.h"
 #include	"debug.h"
 
 #define	T_CHAR			(T_YYBASE +1)
@@ -64,7 +64,7 @@ copies.
 #define	T_ALIAS			(T_YYBASE +14)
 #define	T_BINARY		(T_YYBASE +15)
 
-static	void	ParValueDefines(ValueStruct *upper);
+static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
 static	TokenTable	tokentable[] = {
 	{	"bool"		,T_BOOL		},
@@ -120,7 +120,7 @@ _Error(
 	printf("%s:%d:%s\n",fn,line,msg);
 }
 #undef	Error
-#define	Error(msg)		{CURR->fError=TRUE;_Error((msg),CURR->fn,CURR->cLine);}
+#define	Error(msg)		{in->fError=TRUE;_Error((msg),in->fn,in->cLine);}
 
 typedef	struct _ArrayDimension	{
 	int		count;
@@ -129,19 +129,21 @@ typedef	struct _ArrayDimension	{
 }	ArrayDimension;
 
 extern	ValueStruct	*
-ParValueDefine(void)
+ParValueDefine(
+	CURFILE	*in)
 {
 	size_t		size
 	,			ssize;
 	char		buff[SIZE_LONGNAME+1];
 	char		*p;
+	int			token;
 	ValueStruct	*value
 	,			*array;
-	int			token;
 	ArrayDimension	*next
 	,				*curr;
 
-	SetReserved(Reserved); 
+ENTER_FUNC;
+	SetReserved(in,Reserved); 
 	value = NULL;
 	switch	(GetSymbol) {
 	  case	T_ALIAS:
@@ -215,7 +217,7 @@ ParValueDefine(void)
 		} else {
 			size = 1;
 		}
-		if		(  !CURR->fError  ) {
+		if		(  !in->fError  ) {
 			switch	(token) {
 			  case	T_BYTE:
 				value = NewValue(GL_TYPE_BYTE);
@@ -287,7 +289,7 @@ ParValueDefine(void)
 	  case	'{':
 		value = NewValue(GL_TYPE_RECORD);
 		GetName;
-		ParValueDefines(value);
+		ParValueDefines(in,value);
 		break;
 	  default:
 		value = NULL;
@@ -328,11 +330,13 @@ ParValueDefine(void)
 		curr = next;
 		value = array;
 	}
+LEAVE_FUNC;
 	return	(value);
 }
 
 static	void
 ParValueDefines(
+	CURFILE		*in,
 	ValueStruct	*upper)
 {
 	ValueAttributeType	attr;
@@ -342,7 +346,7 @@ ParValueDefines(
 ENTER_FUNC;
 	while	(  ComToken  ==  T_SYMBOL  ) {
 		strcpy(name,ComSymbol);
-		value = ParValueDefine();
+		value = ParValueDefine(in);
 		attr = ValueAttribute(upper);
 		while	(  ComToken  ==  ','  ) {
 			switch	(GetSymbol) {
@@ -367,12 +371,12 @@ ENTER_FUNC;
 		} else {
 			Error("; missing");
 		}
-		if		(  !CURR->fError  ) {
+		if		(  !in->fError  ) {
 			SetValueAttribute(value,attr);
 			ValueAddRecordItem(upper,name,value);
 		}
 	}
-	if		(	(  !CURR->fError      )
+	if		(	(  !in->fError      )
 			&&	(  ComToken  ==  '}'  ) ) {
 		GetSymbol;
 		/*	OK	*/
@@ -389,17 +393,17 @@ DD_ParserInit(void)
 {
 	LexInit();
 	Reserved = MakeReservedTable(tokentable);
-	ValueName = (char *)xmalloc(1);
 }
 
 extern	ValueStruct	*
-DD_ParseMain(void)
+DD_ParseMain(
+	CURFILE	*in)
 {
 	ValueStruct	*ret;
 	ValueAttributeType	attr;
 
 ENTER_FUNC;
-	SetReserved(Reserved); 
+	SetReserved(in,Reserved); 
 	ret = NULL;
 	if		(  GetSymbol  ==  T_VIRTUAL  ) {
 		attr = GL_ATTR_VIRTUAL;
@@ -408,14 +412,16 @@ ENTER_FUNC;
 		attr = GL_ATTR_NULL;
 	}
 	if		(  ComToken  ==  T_SYMBOL  ) {
-		xfree(ValueName);
-		ValueName = StrDup(ComSymbol);
+		if		(  in->ValueName  !=  NULL  ) {
+			xfree(in->ValueName);
+		}
+		in->ValueName = StrDup(ComSymbol);
 		if		(  GetSymbol  == '{'  ) {
 			ret = NewValue(GL_TYPE_RECORD);
 			ValueAttribute(ret) = attr;
 			GetName;
-			ParValueDefines(ret);
-			if		(  CURR->fError  ) {
+			ParValueDefines(in,ret);
+			if		(  in->fError  ) {
 				ret = NULL;
 			}
 		} else {
@@ -431,14 +437,22 @@ LEAVE_FUNC;
 
 extern	ValueStruct	*
 DD_ParseValue(
-	char	*name)
+	char	*name,
+	char	**ValueName)
 {
 	ValueStruct	*ret;
+	CURFILE		*in
+		,		root;
 
 ENTER_FUNC;
-	if		(  PushLexInfo(name,RecordDir,Reserved)  !=  NULL  ) {
-		ret = DD_ParseMain();
-		DropLexInfo();
+	root.next = NULL;
+	if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
+		ret = DD_ParseMain(in);
+		if		(	(  in->ValueName  !=  NULL  )
+				&&	(  ValueName      !=  NULL  ) ) {
+			*ValueName = StrDup(in->ValueName);
+		}
+		DropLexInfo(&in);
 	} else {
 		ret = NULL;
 	}
@@ -448,14 +462,22 @@ LEAVE_FUNC;
 
 extern	ValueStruct	*
 DD_ParseValueMem(
-	char	*mem)
+	char	*mem,
+	char	**ValueName)
 {
 	ValueStruct	*ret;
+	CURFILE		*in
+		,		root;
 
 ENTER_FUNC;
-	if		(  PushLexInfoMem(mem,RecordDir,Reserved)  !=  NULL  ) {
-		ret = DD_ParseMain();
-		DropLexInfo();
+	root.next = NULL;
+	if		(  ( in = PushLexInfoMem(&root,mem,RecordDir,Reserved) )  !=  NULL  ) {
+		ret = DD_ParseMain(in);
+		if		(	(  in->ValueName  !=  NULL  )
+				&&	(  ValueName      !=  NULL  ) ) {
+			*ValueName = StrDup(in->ValueName);
+		}
+		DropLexInfo(&in);
 	} else {
 		ret = NULL;
 	}

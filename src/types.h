@@ -27,6 +27,7 @@ copies.
 #define	_INC_TYPES_H
 
 #include	<sys/types.h>
+#include	<stdint.h>
 
 #ifndef	byte
 #define	byte		unsigned char
