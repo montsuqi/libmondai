@@ -453,6 +453,8 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** RFC822(with name) *****\n");
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
+	//ConvSetEncoding(opt,STRING_ENCODING_BASE64);
 	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,TRUE);
@@ -508,6 +510,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CGI *****\n");
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,FALSE);

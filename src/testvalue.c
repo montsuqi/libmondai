@@ -50,6 +50,7 @@ copies.
 #include	"Native_v.h"
 #include	"Text_v.h"
 #include	"XML_v.h"
+#include	"OpenCOBOL_v.h"
 #include	"valueconv.h"
 #include	"DDparser.h"
 #include	"numerici.h"
@@ -83,7 +84,8 @@ BuildMcpArea(
 	fprintf(fp,		"func varchar(%d);",SIZE_FUNC);
 	fprintf(fp,		"rc int;");
 	fprintf(fp,		"dc	{");
-	fprintf(fp,			"window	 varchar(%d);",SIZE_NAME);
+	//	fprintf(fp,			"window	 varchar(%d);",SIZE_NAME);
+	fprintf(fp,			"window	 varchar(%d);",4);
 	fprintf(fp,			"widget	 varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
 	fprintf(fp,			"module	 varchar(%d);",SIZE_NAME);
@@ -131,6 +133,7 @@ main(
 	FILE	*fp;
 	CONVOPT	*opt;
 	byte	*buff;
+	size_t	size;
 
 	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
@@ -190,6 +193,17 @@ main(
 	if		(  ( fp = fopen("test.value","w") )  ==  NULL  ) 	exit(1);
 	fprintf(fp,"%s\n",buff);
 	fclose(fp);
+
+	OpenCOBOL_PackValue(opt,buff,val);
+	size = OpenCOBOL_SizeValue(opt,val);
+	if		(  ( fp = fopen("test.oc","w") )  ==  NULL  ) 	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+	InitializeValue(val);
+	OpenCOBOL_UnPackValue(opt,buff,val);
+	XML_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+
 	xfree(buff);
 
 	return	(0);

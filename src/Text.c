@@ -461,6 +461,82 @@ DecodeName(
 	*p = 0;
 }
 
+static	size_t
+EncodeString(
+	CONVOPT		*opt,
+	byte		*out,
+	char		*in)
+{
+	size_t	result;
+
+	switch	(ConvEncoding(opt)) {
+	  case	STRING_ENCODING_NULL:
+		strcpy(out,in);
+		result = strlen(out);
+		break;
+	  case	STRING_ENCODING_URL:
+		result = EncodeStringURL(out,in);
+		break;
+	  case	STRING_ENCODING_BASE64:
+		result = EncodeBase64(out,in,strlen(in));
+		break;
+	  default:
+		result = 0;
+		break;
+	}
+	return	(result);
+}
+
+static	size_t
+EncodeLength(
+	CONVOPT		*opt,
+	char		*in)
+{
+	size_t	result;
+
+	switch	(ConvEncoding(opt)) {
+	  case	STRING_ENCODING_NULL:
+		result = strlen(in);
+		break;
+	  case	STRING_ENCODING_URL:
+		result = EncodeStringLengthURL(in);
+		break;
+	  case	STRING_ENCODING_BASE64:
+		result = EncodeLengthBase64(in);
+		break;
+	  default:
+		result = 0;
+		break;
+	}
+	return	(result);
+}
+
+static	size_t
+DecodeString(
+	CONVOPT		*opt,
+	byte		*out,
+	char		*in)
+{
+	size_t	result;
+
+	switch	(ConvEncoding(opt)) {
+	  case	STRING_ENCODING_NULL:
+		strcpy(out,in);
+		result = strlen(out);
+		break;
+	  case	STRING_ENCODING_URL:
+		result = DecodeStringURL(out,in);
+		break;
+	  case	STRING_ENCODING_BASE64:
+		result = DecodeBase64(out,in,strlen(in));
+		break;
+	  default:
+		result = 0;
+		break;
+	}
+	return	(result);
+}
+
 static	byte	*
 _RFC822_UnPackValueNoNamed(
 	CONVOPT		*opt,
@@ -483,7 +559,10 @@ _RFC822_UnPackValueNoNamed(
 			q = p;
 			while	(	(  *p  !=  0     )
 					&&	(  *p  !=  '\n'  ) )	p ++;
-			len = DecodeBase64(buff,q,p-q);
+			ch = *p;
+			*p = 0;
+			len = DecodeString(opt,buff,q);
+			*p = ch;
 			buff[len] = 0;
 			SetValueString(value,buff,ConvCodeset(opt));
 			p ++;
@@ -559,7 +638,10 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_DBCODE:
 					  case	GL_TYPE_TEXT:
 					  case	GL_TYPE_BYTE:
-						len = DecodeBase64(buff,q,p-q);
+						ch = *p;
+						*p = 0;
+						len = DecodeString(opt,buff,q);
+						*p = ch;
 						buff[len] = 0;
 						SetValueString(e,buff,ConvCodeset(opt));
 						break;
@@ -625,7 +707,7 @@ _RFC822_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
 			str = ValueToString(value,ConvCodeset(opt));
-			EncodeBase64(buff,str,strlen(str));
+			EncodeString(opt,buff,str);
 			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
 			}
@@ -709,7 +791,7 @@ dbgmsg(">_RFC822_SizeValue");
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
-		ret += EncodeLengthBase64(ValueToString(value,ConvCodeset(opt)));
+		ret += EncodeLength(opt,ValueToString(value,ConvCodeset(opt)));
 		break;
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_NUMBER:
@@ -810,7 +892,7 @@ _CGI_UnPackValue(
 							&&	(  *p  !=  '\n'  ) )	p ++;
 					ch = *p;
 					*p = 0;
-					DecodeStringURL(buff,q);
+					DecodeString(opt,buff,q);
 					*p = ch;
 					if		(  *p  !=  0  )	p ++;
 					SetValueString(e,buff,ConvCodeset(opt));
@@ -831,6 +913,7 @@ CGI_UnPackValue(
 {
 	char	*ret;
 
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	ret = _CGI_UnPackValue(opt,p,value);
 	return	(ret);
 }
@@ -859,6 +942,9 @@ _CGI_PackValue(
 		  case	GL_TYPE_FLOAT:
 			q = ValueToString(value,ConvCodeset(opt));
 			p += sprintf(p,"%s=",longname);
+#if	1
+			p += EncodeString(opt,p,q);
+#else
 			while	(  *q  !=  0  ) {
 				if		(  *q  ==  0x20  ) {
 					*p ++ = '+';
@@ -871,6 +957,7 @@ _CGI_PackValue(
 				}
 				q ++;
 			}
+#endif
 			*p ++ = '&';
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -904,6 +991,7 @@ CGI_PackValue(
 	char	longname[SIZE_LONGNAME+1];
 	byte	*q;
 
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
 		strcpy(longname,opt->recname);
@@ -937,7 +1025,7 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = EncodeStringLengthURL(ValueToString(value,ConvCodeset(opt))) + strlen(longname) + 2;
+		ret = EncodeLength(opt,ValueToString(value,ConvCodeset(opt))) + strlen(longname) + 2;
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret = 0;
@@ -970,6 +1058,7 @@ CGI_SizeValue(
 {
 	char	longname[SIZE_LONGNAME+1];
 
+	ConvSetEncoding(opt,STRING_ENCODING_URL);
 	strcpy(longname,opt->recname);
 	return	(_CGI_SizeValue(opt,value,(longname + strlen(longname)),longname));
 }

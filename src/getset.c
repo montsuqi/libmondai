@@ -400,10 +400,7 @@ ENTER_FUNC;
 						} else
 #if	1
 						if		(  errno  ==  EINVAL  ) {
-							FILE	*fp;
-							fp = fopen("illchars.log","a");
-							fprintf(fp,"illigal string[%s]\n",istr);
-							fclose(fp);
+							printf("illigal string[%s]\n",istr);
 							break;
 						} else
 #endif
@@ -449,10 +446,7 @@ ENTER_FUNC;
 						} else
 #if	1
 						if		(  errno  ==  EINVAL  ) {
-							FILE	*fp;
-							fp = fopen("illchars.log","a");
-							fprintf(fp,"illigal string[%s]\n",istr);
-							fclose(fp);
+							printf("illigal string[%s]\n",istr);
 							break;
 						} else
 #endif

@@ -124,11 +124,13 @@ ExpandPath(
 	return	(path);
 }
 
-extern	void
+extern	size_t
 DecodeStringURL(
 	byte	*q,
 	char	*p)
 {
+	byte	*qq = q;
+
 	while	(	(  *p  !=  0    )
 			&&	(  isspace(*p)  ) )	p ++;
 	while	(  *p  !=  0  ) {
@@ -143,14 +145,18 @@ DecodeStringURL(
 		}
 		p ++;
 	}
-	*q = 0;			
+	*q = 0;
+	return	(q-qq);
 }
 
-extern	void
+extern	size_t
 EncodeStringURL(
 	char	*q,
 	byte	*p)
 {
+	char	*qq;
+
+	qq = q;
 	while	(  *p  !=  0  ) {
 		if		(  *p  ==  0x20  ) {
 			*q ++ = '+';
@@ -163,7 +169,8 @@ EncodeStringURL(
 		}
 		p ++;
 	}
-	*q = 0;			
+	*q = 0;
+	return	(q-qq);
 }
 
 extern	size_t
@@ -207,7 +214,7 @@ static	char	base64val[128]	=	{
 
 #define BASE64VAL(c)	(isascii(c) ? base64val[(int)(c)] : -1)
 
-extern	void
+extern	size_t
 EncodeBase64(
 	char	*out,
 	byte	*in,
@@ -241,6 +248,8 @@ EncodeBase64(
 	}
 
 	*outp = 0;
+
+	return	(outp-out);
 }
 
 extern	size_t

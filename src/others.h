@@ -27,10 +27,10 @@ copies.
 extern	char		**ParCommandLine(char *line);
 extern	char		*ExpandPath(char *org,char *base);
 
-extern	void		DecodeStringURL(byte *q, char *p);
-extern	void		EncodeStringURL(char *q, byte *p);
+extern	size_t		DecodeStringURL(byte *q, char *p);
+extern	size_t		EncodeStringURL(char *q, byte *p);
 extern	size_t		EncodeStringLengthURL(byte *q);
-extern	void		EncodeBase64(char *out, byte *in, size_t len);
+extern	size_t		EncodeBase64(char *out, byte *in, size_t len);
 extern	size_t		DecodeBase64(byte *out, char *in, size_t len);
 extern	size_t		EncodeLengthBase64(char *str);
 
