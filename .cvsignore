@@ -4,6 +4,7 @@ config.cache
 config.h
 config.h.in
 config.log
+config.guess
 config.status
 config.sub
 configure
