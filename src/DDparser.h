@@ -28,6 +28,7 @@ extern	void	ValueAddRecordItem(ValueStruct *upper, char *name, ValueStruct *valu
 
 extern	void			 DD_ParserInit(void);
 extern	RecordStruct	*DD_ParserDataDefines(char *name);
+extern	ValueStruct		*ReadRecordDefine(char *name);
 
 #undef	GLOBAL
 #ifdef	_DD_PARSER

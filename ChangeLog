@@ -1,3 +1,7 @@
+2003-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (ReadRecordDefine): move from drive.c
+
 2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* tools/rec2copy.c: 言語の指定をするようにした

@@ -700,3 +700,35 @@ dbgmsg("<ParserDataDefines");
 	return	(ret);
 }
 
+extern	ValueStruct	*
+ReadRecordDefine(
+	char	*name)
+{
+	RecordStruct	*rec;
+	ValueStruct		*ret;
+	char		buf[SIZE_BUFF]
+	,			dir[SIZE_BUFF];
+	char		*p
+	,			*q;
+	Bool		fExit;
+
+	strcpy(dir,RecordDir);
+	p = dir;
+	ret = NULL;
+	do {
+		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
+			*q = 0;
+			fExit = FALSE;
+		} else {
+			fExit = TRUE;
+		}
+		sprintf(buf,"%s/%s.rec",p,name);
+		if		(  ( rec = DD_ParserDataDefines(buf) )  !=  NULL  ) {
+			ret = rec->rec;
+			break;
+		}
+		p = q + 1;
+	}	while	(  !fExit  );
+	return	(ret);
+}
+
