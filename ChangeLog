@@ -1,3 +1,7 @@
+2004-11-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/fixed.c: value.hから分離
+
 2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c (NativeSaveValue): NativePackValueの流用をやめ、型情報のみ保存

@@ -239,9 +239,12 @@ printf("** variable size (end)**\n");fflush(stdout);
 
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
-	size = NativeSaveValue(buff,val);
-	printf("***** Value Pack (end)*****\n");
-	NativeRestoreValue(buff,&val2);
+	printf("***** Value Save (structure only)*****\n");
+	size = NativeSaveValue(buff,val,FALSE);
+	printf("***** Value Save (end)*****\n");
+	printf("***** Value Restore *****\n");
+	NativeRestoreValue(buff,&val2,FALSE);
+	printf("***** Value Restore (end)*****\n");
 
 	opt = NewConvOpt();
 	ConvSetCodeset(opt,TEST_CODE);
@@ -258,7 +261,25 @@ printf("** variable size (end)**\n");fflush(stdout);
 	XML_PackValue(opt,buff,val2);
 	printf("%s\n",buff);
 
-	XML_PackValue(opt,buff,val);
+	memset(buff,0,SIZE_BUFF);
+	printf("***** Value Save (with data)*****\n");
+	size = NativeSaveValue(buff,val,TRUE);
+	printf("***** Value Save (end)*****\n");
+	printf("***** Value Restore *****\n");
+	NativeRestoreValue(buff,&val2,TRUE);
+	printf("***** Value Restore (end)*****\n");
+
+	opt = NewConvOpt();
+	ConvSetCodeset(opt,TEST_CODE);
+
+	ConvSetXmlType(opt,XML_TYPE1);
+	ConvSetIndent(opt,TRUE);
+	ConvSetType(opt,FALSE);
+	ConvSetRecName(opt,"mcparea");
+
+	printf("***** after pack ****\n");
+	XML_PackValue(opt,buff,val2);
+	printf("%s\n",buff);
 
 	printf("***** converting *****\n");
 	if		(  ( fp = fopen("test.value","w") )  ==  NULL  ) 	exit(1);

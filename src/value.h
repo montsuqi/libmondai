@@ -43,6 +43,7 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 #include	"LBSfunc.h"
+#include	"fixed_v.h"
 
 #ifndef	PacketClass
 #define	PacketClass		unsigned char
@@ -53,12 +54,6 @@ typedef	unsigned char	ValueAttributeType;
 typedef	uint64_t		MonObjectType;
 
 #define	IS_OBJECT_NULL(obj)	((obj) ==  0)
-
-typedef	struct {
-	size_t		flen;
-	size_t		slen;
-	char		*sval;
-}	Fixed;
 
 typedef	struct _ValueStruct	{
 	PacketDataType		type;
@@ -211,14 +206,6 @@ extern	ValueStruct	*GetArrayItem(ValueStruct *value, int i);
 extern	ValueStruct	*GetValuesItem(ValueStruct *value, int i);
 
 extern	ValueStruct	*GetItemLongName(ValueStruct *root, char *longname);
-
-extern	int			FixedToInt(Fixed *xval);
-extern	void		FloatToFixed(Fixed *xval, double fval);
-extern	void		IntToFixed(Fixed *xval, int ival);
-extern	double		FixedToFloat(Fixed *xval);
-extern	Fixed		*NewFixed(int flen, int slen);
-extern	void		FreeFixed(Fixed *xval);
-extern	void		FixedRescale(Fixed *to, Fixed *fr);
 
 extern	void		InitializeValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);

@@ -18,15 +18,23 @@ responsibilities.  It should be in a file named COPYING.  Among other
 things, the copyright notice and this notice must be preserved on all
 copies. 
 */
-#ifndef	_INC_NATIVE_VALUE_H
-#define	_INC_NATIVE_VALUE_H
-#include	"valueconv.h"
 
-extern	size_t	NativeUnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
-extern	size_t	NativePackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
+#ifndef	_INC_FIXED_H
+#define	_INC_FIXED_H
 
-extern	size_t	NativeRestoreValue(byte *p, ValueStruct **ret, Bool fData);
-extern	size_t	NativeSaveValue(byte *p, ValueStruct *value, Bool fData);
+typedef	struct {
+	size_t		flen;
+	size_t		slen;
+	char		*sval;
+}	Fixed;
+
+extern	int			FixedToInt(Fixed *xval);
+extern	void		FloatToFixed(Fixed *xval, double fval);
+extern	void		IntToFixed(Fixed *xval, int ival);
+extern	double		FixedToFloat(Fixed *xval);
+extern	Fixed		*NewFixed(int flen, int slen);
+
+extern	void		FreeFixed(Fixed *xval);
+extern	void		FixedRescale(Fixed *to, Fixed *fr);
 
 #endif

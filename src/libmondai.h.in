@@ -31,6 +31,7 @@ copies.
 #include	"cobolvalue.h"
 #include	"valueconv.h"
 #include	"DDparser.h"
+#include	"fixed_v.h"
 #include	"numerici.h"
 #include	"hash_v.h"
 #include	"monstring.h"

@@ -25,6 +25,7 @@ libmondaiinclude_HEADERS =	\
 	cobolvalue.h			\
 	others.h				\
 	numerici.h				\
+	fixed_v.h				\
 	hash_v.h				\
 	getset.h				\
 	value.h					\
@@ -55,6 +56,7 @@ libmondai_la_SOURCES	=	\
 	getset.c				\
 	value.c					\
 	valueconv.c				\
+	fixed.c					\
 	numerici.c				\
 	others.c				\
 	DDparser.c				\

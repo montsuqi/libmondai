@@ -357,7 +357,8 @@ LEAVE_FUNC;
 extern	size_t
 NativeSaveValue(
 	byte		*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	Bool		fData)
 {
 	size_t	size;
 	int		i;
@@ -372,21 +373,42 @@ ENTER_FUNC;
 		p += sizeof(ValueAttributeType);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
+			if		(  fData  ) {
+				*(int *)p = ValueInteger(value);
+				p += sizeof(int);
+			}
 			break;
 		  case	GL_TYPE_BOOL:
+			if		(  fData  ) {
+				*(char *)p = ValueBool(value) ? 'T' : 'F';
+				p ++;
+			}
 			break;
 		  case	GL_TYPE_FLOAT:
+			if		(  fData  ) {
+				*(double *)p = ValueFloat(value);
+				p += sizeof(double);
+			}
 			break;
 		  case	GL_TYPE_NUMBER:
 			*(size_t *)p = ValueFixedLength(value);
 			p += sizeof(size_t);
 			*(size_t *)p = ValueFixedSlen(value);
 			p += sizeof(size_t);
+			if		(  fData  ) {
+				memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+				p += ValueFixedLength(value);
+			}
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
-			*(size_t *)p = ValueByteLength(value);
+			size = ValueByteLength(value);
+			*(size_t *)p = size;
 			p += sizeof(size_t);
+			if		(  fData  ) {
+				memcpy(p,ValueByte(value),size);
+				p += size;
+			}
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
@@ -397,14 +419,22 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			*(size_t *)p = ValueStringLength(value);
 			p += sizeof(size_t);
+			if		(  fData  ) {
+				memcpy(p,ValueString(value),size);
+				p += size;
+			}
 			break;
 		  case	GL_TYPE_OBJECT:
+			if		(  fData  ) {
+				*(MonObjectType *)p = ValueObject(value);
+				p += sizeof(MonObjectType);
+			}
 			break;
 		  case	GL_TYPE_ARRAY:
 			*(size_t *)p = ValueArraySize(value);
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativeSaveValue(p,ValueArrayItem(value,i));
+				p += NativeSaveValue(p,ValueArrayItem(value,i),fData);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -413,7 +443,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				strcpy(p,ValueRecordName(value,i));
 				p += strlen(ValueRecordName(value,i))+1;
-				p += NativeSaveValue(p,ValueRecordItem(value,i));
+				p += NativeSaveValue(p,ValueRecordItem(value,i),fData);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -431,7 +461,8 @@ LEAVE_FUNC;
 extern	size_t
 NativeRestoreValue(
 	byte		*p,
-	ValueStruct	**ret)
+	ValueStruct	**ret,
+	Bool		fData)
 {
 	ValueStruct	*value
 		,		*lower;
@@ -454,13 +485,28 @@ ENTER_FUNC;
 		ValueAttribute(value) = attr;
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			ValueInteger(value) = 0;
+			if		(  fData  ) {
+				ValueInteger(value) = *(int *)p;
+				p += sizeof(int);
+			} else {
+				ValueInteger(value) = 0;
+			}
 			break;
 		  case	GL_TYPE_BOOL:
-			ValueBool(value) = FALSE;
+			if		(  fData  ) {
+				ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+				p ++;
+			} else {
+				ValueBool(value) = FALSE;
+			}
 			break;
 		  case	GL_TYPE_FLOAT:
-			ValueFloat(value) = 0;
+			if		(  fData  ) {
+				ValueFloat(value) = *(double *)p;
+				p += sizeof(double);
+			} else {
+				ValueFloat(value) = 0;
+			}
 			break;
 		  case	GL_TYPE_NUMBER:
 			size = *(size_t *)p;
@@ -470,8 +516,14 @@ ENTER_FUNC;
 				ValueFixedLength(value) = size;
 				ValueFixedSlen(value) = *(size_t *)p;
 				p += sizeof(size_t);
-				memset(ValueFixedBody(value),'0',ValueFixedLength(value));
-				ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+				if		(  fData  ) {
+					memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
+					ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+					p += ValueFixedLength(value);
+				} else {
+					memset(ValueFixedBody(value),'0',ValueFixedLength(value));
+					ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+				}
 			} else {
 				p += sizeof(size_t);
 			}
@@ -485,7 +537,13 @@ ENTER_FUNC;
 				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
-				memclear(ValueByte(value),size);
+				if		(  fData  ) {
+					memclear(ValueByte(value),size);
+					memcpy(ValueByte(value),p,size);
+					p += size;
+				} else {
+					memclear(ValueByte(value),size);
+				}
 			}
 			ValueByteLength(value) = size;
 			break;
@@ -501,11 +559,20 @@ ENTER_FUNC;
 				ValueStringSize(value) = size;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
+				if		(  fData  ) {
+					memcpy(ValueString(value),p,size);
+					p += size;
+				}
 			}
 			ValueStringLength(value) = len;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObject(value) = (MonObjectType)0;
+			if		(  fData  ) {
+				ValueObject(value) = *(MonObjectType *)p;
+				p += sizeof(MonObjectType);
+			} else {
+				ValueObject(value) = (MonObjectType)0;
+			}
 			break;
 		  case	GL_TYPE_ARRAY:
 			size = *(size_t *)p;
@@ -513,7 +580,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativeRestoreValue(p,&ValueArrayItem(value,i));
+				p += NativeRestoreValue(p,&ValueArrayItem(value,i),fData);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -525,7 +592,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				name = StrDup(p);
 				p += strlen(name)+1;
-				p += NativeRestoreValue(p,&lower);
+				p += NativeRestoreValue(p,&lower,fData);
 				ValueRecordItem(value,i) = lower;
 				ValueRecordName(value,i) = name;
 				g_hash_table_insert(ValueRecordMembers(value),
