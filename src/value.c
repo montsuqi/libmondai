@@ -99,6 +99,8 @@ dbgmsg(">NewValue");
 		break;
 	  case	GL_TYPE_ARRAY:
 		ValueArraySize(ret) = 0;
+		ValueArrayExpandable(ret) = FALSE;
+		ValueArrayPrototype(ret) = NULL;
 		ValueArrayItems(ret) = NULL;
 		break;
 	  case	GL_TYPE_ALIAS:
@@ -258,16 +260,38 @@ LEAVE_FUNC;
 extern	ValueStruct	*
 GetArrayItem(
 	ValueStruct	*value,
-	int			i)
+	int			index)
 {
-	ValueStruct	*item;
-	
-	if		(	(  i  >=  0                      )
-			&&	(  i  <   ValueArraySize(value)  ) )	{
-		item = ValueArrayItem(value,i);
+	ValueStruct	*item
+		,		**items;
+	size_t		size;
+	int			i;
+
+ENTER_FUNC;	
+	if		(	(  index  >=  0                      )
+			&&	(  index  <   ValueArraySize(value)  ) )	{
+		item = ValueArrayItem(value,index);
 	} else {
-		item = NULL;
+		if		(  ValueArrayExpandable(value)  ) {
+			size = index + 1;
+			items = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
+			memclear(items,sizeof(ValueStruct *) * size);
+			if		(  ValueArrayItems(value)  !=  NULL  ) {
+				memcpy(items,ValueArrayItems(value),
+					   ValueArraySize(value)*sizeof(ValueStruct *));
+				xfree(ValueArrayItems(value));
+			}
+			for	( i = ValueArraySize(value) ; i < size ; i ++ ) {
+				items[i] = DuplicateValue(ValueArrayPrototype(value));
+			}
+			ValueArrayItems(value) = items;
+			ValueArraySize(value) = size;
+			item = ValueArrayItem(value,index);
+		} else {
+			item = NULL;
+		}
 	}
+LEAVE_FUNC;
 	return	(item);
 }
 
@@ -521,7 +545,8 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_ARRAY:
-			printf("array size = %d\n",ValueArraySize(val));
+			printf("array size = %d(%s)\n",ValueArraySize(val),
+				   ValueArrayExpandable(val) ? "expandable" : "fixed");
 			fflush(stdout);
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 				DumpValueStruct(ValueArrayItem(val,i));
@@ -818,9 +843,10 @@ DuplicateValue(
 		break;
 	  case	GL_TYPE_ARRAY:
 		ValueArrayItems(p) = 
-			MakeValueArray(ValueArrayItem(template,0),
+			MakeValueArray(ValueArrayPrototype(template),
 						   ValueArraySize(template));
 		ValueArraySize(p) = ValueArraySize(template);
+		ValueArrayExpandable(p) = ValueArrayExpandable(template);
 		break;
 	  case	GL_TYPE_INT:
 		ValueInteger(p) = 0;

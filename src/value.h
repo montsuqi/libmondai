@@ -77,7 +77,9 @@ typedef	struct _ValueStruct	{
 	union {
 		struct {
 			size_t					count;
-			struct	_ValueStruct	**item;
+			Bool					fExpandable;
+			struct	_ValueStruct	*prototype
+			,						**item;
 		}	ArrayData;
 		struct {
 			size_t					count;
@@ -185,6 +187,8 @@ typedef	struct _ValueStruct	{
 #define	ValueFixedBody(v)		((v)->body.FixedData.sval)
 
 #define	ValueArraySize(v)		((v)->body.ArrayData.count)
+#define	ValueArrayExpandable(v)	((v)->body.ArrayData.fExpandable)
+#define	ValueArrayPrototype(v)	((v)->body.ArrayData.prototype)
 #define	ValueArrayItems(v)		((v)->body.ArrayData.item)
 #define	ValueArrayItem(v,i)		((v)->body.ArrayData.item[(i)])
 

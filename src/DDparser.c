@@ -124,6 +124,7 @@ _Error(
 
 typedef	struct _ArrayDimension	{
 	int		count;
+	Bool	fExpandable;
 	struct	_ArrayDimension	*next;
 }	ArrayDimension;
 
@@ -297,9 +298,11 @@ ParValueDefine(void)
 		curr = New(ArrayDimension);
 		if		(  GetSymbol  == T_ICONST  ) {
 			curr->count = ComInt;
+			curr->fExpandable = FALSE;
 			GetSymbol;
 		} else {
 			curr->count = 0;
+			curr->fExpandable = TRUE;
 		}
 		curr->next = next;
 		next = curr;
@@ -312,10 +315,12 @@ ParValueDefine(void)
 	for	( curr = next ; curr != NULL ; ) {
 		array = NewValue(GL_TYPE_ARRAY);
 		ValueArraySize(array) = curr->count;
-		if		(  curr->count  >  0  ) {
-			ValueArrayItems(array) = MakeValueArray(value,curr->count);
+		ValueArrayExpandable(array) = curr->fExpandable;
+		ValueArrayPrototype(array) = value;
+		if		(  curr->fExpandable  ) {
+			ValueArrayItems(array) = NULL;
 		} else {
-			ValueArrayItems(array) = MakeValueArray(value,1);
+			ValueArrayItems(array) = MakeValueArray(value,curr->count);
 		}
 		next = curr->next;
 		xfree(curr);

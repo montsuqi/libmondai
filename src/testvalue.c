@@ -105,7 +105,7 @@ BuildMcpArea(
 	fprintf(fp,		"};");
 	fprintf(fp,		"private	{");
 	fprintf(fp,			"count	int;");
-	fprintf(fp,			"swindow	char(%d)[%d];",SIZE_NAME,stacksize);
+	fprintf(fp,			"swindow	char(%d)[];",SIZE_NAME);
 	fprintf(fp,			"state		char(1)[%d];",stacksize);
 	fprintf(fp,			"index		int[%d];",stacksize);
 	fprintf(fp,			"pstatus	char(1);");
@@ -144,6 +144,7 @@ main(
 	printf("***** DD_ParseValue *****\n");
 	val = BuildMcpArea(10);
 
+	DumpValueStruct(val);
 	/*	set	*/
 	printf("***** Value setting *****\n");
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
@@ -163,10 +164,13 @@ main(
 	SetValueString(GetItemLongName(val,"db.path.pname"),"3",SRC_CODE);
 
 	SetValueString(GetItemLongName(val,"private.count"),"1",SRC_CODE);
-	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"private.swindow")) ; i ++ ) {
+printf("** variable size **\n");fflush(stdout);
+	for	( i = 0 ; i < 100 ; i ++ ) {
 		sprintf(name,"private.swindow[%d]",i);
+printf("private.swindow[%d]\n",i);fflush(stdout);
 		SetValueString(GetItemLongName(val,name),name,SRC_CODE);
 	}
+printf("** variable size (end)**\n");fflush(stdout);
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"private.state")) ; i ++ ) {
 		sprintf(name,"private.state[%d]",i);
 		SetValueString(GetItemLongName(val,name),name,SRC_CODE);
@@ -184,6 +188,7 @@ main(
 		*p = (byte)i;
 	}
 	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
+	printf("***** Value setting (end)*****\n");
 		
 
 	opt = NewConvOpt();

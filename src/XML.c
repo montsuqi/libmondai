@@ -179,6 +179,7 @@ _XML_PackValue1(
 	int		i;
 	byte	*pp;
 
+ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -276,6 +277,7 @@ _XML_PackValue1(
 		p += PutCR(opt,p);
 		nIndent --;
 	}
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
@@ -291,6 +293,7 @@ _XML_PackValue2(
 	int		i;
 	byte	*pp;
 
+ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -386,6 +389,7 @@ _XML_PackValue2(
 		p += PutCR(opt,p);
 		nIndent --;
 	}
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
@@ -398,6 +402,7 @@ XML_PackValue(
 	char	buff[SIZE_BUFF+1];
 	byte	*pp;
 
+ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		p += sprintf(p,"<?xml version=\"1.0\"");
@@ -443,6 +448,7 @@ XML_PackValue(
 		break;
 	}
 	*p = 0;
+LEAVE_FUNC;
 	return	(p-pp);
 }
 
