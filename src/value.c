@@ -142,7 +142,11 @@ FreeValueStruct(
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
 				FreeValueStruct(ValueRecordItem(val,i));
+				xfree(ValueRecordName(val,i));
 			}
+			g_hash_table_destroy(ValueRecordMembers(val));
+			xfree(ValueRecordNames(val));
+			xfree(ValueRecordItems(val));
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
@@ -630,8 +634,6 @@ ENTER_FUNC;
 		for	( i = 0 ; i < ValueRecordSize(vs) ; i ++ ) {
 			CopyValue(ValueRecordItem(vd,i),ValueRecordItem(vs,i));
 		}
-		ValueRecordMembers(vd) = ValueRecordMembers(vs);
-		ValueRecordNames(vd) = ValueRecordNames(vs);
 		break;
 	  case	GL_TYPE_ALIAS:
 	  default:
@@ -718,7 +720,9 @@ DuplicateValue(
 		break;
 	  case	GL_TYPE_RECORD:
 		/*	share name table		*/
-		ValueRecordMembers(p) = ValueRecordMembers(template);
+		ValueRecordMembers(p) = NewNameHash();
+		ValueRecordNames(p) =
+			(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
 		ValueRecordNames(p) = ValueRecordNames(template);
 		/*	duplicate data space	*/
 		ValueRecordItems(p) = 
@@ -727,6 +731,10 @@ DuplicateValue(
 		for	( i = 0 ; i < ValueRecordSize(template) ; i ++ ) {
 			ValueRecordItem(p,i) = 
 				DuplicateValue(ValueRecordItem(template,i));
+			ValueRecordName(p,i) = StrDup(ValueRecordName(template,i));
+			g_hash_table_insert(ValueRecordMembers(p),
+								(gpointer)ValueRecordName(p,i),
+								(gpointer)(i+1));
 		}
 		break;
 	  case	GL_TYPE_VALUES:
@@ -739,6 +747,8 @@ DuplicateValue(
 		}
 		break;
 	  case	GL_TYPE_ALIAS:
+		ValueAliasName(p) = StrDup(ValueAliasName(template));
+		break;
 	  default:
 		break;
 	}
@@ -757,9 +767,7 @@ ValueAddRecordItem(
 	size_t		nsize;
 
 ENTER_FUNC;
-#ifdef	TRACE
-	printf("name = [%s]\n",name); 
-#endif
+	dbgprintf("name = [%s]\n",name); 
 	nsize = ValueRecordSize(upper) + 1;
 	items = (ValueStruct **)
 		xmalloc(sizeof(ValueStruct *) * nsize);

@@ -177,8 +177,8 @@ main(
 	byte	*p;
 	int		i;
 	ValueStruct	*val
-		,		*val2;
-	FILE	*fp;
+		,		*val2
+		,		*val3;
 	CONVOPT	*opt;
 	byte	*buff;
 	size_t	size;
@@ -281,31 +281,14 @@ printf("** variable size (end)**\n");fflush(stdout);
 	XML_PackValue(opt,buff,val2);
 	printf("%s\n",buff);
 
-	printf("***** converting *****\n");
-	if		(  ( fp = fopen("test.value","w") )  ==  NULL  ) 	exit(1);
-	fprintf(fp,"%s\n",buff);
-	fclose(fp);
 
-	OpenCOBOL_PackValue(opt,buff,val);
-	size = OpenCOBOL_SizeValue(opt,val);
-	if		(  ( fp = fopen("test.oc","w") )  ==  NULL  ) 	exit(1);
-	fwrite(buff,size,1,fp);
-	fclose(fp);
+	printf("***** Value duplicate *****\n");
+	val3 = DuplicateValue(val);
+	printf("***** Value duplicate (end)*****\n");
 
-	InitializeValue(val);
-	OpenCOBOL_UnPackValue(opt,buff,val);
-	XML_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	NativePackValue(opt,buff,val);
-	size = NativeSizeValue(opt,val);
-	if		(  ( fp = fopen("test.na","w") )  ==  NULL  ) 	exit(1);
-	fwrite(buff,size,1,fp);
-	fclose(fp);
-
-	InitializeValue(val);
-	NativeUnPackValue(opt,buff,val);
-	XML_PackValue(opt,buff,val);
+	printf("***** after duplicate ****\n");
+	memset(buff,0,SIZE_BUFF);
+	XML_PackValue(opt,buff,val3);
 	printf("%s\n",buff);
 
 	return	(0);

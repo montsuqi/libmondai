@@ -1,5 +1,8 @@
 2004-11-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
+	* src/value.c (DuplicateValue): 名前表も複製するようにした。このた
+	め、FreeValueStructでは名前表も解放するようにした
+
 	* src/fixed.c: value.hから分離
 
 2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
