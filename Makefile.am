@@ -11,7 +11,8 @@ AUTOMAKE_OPTIONS = 1.4
 EXTRA_DIST = \
 	TODO \
 	acconfig.h \
-	makecopyright
+	makecopyright \
+	libmondai.m4
 
 release:
 	rm -rf .deps */.deps
@@ -20,3 +21,6 @@ release:
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)`date +"%y%m%d"`
 
+install-data-local:
+	-mkdir -p $(DESTDIR)$(datadir)/aclocal
+	$(INSTALL_DATA) $(srcdir)/libmondai.m4 $(DESTDIR)$(datadir)/aclocal/libmondai.m4

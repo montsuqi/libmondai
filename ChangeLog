@@ -1,5 +1,13 @@
 2003-03-07  Koji SHIMIZU  <shimizu@netlab.jp>
 
+	Added libmondai.m4 to define `AM_PATH_LIBMONDAI'.
+	
+	* libmondai.m4: New file for `AM_PATH_LIBMONDAI'.
+	* configure.in (AC_OUTPUT): Added `src/libmondai.h'.
+	* Makefile.am (install-data-local): New tag to install `libmondai.m4'.
+	* src/libmondai.h.in: New file to generate `libmondai.h'.
+	* src/libmondai.h: Removed file.
+
 	* .cvsignore:
 	* docs/.cvsignore:
 	* src/.cvsignore: New file for cvs.
