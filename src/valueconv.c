@@ -129,6 +129,7 @@ NewConvOpt(void)
 	ret->textsize = 100;
 	ret->arraysize = 10;
 	ret->encode = STRING_ENCODING_URL;
+	ret->appendix = NULL;
 
 	return	(ret);
 }

@@ -19,6 +19,7 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+#define	XML_TEST
 /*
 #define	CONV_TEST
 */
@@ -41,6 +42,133 @@ copies.
 #include	"types.h"
 #include	"libmondai.h"
 #include	"debug.h"
+
+typedef	struct {
+	Bool	fIndent;
+}	XMLOPT;
+
+#define	ConvIndent(opt)			(((XMLOPT *)(opt)->appendix)->fIndent)
+#define	ConvSetIndent(opt,v)	(((XMLOPT *)(opt)->appendix)->fIndent = (v))
+
+static	char	*
+XML_Encode(
+	char	*str,
+	char	*buff)
+{
+	char	*p;
+
+	p = buff;
+	for	( ; *str != 0 ; str ++ ) {
+		if		(  *str  <  0x20  ) {
+			p += sprintf(p,"\\%02X",*str);
+		} else {
+			*p ++ = *str;
+		}
+	}
+	*p = 0;
+	return	(buff);
+}
+
+static	byte	*
+_XML_PackValue(
+	CONVOPT		*opt,
+	 byte		*p,
+	char		*name,
+	ValueStruct	*value,
+	char		*buff)
+{
+	char	num[SIZE_NAME+1];
+	int		i;
+
+	if		(  value  !=  NULL  ) {
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_INT:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"int\"/>%s\n",name,ValueToString(value));
+			break;
+		  case	GL_TYPE_BOOL:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"bool\"/>%s\n",name,ValueToString(value));
+			break;
+		  case	GL_TYPE_BYTE:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"byte\"/>%s\n"
+						 ,name,XML_Encode(ValueToString(value),buff));
+			break;
+		  case	GL_TYPE_CHAR:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"char\" size=\"%d\" />%s\n"
+						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
+			break;
+		  case	GL_TYPE_VARCHAR:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"varchar\" size=\"%d\" />%s\n"
+						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
+			break;
+		  case	GL_TYPE_TEXT:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"text\" size=\"%d\" />%s\n"
+						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
+			break;
+		  case	GL_TYPE_DBCODE:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"dbcode\" size=\"%d\" />%s\n"
+						 ,name,ValueStringLength(value),XML_Encode(ValueString(value),buff));
+			break;
+		  case	GL_TYPE_NUMBER:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"number\"/>%s\n"
+						 ,name,XML_Encode(ValueToString(value),buff));
+			break;
+		  case	GL_TYPE_FLOAT:
+			p += sprintf(p,"<VALUE name=\"%s\" type=\"float\"/>%s\n"
+						 ,name,XML_Encode(ValueToString(value),buff));
+			break;
+		  case	GL_TYPE_ARRAY:
+			p += sprintf(p,"<ARRAY name=\"%s\" count=\"%d\">\n"
+						 ,name,ValueArraySize(value));
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				sprintf(num,"%d",i);
+				p = _XML_PackValue(opt,p,num,ValueArrayItem(value,i),buff);
+			}
+			p += sprintf(p,"</ARRAY>\n");
+			break;
+		  case	GL_TYPE_RECORD:
+			p += sprintf(p,"<RECORD name=\"%s\" size=\"%d\">\n"
+						 ,name,ValueRecordSize(value));
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p = _XML_PackValue(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
+			}
+			p += sprintf(p,"</RECORD>\n");
+			break;
+		  case	GL_TYPE_ALIAS:
+		  default:
+			break;
+		}
+	}
+	return	(p);
+}
+
+extern	byte	*
+XML_PackValue(
+	CONVOPT		*opt,
+	 byte		*p,
+	ValueStruct	*value)
+{
+	char	buff[SIZE_BUFF+1];
+
+	_XML_PackValue(opt,p,opt->recname,value,buff);
+	return	(p);
+}
+
+extern	byte	*
+XML_UnPackValue(
+	CONVOPT		*opt,
+	byte		*p,
+	ValueStruct	*value)
+{
+}
+
+extern	size_t
+XML_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+}
+
+
 
 extern	int
 main(
@@ -113,7 +241,18 @@ main(
 			}
 		}
 	}
-	DumpValueStruct(val);
+	//	DumpValueStruct(val);
+#ifdef	XML_TEST
+	opt = NewConvOpt();
+	buff = xmalloc(SIZE_BUFF);
+	printf("***** XML Pack *****\n");
+	ConvSetRecName(opt,"testrec");
+	//	ConvSetUseName(opt,TRUE);
+	ConvSetIndent(opt,TRUE);
+	XML_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+	printf("********************\n");
+#endif
 
 #ifdef	CONV_TEST
 	opt = NewConvOpt();

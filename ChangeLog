@@ -1,3 +1,8 @@
+2003-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c : 同一レコード内でのaliasをやめた。弊害の方が大き
+	いので。
+
 2003-10-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/getset.c (SetValueString): strがNULLの時の処理(NILにしたが、

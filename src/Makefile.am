@@ -54,9 +54,16 @@ libmondai_la_SOURCES	=			\
 	types.h							\
 	debug.h
 
+testconv_INCLUDES 	= 		\
+	$(GLIB_CFLAGS) 			\
+	$(FIXED_CFLAGS)			\
+	$(XML2_CFLAGS)			\
+	-I$(top_srcdir)
+
 testconv_LDADD 		=	\
 	$(GLIB_LIBS)		\
 	$(FIXED_LIBS)		\
+	$(XML2_LIBS)		\
 	./libmondai.la
 
 testconv_SOURCES	=				\

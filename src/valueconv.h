@@ -35,6 +35,7 @@ typedef	struct {
 	size_t	textsize;
 	size_t	arraysize;
 	Bool	fName;
+	void	*appendix;
 }	CONVOPT;
 
 typedef	struct {
@@ -69,6 +70,7 @@ extern	void		DestroyConvOpt(CONVOPT *opt);
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
 #define	ConvSetUseName(opt,f)		(opt)->fName = (f)
+#define	ConvSetAppendix(opt,a)		(opt)->appendix = (a)
 
 #endif
 

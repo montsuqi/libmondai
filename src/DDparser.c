@@ -115,52 +115,6 @@ SetAttribute(
 }
 
 static	void
-ResolveAlias(
-	ValueStruct		*root,
-	ValueStruct		*val)
-{
-	char		*name;
-	int			i;
-	ValueStruct	*item;
-
-	if		(  val  !=  NULL  ) {
-		switch	(val->type) {
-		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-				ResolveAlias(root,ValueArrayItem(val,i));
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-				item = ValueRecordItem(val,i);
-				if		(  ValueType(item)  ==  GL_TYPE_ALIAS  ) {
-					name = ValueAliasName(item);
-					if		(  *name  ==  '.'  ) {
-						ValueRecordItem(val,i) = GetItemLongName(root,name+1);
-						xfree(name);
-						xfree(item);
-					}
-					ValueAttribute(ValueRecordItem(val,i)) |= GL_ATTR_ALIAS;
-				} else {
-					ResolveAlias(root,item);
-				}
-			}
-			break;
-		  case	GL_TYPE_ALIAS:
-			break;
-		  case	GL_TYPE_BYTE:
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_NUMBER:
-		  default:
-			break;
-		}
-	}
-}	
-
-static	void
 _Error(
 	char	*msg,
 	char	*fn,
@@ -450,9 +404,6 @@ dbgmsg(">DD_ParseMain");
 		}
 	} else {
 		ret = NULL;
-	}
-	if		(  ret  !=  NULL  ) {
-		ResolveAlias(ret,ret);
 	}
 dbgmsg("<DD_ParseMain");
 	return	(ret);
