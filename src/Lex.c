@@ -141,7 +141,7 @@ dbgmsg(">DoInclude");
 	CURR->cLine = 1;
 	CURR->fn = StrDup(name);
 	if		(  CURR->fp  ==  NULL  ) {
-		printf("include not found\n");
+		fprintf(stderr,"include not found [%s]\n",name);
 		ExitInclude();
 	}
 dbgmsg("<DoInclude");
