@@ -1,3 +1,7 @@
+2004-02-20  Noboru Saitou  <noborus@netlab.jp>
+
+	* Ver 1.2.1 release
+
 2004-02-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Lex.c (PushLexInfo): エラーメッセージの制御を可能にした
