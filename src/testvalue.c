@@ -19,15 +19,6 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#define	TEST_CODE		"euc-jp"
-#define	SRC_CODE		"euc-jp"
-
-#define	TEST_VALUE
-
-/*
-#define	TEST_CODE		"shift-jis"
-*/
-
 /*
 #define	DEBUG
 #define	TRACE
@@ -36,6 +27,15 @@ copies.
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
+#define	TEST_CODE		"euc-jp"
+#define	SRC_CODE		"euc-jp"
+
+#define	TEST_VALUE
+
+/*
+#define	TEST_CODE		"shift-jis"
+*/
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -87,7 +87,8 @@ BuildMcpArea(
 	//	fprintf(fp,			"window	 varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"window	 varchar(%d);",4);
 	fprintf(fp,			"widget	 varchar(%d);",SIZE_NAME);
-	fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
+	//fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
+	fprintf(fp,			"event	 varchar(%d);",35);
 	fprintf(fp,			"module	 varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"fromwin varchar(%d);",SIZE_NAME);
 	fprintf(fp,			"status	 varchar(%d);",SIZE_STATUS);
@@ -150,7 +151,8 @@ main(
 	//SetValueString(GetItemLongName(val,"dc.window"),"window",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.window"),"1 男",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.widget"),"widget",SRC_CODE);
-	SetValueString(GetItemLongName(val,"dc.event"),"event",SRC_CODE);
+	//SetValueString(GetItemLongName(val,"dc.event"),"event",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.event"),"1002 医療機関情報ー所在地、連絡先",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.fromwin"),"fromwin",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.status"),"status",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.puttype"),"puttype",SRC_CODE);
@@ -180,7 +182,7 @@ main(
 
 	opt = NewConvOpt();
 	ConvSetCodeset(opt,TEST_CODE);
-
+#ifdef	USE_XML
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 	ConvSetXmlType(opt,XML_TYPE2);
@@ -215,6 +217,6 @@ main(
 	printf("%s\n",buff);
 
 	xfree(buff);
-
+#endif
 	return	(0);
 }

@@ -33,7 +33,9 @@ copies.
 #include	<string.h>
 #include	<ctype.h>
 #include	<errno.h>
+#ifdef	WITH_I18N
 #include	<iconv.h>
+#endif
 #include	<glib.h>
 #include	<math.h>
 
@@ -202,20 +204,9 @@ ENTER_FUNC;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-#if	0
-		if		(  codeset  ==  NULL  ) {
-			LBS_ReserveSize(ValueStr(val),ValueStringSize(val),FALSE);
-			memcpy(ValueStrBody(val),ValueString(val),ValueStringSize(val));
-		} else {
-			LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
-								  ValueStringSize(val),
-								  ValueStringLength(val),codeset);
-		}
-#else
 		LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 							  ValueStringSize(val),
 							  ValueStringLength(val),codeset);
-#endif
 		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
 			for	(  ; size > 0 ; size -- ) {
 				LBS_EmitChar(ValueStr(val),0);
@@ -348,16 +339,18 @@ SetValueString(
 	,		fPoint;
 	size_t	len;
 	int		i;
-	char	*p
-	,		*q
-	,		*istr;
+	char	*p;
 	char	buff[SIZE_NUMBUF+1]
 	,		sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
+#ifdef	WITH_I18N
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
+	char	*q
+	,		*istr;
+#endif
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
@@ -370,18 +363,15 @@ ENTER_FUNC;
 		rc = TRUE;
 	} else {
 		ValueIsNonNil(val);
-		if		(  codeset  !=  NULL  ) {
-			cd = iconv_open("utf8",codeset);
-		} else {
-			cd = (iconv_t)0;
-		}
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
+#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				len = ValueStringLength(val) < strlen(str) ?
 					ValueStringLength(val) : strlen(str);
+				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
 					istr = str;
 					sib = len;
@@ -389,12 +379,7 @@ ENTER_FUNC;
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						*q = 0;
 						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
-#if	1
-						if		(	(  errno  ==  E2BIG  )
-								||	(  errno  ==  EINVAL  ) ) {
-#else
 						if		(  errno  ==  E2BIG ) {
-#endif
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
@@ -404,8 +389,10 @@ ENTER_FUNC;
 					}
 					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
 				};
+				iconv_close(cd);
 				*q = 0;
 			} else {
+#endif
 				size = strlen(str) + 1;
 				if		(  size  >  ValueStringSize(val)  ) {
 					if		(  ValueString(val)  !=  NULL  ) {
@@ -416,12 +403,16 @@ ENTER_FUNC;
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				strcpy(ValueString(val),str);
+#ifdef	WITH_I18N
 			}
+#endif
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_TEXT:
 			len = strlen(str);
+#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
+				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
 					istr = str;
 					sib = len;
@@ -429,12 +420,7 @@ ENTER_FUNC;
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						*q = 0;
 						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
-#if	1
-						if		(	(  errno  ==  E2BIG  )
-								||	(  errno  ==  EINVAL  ) ) {
-#else
 						if		(  errno  ==  E2BIG ) {
-#endif
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
@@ -445,8 +431,10 @@ ENTER_FUNC;
 					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
 					memclear(ValueString(val),ValueStringSize(val));
 				};
+				iconv_close(cd);
 				*q = 0;
 			} else {
+#endif
 				size = len + 1;
 				if		(  size  >  ValueStringSize(val)  ) {
 					if		(  ValueString(val)  !=  NULL  ) {
@@ -457,7 +445,9 @@ ENTER_FUNC;
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				strcpy(ValueString(val),str);
+#ifdef	WITH_I18N
 			}
+#endif
 			ValueStringLength(val) = len;
 			rc = TRUE;
 			break;
@@ -465,18 +455,24 @@ ENTER_FUNC;
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_BOOL:
+#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
+				cd = iconv_open("utf8",codeset);
 				istr = str;
 				sib = strlen(str);
 				sob = SIZE_NUMBUF;
 				p = sbuff;
 				iconv(cd,&istr,&sib,&p,&sob);
+				iconv_close(cd);
 				*p = 0;
 				str = sbuff;
 			} else {
+#endif
 				strncpy(sbuff,str,SIZE_NUMBUF);
 				str = sbuff;
+#ifdef	WITH_I18N
 			}
+#endif
 			switch	(ValueType(val)) {
 			  case	GL_TYPE_NUMBER:
 				p = buff;
@@ -546,9 +542,6 @@ ENTER_FUNC;
 			break;
 		  default:
 			rc = FALSE;	  
-		}
-		if		(  codeset  !=  NULL  ) {
-			iconv_close(cd);
 		}
 	}
 LEAVE_FUNC;

@@ -1,3 +1,8 @@
+2003-12-08  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (NativePackValue): 文字列末尾の\0はpackの時に含める。
+	故にunpackの時はstrcpyで良い
+
 2003-11-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/memory.[ch]: misc.[ch]から分離

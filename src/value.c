@@ -728,40 +728,44 @@ ValueAddRecordItem(
 	char		*name,
 	ValueStruct	*value)
 {
-	ValueStruct	**item;
+	ValueStruct	**items;
 	char		**names;
+	char		*dname;
+	size_t		nsize;
 
 dbgmsg(">ValueAddRecordItem");
 #ifdef	TRACE
 	printf("name = [%s]\n",name); 
 #endif
-	item = (ValueStruct **)
-		xmalloc(sizeof(ValueStruct *) * ( ValueRecordSize(upper) + 1 ) );
+	nsize = ValueRecordSize(upper) + 1;
+	items = (ValueStruct **)
+		xmalloc(sizeof(ValueStruct *) * nsize);
 	names = (char **)
-		xmalloc(sizeof(char *) * ( ValueRecordSize(upper) + 1 ) );
+		xmalloc(sizeof(char *) * nsize);
 	if		(  ValueRecordSize(upper)  >  0  ) {
-		memcpy(item, ValueRecordItems(upper), 
+		memcpy(items, ValueRecordItems(upper), 
 			   sizeof(ValueStruct *) * ValueRecordSize(upper) );
 		memcpy(names, ValueRecordNames(upper),
 			   sizeof(char *) * ValueRecordSize(upper) );
 		xfree(ValueRecordItems(upper));
 		xfree(ValueRecordNames(upper));
 	}
-	ValueRecordItems(upper) = item;
-	ValueRecordNames(upper) = names;
-	item[ValueRecordSize(upper)] = value;
-	names[ValueRecordSize(upper)] = StrDup(name);
+	items[ValueRecordSize(upper)] = value;
+	dname = StrDup(name);
+	names[ValueRecordSize(upper)] = dname;
 	if		(  name  !=  NULL  ) {
 		if		(  g_hash_table_lookup(ValueRecordMembers(upper),name)  ==  NULL  ) {
 			g_hash_table_insert(ValueRecordMembers(upper),
-								(gpointer)names[ValueRecordSize(upper)],
-								(gpointer)ValueRecordSize(upper)+1);
+								(gpointer)dname,
+								(gpointer)(ValueRecordSize(upper)+1));
 		} else {
 			printf("name = [%s]\t",name);
 			Error("name duplicate");
 		}
 	}
-	ValueRecordSize(upper) ++;
+	ValueRecordItems(upper) = items;
+	ValueRecordNames(upper) = names;
+	ValueRecordSize(upper) = nsize;
 dbgmsg("<ValueAddRecordItem");
 }
 

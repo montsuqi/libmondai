@@ -72,8 +72,10 @@ static	ConvFuncs	funcs[] = {
 	{	"CGI",					"&",					"\n",
 		CGI_PackValue,			CGI_UnPackValue,		CGI_SizeValue		},
 
+#ifdef	USE_XML
 	{	"XML",					"\n",					"\n",
 		XML_PackValue,			XML_UnPackValue,		XML_SizeValue		},
+#endif
 
 	{	NULL,					"",						"",
 		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}

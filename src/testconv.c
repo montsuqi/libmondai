@@ -19,6 +19,15 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+/*
+#define	DEBUG
+#define	TRACE
+*/
+#define	MAIN
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #define	TEST_CODE		"euc-jp"
 #define	SRC_CODE		"euc-jp"
 
@@ -39,15 +48,6 @@ copies.
 #define	TEST_CODE		"shift-jis"
 */
 
-/*
-#define	DEBUG
-#define	TRACE
-*/
-#define	MAIN
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
@@ -62,7 +62,9 @@ copies.
 #include	"dotCOBOL_v.h"
 #include	"Native_v.h"
 #include	"Text_v.h"
+#ifdef	USE_XML
 #include	"XML_v.h"
+#endif
 #include	"cobolvalue.h"
 #include	"valueconv.h"
 #include	"DDparser.h"

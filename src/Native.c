@@ -37,6 +37,7 @@ copies.
 #define	__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
+#include	"monstring.h"
 #include	"memory.h"
 #include	"value.h"
 #include	"Native_v.h"
@@ -100,7 +101,6 @@ dbgmsg(">NativeUnPackValue");
 			p += sizeof(size_t);
 			len = *(size_t *)p;
 			p += sizeof(size_t);
-
 			if		(  size  >  ValueStringSize(value)  ) {
 				if		(  ValueString(value)  !=  NULL  ) {
 					xfree(ValueString(value));
@@ -108,9 +108,9 @@ dbgmsg(">NativeUnPackValue");
 				ValueStringSize(value) = size;
 				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
 			}
-			memcpy(ValueString(value),p,size);
+			memclear(ValueString(value),size);
+			strcpy(ValueString(value),p);
 			p += size;
-			ValueString(value)[size] = 0;
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
 				ValueStringLength(value) = len;
 			}

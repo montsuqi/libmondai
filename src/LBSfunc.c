@@ -32,7 +32,9 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#ifdef	WITH_I18N
 #include	<iconv.h>
+#endif
 #include	<math.h>
 
 #include	"types.h"
@@ -199,7 +201,7 @@ LBS_Emit(
 		lbs->asize += SIZE_GLOWN;
 		body = (byte *)xmalloc(lbs->asize);
 		if		(  lbs->body  !=  NULL  ) {
-			memcpy(body,lbs->body,lbs->size);
+			memcpy(body,lbs->body,lbs->ptr);
 			xfree(lbs->body);
 		}
 		lbs->body = body;
@@ -207,7 +209,7 @@ LBS_Emit(
 	lbs->body[lbs->ptr] = code;
 	lbs->ptr ++;
 	if		(  lbs->ptr  >  lbs->size  ) {
-		lbs->size ++;
+		lbs->size = lbs->ptr;
 	}
 }
 
@@ -243,6 +245,7 @@ LBS_EmitStringCodeset(
 	size_t			osize,
 	char			*codeset)
 {
+#ifdef	WITH_I18N
 	char	*oc
 	,		*istr;
 	char	obuff[SIZE_CONV];
@@ -250,11 +253,13 @@ LBS_EmitStringCodeset(
 	,		sib
 	,		sob
 	,		csize;
-	int		rc;
 	iconv_t	cd;
+	int		rc;
 	int		i;
+#endif
 
 ENTER_FUNC;
+#ifdef	WITH_I18N
 	if		(  codeset  !=  NULL  ) {
 		cd = iconv_open(codeset,"utf8");
 		while	(  isize  >  0  )	{
@@ -280,9 +285,22 @@ ENTER_FUNC;
 		}
 		iconv_close(cd);
 	} else {
+#endif
+#if	0
 		LBS_ReserveSize(lbs,isize,FALSE);
 		memcpy(LBS_Body(lbs),str,isize);
+#else
+		while	(  isize  >  0  )	{
+			LBS_Emit(lbs,*str);
+			str ++;
+			isize --;
+			osize --;
+			if		(  osize  ==  0  )	break;
+		}
+#endif
+#ifdef	WITH_I18N
 	}
+#endif
 LEAVE_FUNC;
 }
 

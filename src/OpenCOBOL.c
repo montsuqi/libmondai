@@ -91,8 +91,9 @@ OpenCOBOL_UnPackValue(
 	char	buff[SIZE_NUMBUF+1];
 	char	*str;
 
+ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			value->body.IntegerData = *(int *)p;
 			IntegerCobol2C(&value->body.IntegerData);
@@ -146,6 +147,7 @@ OpenCOBOL_UnPackValue(
 			break;
 		}
 	}
+LEAVE_FUNC;
 	return	(p);
 }
 
@@ -158,6 +160,7 @@ OpenCOBOL_PackValue(
 	int		i;
 	size_t	size;
 
+ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		switch	(value->type) {
 		  case	GL_TYPE_INT:
@@ -205,6 +208,7 @@ OpenCOBOL_PackValue(
 			break;
 		}
 	}
+LEAVE_FUNC;
 	return	(p);
 }
 
