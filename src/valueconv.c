@@ -128,7 +128,7 @@ NewConvOpt(void)
 	CONVOPT	*ret;
 
 	ret = New(CONVOPT);
-	ret->coding = NULL;
+	ret->codeset = NULL;
 	ret->recname = NULL;
 	ret->textsize = 100;
 	ret->arraysize = 10;

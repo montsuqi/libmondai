@@ -242,7 +242,7 @@ _XML_PackValue1(
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->coding),buff));
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
 #else
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
@@ -344,7 +344,7 @@ _XML_PackValue2(
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->coding),buff));
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
 #else
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
@@ -370,8 +370,8 @@ XML_PackValue(
 
 	p += sprintf(p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
-	if		(  opt->coding  !=  NULL  ) {
-		p += sprintf(p," encoding=\"%s\"",opt->coding);
+	if		(  ConvCodeset(opt)  !=  NULL  ) {
+		p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
 	}
 #else
 	p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
@@ -1135,7 +1135,7 @@ _XML_SizeValue1(
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,opt->coding),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
 #else
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
@@ -1243,7 +1243,7 @@ _XML_SizeValue2(
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,opt->coding),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
 #else
 				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
 #endif
@@ -1270,9 +1270,9 @@ XML_SizeValue(
 	nIndent = 0;
 	size = 19;			//	<?xml version="1.0"
 #ifdef	USE_XML2
-	if		(  opt->coding  !=  NULL  ) {
-		size += 12 + strlen(opt->coding);	
-		//	" encoding=\"%s\"",opt->coding
+	if		(  ConvCodeset(opt)  !=  NULL  ) {
+		size += 12 + strlen(ConvCodeset(opt));	
+		//	" encoding=\"%s\"",ConvCodeset(opt)
 	}
 #else
 	size += 12 + strlen(LIBXML_CODE);

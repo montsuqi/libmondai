@@ -174,7 +174,7 @@ main(
 	SetValueString(GetItemLongName(val,"private.prc"),"3",SRC_CODE);
 
 	opt = NewConvOpt();
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);

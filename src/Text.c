@@ -113,7 +113,7 @@ _CSV_UnPackValue(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_BYTE:
-			SetValueString(value,buff,opt->coding);
+			SetValueString(value,buff,ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -215,7 +215,7 @@ __CSV_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BOOL:
-			CSV_Encode(ValueToString(value,opt->coding),fSsep,buff);
+			CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
 			if		(  fSsep  ) {
 				p += sprintf(p,"\"%s\",",buff);
 			} else {
@@ -230,9 +230,9 @@ __CSV_PackValue(
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 			if		(  fNsep  ) {
-				p += sprintf(p,"\"%s\",",ValueToString(value,opt->coding));
+				p += sprintf(p,"\"%s\",",ValueToString(value,ConvCodeset(opt)));
 			} else {
-				p += sprintf(p,"%s,",ValueToString(value,opt->coding));
+				p += sprintf(p,"%s,",ValueToString(value,ConvCodeset(opt)));
 			}
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -334,7 +334,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BOOL:
-		str = ValueToString(value,opt->coding);
+		str = ValueToString(value,ConvCodeset(opt));
 		ret = strlen(str) + 1;
 		if		(  fSsep  )	{
 			ret += 2;
@@ -362,7 +362,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = strlen(ValueToString(value,opt->coding)) + 1;
+		ret = strlen(ValueToString(value,ConvCodeset(opt))) + 1;
 		if		(  fNsep  )	ret += 2;
 		break;
 	  case	GL_TYPE_ARRAY:
@@ -484,7 +484,7 @@ _RFC822_UnPackValueNoNamed(
 					&&	(  *p  !=  '\n'  ) )	p ++;
 			len = DecodeBase64(buff,q,p-q);
 			buff[len] = 0;
-			SetValueString(value,buff,opt->coding);
+			SetValueString(value,buff,ConvCodeset(opt));
 			p ++;
 			break;
 		  case	GL_TYPE_BOOL:
@@ -496,7 +496,7 @@ _RFC822_UnPackValueNoNamed(
 					&&	(  *p  !=  '\n'  ) )	p ++;
 			ch = *p;
 			*p = 0;
-			SetValueString(value,q,opt->coding);
+			SetValueString(value,q,ConvCodeset(opt));
 			*p = ch;
 			p ++;
 			break;
@@ -560,7 +560,7 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_BYTE:
 						len = DecodeBase64(buff,q,p-q);
 						buff[len] = 0;
-						SetValueString(e,buff,opt->coding);
+						SetValueString(e,buff,ConvCodeset(opt));
 						break;
 					  case	GL_TYPE_BOOL:
 					  case	GL_TYPE_NUMBER:
@@ -568,7 +568,7 @@ _RFC822_UnPackValueNamed(
 					  case	GL_TYPE_FLOAT:
 						ch = *p;
 						*p = 0;
-						SetValueString(e,q,opt->coding);
+						SetValueString(e,q,ConvCodeset(opt));
 						*p = ch;
 						break;
 					  default:
@@ -623,7 +623,7 @@ _RFC822_PackValue(
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
-			str = ValueToString(value,opt->coding);
+			str = ValueToString(value,ConvCodeset(opt));
 			EncodeBase64(buff,str,strlen(str));
 			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
@@ -637,7 +637,7 @@ _RFC822_PackValue(
 			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
 			}
-			p += sprintf(p,"%s\n",ValueToString(value,opt->coding));
+			p += sprintf(p,"%s\n",ValueToString(value,ConvCodeset(opt)));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -708,13 +708,13 @@ dbgmsg(">_RFC822_SizeValue");
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
-		ret += EncodeLengthBase64(ValueToString(value,opt->coding));
+		ret += EncodeLengthBase64(ValueToString(value,ConvCodeset(opt)));
 		break;
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = strlen(ValueToString(value,opt->coding)) + 1;
+		ret = strlen(ValueToString(value,ConvCodeset(opt))) + 1;
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
 		}
@@ -812,7 +812,7 @@ _CGI_UnPackValue(
 					DecodeStringURL(buff,q);
 					*p = ch;
 					if		(  *p  !=  0  )	p ++;
-					SetValueString(e,buff,opt->coding);
+					SetValueString(e,buff,ConvCodeset(opt));
 				} else {
 					p = CGI_SkipNext(opt,p);
 				}
@@ -856,7 +856,7 @@ _CGI_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
-			q = ValueToString(value,opt->coding);
+			q = ValueToString(value,ConvCodeset(opt));
 			p += sprintf(p,"%s=",longname);
 			while	(  *q  !=  0  ) {
 				if		(  *q  ==  0x20  ) {
@@ -936,7 +936,7 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
-		ret = EncodeStringLengthURL(ValueToString(value,opt->coding)) + strlen(longname) + 2;
+		ret = EncodeStringLengthURL(ValueToString(value,ConvCodeset(opt))) + strlen(longname) + 2;
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret = 0;

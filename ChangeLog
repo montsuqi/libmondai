@@ -1,3 +1,7 @@
+2003-10-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: メンバ名変更(あまりかこよくなかったので)
+
 2003-10-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* Ver 1.2.0 リリース(安定版ブランチ作成)

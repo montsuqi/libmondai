@@ -232,7 +232,7 @@ main(
 	DumpValueStruct(val);
 
 	opt = NewConvOpt();
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 #ifdef	USE_XML
 #ifdef	TEST_XML1
 	buff = xmalloc(SIZE_BUFF);
@@ -296,7 +296,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** Native(1) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetUseName(opt,FALSE);
 
 	printf("***** Native Size(1) *****\n");
@@ -347,7 +347,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(1) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 
 	printf("***** CSV Size(1) *****\n");
 	size = CSV1_SizeValue(opt,val);
@@ -372,7 +372,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(2) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 
 	printf("***** CSV Size(2) *****\n");
 	size = CSV2_SizeValue(opt,val);
@@ -397,7 +397,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(3) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 
 	printf("***** CSV Size(3) *****\n");
 	size = CSV3_SizeValue(opt,val);
@@ -422,7 +422,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(E) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 
 	printf("***** CSV Size(E) *****\n");
 	size = CSVE_SizeValue(opt,val);
@@ -447,7 +447,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** RFC822(with name) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,TRUE);
 
@@ -475,7 +475,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** RFC822(without name) *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,FALSE);
 
@@ -502,7 +502,7 @@ main(
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CGI *****\n");
-	ConvSetCoding(opt,TEST_CODE);
+	ConvSetCodeset(opt,TEST_CODE);
 	ConvSetRecName(opt,"testrec");
 	ConvSetUseName(opt,FALSE);
 

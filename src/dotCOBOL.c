@@ -112,7 +112,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			str[ValueStringLength(value)] = 0;
 			p += opt->textsize;
 			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,opt->coding);
+			SetValueString(value,str,ConvCodeset(opt));
 			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
@@ -123,7 +123,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
 			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,opt->coding);
+			SetValueString(value,str,ConvCodeset(opt));
 			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
@@ -176,16 +176,15 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_TEXT:
-			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize :
-				ValueStringLength(value);
-			memcpy(p,ValueToString(value,opt->coding),size);
+			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
+			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
 			StringC2Cobol(p,opt->textsize);
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,ValueToString(value,opt->coding),ValueStringLength(value));
+			memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
 			StringC2Cobol(p,ValueStringLength(value));
 			p += ValueStringLength(value);
 			break;
