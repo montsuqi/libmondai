@@ -234,12 +234,12 @@ LBS_EmitString(
 
 #define	SIZE_CONV		10
 extern	void
-LBS_EmitStringLocale(
+LBS_EmitStringCodeset(
 	LargeByteString	*lbs,
 	char			*str,
 	size_t			isize,
 	size_t			osize,
-	char			*locale)
+	char			*codeset)
 {
 	char	*oc
 	,		*istr;
@@ -253,8 +253,8 @@ LBS_EmitStringLocale(
 	int		i;
 
 ENTER_FUNC;
-	if		(  locale  !=  NULL  ) {
-		cd = iconv_open(locale,"utf8");
+	if		(  codeset  !=  NULL  ) {
+		cd = iconv_open(codeset,"utf8");
 		while	(  isize  >  0  )	{
 			count = 1;
 			do {
@@ -278,10 +278,8 @@ ENTER_FUNC;
 		}
 		iconv_close(cd);
 	} else {
-		for	( oc = str , i = 0 ;(	(  i  <  isize  )
-								&&	(  i  <  osize  ) ); i ++, oc ++ ) {
-			LBS_Emit(lbs,*oc);
-		}
+		LBS_ReserveSize(lbs,isize,FALSE);
+		memcpy(LBS_Body(lbs),str,isize);
 	}
 LEAVE_FUNC;
 }

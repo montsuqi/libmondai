@@ -152,12 +152,11 @@ StringChop(
 {
 	char	*p;
 
-	p = str + strlen(str) - 1;
-	while	(	(  *p  ==  '\r'  )
-			||	(  *p  ==  '\n'  ) ) {
+	if		(  ( p = strrchr(str,'\r') )  !=  NULL  ) {
 		*p = 0;
-		if		(  p  ==  str  )	break;
-		p --;
+	}
+	if		(  ( p = strrchr(str,'\n') )  !=  NULL  ) {
+		*p = 0;
 	}
 	return	(str);
 }

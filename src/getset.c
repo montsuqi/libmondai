@@ -179,7 +179,7 @@ ValueToBool(
 extern	char	*
 ValueToString(
 	ValueStruct	*val,
-	char		*locale)
+	char		*codeset)
 {
 	char	work[SIZE_NUMBUF+1];
 	char	work2[SIZE_NUMBUF+2];
@@ -201,14 +201,20 @@ ENTER_FUNC;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		if		(  locale  ==  NULL  ) {
-			LBS_ReserveSize(ValueStr(val),ValueStringLength(val),FALSE);
-			memcpy(ValueStrBody(val),ValueString(val),ValueStringLength(val));
+#if	0
+		if		(  codeset  ==  NULL  ) {
+			LBS_ReserveSize(ValueStr(val),ValueStringSize(val),FALSE);
+			memcpy(ValueStrBody(val),ValueString(val),ValueStringSize(val));
 		} else {
-			LBS_EmitStringLocale(ValueStr(val),ValueString(val),
-								 ValueStringSize(val),
-								 ValueStringLength(val),locale);
+			LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
+								  ValueStringSize(val),
+								  ValueStringLength(val),codeset);
 		}
+#else
+		LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
+							  ValueStringSize(val),
+							  ValueStringLength(val),codeset);
+#endif
 		if		(  ( size = ValueStringLength(val) - ValueSize(val) )  >  0  ) {
 			for	(  ; size > 0 ; size -- ) {
 				LBS_EmitChar(ValueStr(val),0);
@@ -217,13 +223,13 @@ ENTER_FUNC;
 		break;
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(val)  !=  NULL  ) {
-			if		(  locale  ==  NULL  ) {
+			if		(  codeset  ==  NULL  ) {
 				LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
 				strcpy(ValueStrBody(val),ValueString(val));
 			} else {
-				LBS_EmitStringLocale(ValueStr(val),ValueString(val),
+				LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 									 ValueStringSize(val),
-									 0,locale);
+									 0,codeset);
 			}
 		} else {
 			LBS_EmitChar(ValueStr(val),CHAR_NIL);
@@ -334,7 +340,7 @@ extern	Bool
 SetValueString(
 	ValueStruct	*val,
 	char		*str,
-	char		*locale)
+	char		*codeset)
 {
 	Bool	rc
 	,		fMinus
@@ -363,8 +369,8 @@ ENTER_FUNC;
 		rc = TRUE;
 	} else {
 		ValueIsNonNil(val);
-		if		(  locale  !=  NULL  ) {
-			cd = iconv_open("utf8",locale);
+		if		(  codeset  !=  NULL  ) {
+			cd = iconv_open("utf8",codeset);
 		} else {
 			cd = (iconv_t)0;
 		}
@@ -372,7 +378,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			if		(  locale  !=  NULL  ) {
+			if		(  codeset  !=  NULL  ) {
 				len = ValueStringLength(val) < strlen(str) ?
 					ValueStringLength(val) : strlen(str);
 				while	(TRUE) {
@@ -410,7 +416,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 			len = strlen(str);
-			if		(  locale  !=  NULL  ) {
+			if		(  codeset  !=  NULL  ) {
 				while	(TRUE) {
 					istr = str;
 					sib = len;
@@ -450,7 +456,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_BOOL:
-			if		(  locale  !=  NULL  ) {
+			if		(  codeset  !=  NULL  ) {
 				istr = str;
 				sib = strlen(str);
 				sob = SIZE_NUMBUF;
@@ -532,7 +538,7 @@ ENTER_FUNC;
 		  default:
 			rc = FALSE;	  
 		}
-		if		(  locale  !=  NULL  ) {
+		if		(  codeset  !=  NULL  ) {
 			iconv_close(cd);
 		}
 	}
