@@ -34,6 +34,7 @@ copies.
 #include	<string.h>
 #include    <sys/types.h>
 
+#define	__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
 #include	"value.h"
@@ -64,7 +65,7 @@ dbgmsg(">NativeUnPackValue");
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		if		(  type  !=  ValueType(value)  ) {
-			fprintf(stdout,"unmatch type [%X].\n",(int)type);
+			fprintf(stderr,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 		}
 		ValueAttribute(value) =	( ValueAttribute(value) & ~GL_ATTR_NIL )
 			| ( attr & GL_ATTR_NIL );
@@ -132,6 +133,7 @@ dbgmsg(">NativeUnPackValue");
 						p += strlen(p)+1;
 					}
 				}
+				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
 				p = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;

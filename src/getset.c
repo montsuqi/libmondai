@@ -35,6 +35,7 @@ copies.
 #include	<glib.h>
 #include	<math.h>
 
+#define		__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
@@ -196,6 +197,8 @@ ValueToString(
 	  case	GL_TYPE_TEXT:
 		if		(  ValueString(val)  !=  NULL  ) {
 			strcpy(buff,ValueString(val));
+		} else {
+			*buff = CHAR_NIL;
 		}
 		break;
 	  case	GL_TYPE_BYTE:
@@ -316,10 +319,8 @@ SetValueString(
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memclear(ValueString(val),ValueStringLength(val) + 1);
-			if		(  str  !=  NULL  ) {
-				strncpy(ValueString(val),str,ValueStringLength(val));
-			}
+			memclear(ValueString(val),ValueStringSize(val));
+			strncpy(ValueString(val),str,ValueStringLength(val));
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_NUMBER:

@@ -19,9 +19,9 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
+/*
 #define	DEBUG
 #define	TRACE
-/*
 */
 
 #ifdef HAVE_CONFIG_H
@@ -469,20 +469,23 @@ startElement_(
 	if		(  stricmp((char *)name,"lm:item")  ==  0  ) {
 		ctx->value = GetItemLongName(ctx->root,ctx->longname);
 		*q = 0;
+		ctx->fStart = TRUE;
 	} else
 	if		(  stricmp(name,"lm:record")  ==  0  ) {
 		if		(  ctx->value  ==  NULL  ) {
 			*q = 0;
 		}
 		ctx->value = GetItemLongName(ctx->root,ctx->longname);
+		ctx->fStart = FALSE;
 	} else
 	if		(  stricmp(name,"lm:array")  ==  0  ) {
 		*q = 0;
+		ctx->fStart = FALSE;
 	} else
 	if		(  stricmp(name,"lm:block")  ==  0  ) {
 		ctx->value = NULL;
+		ctx->fStart = FALSE;
 	}
-	ctx->fStart = TRUE;
 }
 
 static	void

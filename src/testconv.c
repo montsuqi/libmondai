@@ -157,6 +157,52 @@ main(
 #endif
 
 #ifdef	CONV_TEST
+	printf("***** Native Pack(1) *****\n");
+	ConvSetUseName(opt,FALSE);
+	size =  NativeSizeValue(opt,val);
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	NativePackValue(opt,buff,val);
+	if		(  ( fp = fopen("test.native1","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+	xfree(buff);
+
+	printf("***** Native UnPack(1) *****\n");
+	if		(  ( fp = fopen("test.native1","r") )  ==  NULL  )	exit(1);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+	fgets(buff,SIZE_BUFF,fp);
+	fclose(fp);
+	NativeUnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	memset(buff,0,SIZE_BUFF);
+	CSV3_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+
+	printf("***** Native Pack(2) *****\n");
+	ConvSetUseName(opt,TRUE);
+	size =  NativeSizeValue(opt,val);
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	NativePackValue(opt,buff,val);
+	if		(  ( fp = fopen("test.native2","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+	xfree(buff);
+
+	printf("***** Native UnPack(2) *****\n");
+	if		(  ( fp = fopen("test.native2","r") )  ==  NULL  )	exit(1);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+	fgets(buff,SIZE_BUFF,fp);
+	fclose(fp);
+	NativeUnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	memset(buff,0,SIZE_BUFF);
+	CSV3_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+
 	printf("***** CSV Pack *****\n");
 	size = CSV1_SizeValue(opt,val);
 	printf("CSV1 size = %d\n",size);
@@ -204,52 +250,6 @@ main(
 
 	xfree(buff);
 	fclose(fp);
-
-	printf("***** Native Pack(1) *****\n");
-	ConvSetUseName(opt,FALSE);
-	size =  NativeSizeValue(opt,val);
-	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	NativePackValue(opt,buff,val);
-	if		(  ( fp = fopen("test.native1","w") )  ==  NULL  )	exit(1);
-	fwrite(buff,size,1,fp);
-	fclose(fp);
-	xfree(buff);
-
-	printf("***** Native UnPack(1) *****\n");
-	if		(  ( fp = fopen("test.native1","r") )  ==  NULL  )	exit(1);
-	buff = (char *)xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
-	fgets(buff,SIZE_BUFF,fp);
-	fclose(fp);
-	NativeUnPackValue(opt,buff,val);
-	DumpValueStruct(val);
-	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
-
-	printf("***** Native Pack(2) *****\n");
-	ConvSetUseName(opt,TRUE);
-	size =  NativeSizeValue(opt,val);
-	printf("size = %d\n",size);
-	buff = (char *)xmalloc(size);
-	NativePackValue(opt,buff,val);
-	if		(  ( fp = fopen("test.native2","w") )  ==  NULL  )	exit(1);
-	fwrite(buff,size,1,fp);
-	fclose(fp);
-	xfree(buff);
-
-	printf("***** Native UnPack(2) *****\n");
-	if		(  ( fp = fopen("test.native2","r") )  ==  NULL  )	exit(1);
-	buff = (char *)xmalloc(SIZE_BUFF);
-	memset(buff,0,SIZE_BUFF);
-	fgets(buff,SIZE_BUFF,fp);
-	fclose(fp);
-	NativeUnPackValue(opt,buff,val);
-	DumpValueStruct(val);
-	memset(buff,0,SIZE_BUFF);
-	CSV3_PackValue(opt,buff,val);
-	printf("%s\n",buff);
 
 	printf("***** RFC822 Pack *****\n");
 	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);

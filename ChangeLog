@@ -1,3 +1,7 @@
+2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/debug.h: pandaのものを持って来た(こっちが便利)
+
 2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/valueconv.h: フィールド名変更(XMLのタグに合わせる)

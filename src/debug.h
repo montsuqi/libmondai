@@ -28,19 +28,30 @@ copies.
 #include	<stdio.h>
 
 #ifdef	TRACE
-#define	dbgmsg(x)			printf("%s\n",(x));fflush(stdout)
-#define	PASS(x)				printf("%s(%d):%s\n",__FILE__,__LINE__,(x))
-#define	DUMP_VALUE(val)		printf("%s:%ld\n",#val,(long)(val))
-#define	ENTER_FUNC			printf(">%s\n", __func__)
-#define	LEAVE_FUNC			printf("<%s\n", __func__)
+#define	dbgmsg(s)			MessageDebug(__FILE__,__LINE__,(s))
+#define	dbgprintf(fmt, ...)	_MessagePrintf(__FILE__,__LINE__,(fmt), __VA_ARGS__)
+#define	PASS(s)				MessageDebug(__FILE__,__LINE__,(s))
+#define	ENTER_FUNC			_MessagePrintf(__FILE__,__LINE__,">%s", __func__)
+#define	LEAVE_FUNC			_MessagePrintf(__FILE__,__LINE__,"<%s", __func__)
+#define	RETURN(v)			_MessagePrintf(__FILE__,__LINE__,"<%s", __func__),return(v)
 #else
-#define	dbgmsg(x)			/*	*/
-#define	PASS(x)				/*	*/
-#define	DUMP_VALUE(val)		/*	*/
+#define	dbgmsg(s)			/*	*/
+#define	dbgprintf(fmt,...)	/*	*/
+#define	PASS(s)				/*	*/
 #define	ENTER_FUNC			/*	*/
 #define	LEAVE_FUNC			/*	*/
+#define	RETURN(v)			return(v)
 #endif
-#define	Error(x)			printf("Error: %s\n",(x));fflush(stdout);exit(1)
-#define	Warning(x)			printf("Warning: %s\n",(x));fflush(stdout)
+
+#ifdef	_INC_MESSAGE_H
+#define	Error(s)			_Message(MESSAGE_ERROR,__FILE__,__LINE__,(s));exit(1)
+#define	Warning(s)			_Message(MESSAGE_WARN,__FILE__,__LINE__,(s))
+#define	Message(l,s)		_Message((l),__FILE__,__LINE__,(s))
+#else
+#define	Error(s)			printf("E:%s:%d:%s\n",__FILE__,__LINE__,(s));exit(1)
+#define	Warning(s)			printf("W:%s:%d:%s\n",__FILE__,__LINE__,(s))
+#define	Message(l,s)		printf("M:%s:%d:%s\n",__FILE__,__LINE__,(s))
+#define	MessageDebug(f,l,s)	printf("D:%s:%d:%s\n",(f),(l),(s))
+#endif
 
 #endif

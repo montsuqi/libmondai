@@ -28,13 +28,15 @@ copies.
 #  include <config.h>
 #endif
 
-#define	_DD_PARSER
 
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
 #include	<glib.h>
+
+#define	_DD_PARSER
+#define	__VALUE_DIRECT
 #include	"types.h"
 #include	"hash.h"
 #include	"value.h"

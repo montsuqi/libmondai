@@ -138,14 +138,18 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
+
 #define	ValueType(v)			((v)->type)
 #define	ValueAttribute(v)		((v)->attr)
 #define	ValueIsNil(v)			((v)->attr |= GL_ATTR_NIL)
 #define	ValueIsNonNil(v)		((v)->attr &= ~GL_ATTR_NIL)
 
+#ifdef	__VALUE_DIRECT
 #define	ValueString(v)			((v)->body.CharData.sval)
-#define	ValueStringLength(v)	((v)->body.CharData.length)
 #define	ValueStringSize(v)		((v)->body.CharData.asize)
+#endif
+#define	ValueStringPointer(v)	((v)->body.CharData.sval)
+#define	ValueStringLength(v)	((v)->body.CharData.length)
 
 #define	ValueByte(v)			((v)->body.CharData.sval)
 #define	ValueByteLength(v)		((v)->body.CharData.length)

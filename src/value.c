@@ -35,6 +35,7 @@ copies.
 #include	<glib.h>
 #include	<math.h>
 
+#define	__VALUE_DIRECT
 #include	"types.h"
 #include	"misc.h"
 #include	"monstring.h"
