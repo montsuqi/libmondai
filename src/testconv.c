@@ -19,10 +19,10 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-#define	CONV_TEST
 #define	TEST_VALUE
 #define	XML_TEST
 /*
+#define	CONV_TEST
 */
 
 #define	DEBUG
@@ -239,6 +239,11 @@ main(
 	XML_UnPackValue(opt,buff,val);
 	printf("********************\n");
 	DumpValueStruct(val);
+	printf("********************\n");
+	XML_PackValue(opt,buff,val);
+	if		(  ( fp = fopen("test.xml2","w") )  ==  NULL  ) 	exit(1);
+	fprintf(fp,"%s\n",buff);
+	fclose(fp);
 	printf("********************\n");
 #endif
 

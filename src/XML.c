@@ -27,13 +27,18 @@ copies.
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+#ifdef	USE_XML
 
 #include	<signal.h>
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include    <sys/types.h>
+#ifdef	USE_XML2
 #include	<libxml/parser.h>
+#else
+#include	<parser.h>
+#endif
 
 #include	"types.h"
 #include	"misc.h"
@@ -212,7 +217,11 @@ _XML_PackValue(
 				p += sprintf(p," />");
 			}
 			if		(  !IS_VALUE_NIL(value)  ) {
+#ifdef	USE_XML2
 				p += sprintf(p,"%s",XML_Encode(ValueToString(value,opt->locale),buff));
+#else
+				p += sprintf(p,"%s",XML_Encode(ValueToString(value,LIBXML_LOCALE),buff));
+#endif
 			}
 			if		(  ConvIndent(opt)  ) {
 				p += sprintf(p,"</lm:item>");
@@ -235,9 +244,13 @@ XML_PackValue(
 
 	nIndent = 0;
 	p += sprintf(p,"<?xml version=\"1.0\"");
+#ifdef	USE_XML2
 	if		(  opt->locale  !=  NULL  ) {
 		p += sprintf(p," encoding=\"%s\"",opt->locale);
 	}
+#else
+	p += sprintf(p," encoding=\"%s\"",LIBXML_LOCALE);
+#endif
 	p += sprintf(p,"?>");
 	p += PutCR(opt,p);
 	p += sprintf(p,"<lm:block xmlns:lm=\"http://panda.montsuqui.org/libmondai\">");
@@ -546,7 +559,11 @@ characters_(
 		printf("characters_[%s]\n",(char *)ctx->buff);
 #endif
 		if		(  ctx->value  !=  NULL  ) {
+#ifdef	USE_XML2
 			SetValueString(ctx->value,(char *)ctx->buff,NULL);
+#else
+			SetValueString(ctx->value,(char *)ctx->buff,LIBXML_LOCALE);
+#endif
 			ValueIsNonNil(ctx->value);
 		}
 	}
@@ -669,8 +686,10 @@ static	xmlSAXHandler mondaiSAXHandlerStruct = {
 	(fatalErrorSAXFunc)fatalError_,
 	(getParameterEntitySAXFunc)getParameterEntity_,
 	(cdataBlockSAXFunc)cdataBlock_,
+#ifdef	USE_XML2
 	(externalSubsetSAXFunc)externalSubset_,
     1
+#endif
 };
 
 static	xmlSAXHandlerPtr	mondaiSAXHandler = &mondaiSAXHandlerStruct;
@@ -727,7 +746,7 @@ ENTER_FUNC;
 	SetNil(value);
 	xmlSAXUserParseMemory(mondaiSAXHandler,ctx,p,strlen(p));
     xmlCleanupParser();
-    xmlMemoryDump();
+	//    xmlMemoryDump();
 	xfree(ctx->buff);
 	xfree(ctx);
 LEAVE_FUNC;
@@ -850,10 +869,14 @@ XML_SizeValue(
 
 	nIndent = 0;
 	size = 19;			//	<?xml version="1.0"
+#ifdef	USE_XML2
 	if		(  opt->locale  !=  NULL  ) {
 		size += 12 + strlen(opt->locale);	
 		//	" encoding=\"%s\"",opt->locale
 	}
+#else
+	size += 12 + strlen(LIBXML_LOCALE);
+#endif
 	size += 2;			//	?>
 	size += PutCR(opt,buff);
 	size += 22 + strlen(NS_URI);
@@ -865,3 +888,4 @@ XML_SizeValue(
 	return	(size);
 }
 
+#endif	/*	USE_XML	*/

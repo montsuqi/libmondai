@@ -33,7 +33,7 @@ libmondaiinclude_HEADERS =	\
 INCLUDES 			= 		\
 	$(GLIB_CFLAGS) 			\
 	$(FIXED_CFLAGS)			\
-	$(XML2_CFLAGS)			\
+	$(XML_CFLAGS)			\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=			\
@@ -60,13 +60,13 @@ libmondai_la_SOURCES	=			\
 testconv_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\
 	$(FIXED_CFLAGS)			\
-	$(XML2_CFLAGS)			\
+	$(XML_CFLAGS)			\
 	-I$(top_srcdir)
 
 testconv_LDADD 		=	\
 	$(GLIB_LIBS)		\
 	$(FIXED_LIBS)		\
-	$(XML2_LIBS)		\
+	$(XML_LIBS)		\
 	./libmondai.la
 
 testconv_SOURCES	=				\

@@ -1,5 +1,7 @@
 2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
+	* src/XML.c: libxmlにも対応
+
 	* src/getset.c : 文字列の操作をrobustにした(バッファサイズを意識し
 	ている部分を減らしつつある)
 

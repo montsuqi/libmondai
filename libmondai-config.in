@@ -72,10 +72,10 @@ if test "$echo_exec_prefix" = "yes"; then
 fi
 
 if test "$echo_cflags" = "yes"; then
-      echo @GLIB_CFLAGS@ @FIXED_CFLAGS@ @XML2_CFLAGS@ -I@includedir@/libmondai
+      echo @GLIB_CFLAGS@ @FIXED_CFLAGS@ @XML_CFLAGS@ -I@includedir@/libmondai
 fi
 
 if test "$echo_libs" = "yes"; then
       libdirs=-L@libdir@
-      echo @GLIB_LIBS@ @FIXED_LIBS@ @XML2_LIBS@ $libdirs -lmondai -lm
+      echo @GLIB_LIBS@ @FIXED_LIBS@ @XML_LIBS@ $libdirs -lmondai -lm
 fi
