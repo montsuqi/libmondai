@@ -367,8 +367,10 @@ dbgmsg(">ParValueDefine");
 			Error("; missing");
 		}
 		if		(  !CURR->fError  ) {
+#if	0
 			ValueAttribute(value) = GL_ATTR_NULL;
 			SetValueAttribute(value,attr);
+#endif
 			ValueAddRecordItem(upper,name,value);
 		}
 	}

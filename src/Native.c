@@ -73,7 +73,7 @@ dbgmsg(">NativeUnPackValue");
 		if		(  type  !=  ValueType(value)  ) {
 			fprintf(stdout,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 		}
-		ValueIsNonNil(value);
+		ValueAttribute(value) = attr;
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
