@@ -248,6 +248,7 @@ ParValueDefine(void)
 				ValueByteSize(value) = size;
 				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
 				memclear(ValueByte(value),ValueByteSize(value));
+				break;
 			  default:
 				ValueStringLength(value) = size;
 				ValueStringSize(value) = size+1;
