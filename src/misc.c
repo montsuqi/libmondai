@@ -31,11 +31,9 @@ Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include	<malloc.h>
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<ctype.h>
-#include	<strings.h>
 #include	<dirent.h>
 #include	<sys/stat.h>
 #include	<unistd.h>
