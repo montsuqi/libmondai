@@ -63,3 +63,5 @@ testconv_LDADD 		=	\
 
 testconv_SOURCES	=				\
 	testconv.c
+
+EXTRA_DIST = testrec.rec
