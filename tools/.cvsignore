@@ -2,7 +2,4 @@
 .libs
 Makefile
 Makefile.in
-libmondai.la
-*.la
-*.lo
-libmondai.h
+rec2copy
