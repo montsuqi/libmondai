@@ -114,7 +114,6 @@ FreeValueStruct(
 			for	( i = 0 ; i < val->body.RecordData.count ; i ++ ) {
 				FreeValueStruct(val->body.RecordData.item[i]);
 			}
-			DestroySymbols(val->body.RecordData.members);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
@@ -915,6 +914,8 @@ dbgmsg(">CopyValue");
 		for	( i = 0 ; i < vs->body.RecordData.count ; i ++ ) {
 			CopyValue(vd->body.RecordData.item[i],vs->body.RecordData.item[i]);
 		}
+		vd->body.RecordData.members = vs->body.RecordData.members;
+		vd->body.RecordData.names = vs->body.RecordData.names;
 		break;
 	  default:
 		break;

@@ -18,8 +18,8 @@ responsibilities.  It should be in a file named COPYING.  Among other
 things, the copyright notice and this notice must be preserved on all
 copies. 
 */
-#ifndef	_LIBMONDAI_H
-#define	_LIBMONDAI_H
+#ifndef	_INC_LIBMONDAI_H
+#define	_INC_LIBMONDAI_H
 
 #include	"value.h"
 #include	"OpenCOBOL_v.h"
