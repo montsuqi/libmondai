@@ -204,6 +204,16 @@ main(
 	XML_PackValue(opt,buff,val);
 	printf("%s\n",buff);
 
+	NativePackValue(opt,buff,val);
+	size = NativeSizeValue(opt,val);
+	if		(  ( fp = fopen("test.na","w") )  ==  NULL  ) 	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+	InitializeValue(val);
+	NativeUnPackValue(opt,buff,val);
+	XML_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+
 	xfree(buff);
 
 	return	(0);

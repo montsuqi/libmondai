@@ -389,7 +389,7 @@ ENTER_FUNC;
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						*q = 0;
 						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
-#if	0
+#if	1
 						if		(	(  errno  ==  E2BIG  )
 								||	(  errno  ==  EINVAL  ) ) {
 #else
@@ -398,12 +398,6 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
-#if	1
-						if		(  errno  ==  EINVAL  ) {
-							printf("illigal string[%s]\n",istr);
-							break;
-						} else
-#endif
 							break;
 					} else {
 						ValueStringSize(val) = 1;
@@ -435,7 +429,7 @@ ENTER_FUNC;
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						*q = 0;
 						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
-#if	0
+#if	1
 						if		(	(  errno  ==  E2BIG  )
 								||	(  errno  ==  EINVAL  ) ) {
 #else
@@ -444,12 +438,6 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else
-#if	1
-						if		(  errno  ==  EINVAL  ) {
-							printf("illigal string[%s]\n",istr);
-							break;
-						} else
-#endif
 							break;
 					} else {
 						ValueStringSize(val) = 1;

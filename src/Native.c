@@ -110,7 +110,7 @@ dbgmsg(">NativeUnPackValue");
 			}
 			memcpy(ValueString(value),p,size);
 			p += size;
-			ValueString(value)[size-1] = 0;
+			ValueString(value)[size] = 0;
 			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
 				ValueStringLength(value) = len;
 			}
