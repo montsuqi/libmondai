@@ -1,3 +1,7 @@
+2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* tools/Makefile.am (LDADD): make distcheckが通るようにした。
+
 2003-09-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.h, src/DDparser.[ch] : RecordStructを追い出す。それに

@@ -6,3 +6,4 @@ libmondai.la
 *.la
 *.lo
 libmondai.h
+testconv
