@@ -305,7 +305,7 @@ IntStrDup(
 	return	(StrDup(buff));
 }
 
-extern	void
+extern	char	*
 StringChop(
 	char	*str)
 {
@@ -318,6 +318,7 @@ StringChop(
 		if		(  p  ==  str  )	break;
 		p --;
 	}
+	return	(str);
 }
 
 extern	void
