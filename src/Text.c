@@ -44,10 +44,10 @@ copies.
 #include	"Text_v.h"
 #include	"debug.h"
 
-static	char	*
+static	byte	*
 _CSV_UnPackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*buff)
 {
@@ -179,10 +179,10 @@ _CSV_UnPackValue(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 CSV_UnPackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF];
@@ -243,7 +243,7 @@ IsComma(
 	return	(ret);
 }
 
-static	char	*
+static	byte	*
 __CSV_PackValue(
 	CONVOPT		*opt,
 	char		*p,
@@ -300,10 +300,10 @@ __CSV_PackValue(
 	return	(p);
 }
 
-static	char	*
+static	byte	*
 _CSV_PackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
@@ -318,40 +318,40 @@ _CSV_PackValue(
 	return	(ret);
 }
 
-extern	char	*
+extern	byte	*
 CSV1_PackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
 	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff));
 }
 
-extern	char	*
+extern	byte	*
 CSV2_PackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
 	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
-extern	char	*
+extern	byte	*
 CSV3_PackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
 	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff));
 }
 
-extern	char	*
+extern	byte	*
 CSVE_PackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
@@ -466,7 +466,7 @@ CSVE_SizeValue(
  *	RFC822 type conversion
  */
 
-static	char	*
+static	byte	*
 RFC822_SkipNext(
 	CONVOPT	*opt,
 	char	*p)
@@ -503,15 +503,15 @@ DecodeName(
 	*p = 0;
 }
 
-static	char	*
+static	byte	*
 _RFC822_UnPackValueNoNamed(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*buff)
 {
 	int		i;
-	char	*q
+	byte	*q
 	,		ch;
 	size_t	len;
 
@@ -560,17 +560,17 @@ _RFC822_UnPackValueNoNamed(
 	return	(p);
 }
 
-static	char	*
+static	byte	*
 _RFC822_UnPackValueNamed(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*buff)
 {
 	char	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
-	char	*q
+	byte	*q
 	,		ch;
 	ValueStruct	*e;
 	size_t	len;
@@ -626,10 +626,10 @@ _RFC822_UnPackValueNamed(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 RFC822_UnPackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	*ret;
@@ -643,10 +643,10 @@ RFC822_UnPackValue(
 	return	(ret);
 }
 
-static	char	*
+static	byte	*
 _RFC822_PackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*name,
 	char		*longname,
@@ -703,15 +703,15 @@ _RFC822_PackValue(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 RFC822_PackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF]
-	,		longname[SIZE_LONGNAME+1]
-	,		*q;
+	,		longname[SIZE_LONGNAME+1];
+	byte	*q;
 
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {
@@ -803,7 +803,7 @@ RFC822_SizeValue(
  *	CGI format
  */
 
-static	char	*
+static	byte	*
 CGI_SkipNext(
 	CONVOPT	*opt,
 	char	*p)
@@ -815,10 +815,10 @@ CGI_SkipNext(
 	return	(p);
 }
 
-static	char	*
+static	byte	*
 _CGI_UnPackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*buff)
 {
@@ -862,10 +862,10 @@ _CGI_UnPackValue(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 CGI_UnPackValue(
 	CONVOPT		*opt,
-	char	*p,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	*ret;
@@ -875,10 +875,10 @@ CGI_UnPackValue(
 	return	(ret);
 }
 
-static	char	*
+static	byte	*
 _CGI_PackValue(
 	CONVOPT	*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	char		*name,
 	char		*longname,
@@ -921,15 +921,15 @@ _CGI_PackValue(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 CGI_PackValue(
-	CONVOPT	*opt,
-	char	*p,
+	CONVOPT		*opt,
+	byte		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF]
 	,		longname[SIZE_LONGNAME+1];
-	char	*q;
+	byte	*q;
 
 	memclear(longname,SIZE_LONGNAME);
 	if		(  opt->recname  !=  NULL  ) {

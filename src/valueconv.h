@@ -41,8 +41,8 @@ typedef	struct {
 	char	*name;
 	char	*fsep;
 	char	*rsep;
-	char	*(*PackValue)(CONVOPT *opt, char *p, ValueStruct *value);
-	char	*(*UnPackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+	byte	*(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+	byte	*(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 }	ConvFuncs;
 
@@ -53,8 +53,8 @@ typedef	struct {
 #define	GLOBAL		extern
 #endif
 
-GLOBAL	char	*(*PackValue)(CONVOPT *opt, char *p, ValueStruct *value);
-GLOBAL	char	*(*UnPackValue)(CONVOPT *opt, char *p, ValueStruct *value);
+GLOBAL	byte	*(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+GLOBAL	byte	*(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
 GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 
 #undef	GLOBAL
@@ -68,7 +68,7 @@ extern	void		DestroyConvOpt(CONVOPT *opt);
 #define	ConvSetLocale(opt,loc)		(opt)->locale = (loc)
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
-#define	ConvSetUseFileName(opt,f)	(opt)->fName = (f)
+#define	ConvSetUseName(opt,f)		(opt)->fName = (f)
 
 #endif
 

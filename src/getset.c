@@ -184,7 +184,10 @@ ValueToString(
 	int		i;
 
 	memset(buff,0,SIZE_BUFF);
-	switch	(val->type) {
+	if		(  IS_VALUE_NIL(val)  ) {
+		*buff = CHAR_NIL;
+	} else
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 		memcpy(buff,ValueString(val),ValueStringLength(val));
 		break;
@@ -302,73 +305,79 @@ SetValueString(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-		memclear(ValueString(val),ValueStringLength(val) + 1);
-		if		(  str  !=  NULL  ) {
-			strncpy(ValueString(val),str,ValueStringLength(val));
-		}
+	if		(  *str  ==  CHAR_NIL  ) {
+		ValueAttribute(val) |= GL_ATTR_NIL;
 		rc = TRUE;
-		break;
-	  case	GL_TYPE_NUMBER:
-		p = buff;
-		from.flen = 0;
-		from.slen = 0;
-		from.sval = buff;
-		fPoint = FALSE;
-		fMinus = FALSE;
-		while	(  *str  !=  0  ) {
-			if		(  fPoint  ) {
-				from.slen ++;
+	} else {
+		ValueAttribute(val) &= ~GL_ATTR_NIL;
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+			memclear(ValueString(val),ValueStringLength(val) + 1);
+			if		(  str  !=  NULL  ) {
+				strncpy(ValueString(val),str,ValueStringLength(val));
 			}
-			if		(  *str  ==  '-'  ) {
-				fMinus = TRUE;
-			} else
-			if	(  isdigit(*str)  ) {
-				*p ++ = *str;
-				from.flen ++;
-			} else
-			if		(  *str  ==  '.'  ) {
-				fPoint = TRUE;
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_NUMBER:
+			p = buff;
+			from.flen = 0;
+			from.slen = 0;
+			from.sval = buff;
+			fPoint = FALSE;
+			fMinus = FALSE;
+			while	(  *str  !=  0  ) {
+				if		(  fPoint  ) {
+					from.slen ++;
+				}
+				if		(  *str  ==  '-'  ) {
+					fMinus = TRUE;
+				} else
+					if	(  isdigit(*str)  ) {
+						*p ++ = *str;
+						from.flen ++;
+					} else
+						if		(  *str  ==  '.'  ) {
+							fPoint = TRUE;
+						}
+				str ++;
 			}
-			str ++;
-		}
-		*p = 0;
-		if		(  fMinus  ) {
-			*buff |= 0x40;
-		}
-		FixedRescale(&ValueFixed(val),&from);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_TEXT:
-		len = strlen(str) + 1;
-		if		(  len  >  ValueStringLength(val)  ) {
-			if		(  ValueString(val)  !=  NULL  ) {
-				xfree(ValueString(val));
+			*p = 0;
+			if		(  fMinus  ) {
+				*buff |= 0x40;
 			}
-			ValueString(val) = (char *)xmalloc(len + 1);
-			ValueStringLength(val) = len;
+			FixedRescale(&ValueFixed(val),&from);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_TEXT:
+			len = strlen(str) + 1;
+			if		(  len  >  ValueStringLength(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
+				}
+				ValueString(val) = (char *)xmalloc(len + 1);
+				ValueStringLength(val) = len;
+			}
+			memset(ValueString(val),0,ValueStringLength(val)+1);
+			strcpy(ValueString(val),str);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(val) = StrToInt(str,strlen(str));
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(val) = atof(str);
+			rc = TRUE;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
+			rc = TRUE;
+			break;
+		  default:
+			rc = FALSE;	  
 		}
-		memset(ValueString(val),0,ValueStringLength(val)+1);
-		strcpy(ValueString(val),str);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(val) = StrToInt(str,strlen(str));
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_FLOAT:
-		ValueFloat(val) = atof(str);
-		rc = TRUE;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(val) = ( *str == 'T' ) ? TRUE : FALSE;
-		rc = TRUE;
-		break;
-	  default:
-		rc = FALSE;	  
 	}
 	return	(rc);
 }

@@ -79,10 +79,10 @@ FixedC2Cobol(
 	}
 }
 
-extern	char	*
+extern	byte	*
 dotCOBOL_UnPackValue(
 	CONVOPT *opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;
@@ -150,10 +150,10 @@ dbgmsg("<dotCOBOL_UnPackValue");
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 dotCOBOL_PackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;

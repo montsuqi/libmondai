@@ -152,9 +152,14 @@ typedef	struct _RecordStruct	{
 #define	GL_TYPE_RECORD			(PacketDataType)0x82
 
 #define	GL_ATTR_NULL			(ValueAttributeType)0x00
-#define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x80
-#define	GL_ATTR_INPUT			(ValueAttributeType)0x08
-#define	GL_ATTR_OUTPUT			(ValueAttributeType)0x04
+#define	GL_ATTR_VIRTUAL			(ValueAttributeType)0x08
+#define	GL_ATTR_INPUT			(ValueAttributeType)0x04
+#define	GL_ATTR_OUTPUT			(ValueAttributeType)0x02
+
+#define	GL_ATTR_NIL				(ValueAttributeType)0x10
+#define	CHAR_NIL				0x01
+
+#define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
 
 #define	GL_OBJ_NULL				0
 #define	GL_OBJ_INACTIVE			-1

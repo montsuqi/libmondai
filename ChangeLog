@@ -1,3 +1,7 @@
+2003-09-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c, src/Native.c, src/value.h: nullのサポート
+
 2003-09-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/SQL*.[ch]: pandaに移動(libmondaiにあるべきではない)

@@ -79,10 +79,10 @@ FixedC2Cobol(
 	}
 }
 
-extern	char	*
+extern	byte	*
 OpenCOBOL_UnPackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;
@@ -148,10 +148,10 @@ OpenCOBOL_UnPackValue(
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 OpenCOBOL_PackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;

@@ -40,17 +40,34 @@ copies.
 #include	"Native_v.h"
 #include	"debug.h"
 
-extern	char	*
+extern	byte	*
 NativeUnPackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
+	Bool	fName;
+	PacketDataType	type;
+	ValueAttributeType	attr;
 
 dbgmsg(">NativeUnPackValue");
 	if		(  value  !=  NULL  ) {
+		if		(  opt  !=  NULL  ) { 
+			fName = opt->fName;
+		} else {
+			fName = FALSE;
+		}
+		type = *(PacketDataType *)p;
+		p += sizeof(PacketDataType);
+		attr = *(ValueAttributeType *)p;
+		p += sizeof(ValueAttributeType);
+		if		(  type  !=  ValueType(value)  ) {
+			fprintf(stderr,"unmatch type.\n");
+		}
+		ValueAttribute(value) =	( ValueAttribute(value) & ~GL_ATTR_NIL )
+			| ( attr & GL_ATTR_NIL );
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
@@ -93,12 +110,28 @@ dbgmsg(">NativeUnPackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_ARRAY:
+			ValueArraySize(value) = *(size_t *)p;
+			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				p = NativeUnPackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
+			ValueRecordSize(value) = *(size_t *)p;
+			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				if		(  fName  ) {
+					if		(  *p  ==  0xFF  ) {
+						p ++;
+						strcpy(ValueRecordName(value,i),p);
+						p += strlen(ValueRecordName(value,i))+1;
+					}
+				} else {
+					if	(  *p  ==  0xFF  ) {
+						p ++;
+						p += strlen(p)+1;
+					}
+				}
 				p = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
@@ -110,16 +143,26 @@ dbgmsg("<NativeUnPackValue");
 	return	(p);
 }
 
-extern	char	*
+extern	byte	*
 NativePackValue(
 	CONVOPT	*opt,
-	char	*p,
+	byte	*p,
 	ValueStruct	*value)
 {
 	int		i;
+	Bool	fName;
 
 dbgmsg(">NativePackValue");
 	if		(  value  !=  NULL  ) {
+		if		(  opt  !=  NULL  ) { 
+			fName = opt->fName;
+		} else {
+			fName = FALSE;
+		}
+		*(PacketDataType *)p = ValueType(value);
+		p += sizeof(PacketDataType);
+		*(ValueAttributeType *)p = ValueAttribute(value);
+		p += sizeof(ValueAttributeType);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			*(int *)p = ValueInteger(value);
@@ -156,12 +199,22 @@ dbgmsg(">NativePackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_ARRAY:
+			*(size_t *)p = ValueArraySize(value);
+			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				p = NativePackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
+			*(size_t *)p = ValueRecordSize(value);
+			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				if		(  fName  ) {
+					*p = 0xFF;
+					p ++;
+					strcpy(p,ValueRecordName(value,i));
+					p += strlen(ValueRecordName(value,i))+1;
+				}
 				p = NativePackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
@@ -178,48 +231,59 @@ NativeSizeValue(
 	CONVOPT	*opt,
 	ValueStruct	*val)
 {
-	int		i
-	,		n;
+	int		i;
 	size_t	ret;
+	Bool	fName;
 
 	if		(  val  ==  NULL  )	return	(0);
 dbgmsg(">NativeSizeValue");
+	if		(  opt  !=  NULL  ) { 
+		fName = opt->fName;
+	} else {
+		fName = FALSE;
+	}
+	ret = sizeof(PacketDataType) + sizeof(ValueAttributeType);
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_INT:
-		ret = sizeof(int);
+		ret += sizeof(int);
 		break;
 	  case	GL_TYPE_FLOAT:
-		ret = sizeof(double);
+		ret += sizeof(double);
 		break;
 	  case	GL_TYPE_BOOL:
-		ret = 1;
+		ret += 1;
 		break;
 	  case	GL_TYPE_BYTE:
-		ret = ValueByteLength(val);
+		ret += ValueByteLength(val);
 		break;
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		ret = ValueStringLength(val);
+		ret += ValueStringLength(val);
 		break;
 	  case	GL_TYPE_NUMBER:
-		ret = ValueFixedLength(val);
+		ret += ValueFixedLength(val);
 		break;
 	  case	GL_TYPE_TEXT:
 		ret = ValueStringLength(val) + sizeof(size_t);
 		break;
 	  case	GL_TYPE_ARRAY:
-		n = ValueArraySize(val);
-		ret = NativeSizeValue(opt,ValueArrayItem(val,0)) * n;
+		ret += sizeof(size_t);
+		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+			ret += NativeSizeValue(opt,ValueArrayItem(val,i));
+		}
 		break;
 	  case	GL_TYPE_RECORD:
-		ret = 0;
+		ret += sizeof(size_t);
 		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+			if		(  fName  ) {
+				ret += strlen(ValueRecordName(val,i))+1+1;
+			}
 			ret += NativeSizeValue(opt,ValueRecordItem(val,i));
 		}
 		break;
 	  default:
-		ret = 0;
+		ret += 0;
 		break;
 	}
 dbgmsg("<NativeSizeValue");

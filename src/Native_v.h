@@ -22,7 +22,7 @@ copies.
 #define	_INC_NATIVE_VALUE_H
 #include	"valueconv.h"
 
-extern	char	*NativeUnPackValue(CONVOPT *opt,char *p, ValueStruct *value);
-extern	char	*NativePackValue(CONVOPT *opt, char *p, ValueStruct *value);
+extern	byte	*NativeUnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	byte	*NativePackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 #endif

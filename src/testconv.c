@@ -72,6 +72,9 @@ main(
 	/*	set	*/
 	SetValueString(GetItemLongName(val,"a"),"aaa");
 	SetValueString(GetItemLongName(val,"b"),"bb");
+	SetValueString(GetItemLongName(val,"g"),"NIL");
+	ValueAttribute(GetItemLongName(val,"g")) |= GL_ATTR_NIL;
+
 	SetValueString(GetItemLongName(val,"l"),"abcde,fghijklmnop");
 	SetValueString(GetItemLongName(val,"m"),"漢字を入れた");
 	SetValueString(GetItemLongName(val,"c.d"),"d");
@@ -160,18 +163,42 @@ main(
 	xfree(buff);
 	fclose(fp);
 
-	printf("***** Native Pack *****\n");
+	printf("***** Native Pack(1) *****\n");
+	ConvSetUseName(opt,FALSE);
 	size =  NativeSizeValue(opt,val);
 	printf("size = %d\n",size);
 	buff = (char *)xmalloc(size);
 	NativePackValue(opt,buff,val);
-	if		(  ( fp = fopen("test.native","w") )  ==  NULL  )	exit(1);
+	if		(  ( fp = fopen("test.native1","w") )  ==  NULL  )	exit(1);
 	fwrite(buff,size,1,fp);
 	fclose(fp);
 	xfree(buff);
 
-	printf("***** Native UnPack *****\n");
-	if		(  ( fp = fopen("test.native","r") )  ==  NULL  )	exit(1);
+	printf("***** Native UnPack(1) *****\n");
+	if		(  ( fp = fopen("test.native1","r") )  ==  NULL  )	exit(1);
+	buff = (char *)xmalloc(SIZE_BUFF);
+	memset(buff,0,SIZE_BUFF);
+	fgets(buff,SIZE_BUFF,fp);
+	fclose(fp);
+	NativeUnPackValue(opt,buff,val);
+	DumpValueStruct(val);
+	memset(buff,0,SIZE_BUFF);
+	CSV3_PackValue(opt,buff,val);
+	printf("%s\n",buff);
+
+	printf("***** Native Pack(2) *****\n");
+	ConvSetUseName(opt,TRUE);
+	size =  NativeSizeValue(opt,val);
+	printf("size = %d\n",size);
+	buff = (char *)xmalloc(size);
+	NativePackValue(opt,buff,val);
+	if		(  ( fp = fopen("test.native2","w") )  ==  NULL  )	exit(1);
+	fwrite(buff,size,1,fp);
+	fclose(fp);
+	xfree(buff);
+
+	printf("***** Native UnPack(2) *****\n");
+	if		(  ( fp = fopen("test.native2","r") )  ==  NULL  )	exit(1);
 	buff = (char *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 	fgets(buff,SIZE_BUFF,fp);
@@ -185,7 +212,7 @@ main(
 	printf("***** RFC822 Pack *****\n");
 	if		(  ( fp = fopen("test.822","w") )  ==  NULL  )	exit(1);
 	ConvSetRecName(opt,"testrec");
-	ConvSetUseFileName(opt,TRUE);
+	ConvSetUseName(opt,TRUE);
 	size =  RFC822_SizeValue(opt,val);
 	size1 = size;
 	printf("size = %d\n",size);
@@ -194,7 +221,7 @@ main(
 	printf("%s\n",buff);
 	fwrite(buff,size,1,fp);
 
-	ConvSetUseFileName(opt,FALSE);
+	ConvSetUseName(opt,FALSE);
 	size =  RFC822_SizeValue(opt,val);
 	printf("size = %d\n",size);
 	buff = (char *)xmalloc(size);
@@ -206,7 +233,7 @@ main(
 	xfree(buff);
 
 	printf("***** RFC822 UnPack *****\n");
-	ConvSetUseFileName(opt,TRUE);
+	ConvSetUseName(opt,TRUE);
 	InitializeValue(val);
 	if		(  ( fp = fopen("test.822","r") )  ==  NULL  )	exit(1);
 	buff = (char *)xmalloc(SIZE_BUFF);
@@ -216,7 +243,7 @@ main(
 	RFC822_UnPackValue(opt,buff,val);
 	DumpValueStruct(val);
 
-	ConvSetUseFileName(opt,FALSE);
+	ConvSetUseName(opt,FALSE);
 	InitializeValue(val);
 	fread(buff,size,1,fp);
 	fclose(fp);

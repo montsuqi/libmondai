@@ -358,7 +358,8 @@ DumpItem(
 	ValueStruct	*value)
 {
 	printf("%s:",name);
-	printf("%s:",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
+	printf("%s",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
+	printf("%s",((value->attr&GL_ATTR_NIL) == GL_ATTR_NIL) ? " NIL:" : ":");
 	DumpValueStruct(value);
 }
 
@@ -370,67 +371,68 @@ DumpValueStruct(
 
 	if		(  val  ==  NULL  )	{
 		printf("null value\n");
-	} else
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_INT:
-		printf("integer[%d]\n",ValueInteger(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_FLOAT:
-		printf("float[%g]\n",ValueFloat(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_BOOL:
-		printf("Bool[%s]\n",(ValueBool(val) ? "T" : "F"));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_CHAR:
-		printf("char(%d) [",ValueStringLength(val));
-		PrintFixString(ValueString(val),ValueStringLength(val));
-		printf("]\n");
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_VARCHAR:
-		printf("varchar(%d) [%s]\n",ValueStringLength(val),ValueString(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_DBCODE:
-		printf("code(%d) [%s]\n",ValueStringLength(val),ValueString(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_NUMBER:
-		printf("number(%d,%d) [%s]\n",ValueFixedLength(val),
-			   ValueFixedSlen(val),
-			   ValueFixedBody(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_TEXT:
-		printf("text(%d) [",ValueStringLength(val));
-		PrintFixString(ValueString(val),ValueStringLength(val));
-		printf("]\n");
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_OBJECT:
-		printf("object [%d:%d]\n",ValueObjectPlace(val), ValueObjectID(val));
-		fflush(stdout);
-		break;
-	  case	GL_TYPE_ARRAY:
-		printf("array size = %d\n",ValueArraySize(val));
-		fflush(stdout);
-		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-			DumpValueStruct(ValueArrayItem(val,i));
+	} else {
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_INT:
+			printf("integer[%d]\n",ValueInteger(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_FLOAT:
+			printf("float[%g]\n",ValueFloat(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_BOOL:
+			printf("Bool[%s]\n",(ValueBool(val) ? "T" : "F"));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_CHAR:
+			printf("char(%d) [",ValueStringLength(val));
+			PrintFixString(ValueString(val),ValueStringLength(val));
+			printf("]\n");
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_VARCHAR:
+			printf("varchar(%d) [%s]\n",ValueStringLength(val),ValueString(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_DBCODE:
+			printf("code(%d) [%s]\n",ValueStringLength(val),ValueString(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_NUMBER:
+			printf("number(%d,%d) [%s]\n",ValueFixedLength(val),
+				   ValueFixedSlen(val),
+				   ValueFixedBody(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_TEXT:
+			printf("text(%d) [",ValueStringLength(val));
+			PrintFixString(ValueString(val),ValueStringLength(val));
+			printf("]\n");
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_OBJECT:
+			printf("object [%d:%d]\n",ValueObjectPlace(val), ValueObjectID(val));
+			fflush(stdout);
+			break;
+		  case	GL_TYPE_ARRAY:
+			printf("array size = %d\n",ValueArraySize(val));
+			fflush(stdout);
+			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+				DumpValueStruct(ValueArrayItem(val,i));
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			printf("record members = %d\n",ValueRecordSize(val));
+			fflush(stdout);
+			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+				DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
+			}
+			printf("--\n");
+			break;
+		  default:
+			break;
 		}
-		break;
-	  case	GL_TYPE_RECORD:
-		printf("record members = %d\n",ValueRecordSize(val));
-		fflush(stdout);
-		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-			DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
-		}
-		printf("--\n");
-		break;
-	  default:
-		break;
 	}
 }
 
