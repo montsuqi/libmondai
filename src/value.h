@@ -165,6 +165,7 @@ typedef	struct _RecordStruct	{
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
 #define	ValueType(v)			((v)->type)
+#define	ValueAttribute(v)		((v)->attr)
 
 #define	ValueString(v)			((v)->body.CharData.sval)
 #define	ValueStringLength(v)	((v)->body.CharData.len)
