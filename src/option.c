@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 1996-1999 Ogochan.
+Copyright (C) 1991-1999 Ogochan.
               2000-2003 Ogochan & JMA (Japan Medical Association).
 
 This module is part of PANDA.

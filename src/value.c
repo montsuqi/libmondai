@@ -1099,18 +1099,6 @@ ExpandPath(
 	return	(path);
 }
 
-extern	DB_Func	*
-NewDB_Func(void)
-{
-	DB_Func	*ret;
-
-	ret = New(DB_Func);
-	ret->exec = NULL;
-	ret->access = NULL;
-	ret->table = NewNameHash();
-	return	(ret);
-}
-
 extern	void
 DecodeString(
 	char	*q,

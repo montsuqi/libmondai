@@ -96,13 +96,6 @@ typedef	struct _ValueStruct	{
 }	ValueStruct;
 
 typedef	struct {
-	char		*name;
-	Bool		fNew;
-	int			PutType;
-	ValueStruct	*Value;
-}	WindowData;
-
-typedef	struct {
 	char	***item;
 }	KeyStruct;
 
@@ -128,33 +121,12 @@ typedef	struct {
 	int		pno;
 }	DBCOMM_CTRL;
 
-typedef	struct _DBG_Struct	{
-	char		*name;					/*	group name		*/
-	char		*type;					/*	DBMS type name	*/
-	struct	_DB_Func		*func;
-	FILE		*fpLog;
-	LargeByteString	*redirectData;
-	char		*file;
-	Port		*redirectPort;
-	struct	_DBG_Struct	*redirect;
-	GHashTable	*dbt;
-	int			priority;
-	/*	DB depend	*/
-	Port		*port;
-	char		*dbname;
-	char		*user;
-	char		*pass;
-	/*	DB connection variable	*/
-	Bool		fConnect;
-	void		*conn;
-}	DBG_Struct;
-
 typedef	struct {
 	KeyStruct	*pkey;
 	PathStruct	**path;
 	GHashTable	*paths;
 	int			pcount;
-	DBG_Struct	*dbg;
+	void		*dbg;
 }	DB_Struct;
 
 #define	RECORD_NULL		0
@@ -168,18 +140,6 @@ typedef	struct _RecordStruct	{
 		DB_Struct	*db;
 	}	opt;
 }	RecordStruct;
-
-typedef	void	(*DB_FUNC)(DBCOMM_CTRL *, RecordStruct *);
-typedef	void	(*DB_EXEC)(DBG_Struct *, char *);
-typedef	Bool	(*DB_FUNC_NAME)(char *, DBCOMM_CTRL *, RecordStruct *);
-
-typedef	struct _DB_Func	{
-	DB_FUNC_NAME	access;
-	DB_EXEC			exec;
-	GHashTable		*table;
-	char			*commentStart
-	,				*commentEnd;
-}	DB_Func;
 
 #define	GL_TYPE_NULL			(PacketDataType)0x00
 #define	GL_TYPE_INT				(PacketDataType)0x10
@@ -250,7 +210,6 @@ extern	Port		*ParPort(char *str, int def);
 extern	char		**ParCommandLine(char *line);
 extern	char		*ExpandPath(char *org,char *base);
 
-extern	DB_Func		*NewDB_Func(void);
 extern	void		DecodeString(char *q, char *p);
 extern	void		EncodeString(char *q, char *p);
 
