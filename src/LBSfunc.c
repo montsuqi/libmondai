@@ -78,6 +78,7 @@ LBS_RequireSize(
 		if		(  fKeep  ) {
 			memcpy(body,lbs->body,lbs->size);
 		}
+		xfree(lbs->body);
 		lbs->body = body;
 		lbs->size = size;
 	}
