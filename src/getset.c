@@ -116,7 +116,7 @@ ValueToFixed(
 	Fixed	*ret;
 	Fixed	*xval;
 
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
@@ -152,7 +152,7 @@ ValueToBool(
 {
 	Bool	ret;
 
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
@@ -594,7 +594,7 @@ SetValueInteger(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -647,7 +647,7 @@ SetValueChar(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -699,7 +699,7 @@ SetValueBool(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -742,7 +742,7 @@ SetValueFloat(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -784,7 +784,7 @@ SetValueFixed(
 		fprintf(stderr,"no ValueStruct\n");
 		return	(FALSE);
 	}
-	switch	(val->type) {
+	switch	(ValueType(val)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
