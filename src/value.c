@@ -86,8 +86,8 @@ dbgmsg(">NewValue");
 		ValueBool(ret) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectPlace(ret) = 0;
-		ValueObjectID(ret) = 0;
+		ValueObjectSource(ret) = 0;
+		memclear(&ValueObjectID(ret),sizeof(ValueObjectID(ret)));
 		break;
 	  case	GL_TYPE_RECORD:
 		ValueRecordSize(ret) = 0;
@@ -196,6 +196,7 @@ GetRecordItem(
 	gpointer	p;
 	ValueStruct	*item;
 
+ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		if		(  ValueType(value)  ==  GL_TYPE_RECORD  ) {
 			if		(  ( p = g_hash_table_lookup(ValueRecordMembers(value),name) )
@@ -210,6 +211,7 @@ GetRecordItem(
 	} else {
 		item = NULL;
 	}
+LEAVE_FUNC;
 	return	(item);
 }
 
@@ -461,7 +463,7 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
-			printf("object [%d:%d]\n",ValueObjectPlace(val), ValueObjectID(val));
+			printf("object [%d]\n",ValueObjectSource(val));
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -519,8 +521,8 @@ dbgmsg(">InitializeValue");
 		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectPlace(value) = 0;
-		ValueObjectID(value) = 0;
+		ValueObjectSource(value) = 0;
+		memclear(&ValueObjectID(value),sizeof(ValueObjectID(value)));
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -638,7 +640,7 @@ ENTER_FUNC;
 		ValueBool(vd) = ValueBool(vs);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectPlace(vd) = ValueObjectPlace(vs);
+		ValueObjectSource(vd) = ValueObjectSource(vs);
 		ValueObjectID(vd) = ValueObjectID(vs);
 		break;
 	  case	GL_TYPE_TEXT:
@@ -740,8 +742,8 @@ DuplicateValue(
 		ValueBool(p) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObjectPlace(p) = 0;
-		ValueObjectID(p) = 0;
+		ValueObjectSource(p) = 0;
+		memclear(&ValueObjectID(p),sizeof(ValueObjectID(p)));
 		break;
 	  case	GL_TYPE_RECORD:
 		/*	share name table		*/

@@ -37,7 +37,7 @@ Boston, MA  02111-1307, USA.
 #include	"debug.h"
 
 
-static	GHashTable	*PoolTable;
+static	GHashTable	*PoolTable = NULL;
 
 #ifdef	TRACE
 static	size_t	total = 0;
@@ -140,9 +140,11 @@ SetFinalizer(
 {
 	MEMAREA	*mp;
 
-	mp = &((MEMAREA *)p)[-1];
-	mp->final = func;
-	mp->data = data;
+	if		(  p  !=  NULL  ) {
+		mp = &((MEMAREA *)p)[-1];
+		mp->final = func;
+		mp->data = data;
+	}
 }
 
 extern	void
@@ -156,18 +158,19 @@ _ReleaseArea(
 	if (!p) return;
 dbgmsg(">_ReleaseArea");
 	if		(  pool  !=  NULL  ) {
-		rp = pool->head;
-		while	(rp->next != NULL) {
-			np = rp->next;
-			if ((&np[1]) == p) {
-				rp->next = np->next;
-				if		(  np->final  !=  NULL  ) {
-					(*np->final)(&np[1],np->data);
+		if		(  ( rp = pool->head )  !=  NULL  ) {
+			while	(rp->next != NULL) {
+				np = rp->next;
+				if ((&np[1]) == p) {
+					rp->next = np->next;
+					if		(  np->final  !=  NULL  ) {
+						(*np->final)(&np[1],np->data);
+					}
+					free(np);
+					return;
 				}
-				free(np);
-				return;
+				rp = np;
 			}
-			rp = np;
 		}
 	}
 dbgmsg("<_ReleaseArea");
@@ -183,16 +186,17 @@ _ReleasePool(
 dbgmsg(">ReleasePool");
 	if		(  pool  !=  NULL  ) {
 		g_hash_table_remove(PoolTable,pool->name);
-		np = pool->head;
-		rp = np->next;
-		np->next = NULL;
-		while	(  rp  !=  NULL  )	{
-			np = rp->next;
-			if		(  rp->final  !=  NULL  ) {
-				(*rp->final)((void *)&rp[1],rp->data);
+		if		(  ( np = pool->head )  !=  NULL  ) {
+			rp = np->next;
+			np->next = NULL;
+			while	(  rp  !=  NULL  )	{
+				np = rp->next;
+				if		(  rp->final  !=  NULL  ) {
+					(*rp->final)((void *)&rp[1],rp->data);
+				}
+				free(rp);
+				rp = np;
 			}
-			free(rp);
-			rp = np;
 		}
 		xfree(pool->name);
 		xfree(pool);
@@ -222,5 +226,24 @@ dbgmsg("<NewPool");
 extern	void
 InitPool(void)
 {
-	PoolTable = NewNameHash();
+	if		(  PoolTable  ==  NULL  ) {
+		PoolTable = NewNameHash();
+	}
+}
+
+extern	void
+ReleaseAllPool(void)
+{
+	void	_Release(
+		char	*name,
+		POOL	*pool,
+		void	*dummy)
+	{
+		_ReleasePool(pool);
+	}
+	if		(  PoolTable  !=  NULL  ) {
+		g_hash_table_foreach(PoolTable,(GHFunc)_Release,NULL);
+		g_hash_table_destroy(PoolTable);
+	}
+	PoolTable = NULL;
 }

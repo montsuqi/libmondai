@@ -22,8 +22,9 @@ copies.
 #ifndef	_INC_VALUE_H
 #define	_INC_VALUE_H
 
+#define	SIZE_OID		4
+
 #define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
-//#define	SIZE_BUFF		1024
 #define	SIZE_BUFF		65538
 
 #define	SIZE_SYMBOL			255
@@ -47,6 +48,10 @@ copies.
 
 typedef	unsigned char	PacketDataType;
 typedef	unsigned char	ValueAttributeType;
+
+typedef	struct {
+	byte	value[SIZE_OID];
+}	OidType;
 
 typedef	struct {
 	size_t		flen;
@@ -81,8 +86,8 @@ typedef	struct _ValueStruct	{
 			unsigned char	*sval;
 		}	CharData;
 		struct {
-			int		apsid;
-			int		oid;
+			int		source;
+			OidType	id;
 		}	Object;
 		struct {
 			size_t					count;
@@ -188,8 +193,8 @@ typedef	struct _ValueStruct	{
 #define	ValueRecordMembers(v)	((v)->body.RecordData.members)
 
 #define	ValueObject(v)			(&(v)->body.Object)
-#define	ValueObjectPlace(v)		((v)->body.Object.apsid)
-#define	ValueObjectID(v)		((v)->body.Object.oid)
+#define	ValueObjectSource(v)	((v)->body.Object.source)
+#define	ValueObjectID(v)		((v)->body.Object.id)
 
 #define	ValueAliasName(v)		((v)->body.AliasName)
 

@@ -45,6 +45,7 @@ copies.
 #include	"monstring.h"
 #include	"value.h"
 #include	"memory.h"
+#include	"others.h"
 #include	"getset.h"
 #include	"debug.h"
 
@@ -272,7 +273,7 @@ ENTER_FUNC;
 		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_OBJECT:
-		sprintf(work,"[%d:%d]",ValueObject(val)->apsid,ValueObject(val)->oid);
+		EncodeBase64(work,(byte *)ValueObject(val),sizeof(ValueObject(val)));
 		LBS_EmitString(ValueStr(val),work);
 		break;
 	  case	GL_TYPE_FLOAT:
