@@ -1,5 +1,9 @@
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 
+	* src/Makefile.am (libmondaiincludedir): 
+	* libmondai-config.in: Changed install headers directory to
+	`$(includedir)/libmondai' from `$(includedir)'.
+	
 	* src/Makefile.am (libmondai_la_SOURCES): Added `debug.h'.
 
 	* makecopyright: Removed file.

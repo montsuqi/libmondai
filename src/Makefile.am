@@ -4,7 +4,7 @@ libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
 	-export-dynamic
 
-libmondaiincludedir = $(includedir)
+libmondaiincludedir = $(includedir)/libmondai
 libmondaiinclude_HEADERS =	\
 	misc.h			\
 	option.h		\

@@ -72,10 +72,7 @@ if test "$echo_exec_prefix" = "yes"; then
 fi
 
 if test "$echo_cflags" = "yes"; then
-      if test @includedir@ != /usr/include ; then
-        includes=-I@includedir@
-      fi
-      echo @GLIB_CFLAGS@ @FIXED_CFLAGS@ $includes
+      echo @GLIB_CFLAGS@ @FIXED_CFLAGS@ -I@includedir@/libmondai
 fi
 
 if test "$echo_libs" = "yes"; then
