@@ -86,8 +86,16 @@ extern	long
 StrToInt(
 	char	*str,
 	size_t	len)
-{	long	ret;
+{
+	long	ret
+		,	sign;
 
+	if		(  *str  ==  '-'  ) {
+		sign = -1;
+		str ++;
+	} else {
+		sign = 1;
+	}
 	ret = 0L;
 	for	( ; len > 0 ; len -- )	{
 		if		(  isdigit(*str)  )	{
@@ -95,7 +103,7 @@ StrToInt(
 		}
 		str ++;
 	}
-	return	(ret);
+	return	(ret*sign);
 }
 
 extern	long

@@ -1,3 +1,7 @@
+2003-12-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/monstring.c (StrToInt): 符号付き数字の処理を直した
+
 2003-12-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/libmondai.h.in: libmondaiが国際化されているかどうかのフラグを作った
