@@ -84,9 +84,9 @@ main ()
     exit(1);
   }
   
-  if (LIBMONDAI_CHECK_VERSION($libmondai_config_major_version,
-                              $libmondai_config_minor_version,
-                              $libmondai_config_micro_version)) {
+  if (!LIBMONDAI_CHECK_VERSION($libmondai_config_major_version,
+                               $libmondai_config_minor_version,
+                               $libmondai_config_micro_version)) {
     printf("\n*** An old version of libmondai (%d.%d.%d) was found.\n",
            libmondai_major_version, libmondai_minor_version,
 	   libmondai_micro_version);

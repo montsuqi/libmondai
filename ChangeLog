@@ -1,3 +1,7 @@
+2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* libmondai.m4: Bug fix in version check c program.
+
 2003-03-07  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	Added libmondai.m4 to define `AM_PATH_LIBMONDAI'.
