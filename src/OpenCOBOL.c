@@ -221,8 +221,12 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
-			StringC2Cobol(p,ValueStringLength(value));
+			if		(  IS_VALUE_NIL(value)  ) {
+				memclear(p,ValueStringLength(value));	/*	LOW-VALUE	*/
+			} else {
+				memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
+				StringC2Cobol(p,ValueStringLength(value));
+			}
 			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:

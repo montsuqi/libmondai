@@ -1,3 +1,8 @@
+2004-02-02  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/dotCOBOL.c (dotCOBOL_PackValue), src/OpenCOBOL.c (OpenCOBOL_PackValue): 
+	文字列でNILの時にはLOW-VALUEをセットするようにした
+
 2004-01-31  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/getset.c: 引数チェックの強化
