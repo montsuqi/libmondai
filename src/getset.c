@@ -178,6 +178,7 @@ ValueToString(
 	ValueStruct	*val)
 {
 	static	char	buff[SIZE_BUFF];
+	char	work[SIZE_NUMBUF+1];
 	char	*p
 	,		*q;
 	int		i;
@@ -211,18 +212,19 @@ ValueToString(
 		*q = 0;
 		break;
 	  case	GL_TYPE_NUMBER:
-		p = ValueFixedBody(val);
+		strcpy(work,ValueFixedBody(val));
+		p = work;
 		q = buff;
 		if		(  *p  >=  0x70  ) {
 			*q ++ = '-';
 			*p ^= 0x40;
 		}
 		strcpy(q,p);
-		if		(  ValueFixedBody(val)  >  0  ) {
+		if		(  ValueFixedSlen(val)  >  0  ) {
 			p = buff + strlen(buff);
 			*(p + 1) = 0;
 			q = p - 1;
-			for	( i = 0 ; i < ValueFixedLength(val) ; i ++ ) {
+			for	( i = 0 ; i < ValueFixedSlen(val) ; i ++ ) {
 				*p -- = *q --;
 			}
 			*p = '.';
