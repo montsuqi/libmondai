@@ -43,25 +43,34 @@ Boston, MA  02111-1307, USA.
 #include	"misc.h"
 #include	"debug.h"
 
+#ifdef	TRACE
 static	size_t	total = 0;
+#endif
 
 extern	void	*
 _xmalloc(
 	size_t	size,
 	char	*fn,
 	int		line)
-{	void	*ret;
+{
+	void	*ret;
+#ifdef	TRACE
+	size_t	*area;
 
 	total += size; 
-#ifdef	TRACE
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
-#endif
+	if		(  ( area = (size_t *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
+		printf("no memory space!! %s(%d)\n",fn,line);
+		exit(1);
+	}
+	*area = size;
+	ret = (void *)&area[1];
+	printf("allocate = %p, total = %d\n",ret,(int)total);fflush(stdout);
+#else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
 		exit(1);
 	}
-#ifdef	TRACE
-	printf("allocate = %p, total = %d\n",ret,(int)total);fflush(stdout);
 #endif
 	return	(ret);
 }
@@ -73,9 +82,13 @@ _xfree(
 	int		line)
 {
 #ifdef	TRACE
-	printf("xfree %s(%d)\n",fn,line);
-#endif
-#ifndef	OKI
+	size_t	*area;
+
+	area = (size_t *)p;
+	total -= area[-1];
+	printf("xfree %d byte in %s(%d)\n",(int)area[-1],fn,line);
+	free(&area[-1]);
+#else
 	free(p);
 #endif
 }

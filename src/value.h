@@ -112,6 +112,7 @@ typedef	struct {
 	LargeByteString	**ops;
 }	PathStruct;
 
+#if	0
 #define	SIZE_FUNC		16
 typedef	struct {
 	char	func[SIZE_FUNC];
@@ -120,7 +121,7 @@ typedef	struct {
 	int		rno;
 	int		pno;
 }	DBCOMM_CTRL;
-
+#endif
 typedef	struct {
 	KeyStruct	*pkey;
 	PathStruct	**path;

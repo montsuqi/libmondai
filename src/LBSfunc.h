@@ -26,7 +26,8 @@ copies.
 
 typedef	struct {
 	size_t	ptr
-	,		size;
+	,		size
+	,		asize;
 	byte	*body;
 }	LargeByteString;
 
@@ -34,7 +35,7 @@ typedef	struct {
 
 extern	LargeByteString	*NewLBS(void);
 extern	void	FreeLBS(LargeByteString *lbs);
-extern	void	LBS_RequireSize(LargeByteString *lbs, size_t size, Bool fKeep);
+extern	void	LBS_ReserveSize(LargeByteString *lbs, size_t size, Bool fKeep);
 extern	void	LBS_EmitStart(LargeByteString *lbs);
 extern	void	LBS_Emit(LargeByteString *lbs, byte code);
 extern	void	LBS_EmitChar(LargeByteString *lbs, char c);
