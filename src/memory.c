@@ -20,8 +20,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA  02111-1307, USA.
 */
 
-/*
 #define	TRACE
+/*
 */
 
 #ifdef HAVE_CONFIG_H
@@ -182,7 +182,7 @@ dbgmsg(">_ReleaseArea");
 					if		(  np->final  !=  NULL  ) {
 						(*np->final)(&np[1],np->data);
 					}
-					free(np);
+					xfree(np);
 					return;
 				}
 				rp = np;
@@ -205,15 +205,13 @@ dbgmsg(">ReleasePool");
 			g_hash_table_remove(PoolTable,pool->name);
 			xfree(pool->name);
 		}
-		if		(  ( np = pool->head )  !=  NULL  ) {
-			rp = np->next;
-			np->next = NULL;
+		if		(  ( rp = pool->head )  !=  NULL  ) {
 			while	(  rp  !=  NULL  )	{
 				np = rp->next;
 				if		(  rp->final  !=  NULL  ) {
 					(*rp->final)((void *)&rp[1],rp->data);
 				}
-				//free(rp);
+				xfree(rp);
 				rp = np;
 			}
 		}

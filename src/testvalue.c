@@ -243,7 +243,7 @@ printf("** variable size (end)**\n");fflush(stdout);
 	size = NativeSaveValue(buff,val,FALSE);
 	printf("***** Value Save (end)*****\n");
 	printf("***** Value Restore *****\n");
-	NativeRestoreValue(buff,&val2,FALSE);
+	val2 = NativeRestoreValue(buff,FALSE);
 	printf("***** Value Restore (end)*****\n");
 
 	opt = NewConvOpt();
@@ -266,7 +266,7 @@ printf("** variable size (end)**\n");fflush(stdout);
 	size = NativeSaveValue(buff,val,TRUE);
 	printf("***** Value Save (end)*****\n");
 	printf("***** Value Restore *****\n");
-	NativeRestoreValue(buff,&val2,TRUE);
+	val2 = NativeRestoreValue(buff,TRUE);
 	printf("***** Value Restore (end)*****\n");
 
 	opt = NewConvOpt();

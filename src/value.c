@@ -57,6 +57,7 @@ NewValue(
 
 ENTER_FUNC;
 	ret = New(ValueStruct);
+	dbgprintf("value = %p\n",ret);
 	ValueAttribute(ret) = GL_ATTR_NIL;
 	ValueStr(ret) = NULL;
 	ValueType(ret) = type;
@@ -134,6 +135,7 @@ FreeValueStruct(
 	int		i;
 
 	if		(  val  !=  NULL  ) {
+		dbgprintf("type = %02X\n",val->type);
 		switch	(val->type) {
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {

@@ -557,8 +557,8 @@ LEAVE_FUNC;
 	return	(p-pp);
 }
 
-extern	size_t
-NativeRestoreValue(
+static	size_t
+_NativeRestoreValue(
 	byte		*p,
 	ValueStruct	**ret,
 	Bool		fData)
@@ -679,7 +679,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativeRestoreValue(p,&ValueArrayItem(value,i),fData);
+				p += _NativeRestoreValue(p,&ValueArrayItem(value,i),fData);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -691,7 +691,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				name = StrDup(p);
 				p += strlen(name)+1;
-				p += NativeRestoreValue(p,&lower,fData);
+				p += _NativeRestoreValue(p,&lower,fData);
 				ValueRecordItem(value,i) = lower;
 				ValueRecordName(value,i) = name;
 				g_hash_table_insert(ValueRecordMembers(value),
@@ -709,8 +709,20 @@ ENTER_FUNC;
 			ValueIsNil(value);
 			break;
 		}
+	} else {
+		*ret = NULL;
 	}
 LEAVE_FUNC;
 	return	(p-q);
 }
 
+extern	ValueStruct	*
+NativeRestoreValue(
+	byte		*p,
+	Bool		fData)
+{
+	ValueStruct	*val;
+
+	_NativeRestoreValue(p,&val,fData);
+	return	(val);
+}
