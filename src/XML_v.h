@@ -22,7 +22,7 @@ copies.
 #define	_INC_XML_VALUE_H
 #include	"valueconv.h"
 
-#define	NS_URI		"http://panda.montsuqui.org/libmondai"
+#define	NS_URI			"http://panda.montsuqui.org/libmondai"
 
 #define	XML_OUT_HEADER		0x01
 #define	XML_OUT_BODY		0x02
@@ -37,11 +37,14 @@ typedef	struct {
 
 #define	XML_TYPE1		1
 #define	XML_TYPE2		2
+#define	XML_XMLXSD		3
 
 #define	ConvIndent(opt)		\
 		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
+
 #define	ConvType(opt)		\
 		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fType)
+
 #define	ConvOutput(opt)		(((XMLOPT *)(opt)->appendix)->fOutput)
 
 #define	ConvXmlType(opt)	\
@@ -63,5 +66,8 @@ extern	size_t	XML1_SizeValue(CONVOPT *opt, ValueStruct *value);
 extern	size_t	XML2_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	XML2_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	XML2_SizeValue(CONVOPT *opt, ValueStruct *value);
+
+extern	void	DestroyXMLOPT(XMLOPT *opt);
+extern	void	DestroyConvOptXML(CONVOPT *opt);
 
 #endif

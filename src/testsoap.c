@@ -19,23 +19,15 @@ things, the copyright notice and this notice must be preserved on all
 copies. 
 */
 
-/*
+#define	MAIN
+
 #define	DEBUG
 #define	TRACE
+/*
 */
-#define	MAIN
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
-
-#define	TEST_CODE		"euc-jp"
-#define	SRC_CODE		"euc-jp"
-
-#define	TEST_VALUE
-
-/*
-#define	TEST_CODE		"shift-jis"
-*/
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -45,20 +37,24 @@ copies.
 #include	<glib.h>
 #include	"types.h"
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+
 #include	"value.h"
 #include	"getset.h"
-#include	"Native_v.h"
-#include	"Text_v.h"
-#include	"XML_v.h"
-#include	"OpenCOBOL_v.h"
-#include	"valueconv.h"
+#include	"SOAP_v.h"
 #include	"RecParser.h"
 #include	"numerici.h"
 #include	"memory_v.h"
+#include	"monstring.h"
 #include	"misc_v.h"
+#include	"hash_v.h"
 #include	"others.h"
 
 #include	"debug.h"
+
+#define	SRC_CODE		"euc-jp"
+#define	DUMP_CODE		"utf-8"
 
 #define	SIZE_FUNC		16
 #define	SIZE_EVENT		64
@@ -66,6 +62,8 @@ copies.
 #define	SIZE_PUTTYPE	8
 #define	SIZE_TERM		64
 #define	SIZE_USER		16
+
+#define	N_PATH			5
 
 static	ValueStruct	*
 BuildMcpArea(
@@ -98,7 +96,7 @@ BuildMcpArea(
 	p += sprintf(p,				"rname	int;");
 	p += sprintf(p,				"pname	int;");
 	p += sprintf(p,				"name	varchar(%d);",SIZE_NAME);
-	p += sprintf(p,			"};");
+	p += sprintf(p,			"}[%d];",N_PATH);
 	p += sprintf(p,		"};");
 	p += sprintf(p,		"private	{");
 	p += sprintf(p,			"count	int;");
@@ -131,20 +129,15 @@ main(
 	byte	*p;
 	int		i;
 	ValueStruct	*val
-		,		*val2
-		,		*val3;
-	CONVOPT	*opt;
+		,		*val2;
 	byte	*buff;
-	size_t	size;
+	char	method[SIZE_LONGNAME+1];
+	FILE	*fp;
 
-	printf("***** libmondai test start *****\n");
 	RecordDir = ".";
-	printf("***** RecParserInit *****\n");
 	RecParserInit();
-	printf("***** RecParseValue *****\n");
 	val = BuildMcpArea(10);
 
-	DumpValueStruct(val);
 	/*	set	*/
 	printf("***** Value setting *****\n");
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
@@ -159,18 +152,22 @@ main(
 	SetValueString(GetItemLongName(val,"dc.term"),"term",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.user"),"user",SRC_CODE);
 
-	SetValueString(GetItemLongName(val,"db.path.blocks"),"1",SRC_CODE);
-	SetValueString(GetItemLongName(val,"db.path.rname"),"2",SRC_CODE);
-	SetValueString(GetItemLongName(val,"db.path.pname"),"3",SRC_CODE);
-
-	SetValueString(GetItemLongName(val,"private.count"),"1",SRC_CODE);
-printf("** variable size **\n");fflush(stdout);
-	for	( i = 0 ; i < 100 ; i ++ ) {
-		sprintf(name,"private.swindow[%d]",i);
-printf("private.swindow[%d]\n",i);fflush(stdout);
+	for	( i = 0 ; i < N_PATH ; i ++ ) {
+		sprintf(name,"db.path[%d].blocks",i);
+		SetValueInteger(GetItemLongName(val,name),i);
+		sprintf(name,"db.path[%d].rname",i);
+		SetValueInteger(GetItemLongName(val,name),i);
+		sprintf(name,"db.path[%d].pname",i);
+		SetValueInteger(GetItemLongName(val,name),i);
+		sprintf(name,"db.path[%d].name",i);
 		SetValueString(GetItemLongName(val,name),name,SRC_CODE);
 	}
-printf("** variable size (end)**\n");fflush(stdout);
+
+	SetValueString(GetItemLongName(val,"private.count"),"1",SRC_CODE);
+	for	( i = 0 ; i < 100 ; i ++ ) {
+		sprintf(name,"private.swindow[%d]",i);
+		SetValueString(GetItemLongName(val,name),name,SRC_CODE);
+	}
 	for	( i = 0 ; i < ValueArraySize(GetItemLongName(val,"private.state")) ; i ++ ) {
 		sprintf(name,"private.state[%d]",i);
 		SetValueString(GetItemLongName(val,name),name,SRC_CODE);
@@ -188,62 +185,39 @@ printf("** variable size (end)**\n");fflush(stdout);
 		*p = (byte)i;
 	}
 	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
-	printf("***** Value setting (end)*****\n");
-		
 
-	buff = xmalloc(SIZE_BUFF);
+
+	printf("***** SOAP ****\n");
 	memset(buff,0,SIZE_BUFF);
-	printf("***** Value Save (structure only)*****\n");
-	size = NativeSaveValue(buff,val,FALSE);
-	printf("***** Value Save (end)*****\n");
-	printf("***** Value Restore *****\n");
-	val2 = NativeRestoreValue(buff,FALSE);
-	printf("***** Value Restore (end)*****\n");
 
-	opt = NewConvOpt();
-	ConvSetCodeset(opt,TEST_CODE);
+	SOAP_PackValue(buff,val,"Put","mcp","http://oreore",TRUE,FALSE);
 
-	ConvSetXmlType(opt,XML_TYPE1);
-	ConvSetIndent(opt,TRUE);
-	ConvSetType(opt,FALSE);
-	ConvSetRecName(opt,"mcparea");
-
-	printf("***** before pack ****\n");
-	XML_PackValue(opt,buff,val);
 	printf("%s\n",buff);
-	printf("***** after pack ****\n");
-	XML_PackValue(opt,buff,val2);
-	printf("%s\n",buff);
+	fp = fopen("test.SOAP","w");
+	fprintf(fp,"%s\n",buff);
+	fclose(fp);
 
-	memset(buff,0,SIZE_BUFF);
-	printf("***** Value Save (with data)*****\n");
-	size = NativeSaveValue(buff,val,TRUE);
-	printf("***** Value Save (end)*****\n");
-	printf("***** Value Restore *****\n");
-	val2 = NativeRestoreValue(buff,TRUE);
-	printf("***** Value Restore (end)*****\n");
+	val2 = DuplicateValue(val);
 
-	opt = NewConvOpt();
-	ConvSetCodeset(opt,TEST_CODE);
+	SOAP_UnPackValue(val2,buff,method);
 
-	ConvSetXmlType(opt,XML_TYPE1);
-	ConvSetIndent(opt,TRUE);
-	ConvSetType(opt,FALSE);
-	ConvSetRecName(opt,"mcparea");
+	printf("method = [%s]\n",method);
+	{
+		CONVOPT	*opt;
 
-	printf("***** after pack ****\n");
-	XML_PackValue(opt,buff,val2);
-	printf("%s\n",buff);
+		opt = NewConvOpt();
 
+		ConvSetCodeset(opt,DUMP_CODE);
 
-	printf("***** Value duplicate *****\n");
-	val3 = DuplicateValue(val);
-	printf("***** Value duplicate (end)*****\n");
+		ConvSetXmlType(opt,XML_TYPE1);
+		ConvSetIndent(opt,TRUE);
+		ConvSetType(opt,FALSE);
+		ConvSetRecName(opt,"mcparea");
 
-	printf("***** after duplicate ****\n");
-	memset(buff,0,SIZE_BUFF);
-	XML_PackValue(opt,buff,val3);
-	printf("%s\n",buff);
+		memset(buff,0,SIZE_BUFF);
+		XML_PackValue(opt,buff,val2);
+		printf("%s\n",buff);
+	}
 
 	return	(0);
 }

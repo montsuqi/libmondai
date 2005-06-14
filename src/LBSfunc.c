@@ -158,12 +158,20 @@ extern	void	*
 LBS_FetchPointer(
 	LargeByteString	*lbs)
 {
+#ifdef __alpha__
+	long		ret;
+#else
 	int		ret;
+#endif /* defined( __alpha__ ) */
 	int		i;
 
 	if		(  lbs  !=  NULL  ) {
 		ret = 0;
+#if defined( __alpha__ )
+		for	( i = 0 ; i < sizeof(int) ; i ++ ) {
+#else
 		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
+#endif /* defined( __alpha__ ) */
 			ret <<= 8;
 			ret |= LBS_FetchByte(lbs);
 		}
@@ -343,10 +351,21 @@ LBS_EmitPointer(
 	void			*p)
 {
  	if		(  lbs  !=  NULL  ) {
+#ifdef __alpha__
+		LBS_Emit(lbs,(((long)p & 0xFF00000000000000) >> 56));
+		LBS_Emit(lbs,(((long)p & 0x00FF000000000000) >> 48));
+		LBS_Emit(lbs,(((long)p & 0x0000FF0000000000) >> 40));
+		LBS_Emit(lbs,(((long)p & 0x000000FF00000000) >> 32));
+		LBS_Emit(lbs,(((long)p & 0x00000000FF000000) >> 24));
+		LBS_Emit(lbs,(((long)p & 0x0000000000FF0000) >> 16));
+		LBS_Emit(lbs,(((long)p & 0x000000000000FF00) >>  8));
+		LBS_Emit(lbs,(((long)p & 0x00000000000000FF)      ));
+#else
 		LBS_Emit(lbs,(((int)p & 0xFF000000) >> 24));
 		LBS_Emit(lbs,(((int)p & 0x00FF0000) >> 16));
 		LBS_Emit(lbs,(((int)p & 0x0000FF00) >>  8));
 		LBS_Emit(lbs,(((int)p & 0x000000FF)      ));
+#endif /*__alpha__ */
 	}
 }
 

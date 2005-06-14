@@ -1,6 +1,6 @@
 /*	PANDA -- a simple transaction monitor
 
-Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+Copyright (C) 2005 Ogochan.
 
 This module is part of PANDA.
 
@@ -18,22 +18,13 @@ responsibilities.  It should be in a file named COPYING.  Among other
 things, the copyright notice and this notice must be preserved on all
 copies. 
 */
+#ifndef	_INC_SOAP_VALUE_H
+#define	_INC_SOAP_VALUE_H
 
-#ifndef	_INC_OTHERS_H
-#define	_INC_OTHERS_H
-#include	<glib.h>
-#include	"types.h"
+#include	"XML_v.h"
 
-extern	char		**ParCommandLine(char *line);
-extern	char		*ExpandPath(char *org,char *base);
-
-extern	size_t		DecodeStringURL(byte *q, char *p);
-extern	size_t		EncodeStringURL(char *q, byte *p);
-extern	size_t		EncodeStringLengthURL(byte *q);
-extern	size_t		EncodeBase64(char *out, int size, byte *in, size_t len);
-extern	size_t		DecodeBase64(byte *out, int size, char *in, size_t len);
-extern	size_t		EncodeLengthBase64(char *str);
-
-#define	BASE64SIZE(s)	((((s)+2)/2)*3)
+extern	size_t	SOAP_PackValue(byte *p, ValueStruct *value, char *method,
+							   char *prefix, char *uri, Bool fIndent, Bool fBodyOnly);
+extern	void	SOAP_UnPackValue(ValueStruct *val, char *data, char *method);
 
 #endif

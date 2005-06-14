@@ -61,6 +61,7 @@ do {                                            \
     printf("E:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+    fflush(stdout);                             \
     exit(1);                                    \
 } while (0)
 #define	Warning(...)                            \
@@ -68,12 +69,21 @@ do {                                            \
     printf("W:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+    fflush(stdout);                             \
 } while (0)
 #define	Message(l, ...)                         \
 do {                                            \
     printf("M:%s:%d:",__FILE__,__LINE__);       \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
+    fflush(stdout);                             \
+} while (0)
+#define	_MessageLevelPrintf(m,f,l,...)			\
+do {                                            \
+    printf("M:%s:%d:",(f),(l));					\
+    printf(__VA_ARGS__);                        \
+    printf("\n");                               \
+    fflush(stdout);                             \
 } while (0)
 #define	MessageLog(s) printf("L:%s:%d:%s\n",__FILE__,__LINE__,(s))
 #define MessageLogPrintf(...)                   \
@@ -90,4 +100,5 @@ do {                                            \
     printf("\n");                               \
 } while (0)
 #endif
+
 #endif

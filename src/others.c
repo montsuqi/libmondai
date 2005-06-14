@@ -217,6 +217,7 @@ static	char	base64val[128]	=	{
 extern	size_t
 EncodeBase64(
 	char	*out,
+	int		size,
 	byte	*in,
 	size_t	len)
 {
@@ -224,6 +225,8 @@ EncodeBase64(
 	char	*outp = out;
 
 	while	(  len  >=  3  )	{
+		if		(	(  size  >=  0  )
+				&&	(  ( outp - out )  >=  size  ) )	break;
 		*outp++ = base64char[(inp[0] >> 2) & 0x3f];
 		*outp++ = base64char[((inp[0] & 0x03) << 4) |
 							 ((inp[1] >> 4) & 0x0f)];
@@ -234,17 +237,21 @@ EncodeBase64(
 		len -= 3;
 	}
 
-	if		( len  >  0  )	{
-		*outp++ = base64char[(inp[0] >> 2) & 0x3f];
-		if (  len  ==  1  )	{
-			*outp++ = base64char[(inp[0] & 0x03) << 4];
-			*outp++ = '=';
+	if		( len  >  0  ) {
+		if		(	(  size  >=  0  )
+				&&	(  ( outp - out )  >=  size  ) ) {
 		} else {
-			*outp++ = base64char[((inp[0] & 0x03) << 4) |
-								 ((inp[1] >> 4) & 0x0f)];
-			*outp++ = base64char[((inp[1] & 0x0f) << 2)];
+			*outp++ = base64char[(inp[0] >> 2) & 0x3f];
+			if (  len  ==  1  )	{
+				*outp++ = base64char[(inp[0] & 0x03) << 4];
+				*outp++ = '=';
+			} else {
+				*outp++ = base64char[((inp[0] & 0x03) << 4) |
+									 ((inp[1] >> 4) & 0x0f)];
+				*outp++ = base64char[((inp[1] & 0x0f) << 2)];
+			}
+			*outp++ = '=';
 		}
-		*outp++ = '=';
 	}
 
 	*outp = 0;
@@ -262,6 +269,7 @@ EncodeLengthBase64(
 extern	size_t
 DecodeBase64(
 	byte	*out,
+	int		size,
 	char	*in,
 	size_t	len)
 {
@@ -275,6 +283,8 @@ DecodeBase64(
 
 	while	(	(  len  >=  4  )
 			&&	(  *inp   !=  0  ) )	{
+		if		(	(  size  >=  0  )
+				&&	(  ( outp - out )  >=  size  ) )	break;
 		buf[0] = *inp++;
 		len--;
 		if (BASE64VAL(buf[0]) == -1) break;

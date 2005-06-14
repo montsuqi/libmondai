@@ -23,6 +23,7 @@ copies.
 #define	_INC_LBSFUNC_H
 
 #include	"types.h"
+#include	<stdint.h>
 
 typedef	struct {
 	size_t	ptr

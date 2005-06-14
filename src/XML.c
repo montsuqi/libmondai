@@ -46,6 +46,7 @@ copies.
 #include	"getset.h"
 #include	"memory_v.h"
 #include	"monstring.h"
+#include	"others.h"
 #include	"XML_v.h"
 #include	"debug.h"
 
@@ -168,6 +169,23 @@ PutCR(
 }
 
 static	size_t
+IndentLine(
+	CONVOPT		*opt,
+	byte		*p)
+{
+	int		i;
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
+		size = nIndent;
+	} else {
+		size = 0;
+	}
+	return	(size);
+}
+
+static	size_t
 _XML_PackValue1(
 	CONVOPT		*opt,
 	byte		*p,
@@ -184,9 +202,7 @@ ENTER_FUNC;
 	pp = p;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		}
+		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
 			p += sprintf(p,"<lm:array name=\"%s\" count=\"%d\">"
@@ -196,9 +212,7 @@ ENTER_FUNC;
 				sprintf(num,"%s[%d]",name,i);
 				p += _XML_PackValue1(opt,p,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			p += sprintf(p,"</lm:array>");
 			break;
 		  case	GL_TYPE_RECORD:
@@ -208,9 +222,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			p += sprintf(p,"</lm:record>");
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -296,9 +308,7 @@ ENTER_FUNC;
 	pp = p;
 	if		(  value  !=  NULL  ) {
 		nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		}
+		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
 			if		(  opt->recname  !=  NULL  ) {
@@ -312,9 +322,7 @@ ENTER_FUNC;
 				sprintf(num,"%s:%d",name,i);
 				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",opt->recname,name);
 			} else {
@@ -332,9 +340,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",opt->recname,name);
 			} else {
@@ -421,6 +427,7 @@ LEAVE_FUNC;
 	return	(p-pp);
 }
 
+
 extern	size_t
 XML_PackValue(
 	CONVOPT		*opt,
@@ -447,7 +454,6 @@ ENTER_FUNC;
 	} else {
 		nIndent = -1;
 	}
-
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -1149,8 +1155,8 @@ static	xmlSAXHandler mondaiSAXHandlerStruct2 = {
 #endif
 };
 
-static	xmlSAXHandlerPtr	mondaiSAXHandler1 = &mondaiSAXHandlerStruct1;
-static	xmlSAXHandlerPtr	mondaiSAXHandler2 = &mondaiSAXHandlerStruct2;
+static	xmlSAXHandlerPtr	mondaiSAXHandler1		= &mondaiSAXHandlerStruct1;
+static	xmlSAXHandlerPtr	mondaiSAXHandler2		= &mondaiSAXHandlerStruct2;
 
 static	void
 SetNil(
@@ -1201,7 +1207,6 @@ ENTER_FUNC;
 		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
 		break;
 	  case	XML_TYPE2:
-	  default:
 		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
 		break;
 	}
@@ -1675,6 +1680,24 @@ XML2_SizeValue(
 		}
 	}
 	return	(size);
+}
+
+extern	void
+DestroyXMLOPT(
+	XMLOPT	*opt)
+{
+	xfree(opt);
+}
+
+extern	void
+DestroyConvOptXML(
+	CONVOPT	*opt)
+{
+	if		(  opt->appendix  !=  NULL  ) {
+		DestroyXMLOPT((XMLOPT *)opt->appendix);
+		opt->appendix = NULL;
+	}
+	DestroyConvOpt(opt);
 }
 
 #endif	/*	USE_XML	*/

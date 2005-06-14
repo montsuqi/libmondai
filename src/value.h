@@ -94,7 +94,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_CLASS			(PacketDataType)0xF0
 #define	GL_TYPE_NULL			(PacketDataType)0x00
 
-#define	GL_TYPE_NUMRIC			(PacketDataType)0x10
+#define	GL_TYPE_NUMERIC			(PacketDataType)0x10
 #define	GL_TYPE_INT				(PacketDataType)0x11
 #define	GL_TYPE_BOOL			(PacketDataType)0x12
 #define	GL_TYPE_FLOAT			(PacketDataType)0x13
