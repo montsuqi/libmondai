@@ -220,9 +220,7 @@ ENTER_FUNC;
 	in->pos = 0;
 	in->fn = StrDup(name);
 	if		(  in->body  ==  NULL  ) {
-		fprintf(stderr,"include not found [%s]\n",name);
 		ExitInclude(in);
-		exit(1);
 	}
 LEAVE_FUNC;
 }

@@ -46,6 +46,7 @@ copies.
 #include	"getset.h"
 #include	"memory_v.h"
 #include	"monstring.h"
+#include	"others.h"
 #include	"XML_v.h"
 #include	"debug.h"
 
@@ -118,8 +119,6 @@ ConvSetOutput(
 	((XMLOPT *)opt->appendix)->fOutput = v;
 }
 
-static	int		nIndent;
-
 static	char	*
 XML_Encode(
 	char	*str,
@@ -151,7 +150,7 @@ XML_Encode(
 #endif
 }
 
-static	size_t
+extern	size_t
 PutCR(
 	CONVOPT		*opt,
 	char		*p)
@@ -161,6 +160,23 @@ PutCR(
 	if		(  ConvIndent(opt)  ) {
 		*p = '\n';
 		size = 1;
+	} else {
+		size = 0;
+	}
+	return	(size);
+}
+
+extern	size_t
+IndentLine(
+	CONVOPT		*opt,
+	byte		*p)
+{
+	int		i;
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		for	( i = 0 ; i < opt->nIndent ; i ++ )	*p ++ = ' ';
+		size = opt->nIndent;
 	} else {
 		size = 0;
 	}
@@ -183,10 +199,8 @@ ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		}
+		opt->nIndent ++;
+		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
 			p += sprintf(p,"<lm:array name=\"%s\" count=\"%d\">"
@@ -196,9 +210,7 @@ ENTER_FUNC;
 				sprintf(num,"%s[%d]",name,i);
 				p += _XML_PackValue1(opt,p,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			p += sprintf(p,"</lm:array>");
 			break;
 		  case	GL_TYPE_RECORD:
@@ -208,9 +220,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			p += sprintf(p,"</lm:record>");
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -273,7 +283,7 @@ ENTER_FUNC;
 			break;
 		}
 		p += PutCR(opt,p);
-		nIndent --;
+		opt->nIndent --;
 	}
 LEAVE_FUNC;
 	return	(p-pp);
@@ -295,10 +305,8 @@ ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		}
+		opt->nIndent ++;
+		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
 			if		(  opt->recname  !=  NULL  ) {
@@ -312,9 +320,7 @@ ENTER_FUNC;
 				sprintf(num,"%s:%d",name,i);
 				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",opt->recname,name);
 			} else {
@@ -332,9 +338,7 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-			}
+			p += IndentLine(opt,p);
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",opt->recname,name);
 			} else {
@@ -415,11 +419,12 @@ ENTER_FUNC;
 			break;
 		}
 		p += PutCR(opt,p);
-		nIndent --;
+		opt->nIndent --;
 	}
 LEAVE_FUNC;
 	return	(p-pp);
 }
+
 
 extern	size_t
 XML_PackValue(
@@ -443,11 +448,10 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
-
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -507,9 +511,9 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -549,9 +553,9 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -1149,8 +1153,8 @@ static	xmlSAXHandler mondaiSAXHandlerStruct2 = {
 #endif
 };
 
-static	xmlSAXHandlerPtr	mondaiSAXHandler1 = &mondaiSAXHandlerStruct1;
-static	xmlSAXHandlerPtr	mondaiSAXHandler2 = &mondaiSAXHandlerStruct2;
+static	xmlSAXHandlerPtr	mondaiSAXHandler1		= &mondaiSAXHandlerStruct1;
+static	xmlSAXHandlerPtr	mondaiSAXHandler2		= &mondaiSAXHandlerStruct2;
 
 static	void
 SetNil(
@@ -1201,7 +1205,6 @@ ENTER_FUNC;
 		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
 		break;
 	  case	XML_TYPE2:
-	  default:
 		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
 		break;
 	}
@@ -1284,9 +1287,9 @@ _XML_SizeValue1(
 	size = 0;
 	if		(  value  !=  NULL  ) {
 		if		(  IS_VALUE_NIL(value)  )	return	(0);
-		nIndent ++;
+		opt->nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			size += nIndent;
+			size += opt->nIndent;
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -1298,7 +1301,7 @@ _XML_SizeValue1(
 				size += _XML_SizeValue1(opt,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			size += 11;		//	</lm:array>
 			break;
@@ -1310,7 +1313,7 @@ _XML_SizeValue1(
 				size += _XML_SizeValue1(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			size += 12;		//	</lm:record>
 			break;
@@ -1376,7 +1379,7 @@ _XML_SizeValue1(
 			break;
 		}
 		size += PutCR(opt,buff);
-		nIndent --;
+		opt->nIndent --;
 	}
 	return	(size);
 }
@@ -1395,9 +1398,9 @@ _XML_SizeValue2(
 	size = 0;
 	if		(  value  !=  NULL  ) {
 		if		(  IS_VALUE_NIL(value)  )	return	(0);
-		nIndent ++;
+		opt->nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			size += nIndent;
+			size += opt->nIndent;
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -1414,7 +1417,7 @@ _XML_SizeValue2(
 				size += _XML_SizeValue2(opt,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
@@ -1435,7 +1438,7 @@ _XML_SizeValue2(
 				size += _XML_SizeValue2(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
@@ -1511,7 +1514,7 @@ _XML_SizeValue2(
 			break;
 		}
 		size += PutCR(opt,buff);
-		nIndent --;
+		opt->nIndent --;
 	}
 	return	(size);
 }
@@ -1536,14 +1539,14 @@ XML_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
@@ -1604,14 +1607,14 @@ XML1_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
@@ -1646,14 +1649,14 @@ XML2_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		if		(  opt->recname  !=  NULL  ) {
@@ -1675,6 +1678,24 @@ XML2_SizeValue(
 		}
 	}
 	return	(size);
+}
+
+extern	void
+DestroyXMLOPT(
+	XMLOPT	*opt)
+{
+	xfree(opt);
+}
+
+extern	void
+DestroyConvOptXML(
+	CONVOPT	*opt)
+{
+	if		(  opt->appendix  !=  NULL  ) {
+		DestroyXMLOPT((XMLOPT *)opt->appendix);
+		opt->appendix = NULL;
+	}
+	DestroyConvOpt(opt);
 }
 
 #endif	/*	USE_XML	*/

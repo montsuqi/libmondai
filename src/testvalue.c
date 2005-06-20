@@ -72,52 +72,6 @@ BuildMcpArea(
 	size_t	stacksize)
 {
 	ValueStruct	*value;
-#if	0
-	FILE	*fp;
-	char	name[SIZE_LONGNAME+1];
-
-	sprintf(name,"/tmp/mcparea%d.rec",(int)getpid());
-	if		(  ( fp = fopen(name,"w") )  ==  NULL  ) {
-		fprintf(stderr,"tempfile can not make.\n");
-		exit(1);
-	}
-	fprintf(fp,	"mcparea	{");
-	fprintf(fp,		"func varchar(%d);",SIZE_FUNC);
-	fprintf(fp,		"obj object;");
-	fprintf(fp,		"bin binary;");
-	fprintf(fp,		"rc int;");
-	fprintf(fp,		"dc	{");
-	fprintf(fp,			"window	 varchar(%d);",4);
-	fprintf(fp,			"widget	 varchar(%d);",SIZE_NAME);
-	fprintf(fp,			"event	 varchar(%d);",SIZE_EVENT);
-	fprintf(fp,			"module	 varchar(%d);",SIZE_NAME);
-	fprintf(fp,			"fromwin varchar(%d);",SIZE_NAME);
-	fprintf(fp,			"status	 varchar(%d);",SIZE_STATUS);
-	fprintf(fp,			"puttype varchar(%d);",SIZE_PUTTYPE);
-	fprintf(fp,			"term	 varchar(%d);",SIZE_TERM);
-	fprintf(fp,			"user	 varchar(%d);",SIZE_USER);
-	fprintf(fp,		"};");
-	fprintf(fp,		"db	{");
-	fprintf(fp,			"path	{");
-	fprintf(fp,				"blocks	int;");
-	fprintf(fp,				"rname	int;");
-	fprintf(fp,				"pname	int;");
-	fprintf(fp,			"};");
-	fprintf(fp,		"};");
-	fprintf(fp,		"private	{");
-	fprintf(fp,			"count	int;");
-	fprintf(fp,			"swindow	char(%d)[];",SIZE_NAME);
-	fprintf(fp,			"state		char(1)[%d];",stacksize);
-	fprintf(fp,			"index		int[%d];",stacksize);
-	fprintf(fp,			"pstatus	char(1);");
-	fprintf(fp,			"pputtype 	char(1);");
-	fprintf(fp,			"prc		char(1);");
-	fprintf(fp,		"};");
-	fprintf(fp,	"};");
-	fclose(fp);
-	value = DD_ParseValue(name);
-	remove(name);
-#else
 	char	buff[SIZE_BUFF];
 	char	*p;
 
@@ -143,6 +97,7 @@ BuildMcpArea(
 	p += sprintf(p,				"blocks	int;");
 	p += sprintf(p,				"rname	int;");
 	p += sprintf(p,				"pname	int;");
+	p += sprintf(p,				"name	varchar(%d);",SIZE_NAME);
 	p += sprintf(p,			"};");
 	p += sprintf(p,		"};");
 	p += sprintf(p,		"private	{");
@@ -161,7 +116,6 @@ BuildMcpArea(
 	p += sprintf(p,	"};");
 
 	value = RecParseValueMem(buff,NULL);
-#endif
 
 	return	(value);
 }

@@ -172,7 +172,7 @@ _ReleaseArea(
 	,		*rp;
 
 	if (!p) return;
-dbgmsg(">_ReleaseArea");
+ENTER_FUNC;
 	if		(  pool  !=  NULL  ) {
 		if		(  ( rp = pool->head )  !=  NULL  ) {
 			while	(rp->next != NULL) {
@@ -189,7 +189,7 @@ dbgmsg(">_ReleaseArea");
 			}
 		}
 	}
-dbgmsg("<_ReleaseArea");
+LEAVE_FUNC;
 }
 
 extern	void
@@ -199,7 +199,7 @@ _ReleasePool(
 	MEMAREA	*np
 	,		*rp;
 
-dbgmsg(">ReleasePool");
+ENTER_FUNC;
 	if		(  pool  !=  NULL  ) {
 		if		(  pool->name  !=  NULL  ) {
 			g_hash_table_remove(PoolTable,pool->name);
@@ -217,7 +217,7 @@ dbgmsg(">ReleasePool");
 		}
 		xfree(pool);
 	}
-dbgmsg("<ReleasePool");
+LEAVE_FUNC;
 }
 
 extern	POOL	*
@@ -226,7 +226,7 @@ NewPool(
 {
 	POOL	*pool;
 
-dbgmsg(">NewPool");
+ENTER_FUNC;
 	if		(  name  ==  NULL  ) {
 		pool = (POOL *)xmalloc(sizeof(POOL));
 		pool->name = NULL;
@@ -240,7 +240,7 @@ dbgmsg(">NewPool");
 	} else {
 		pool = NULL;
 	}
-dbgmsg("<NewPool");
+LEAVE_FUNC;
 	return	(pool); 
 }
 

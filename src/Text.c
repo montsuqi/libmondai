@@ -769,7 +769,7 @@ EncodeString(
 		result = EncodeStringURL(out,in);
 		break;
 	  case	STRING_ENCODING_BASE64:
-		result = EncodeBase64(out,in,strlen(in));
+		result = EncodeBase64(out,-1,in,strlen(in));
 		break;
 	  default:
 		result = 0;
@@ -819,7 +819,7 @@ DecodeString(
 		result = DecodeStringURL(out,in);
 		break;
 	  case	STRING_ENCODING_BASE64:
-		result = DecodeBase64(out,in,strlen(in));
+		result = DecodeBase64(out,-1,in,strlen(in));
 		break;
 	  default:
 		result = 0;
