@@ -212,7 +212,7 @@ LEAVE_FUNC;
 }
 
 static	void
-WalkValue(
+_SOAP_UnPackValue(
 	ValueStruct	*value,
 	GHashTable	*ids,
 	xmlNode		*node)
@@ -290,10 +290,10 @@ ENTER_FUNC;
 							if		(	(  *href  ==  '#'  )
 									&&	(  ( rnode = g_hash_table_lookup(ids,href+1) )
 										   !=  NULL  ) ) {
-								WalkValue(ValueArrayItem(value,i),ids,rnode);
+								_SOAP_UnPackValue(ValueArrayItem(value,i),ids,rnode);
 							}
 						} else {
-							WalkValue(ValueArrayItem(value,i),ids,child);
+							_SOAP_UnPackValue(ValueArrayItem(value,i),ids,child);
 						}
 						i ++;
 					}
@@ -315,10 +315,10 @@ ENTER_FUNC;
 								if		(	(  *href  ==  '#'  )
 										&&	(  ( rnode = g_hash_table_lookup(ids,href+1) )
 											   !=  NULL  ) ) {
-									WalkValue(ValueRecordItem(value,i),ids,rnode);
+									_SOAP_UnPackValue(ValueRecordItem(value,i),ids,rnode);
 								}
 							} else {
-								WalkValue(ValueRecordItem(value,i),ids,child);
+								_SOAP_UnPackValue(ValueRecordItem(value,i),ids,child);
 							}
 						}
 						i ++;
@@ -335,40 +335,6 @@ ENTER_FUNC;
 		}
 	}
 LEAVE_FUNC;
-}
-
-static	size_t
-PutCR(
-	CONVOPT		*opt,
-	char		*p)
-{
-	size_t	size;
-
-	if		(  ConvIndent(opt)  ) {
-		*p = '\n';
-		size = 1;
-	} else {
-		size = 0;
-	}
-	return	(size);
-}
-
-static	int		nIndent;
-static	size_t
-IndentLine(
-	CONVOPT		*opt,
-	byte		*p)
-{
-	int		i;
-	size_t	size;
-
-	if		(  ConvIndent(opt)  ) {
-		for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		size = nIndent;
-	} else {
-		size = 0;
-	}
-	return	(size);
 }
 
 extern	void
@@ -404,7 +370,7 @@ ENTER_FUNC;
 	} else {
 		if		(  ( top = XMLNodeChildren(body) )  !=  NULL  ) {
 			strcpy(method,XMLName(top));
-			WalkValue(val,ids,top);
+			_SOAP_UnPackValue(val,ids,top);
 		}
 	}
 
@@ -413,6 +379,188 @@ ENTER_FUNC;
     xmlCleanupParser();
 LEAVE_FUNC;
 }
+
+#if	0
+static	void
+_SOAP_LoadValue(
+	ValueStruct	**ret,
+	GHashTable	*ids,
+	xmlNode		*node)
+{
+	int		i;
+	char	*href
+		,	*xsi_null
+		,	*tname;
+	byte	*buff;
+	xmlChar	*text;
+	xmlNode		*child
+		,		*rnode;
+	size_t	size;
+	ValueStruct	*value
+		,		*lower;
+	PacketClass	type;
+
+ENTER_FUNC;
+	if		(  node  !=  NULL  ) {
+		if		( ( tname = XMLGetNsProp(node,"type",SOAP_ENC) )  !=  NULL  ) {
+			if		(  strcmp(tname,"int")  ==  0  ) {
+		} else {
+			type = GL_TYPE_NULL;
+		}
+		value = NewValue(type);
+		if		(	(  ( xsi_null = XMLGetNsProp(node,"null",XSI_URL) )  !=  NULL  )
+				&&	(  strcmp(xsi_null,"true")  ==  0  ) ) {
+			ValueIsNil(value);
+		} else {
+			ValueIsNonNil(value);
+			switch	(ValueType(value)) {
+			  case	GL_TYPE_INT:
+			  case	GL_TYPE_BOOL:
+			  case	GL_TYPE_FLOAT:
+			  case	GL_TYPE_NUMBER:
+			  case	GL_TYPE_CHAR:
+			  case	GL_TYPE_VARCHAR:
+			  case	GL_TYPE_DBCODE:
+			  case	GL_TYPE_TEXT:
+				if		(	(  XMLNodeType(node)  ==      XML_ELEMENT_NODE  )
+						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
+						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
+						&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
+					SetValueString(value,text,"utf-8");
+				}
+				break;
+			  case	GL_TYPE_BYTE:
+				if		(	(  XMLNodeType(node)  ==      XML_ELEMENT_NODE  )
+						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
+						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
+						&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
+					DecodeBase64(ValueByte(value),ValueByteLength(value),
+								 text,strlen(text));
+				}
+				break;
+			  case	GL_TYPE_BINARY:
+				if		(	(  XMLNodeType(node)  ==      XML_ELEMENT_NODE  )
+						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
+						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
+						&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
+					buff = (byte *)xmalloc(strlen(text));
+					size = DecodeBase64(buff,strlen(text),text,strlen(text));
+					if		(  size  >  ValueByteSize(value)  ) {
+						if		(  ValueByte(value)  !=  NULL  ) {
+							xfree(ValueByte(value));
+						}
+						ValueByteSize(value) = size;
+						ValueByte(value) = (char *)xmalloc(size);
+					}
+					memclear(ValueByte(value),ValueByteSize(value));
+					memcpy(ValueByte(value),buff,size);
+				}
+				break;
+			  case	GL_TYPE_ARRAY:
+				dbgprintf("nspre= [%s]\n",XMLNsPrefix(node));
+				dbgprintf("tag  = [%s]\n",XMLName(node));
+				child = XMLNodeChildren(node);
+				for	( i = 0 ; i < ValueArraySize(value) ; ) {
+					if		(  child  ==  NULL  )	break;
+					if		(  XMLNs(child)  !=  NULL  ) {
+						dbgprintf("ns   = [%s]\n",XMLNsBody(child));
+						dbgprintf("nspre= [%s]\n",XMLNsPrefix(child));
+					} else {
+						if		(  ( href = XMLGetProp(child,"href") )  !=  NULL  ) {
+							if		(	(  *href  ==  '#'  )
+									&&	(  ( rnode = g_hash_table_lookup(ids,href+1) )
+										   !=  NULL  ) ) {
+								_SOAP_LoadValue(ValueArrayItem(value,i),ids,rnode);
+							}
+						} else {
+							_SOAP_LoadValue(ValueArrayItem(value,i),ids,child);
+						}
+						i ++;
+					}
+					child = XMLNodeNext(child);
+				}
+				break;
+			  case	GL_TYPE_RECORD:
+				child = XMLNodeChildren(node);
+				for	( i = 0 ; i < ValueRecordSize(value) ; ) {
+					if		(  child  ==  NULL  )	break;
+					dbgprintf("name = [%s]\n",ValueRecordName(value,i));
+					dbgprintf("tag  = [%s]\n",XMLName(child));
+					if		(  XMLNs(child)  !=  NULL  ) {
+						dbgprintf("ns   = [%p]\n",XMLNsBody(child));
+						dbgprintf("nspre= [%p]\n",XMLNsPrefix(child));
+					} else {
+						if		(  strcmp(ValueRecordName(value,i),XMLName(child))  ==  0  ) {
+							if		(  ( href = XMLGetProp(child,"href") )  !=  NULL  ) {
+								if		(	(  *href  ==  '#'  )
+										&&	(  ( rnode = g_hash_table_lookup(ids,href+1) )
+											   !=  NULL  ) ) {
+									_SOAP_LoadValue(ValueRecordItem(value,i),ids,rnode);
+								}
+							} else {
+								_SOAP_LoadValue(ValueRecordItem(value,i),ids,child);
+							}
+						}
+						i ++;
+					}
+					child = XMLNodeNext(child);
+				}
+				break;
+			  case	GL_TYPE_OBJECT:
+				break;
+			  default:
+				ValueIsNil(value);
+				break;
+			}
+		}
+	}
+LEAVE_FUNC;
+}
+
+extern	void
+SOAP_LoadValue(
+	char		*data,
+	ValueStruct	**val,
+	char		*method)
+{
+	xmlDocPtr	doc;
+	xmlNode		*body
+		,		*top;
+	GHashTable	*ids;
+
+ENTER_FUNC;
+    if		(  ( doc = xmlReadMemory(data,strlen(data), "", NULL, XML_PARSE_NOBLANKS) )  ==  NULL  ) {
+		exit(1);
+	}
+#ifdef	DEBUG
+	Depth = 0;
+	DumpNodes(xmlDocGetRootElement(doc));
+#endif
+
+	ids = NewNameHash();
+	MakeIdTable(ids,xmlDocGetRootElement(doc));
+#ifdef	DEBUG
+	DumpIdTable(ids);
+#endif
+
+	body = SearchNode(xmlDocGetRootElement(doc),SOAP_ENV,"Body",NULL,NULL);
+
+	if		(  body  ==  NULL  ) {
+		fprintf(stderr,"body not found\n");
+	} else {
+		if		(  ( top = XMLNodeChildren(body) )  !=  NULL  ) {
+			strcpy(method,XMLName(top));
+			_SOAP_LoadValue(val,ids,top);
+		}
+	}
+
+    xmlFreeDoc(doc);
+	g_hash_table_destroy(ids);
+    xmlCleanupParser();
+LEAVE_FUNC;
+}
+
+#endif
 
 static	size_t
 _SOAP_PackValue(
@@ -459,7 +607,7 @@ ENTER_FUNC;
 			}
 			p += sprintf(p," type=\"SOAP-ENC:Array\">");
 			p += PutCR(opt,p);
-			nIndent ++;
+			opt->nIndent ++;
 			fOut = FALSE;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				ival = ValueArrayItem(value,i);
@@ -468,7 +616,7 @@ ENTER_FUNC;
 										NULL,name,
 										ibuff,ival,ibuff);
 			}
-			nIndent --;
+			opt->nIndent --;
 			p += IndentLine(opt,p);
 			p += sprintf(p,"</%s:%s>",ns,name);
 			p += PutCR(opt,p);
@@ -486,7 +634,7 @@ ENTER_FUNC;
 			p += sprintf(p,">");
 			p += PutCR(opt,p);
 			fOut = FALSE;
-			nIndent ++;
+			opt->nIndent ++;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				ival = ValueRecordItem(value,i);
 				if		(	(  IS_VALUE_STRUCTURE(ival)  )
@@ -511,7 +659,7 @@ ENTER_FUNC;
 											ibuff,ival,path);
 				}
 			}
-			nIndent --;
+			opt->nIndent --;
 			p += IndentLine(opt,p);
 			if		(  ns  !=  NULL  ) {
 				p += sprintf(p,"</%s:%s>",ns,name);
@@ -616,7 +764,7 @@ ENTER_FUNC;
 		p += sprintf(p,"  xmlns:SOAP-ENC=\"%s\">",SOAP_ENC);
 		p += PutCR(opt,p);
 	}
-	nIndent = 1;
+	opt->nIndent = 1;
 	p += IndentLine(opt,p);
 	if		(  uri  !=  NULL  ) {
 		p += sprintf(p,"<SOAP-ENV:Body xmlns:%s=\"%s\">",prefix,uri);
@@ -624,10 +772,10 @@ ENTER_FUNC;
 		p += sprintf(p,"<SOAP-ENV:Body>");
 	}
 	p += PutCR(opt,p);
-	nIndent ++;
+	opt->nIndent ++;
 	strcpy(buff,prefix);
 	p +=_SOAP_PackValue(opt,p,prefix,method,NULL,value,buff);
-	nIndent --;
+	opt->nIndent --;
 	p += IndentLine(opt,p);
 	p += sprintf(p,"</SOAP-ENV:Body>");
 	p += PutCR(opt,p);

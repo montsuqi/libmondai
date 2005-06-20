@@ -36,6 +36,7 @@ typedef	struct {
 	size_t	arraysize;
 	Bool	fName;
 	void	*appendix;
+	int		nIndent;
 }	CONVOPT;
 
 #define	ConvEncoding(opt)			((opt)->encode)

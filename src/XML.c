@@ -119,8 +119,6 @@ ConvSetOutput(
 	((XMLOPT *)opt->appendix)->fOutput = v;
 }
 
-static	int		nIndent;
-
 static	char	*
 XML_Encode(
 	char	*str,
@@ -152,7 +150,7 @@ XML_Encode(
 #endif
 }
 
-static	size_t
+extern	size_t
 PutCR(
 	CONVOPT		*opt,
 	char		*p)
@@ -168,7 +166,7 @@ PutCR(
 	return	(size);
 }
 
-static	size_t
+extern	size_t
 IndentLine(
 	CONVOPT		*opt,
 	byte		*p)
@@ -177,8 +175,8 @@ IndentLine(
 	size_t	size;
 
 	if		(  ConvIndent(opt)  ) {
-		for	( i = 0 ; i < nIndent ; i ++ )	*p ++ = ' ';
-		size = nIndent;
+		for	( i = 0 ; i < opt->nIndent ; i ++ )	*p ++ = ' ';
+		size = opt->nIndent;
 	} else {
 		size = 0;
 	}
@@ -201,7 +199,7 @@ ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		nIndent ++;
+		opt->nIndent ++;
 		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -285,7 +283,7 @@ ENTER_FUNC;
 			break;
 		}
 		p += PutCR(opt,p);
-		nIndent --;
+		opt->nIndent --;
 	}
 LEAVE_FUNC;
 	return	(p-pp);
@@ -307,7 +305,7 @@ ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		nIndent ++;
+		opt->nIndent ++;
 		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -421,7 +419,7 @@ ENTER_FUNC;
 			break;
 		}
 		p += PutCR(opt,p);
-		nIndent --;
+		opt->nIndent --;
 	}
 LEAVE_FUNC;
 	return	(p-pp);
@@ -450,9 +448,9 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
@@ -513,9 +511,9 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -555,9 +553,9 @@ ENTER_FUNC;
 #endif
 		p += sprintf(p,"?>");
 		p += PutCR(opt,p);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
@@ -1289,9 +1287,9 @@ _XML_SizeValue1(
 	size = 0;
 	if		(  value  !=  NULL  ) {
 		if		(  IS_VALUE_NIL(value)  )	return	(0);
-		nIndent ++;
+		opt->nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			size += nIndent;
+			size += opt->nIndent;
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -1303,7 +1301,7 @@ _XML_SizeValue1(
 				size += _XML_SizeValue1(opt,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			size += 11;		//	</lm:array>
 			break;
@@ -1315,7 +1313,7 @@ _XML_SizeValue1(
 				size += _XML_SizeValue1(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			size += 12;		//	</lm:record>
 			break;
@@ -1381,7 +1379,7 @@ _XML_SizeValue1(
 			break;
 		}
 		size += PutCR(opt,buff);
-		nIndent --;
+		opt->nIndent --;
 	}
 	return	(size);
 }
@@ -1400,9 +1398,9 @@ _XML_SizeValue2(
 	size = 0;
 	if		(  value  !=  NULL  ) {
 		if		(  IS_VALUE_NIL(value)  )	return	(0);
-		nIndent ++;
+		opt->nIndent ++;
 		if		(  ConvIndent(opt)  ) {
-			size += nIndent;
+			size += opt->nIndent;
 		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
@@ -1419,7 +1417,7 @@ _XML_SizeValue2(
 				size += _XML_SizeValue2(opt,num,ValueArrayItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
@@ -1440,7 +1438,7 @@ _XML_SizeValue2(
 				size += _XML_SizeValue2(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
 			if		(  ConvIndent(opt)  ) {
-				size += nIndent;
+				size += opt->nIndent;
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
@@ -1516,7 +1514,7 @@ _XML_SizeValue2(
 			break;
 		}
 		size += PutCR(opt,buff);
-		nIndent --;
+		opt->nIndent --;
 	}
 	return	(size);
 }
@@ -1541,14 +1539,14 @@ XML_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
@@ -1609,14 +1607,14 @@ XML1_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
@@ -1651,14 +1649,14 @@ XML2_SizeValue(
 #endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		size = 0;
-		nIndent = 0;
+		opt->nIndent = 0;
 	} else {
 		size = 0;
-		nIndent = -1;
+		opt->nIndent = -1;
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		if		(  opt->recname  !=  NULL  ) {

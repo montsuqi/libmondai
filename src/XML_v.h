@@ -37,7 +37,6 @@ typedef	struct {
 
 #define	XML_TYPE1		1
 #define	XML_TYPE2		2
-#define	XML_XMLXSD		3
 
 #define	ConvIndent(opt)		\
 		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
@@ -69,5 +68,8 @@ extern	size_t	XML2_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 extern	void	DestroyXMLOPT(XMLOPT *opt);
 extern	void	DestroyConvOptXML(CONVOPT *opt);
+
+extern	size_t	PutCR(CONVOPT *opt, char *p);
+extern	size_t	IndentLine(CONVOPT *opt, byte *p);
 
 #endif
