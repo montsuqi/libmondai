@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libmondai.la
-noinst_PROGRAMS = testconv testvalue testmem testsoap
+noinst_PROGRAMS = testconv testvalue testmem 
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -22,7 +22,6 @@ libmondaiinclude_HEADERS =	\
 	Native_v.h				\
 	Text_v.h				\
 	XML_v.h					\
-	SOAP_v.h				\
 	cobolvalue.h			\
 	others.h				\
 	numerici.h				\
@@ -53,7 +52,6 @@ libmondai_la_SOURCES	=	\
 	Native.c				\
 	Text.c					\
 	XML.c					\
-	SOAP.c					\
 	hash.c					\
 	getset.c				\
 	value.c					\
@@ -88,14 +86,6 @@ testvalue_INCLUDES 	= 		\
 
 testvalue_SOURCES	=		\
 	testvalue.c
-
-testsoap_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	$(XML_CFLAGS)			\
-	-I$(top_srcdir)
-
-testsoap_SOURCES	=		\
-	testsoap.c
 
 testmem_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\
