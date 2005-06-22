@@ -1,22 +1,16 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 1998 Jan Wieck.
+An exact numeric data type for the Postgres database system
+
+Original coding 1998, Jan Wieck.
 Copyright (C) 2001-2005 Ogochan.
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
+Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
+multiple-precision math library, most recently published as Algorithm
+786: Multiple-Precision Complex Arithmetic and Functions, ACM
+Transactions on Mathematical Software, Vol. 24, No. 4, December 1998,
+pages 359-367.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+This code came from Postgres, so this code is lisenced under BSDL.
 */
 
 #include	<ctype.h>
