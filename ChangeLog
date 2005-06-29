@@ -1,3 +1,9 @@
+2005-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SOAP.c (SOAP_LoadValue): XMLからValueStructを作る処理
+
+	* src/value.c (ValueAddArrayItem): 追加
+
 2005-06-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* COPYING: 著作権表示を直す(実態と大きくかけ離れていたため。そもそ

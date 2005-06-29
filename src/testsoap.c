@@ -117,6 +117,29 @@ BuildMcpArea(
 	return	(value);
 }
 
+static	void
+DumpByXML(
+	ValueStruct	*val,
+	char		*name)
+{
+	CONVOPT	*opt;
+	byte	buff[SIZE_BUFF];
+
+	if		(  val  !=  NULL  ) {
+		opt = NewConvOpt();
+
+		ConvSetCodeset(opt,DUMP_CODE);
+		ConvSetXmlType(opt,XML_TYPE1);
+		ConvSetIndent(opt,TRUE);
+		ConvSetType(opt,FALSE);
+		ConvSetRecName(opt,name);
+
+		memset(buff,0,SIZE_BUFF);
+		XML_PackValue(opt,buff,val);
+		printf("%s\n",buff);
+	}
+}
+
 extern	int
 main(
 	int		argc,
@@ -201,22 +224,13 @@ main(
 	SOAP_UnPackValue(val2,buff,method);
 
 	printf("method = [%s]\n",method);
-	{
-		CONVOPT	*opt;
+	DumpByXML(val2,"mcparea");
 
-		opt = NewConvOpt();
-
-		ConvSetCodeset(opt,DUMP_CODE);
-
-		ConvSetXmlType(opt,XML_TYPE1);
-		ConvSetIndent(opt,TRUE);
-		ConvSetType(opt,FALSE);
-		ConvSetRecName(opt,"mcparea");
-
-		memset(buff,0,SIZE_BUFF);
-		XML_PackValue(opt,buff,val2);
-		printf("%s\n",buff);
-	}
+	SOAP_PackValue(buff,val,"Put","mcp","http://oreore",TRUE,FALSE);
+	val2 = SOAP_LoadValue(buff,method);
+	printf("method = [%s]\n",method);
+	DumpByXML(val2,"mcparea");
+	//DumpValueStruct(val2);
 
 	return	(0);
 }

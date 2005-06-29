@@ -26,5 +26,7 @@ Boston, MA 02111-1307, USA.
 extern	size_t	SOAP_PackValue(byte *p, ValueStruct *value, char *method,
 							   char *prefix, char *uri, Bool fIndent, Bool fBodyOnly);
 extern	void	SOAP_UnPackValue(ValueStruct *val, char *data, char *method);
+extern	ValueStruct	*SOAP_LoadValue(char *data, char *method);
+//extern	void	SOAP_LoadValue(char *data, ValueStruct **val, char *method);
 
 #endif

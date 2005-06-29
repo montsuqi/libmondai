@@ -1050,3 +1050,32 @@ ENTER_FUNC;
 LEAVE_FUNC;
 }
 
+extern	void
+ValueAddArrayItem(
+	ValueStruct	*upper,
+	int			ix,
+	ValueStruct	*value)
+{
+	ValueStruct	**items;
+	size_t		nsize;
+
+ENTER_FUNC;
+	if		(  ix  <  0  ) {
+		ix = ValueArraySize(upper);
+	}
+	if		(  ix  >=  ValueArraySize(upper)  ) {
+		nsize = ix + 1;
+		items = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * nsize);
+		memclear(items,sizeof(ValueStruct *) * nsize);
+		if		(  ValueArraySize(upper)  >  0  ) {
+			memcpy(items, ValueArrayItems(upper), 
+				   sizeof(ValueStruct *) * ValueArraySize(upper) );
+			xfree(ValueArrayItems(upper));
+		}
+		ValueArrayItems(upper) = items;
+		ValueArraySize(upper) = nsize;
+	}
+	ValueArrayItem(upper,ix) = value;
+LEAVE_FUNC;
+}
+

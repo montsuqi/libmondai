@@ -104,10 +104,12 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_CHAR			(PacketDataType)0x21
 #define	GL_TYPE_TEXT			(PacketDataType)0x22
 #define	GL_TYPE_VARCHAR			(PacketDataType)0x23
-#define	GL_TYPE_BYTE			(PacketDataType)0x24
-#define	GL_TYPE_DBCODE			(PacketDataType)0x25
-#define	GL_TYPE_BINARY			(PacketDataType)0x26
-#define	GL_TYPE_POINTER			(PacketDataType)0x27
+#define	GL_TYPE_DBCODE			(PacketDataType)0x24
+#define	GL_TYPE_POINTER			(PacketDataType)0x25
+
+#define	GL_TYPE_BITS			(PacketDataType)0x30
+#define	GL_TYPE_BYTE			(PacketDataType)0x31
+#define	GL_TYPE_BINARY			(PacketDataType)0x32
 
 #define	GL_TYPE_OBJECT			(PacketDataType)0x40
 
@@ -143,6 +145,7 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
 #define	IS_VALUE_NUMERIC(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
 #define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
+#define	IS_VALUE_BITS(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_BITS)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
 #define	ValueType(v)			((v)->type)
@@ -204,6 +207,7 @@ typedef	struct _ValueStruct	{
 extern	ValueStruct	*NewValue(PacketDataType type);
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,
 									   ValueStruct *value);
+extern	void		ValueAddArrayItem(ValueStruct *upper, int ix, ValueStruct *value);
 extern	ValueStruct	**MakeValueArray(ValueStruct *template, size_t count);
 extern	ValueStruct	*DuplicateValue(ValueStruct *template);
 
