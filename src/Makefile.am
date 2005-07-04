@@ -17,7 +17,13 @@
 # Boston, MA 02111-1307, USA.
 
 lib_LTLIBRARIES = libmondai.la
-noinst_PROGRAMS = testconv testvalue testmem testsoap
+
+if SOAP
+TESTSOAP  =  testsoap
+else
+TESTSOAP  =
+endif
+noinst_PROGRAMS = testconv testvalue testmem $(TESTSOAP)
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -107,6 +113,7 @@ testvalue_INCLUDES 	= 		\
 testvalue_SOURCES	=		\
 	testvalue.c
 
+if SOAP
 testsoap_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\
 	$(XML_CFLAGS)			\
@@ -114,6 +121,7 @@ testsoap_INCLUDES 	= 		\
 
 testsoap_SOURCES	=		\
 	testsoap.c
+endif
 
 testmem_INCLUDES 	= 		\
 	$(GLIB_CFLAGS) 			\
