@@ -153,6 +153,9 @@ DropLexInfo(
 	if		(  info->ValueName  !=  NULL  ) {
 		xfree(info->ValueName);
 	}
+	if		(  info->body  !=  NULL  ) {
+		xfree(info->body);
+	}
 	(*in) = info->next;
 	xfree(info);
 }

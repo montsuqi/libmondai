@@ -1,3 +1,7 @@
+2005-07-28  Noboru Saitou  <noborus@netlab.jp>
+
+	* src/Lex.c (DropLexInfo): fix memory leak
+
 2005-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/SOAP.c (SOAP_LoadValue): XMLからValueStructを作る処理
