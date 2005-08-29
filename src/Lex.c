@@ -88,6 +88,7 @@ PushLexInfo(
 	char	*str;
 	size_t	size;
 
+ENTER_FUNC;
 	if		(  ( str = GetFile(name,&size) )  !=  NULL  ) {
 		info = New(CURFILE);
 		info->fn = StrDup(name);
@@ -109,6 +110,7 @@ PushLexInfo(
 		}
 		info = NULL;
 	}
+LEAVE_FUNC;
 	return	(info);
 }
 
@@ -145,6 +147,7 @@ DropLexInfo(
 {
 	CURFILE	*info;
 
+ENTER_FUNC;
 	info = (*in);
 	xfree(info->fn);
 	if		(  info->Symbol  !=  NULL  ) {
@@ -153,11 +156,9 @@ DropLexInfo(
 	if		(  info->ValueName  !=  NULL  ) {
 		xfree(info->ValueName);
 	}
-	if		(  info->body  !=  NULL  ) {
-		xfree(info->body);
-	}
 	(*in) = info->next;
 	xfree(info);
+LEAVE_FUNC;
 }
 
 static	void
@@ -167,7 +168,7 @@ ExitInclude(
 	INCFILE	*back;
 	size_t	size;
 
-dbgmsg(">ExitInclude");
+ENTER_FUNC;
 	if		(  in->body  !=  NULL  ) {
 		xfree(in->body);
 	}
@@ -180,7 +181,8 @@ dbgmsg(">ExitInclude");
 	in->cLine = back->cLine;
 	in->ftop = back->next;
 	xfree(back);
-dbgmsg("<ExitInclude");
+LEAVE_FUNC;
+
 }
 
 static	void
@@ -240,10 +242,12 @@ MakeReservedTable(
 	int		i;
 	GHashTable	*res;
 	
+ENTER_FUNC;
 	res = NewNameHash();
 	for	( i = 0 ; table[i].token  !=  0 ; i ++ ) {
 		g_hash_table_insert(res,StrDup(table[i].str),(gpointer)table[i].token);
 	}
+LEAVE_FUNC;
 	return	(res);
 }
 
@@ -379,21 +383,29 @@ Lex(
 
 ENTER_FUNC;
   retry:
-	SKIP_SPACE(in);
-	if		(  c  ==  '#'  ) {
-		ReadyDirective(in);
-		goto	retry;
-	}
-	if		(  c  ==  '!'  ) {
-		while	(  ( c = GetChar(in) )  !=  '\n'  );
-		in->cLine ++;
-		goto	retry;
-	}
 	if		(  in->Symbol  !=  NULL  ) {
 		xfree(in->Symbol);
 		in->Symbol = NULL;
 	}
+	SKIP_SPACE(in);
 	switch	(c) {
+	  case	'#':
+		ReadyDirective(in);
+		goto	retry;
+		break;
+	  case	'/':
+		if		(  GetChar(in)  !=  '*'  ) {
+			UnGetChar(in);
+			in->Token = '/';
+		} else {
+			do {
+				while	(  ( c = GetChar(in) )  !=  '*'  );
+				if		(  ( c = GetChar(in) )  ==  '/'  )	break;
+				UnGetChar(in);
+			}	while	(TRUE);
+			goto	retry;
+		}
+		break;
 	  case	'"':
 		p = GetPos(in);
 		while	(  ( c = GetChar(in) )  !=  '"'  ) {

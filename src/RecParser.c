@@ -76,6 +76,7 @@ static	TokenTable	tokentable[] = {
 	{	"float"		,T_FLOAT	},
 	{	"input"		,T_INPUT	},
 	{	"int"		,T_INT		},
+	{	"integer"	,T_INT		},
 	{	"number"	,T_NUMBER	},
 	{	"output"	,T_OUTPUT	},
 	{	"text"		,T_TEXT		},

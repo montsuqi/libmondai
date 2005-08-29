@@ -1,3 +1,7 @@
+2005-08-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): /* */タイプのコメントに対応した。行頭!のコメントの対応をやめた
+
 2005-07-28  Noboru Saitou  <noborus@netlab.jp>
 
 	* src/Lex.c (DropLexInfo): fix memory leak

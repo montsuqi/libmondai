@@ -20,9 +20,10 @@ Boston, MA 02111-1307, USA.
 */
 
 /*
+*/
 #define	DEBUG
 #define	TRACE
-*/
+
 #define	MAIN
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -75,13 +76,14 @@ BuildMcpArea(
 	char	buff[SIZE_BUFF];
 	char	*p;
 
+ENTER_FUNC;
 	p = buff;
 	p += sprintf(p,	"mcparea	{");
 	p += sprintf(p,		"func varchar(%d);",SIZE_FUNC);
 	p += sprintf(p,		"obj object;");
 	p += sprintf(p,		"bin binary;");
 	p += sprintf(p,		"rc int;");
-	p += sprintf(p,		"dc	{");
+	p += sprintf(p,		"dc	{	/* .... */ ");
 	p += sprintf(p,			"window	 varchar(%d);",4);
 	p += sprintf(p,			"widget	 varchar(%d);",SIZE_NAME);
 	p += sprintf(p,			"event	 varchar(%d);",SIZE_EVENT);
@@ -116,7 +118,7 @@ BuildMcpArea(
 	p += sprintf(p,	"};");
 
 	value = RecParseValueMem(buff,NULL);
-
+LEAVE_FUNC;
 	return	(value);
 }
 

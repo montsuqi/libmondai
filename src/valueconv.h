@@ -76,7 +76,7 @@ extern	void		DestroyConvOpt(CONVOPT *opt);
 #define	ConvSetUseName(opt,f)		(opt)->fName = (f)
 #define	ConvSetAppendix(opt,a)		(opt)->appendix = (a)
 
-#define	ConvCodeset(opt)			(((opt) == NULL)? NULL : ((opt)->codeset))
+#define	ConvCodeset(opt)			(((opt) == NULL) ? "utf-8" : ((opt)->codeset))
 
 #endif
 
