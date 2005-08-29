@@ -151,7 +151,6 @@ ENTER_FUNC;
 	info = (*in);
 	if		(  info->fn  !=  NULL  ) {
 		xfree(info->fn);
-	} else {
 		xfree(info->body);
 	}
 	if		(  info->Symbol  !=  NULL  ) {

@@ -96,7 +96,7 @@ ENTER_FUNC;
 	p += sprintf(p,		"};");
 	p += sprintf(p,		"db	{");
 	p += sprintf(p,			"path	{");
-	p += sprintf(p,				"blocks	int;");
+	p += sprintf(p,				"blocks	integer;");
 	p += sprintf(p,				"rname	int;");
 	p += sprintf(p,				"pname	int;");
 	p += sprintf(p,				"name	varchar(%d);",SIZE_NAME);
