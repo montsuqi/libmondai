@@ -125,7 +125,7 @@ PushLexInfoMem(
 
 ENTER_FUNC;
 	info = New(CURFILE);
-	info->fn = StrDup("** memory **");
+	info->fn = NULL;
 	info->cLine = 1;
 	info->body = mem;
 	info->size = strlen(mem)+1;
@@ -149,7 +149,11 @@ DropLexInfo(
 
 ENTER_FUNC;
 	info = (*in);
-	xfree(info->fn);
+	if		(  info->fn  !=  NULL  ) {
+		xfree(info->fn);
+	} else {
+		xfree(info->body);
+	}
 	if		(  info->Symbol  !=  NULL  ) {
 		xfree(info->Symbol);
 	}
@@ -174,7 +178,9 @@ ENTER_FUNC;
 	}
 	back = in->ftop;
 	in->body = GetFile(back->fn,&size);
-	xfree(in->fn);
+	if		(  in->fn  !=  NULL  ) {
+		xfree(in->fn);
+	}
 	in->fn = back->fn;
 	in->pos = back->pos;
 	in->size = size;
