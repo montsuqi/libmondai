@@ -68,10 +68,10 @@ ENTER_FUNC;
 			ret = (char *)xmalloc(sb.st_size+1);
 			memcpy(ret,p,sb.st_size);
 			munmap(p,sb.st_size);
-			close(fd);
 			ret[sb.st_size] = 0;
 			*size = sb.st_size;
 		}
+		close(fd);
 	}
 LEAVE_FUNC;
 	return	(ret);
