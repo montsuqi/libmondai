@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.
 #include	<ctype.h>
 #ifdef	WITH_I18N
 #include	<iconv.h>
+#include	<wchar.h>
 #endif
 #include	<math.h>
 
@@ -430,6 +431,21 @@ LBS_ToString(
 		RewindLBS(lbs);
 		strncpy(ret,LBS_Body(lbs),LBS_Size(lbs));
 		ret[LBS_Size(lbs)] = 0;
+	} else {
+		ret = NULL;
+	}
+	return	(ret);
+}
+
+extern	wchar_t	*
+LBS_ToWcs(
+	LargeByteString	*lbs)
+{
+	wchar_t	*ret;
+
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (wchar_t *)xmalloc(LBS_Size(lbs) + sizeof(wchar_t));
+		wcscpy(ret,LBS_Body(lbs));
 	} else {
 		ret = NULL;
 	}

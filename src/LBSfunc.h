@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.
 
 #include	"types.h"
 #include	<stdint.h>
+#include	<wchar.h>
 
 typedef	struct {
 	size_t	ptr
@@ -52,6 +53,7 @@ extern	int				LBS_FetchInt(LargeByteString *lbs);
 extern	uint64_t		LBS_Fetch64(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
+extern	wchar_t			*LBS_ToWcs(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			(((LargeByteString *)lbs)->ptr = 0)

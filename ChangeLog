@@ -1,3 +1,7 @@
+2005-09-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (PushLexInfoStream): streamのパーズ
+
 2005-08-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Lex.c (Lex): /* */タイプのコメントに対応した。行頭!のコメントの対応をやめた

@@ -41,8 +41,11 @@ Boston, MA 02111-1307, USA.
 typedef	struct	INCFILE_S	{
 	struct	INCFILE_S	*next;
 	size_t				pos;
+	size_t				size;
 	int					cLine;
+	FILE				*fp;
 	char				*fn;
+	char				*body;
 }	INCFILE;
 
 typedef	struct	_CURFILE_S {
@@ -50,8 +53,10 @@ typedef	struct	_CURFILE_S {
 	GHashTable			*Reserved;
 	INCFILE	*ftop;
 	char	*body;
+	int		back;
 	size_t	pos;
 	size_t	size;
+	FILE	*fp;
 	char	*fn;
 	char	*path;
 	int		cLine;
@@ -76,8 +81,10 @@ typedef	struct	{
 GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
-extern	CURFILE			*PushLexInfo(CURFILE *in, char *name, char *path, GHashTable *res);
-extern	CURFILE			*PushLexInfoMem(CURFILE *in, char *mem, char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfo(CURFILE *in, char *name, char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoMem(CURFILE *in, char *mem, char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp, char *path, GHashTable *res);
+
 extern	void			DropLexInfo(CURFILE **in);
 extern	void			LexInit(void);
 extern	GHashTable		*MakeReservedTable(TokenTable *table);
