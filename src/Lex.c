@@ -290,7 +290,8 @@ CheckReserved(
 }
 
 #define	SKIP_SPACE(in)		\
-	while	(  isspace( c = GetChar(in) ) ) {	\
+	while	(	(  ( c = GetChar(in) )  !=  0  )	\
+			&&	(  isspace(c)                  ) )	{	\
 		if		(  c  ==  '\n'  ) {				\
 			c = ' ';							\
 			(in)->cLine ++;						\
@@ -317,16 +318,18 @@ GetChar(
 		in->back = -1;
 	} else {
 		if		(  in->pos  ==  in->size  ) {
-			c = EOF;
+			c = 0;
 		} else
 		if		(  in->fp  !=  NULL  ) {
-			c = fgetc(in->fp);
+			if		(  ( c = fgetc(in->fp) )  <  0  ) {
+				c = 0;
+			}
 		} else {
 			if		(  in->body  ==  NULL  ) {
 				fprintf(stderr,"nulpo!\n");
 			}
 			if		(  ( c = in->body[in->pos] )  ==  0  ) {
-				c = EOF;
+				c = 0;
 			}
 		}
 	}
@@ -346,7 +349,8 @@ ENTER_FUNC;
 	SKIP_SPACE(in);
 	p = buff;
 	*p ++ = c;
-	while	(  !isspace(c = GetChar(in))  ) {
+	while	(	( ( c = GetChar(in) )  !=  0  )
+			&&	(  !isspace(c)                ) ) {
 		*p ++ = c;
 	}
 	*p = 0;
@@ -373,7 +377,9 @@ ENTER_FUNC;
 		}
 	} else {
 		UnGetChar(in,c);
-		while	(  ( c = GetChar(in) )  !=  '\n'  );
+		while	(	(  ( c = GetChar(in) )  !=  0  )
+				&&	(  c  !=  '\n'  ) );
+		UnGetChar(in,c);
 		in->cLine ++;
 	}
 LEAVE_FUNC;
@@ -551,7 +557,7 @@ ENTER_FUNC;
 			}
 		} else {
 			switch	(c) {
-			  case	EOF:
+			  case	0:
 				if		(  in->ftop  ==  NULL  )	{
 					in->Token = T_EOF;
 				} else {
