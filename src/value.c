@@ -72,6 +72,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ValueStringLength(ret) = 0;
 		ValueStringSize(ret) = 0;
 		ValueString(ret) = NULL;
@@ -162,6 +163,7 @@ FreeValueStruct(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			if		(  ValueString(val)  !=  NULL  ) {
 				xfree(ValueString(val));
 			}
@@ -389,6 +391,15 @@ DumpValueStruct(
 			}
 			fflush(stdout);
 			break;
+		  case	GL_TYPE_SYMBOL:
+			printf("symbol(%d,%d)",ValueStringLength(val),ValueStringSize(val));
+			fflush(stdout);
+			if		(  !IS_VALUE_NIL(val)  ) {
+				printf(" [%s]\n",ValueStringPointer(val));
+				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
+			}
+			fflush(stdout);
+			break;
 		  case	GL_TYPE_BINARY:
 			printf("binary(%d,%d)",ValueByteLength(val),ValueByteSize(val));
 			fflush(stdout);
@@ -476,6 +487,7 @@ ENTER_FUNC;
 		memclear(ValueString(value),ValueStringSize(value));
 		break;
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		if		(  ValueString(value)  !=  NULL  ) {
 			xfree(ValueString(value));
 		}
@@ -536,6 +548,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		if		(  ValueStringSize(from)  >  ValueStringSize(to)  ) {
 			if		(  ValueString(to)  !=  NULL  ) {
 				xfree(ValueString(to));
@@ -613,6 +626,7 @@ ENTER_FUNC;
 		ValueObject(vd) = ValueObject(vs);
 		break;
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -668,6 +682,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_OBJECT:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -755,6 +770,7 @@ ENTER_FUNC;
 		}
 		break;
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -827,6 +843,8 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			if		(  ValueStringSize(vl)  ==  ValueStringSize(vr)  ) {
 				ret = TRUE;
 			} else {
@@ -925,6 +943,7 @@ DuplicateValue(
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		if		(  ValueStringSize(template)  >  0  ) {
 			ValueString(p) = (char *)xmalloc(ValueStringSize(template));
 			memclear(ValueString(p),ValueStringSize(template));

@@ -62,6 +62,7 @@ ValueToInteger(
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret = StrToInt(ValueString(val),strlen(ValueString(val)));
 		break;
 	  case	GL_TYPE_NUMBER:
@@ -98,6 +99,7 @@ ValueToFloat(
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret = atof(ValueString(val));
 		break;
 	  case	GL_TYPE_NUMBER:
@@ -132,6 +134,7 @@ ValueToFixed(
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret = NewFixed(0,0);
 		IntToFixed(ret,StrToInt(ValueString(val),strlen(ValueString(val))));
 		break;
@@ -172,6 +175,7 @@ ValueToBool(
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret = ( *ValueString(val) == 'T' ) ? TRUE : FALSE;
 		break;
 	  case	GL_TYPE_NUMBER:
@@ -232,6 +236,7 @@ ENTER_FUNC;
 			}
 			break;
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			if		(  ValueString(val)  !=  NULL  ) {
 				if		(  codeset  ==  NULL  ) {
 					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
@@ -412,6 +417,7 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			len = slen;
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
@@ -631,6 +637,7 @@ SetValueInteger(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			sprintf(str,"%d",ival);
 			rc = SetValueString(val,str,NULL);
 			break;
@@ -690,6 +697,7 @@ SetValueChar(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			sprintf(str,"%c",cval);
 			rc = SetValueString(val,str,NULL);
 			break;
@@ -744,6 +752,7 @@ SetValueBool(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			sprintf(str,"%s",(bval ? "TRUE" : "FALSE"));
 			rc = SetValueString(val,str,NULL);
 			break;
@@ -790,6 +799,7 @@ SetValueFloat(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			sprintf(str,"%f",fval);
 			rc = SetValueString(val,str,NULL);
 			break;
@@ -835,6 +845,7 @@ SetValueFixed(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			rc = SetValueString(val,fval->sval,NULL);
 			break;
 		  case	GL_TYPE_NUMBER:
@@ -890,6 +901,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			if		(  *str  ==  CHAR_NIL  ) {
 				ValueIsNil(val);
 			} else {
@@ -1007,6 +1019,7 @@ ENTER_FUNC;
 			  case	GL_TYPE_VARCHAR:
 			  case	GL_TYPE_DBCODE:
 			  case	GL_TYPE_TEXT:
+			  case	GL_TYPE_SYMBOL:
 				if		(  ValueString(val)  !=  NULL  ) {
 					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
 					strcpy(ValueStrBody(val),ValueString(val));

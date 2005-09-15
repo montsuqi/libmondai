@@ -112,6 +112,7 @@ _CSV_UnPackValue(
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
@@ -220,6 +221,7 @@ __CSV_PackValue(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_BOOL:
@@ -341,6 +343,7 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_BOOL:
@@ -493,6 +496,7 @@ SQL_UnPackValue(
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
@@ -579,6 +583,14 @@ _SQL_PackValue(
 			SQL_Encode(ValueToString(value,ConvCodeset(opt)),buff);
 			p += sprintf(p,"\'%s\'",buff);
 			break;
+		  case	GL_TYPE_SYMBOL:
+			if		(  !*fFirst  ) {
+				p += sprintf(p,",");
+			}
+			*fFirst = FALSE;
+			SQL_Encode(ValueToString(value,ConvCodeset(opt)),buff);
+			p += sprintf(p,"%s",buff);
+			break;
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
@@ -651,6 +663,25 @@ ENTER_FUNC;
 	  case	GL_TYPE_OBJECT:
 		str = ValueToString(value,ConvCodeset(opt));
 		ret = 2;
+		for	( ; *str != 0 ; str ++ ) {
+			switch	(*str) {
+			  case	'\'':
+			  case	'\\':
+				ret += 2;
+				break;
+			  default:
+				ret ++;
+				break;
+			}
+		}
+		if		(  !*fFirst  ) {
+			ret ++;
+		}
+		*fFirst = FALSE;
+		break;
+	  case	GL_TYPE_SYMBOL:
+		str = ValueToString(value,ConvCodeset(opt));
+		ret = 0;
 		for	( ; *str != 0 ; str ++ ) {
 			switch	(*str) {
 			  case	'\'':
@@ -848,6 +879,7 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 			q = p;
@@ -934,10 +966,11 @@ ENTER_FUNC;
 					  case	GL_TYPE_VARCHAR:
 					  case	GL_TYPE_DBCODE:
 					  case	GL_TYPE_TEXT:
+					  case	GL_TYPE_SYMBOL:
 					  case	GL_TYPE_BYTE:
 					  case	GL_TYPE_BINARY:
 						*p = 0;
-printf("buff = [%s]\n",q);
+						dbgprintf("buff = [%s]\n",q);
 						len = DecodeString(opt,buff,q);
 						buff[len] = 0;
 						SetValueString(e,buff,ConvCodeset(opt));
@@ -1009,6 +1042,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 			str = ValueToString(value,ConvCodeset(opt));
@@ -1095,6 +1129,7 @@ dbgmsg(">_RFC822_SizeValue");
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
 		ret = 1;
@@ -1249,6 +1284,7 @@ _CGI_PackValue(
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_BOOL:
@@ -1321,6 +1357,7 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_BOOL:

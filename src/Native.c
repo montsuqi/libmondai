@@ -128,6 +128,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			size = *(size_t *)p;
 			p += sizeof(size_t);
 			len = *(size_t *)p;
@@ -146,7 +147,8 @@ ENTER_FUNC;
 			} else {
 				p ++;
 			}
-			if		(  ValueType(value)  ==  GL_TYPE_TEXT  ) {
+			if		(	(  ValueType(value)  ==  GL_TYPE_TEXT    )
+					||	(  ValueType(value)  ==  GL_TYPE_SYMBOL  ) ) {
 				ValueStringLength(value) = len;
 			}
 			break;
@@ -249,6 +251,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			size = ValueStringSize(value);
 			*(size_t *)p = size;
 			p += sizeof(size_t);
@@ -335,6 +338,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret += sizeof(size_t) + sizeof(size_t) + 1;
 		if		(  ValueString(val)  !=  NULL  )	{
 			ret += strlen(ValueString(val));
@@ -417,6 +421,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			esize += ValueStringSize(value);
 			esize += sizeof(size_t);
 			esize += sizeof(size_t);
@@ -513,6 +518,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			size = ValueStringSize(value);
 			*(size_t *)p = size;
 			p += sizeof(size_t);
@@ -650,6 +656,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			size = *(size_t *)p;
 			p += sizeof(size_t);
 			len = *(size_t *)p;

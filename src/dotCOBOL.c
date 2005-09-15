@@ -125,6 +125,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			xfree(str);
 			break;
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			str = (char *)xmalloc((opt->textsize+1)*sizeof(char));
 			memcpy(str,p,opt->textsize);
 			str[opt->textsize] = 0;
@@ -211,6 +212,7 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
 			memclear(p,opt->textsize);
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
 			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
@@ -278,6 +280,7 @@ dbgmsg(">dotCOBOL_SizeValue");
 		break;
 	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
 		ret = opt->textsize;
 		break;
 	  case	GL_TYPE_BYTE:

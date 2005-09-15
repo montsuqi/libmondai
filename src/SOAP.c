@@ -241,6 +241,7 @@ ENTER_FUNC;
 			  case	GL_TYPE_VARCHAR:
 			  case	GL_TYPE_DBCODE:
 			  case	GL_TYPE_TEXT:
+			  case	GL_TYPE_SYMBOL:
 				if		(	(  XMLNodeType(node)  ==      XML_ELEMENT_NODE  )
 						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
 						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
@@ -706,6 +707,7 @@ ENTER_FUNC;
 				break;
 			  case	GL_TYPE_CHAR:
 			  case	GL_TYPE_TEXT:
+			  case	GL_TYPE_SYMBOL:
 			  case	GL_TYPE_VARCHAR:
 			  case	GL_TYPE_DBCODE:
 				if		(  IS_VALUE_NIL(value)  ) {

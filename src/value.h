@@ -106,6 +106,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_VARCHAR			(PacketDataType)0x23
 #define	GL_TYPE_DBCODE			(PacketDataType)0x24
 #define	GL_TYPE_POINTER			(PacketDataType)0x25
+#define	GL_TYPE_SYMBOL			(PacketDataType)0x26
 
 #define	GL_TYPE_BITS			(PacketDataType)0x30
 #define	GL_TYPE_BYTE			(PacketDataType)0x31

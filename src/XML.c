@@ -254,6 +254,9 @@ ENTER_FUNC;
 				  case	GL_TYPE_TEXT:
 					p += sprintf(p,"\"text\" size=\"%d\"",ValueStringLength(value));
 					break;
+				  case	GL_TYPE_SYMBOL:
+					p += sprintf(p,"\"symbol\" size=\"%d\"",ValueStringLength(value));
+					break;
 				  case	GL_TYPE_DBCODE:
 					p += sprintf(p,"\"dbcode\" size=\"%d\"",ValueStringLength(value));
 					break;
@@ -386,6 +389,9 @@ ENTER_FUNC;
 				break;
 			  case	GL_TYPE_TEXT:
 				p += sprintf(p,"\"text\" size=\"%d\"",ValueStringLength(value));
+				break;
+			  case	GL_TYPE_SYMBOL:
+				p += sprintf(p,"\"symbol\" size=\"%d\"",ValueStringLength(value));
 				break;
 			  case	GL_TYPE_DBCODE:
 				p += sprintf(p,"\"dbcode\" size=\"%d\"",ValueStringLength(value));
@@ -1348,6 +1354,10 @@ _XML_SizeValue1(
 					size += sprintf(buff,
 									"\"text\" size=\"%d\"",ValueStringLength(value));
 					break;
+				  case	GL_TYPE_SYMBOL:
+					size += sprintf(buff,
+									"\"symbol\" size=\"%d\"",ValueStringLength(value));
+					break;
 				  case	GL_TYPE_DBCODE:
 					size += sprintf(buff,
 									"\"dbcode\" size=\"%d\"",ValueStringLength(value));
@@ -1479,6 +1489,10 @@ _XML_SizeValue2(
 			  case	GL_TYPE_TEXT:
 				size += sprintf(buff,
 								"\"text\" size=\"%d\"",ValueStringLength(value));
+				break;
+			  case	GL_TYPE_SYMBOL:
+				size += sprintf(buff,
+								"\"symbol\" size=\"%d\"",ValueStringLength(value));
 				break;
 			  case	GL_TYPE_DBCODE:
 				size += sprintf(buff,
