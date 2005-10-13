@@ -97,4 +97,14 @@ extern	void			SetReserved(CURFILE *in, GHashTable *res);
 #define	ComInt			(in->Int)
 #define	ComSymbol		(in->Symbol)
 
+#define	ParError(msg)				{			\
+	in->fError=TRUE;							\
+	printf("%s:%d:%s\n",in->fn,in->cLine,msg);	\
+}
+#define	ParErrorPrintf(...)	{					\
+	in->fError=TRUE;							\
+	printf("%s:%d:",in->fn,in->cLine);			\
+	printf(__VA_ARGS__);						\
+}
+
 #endif

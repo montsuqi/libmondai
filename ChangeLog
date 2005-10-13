@@ -1,3 +1,7 @@
+2005-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.h (ParErrorPrintf): パーザ用のエラーメッセージ出力
+
 2005-10-13  Noboru Saitou  <noborus@netlab.jp>
 
         * Ver 1.2.5 release
