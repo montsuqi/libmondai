@@ -29,7 +29,7 @@ libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
 	-export-dynamic
 
-CFLAGS	=	-O2 -Wall -Wunused -Wredundant-decls -Werror
+AM_CFLAGS	=	-O2 -Wall -Wunused -Wredundant-decls -Werror
 
 EXTRA_DIST = libmondai.h.in
 
