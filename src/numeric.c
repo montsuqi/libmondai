@@ -27,6 +27,12 @@ This code came from Postgres, so this code is lisenced under BSDL.
 #include	"memory_v.h"
 #include	"monstring.h"
 
+#ifdef	DEBUG
+#define	dbgmsg(s)	printf("%s:%d:%s\n",__FILE__,__LINE__,(s));fflush(stdout)
+#else
+#define	dbgmsg(s)
+#endif
+
 /* ----------
  * Uncomment the following to enable compilation of dump_numeric()
  * and dump_var() and to get a dump of any result produced by make_result().
@@ -2774,7 +2780,6 @@ NumericFormat(
 		fMinus = FALSE;
 		str = NumericOutput(num);
 	}
-
 	fPSign = FALSE;
 	fNSign = FALSE;
 	fSup = FALSE;
@@ -2815,8 +2820,8 @@ NumericFormat(
 	qq = q - 1;
 	q ++;
 
+	p = buf + len;
 	if		(  fSmall  ) {
-		p = buf + len;
 		f = format + len;
 		while	(  *f  !=  0  ) {
 			switch	(*f) {

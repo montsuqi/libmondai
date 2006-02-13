@@ -685,7 +685,6 @@ SetValueChar(
 {
 	Bool	rc;
 	char	str[SIZE_NUMBUF+1];
-	Bool	fMinus;
 
 	if		(  val  ==  NULL  ) {
 		fprintf(stderr,"no ValueStruct\n");
@@ -702,16 +701,7 @@ SetValueChar(
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_NUMBER:
-			if		(  cval  <  0  ) {
-				cval = - cval;
-				fMinus = TRUE;
-			} else {
-				fMinus = FALSE;
-			}
 			sprintf(str,"%0*d",ValueFixedLength(val),(int)cval);
-			if		(  fMinus  ) {
-				*str |= 0x40;
-			}
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_INT:
