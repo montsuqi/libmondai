@@ -1,3 +1,7 @@
+2006-02-16  Noboru Saitou  <noborus@netlab.jp>
+
+	* Ver 1.2.6 release
+
 2006-02-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/numeric.c (NumericFormat): フォーマット文字列を破壊するバグを取った
