@@ -1,23 +1,23 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
-Copyright (C) 2004-2005 Ogochan.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2006 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -98,11 +98,19 @@ _CSV_UnPackValue(
 						&&	(  *p  !=  ','  ) ) p ++;
 				p ++;
 			} else {
-				while	(	(  *p  !=  0    )
-						&&	(  *p  !=  ','  ) ) {
+				while	(	(  *p  !=  0     )
+						&&	(  *p  !=  ','   )
+						&&	(  *p  !=  '\n'  )
+						&&	(  *p  !=  '\r'  ) ) {
 					*q ++ = *p ++;
 				}
-				p ++;
+				if		(  *p  ==  ','  ) {
+					p ++;
+				} else
+				if		(	(  p[0]  ==  '\r'  )
+						&&	(  p[1]  ==  '\n'  ) ) {
+					p ++;
+				}
 			}
 			*q = 0;
 		}
@@ -290,7 +298,7 @@ CSV1_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff)+1);
+	return	(_CSV_PackValue(opt,p,value,TRUE,TRUE,FALSE,buff));
 }
 
 extern	size_t
@@ -300,7 +308,7 @@ CSV2_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff)+1);
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
 extern	size_t
@@ -310,7 +318,7 @@ CSV3_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff)+1);
+	return	(_CSV_PackValue(opt,p,value,FALSE,TRUE,FALSE,buff));
 }
 
 extern	size_t
@@ -320,7 +328,7 @@ CSVE_PackValue(
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
-	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff)+1);
+	return	(_CSV_PackValue(opt,p,value,FALSE,FALSE,FALSE,buff));
 }
 
 static	size_t

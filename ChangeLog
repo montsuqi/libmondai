@@ -1,3 +1,7 @@
+2006-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c (_CSV_UnPackValue): Excel形式のバグを取った。改行コードの違いにrobustにした
+
 2006-02-16  Noboru Saitou  <noborus@netlab.jp>
 
 	* Ver 1.2.6 release
