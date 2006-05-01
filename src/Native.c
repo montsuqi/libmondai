@@ -1,23 +1,23 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 2001-2004 Ogochan & JMA (Japan Medical Association).
-Copyright (C) 2005 Ogochan.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2001-2004 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2005-2006 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -153,8 +153,8 @@ ENTER_FUNC;
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObject(value) = *(MonObjectType *)p;
-			p += sizeof(MonObjectType);
+			ValueObjectId(value) = *(MonObjectType *)p;
+			p += sizeof(ValueObject(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArraySize(value) = *(size_t *)p;
@@ -267,8 +267,8 @@ ENTER_FUNC;
 			}
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(MonObjectType *)p = ValueObject(value);
-			p += sizeof(MonObjectType);
+			*(MonObjectType *)p = ValueObjectId(value);
+			p += sizeof(ValueObject(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			*(size_t *)p = ValueArraySize(value);
@@ -432,6 +432,10 @@ ENTER_FUNC;
 		  case	GL_TYPE_OBJECT:
 			if		(  fData  ) {
 				esize += sizeof(MonObjectType);
+				esize += sizeof(size_t);
+				if		(  ValueObjectFile(value)  !=  NULL  ) {
+					esize += strlen(ValueObjectFile(value)) + 1;
+				}
 			}
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -531,8 +535,18 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			if		(  fData  ) {
-				*(MonObjectType *)p = ValueObject(value);
+				*(MonObjectType *)p = ValueObjectId(value);
 				p += sizeof(MonObjectType);
+				if		(  ValueObjectFile(value)  !=  NULL  ) {
+					size = strlen(ValueObjectFile(value)) + 1;
+					*(size_t *)p = size;
+					p += sizeof(size_t);
+					strcpy(p,ValueObjectFile(value));
+					p += size;
+				} else {
+					*(size_t *)p = 0;
+					p += sizeof(size_t);
+				}
 			}
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -674,10 +688,20 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			if		(  fData  ) {
-				ValueObject(value) = *(MonObjectType *)p;
+				ValueObjectId(value) = *(MonObjectType *)p;
 				p += sizeof(MonObjectType);
+				if		(  ( size = *(size_t *)p )  >  0  ) {
+					p += sizeof(size_t);
+					ValueObjectFile(value) = (char *)xmalloc(size);
+					strcpy(ValueObjectFile(value),p);
+					p += size;
+				} else {
+					p += sizeof(size_t);
+					ValueObjectFile(value) = NULL;
+				}
 			} else {
-				ValueObject(value) = (MonObjectType)0;
+				ValueObjectId(value) = (MonObjectType)0;
+				ValueObjectFile(value) = NULL;
 			}
 			break;
 		  case	GL_TYPE_ARRAY:

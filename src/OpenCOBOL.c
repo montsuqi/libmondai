@@ -1,23 +1,23 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
-Copyright (C) 2004-2005 Ogochan.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2006 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -113,8 +113,8 @@ ENTER_FUNC;
 			p ++;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObject(value) = *(MonObjectType *)p;
-			p += sizeof(MonObjectType);
+			ValueObjectId(value) = *(MonObjectType *)p;
+			p += sizeof(ValueObject(value));
 			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(ValueByte(value),p,ValueByteLength(value));
@@ -235,8 +235,8 @@ ENTER_FUNC;
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_OBJECT:
-			*(MonObjectType *)p = ValueObject(value);
-			p += sizeof(MonObjectType);
+			*(MonObjectType *)p = ValueObjectId(value);
+			p += sizeof(ValueObject(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -292,7 +292,7 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret = sizeof(MonObjectType);
+		ret = sizeof(ValueObject(value));
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  value->body.ArrayData.count  >  0  ) {

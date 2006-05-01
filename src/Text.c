@@ -636,7 +636,7 @@ SQL_PackValue(
 	size_t	ret;
 
 	fFirst = TRUE;
-	ret = _SQL_PackValue(opt,p,value,&fFirst);
+	ret = _SQL_PackValue(opt,p,value,&fFirst) + 1;
 
 	return	(ret);
 }
@@ -745,7 +745,7 @@ SQL_SizeValue(
 	size_t		ret;
 
 	fFirst = TRUE;
-	ret = _SQL_SizeValue(opt,value,&fFirst);
+	ret = _SQL_SizeValue(opt,value,&fFirst) + 1;
 	return	(ret);
 }
 

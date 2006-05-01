@@ -1,16 +1,16 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 1998 Jan Wieck.
-Copyright (C) 2001-2005 Ogochan.
-
-Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
-multiple-precision math library, most recently published as Algorithm
-786: Multiple-Precision Complex Arithmetic and Functions, ACM
-Transactions on Mathematical Software, Vol. 24, No. 4, December 1998,
-pages 359-367.
-
-This code came from Postgres, so this code is lisenced under BSDL.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 1998 Jan Wieck.
+ * Copyright (C) 2001-2006 Ogochan.
+ * 
+ * Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
+ * multiple-precision math library, most recently published as Algorithm
+ * 786: Multiple-Precision Complex Arithmetic and Functions, ACM
+ * Transactions on Mathematical Software, Vol. 24, No. 4, December 1998,
+ * pages 359-367.
+ * 
+ * This code came from Postgres, so this code is lisenced under BSDL.
+ */
 
 #ifndef _NUMERIC_H_
 #define _NUMERIC_H_

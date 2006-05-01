@@ -1,3 +1,15 @@
+2006-05-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: Objectの構造を変更した
+
+2006-04-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (MakeReservedTable): 予約語は大文字小文字の区別をやめた
+
+2006-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/numeric.c (NumericFormatToPrecision): 変数文字として$を有効にした
+
 2006-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Text.c (_CSV_UnPackValue): Excel形式のバグを取った。改行コードの違いにrobustにした

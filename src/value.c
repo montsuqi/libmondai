@@ -1,23 +1,23 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
-Copyright (C) 2005 Ogochan.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2005-2006 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -92,7 +92,8 @@ ENTER_FUNC;
 		ValueBool(ret) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObject(ret) = 0;
+		ValueObjectId(ret) = 0;
+		ValueObjectFile(ret) = NULL;
 		break;
 	  case	GL_TYPE_RECORD:
 		ValueRecordSize(ret) = 0;
@@ -171,6 +172,11 @@ FreeValueStruct(
 		  case	GL_TYPE_NUMBER:
 			if		(  ValueFixedBody(val)  !=  NULL  ) {
 				xfree(ValueFixedBody(val));
+			}
+			break;
+		  case	GL_TYPE_OBJECT:
+			if		(  ValueObjectFile(val)  !=  NULL  ) {
+				xfree(ValueObjectFile(val));
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -409,7 +415,11 @@ DumpValueStruct(
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_OBJECT:
-			printf("object [%lld]\n",ValueObject(val));
+			printf("object [%lld:",ValueObjectId(val));
+			if		(  ValueObjectFile(val)  !=  NULL  ) {
+				printf("%s",ValueObjectFile(val));
+			}
+			printf("]\n");
 			fflush(stdout);
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -478,7 +488,11 @@ ENTER_FUNC;
 		ValueBool(value) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObject(value) = 0;
+		ValueObjectId(value) = 0;
+		if		(  ValueObjectFile(value)  !=  NULL  ) {
+			xfree(ValueObjectFile(value));
+		}
+		ValueObjectFile(value) = NULL;
 		break;
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_CHAR:
@@ -623,7 +637,11 @@ ENTER_FUNC;
 		ValueBool(vd) = ValueBool(vs);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObject(vd) = ValueObject(vs);
+		ValueObjectId(vd) = ValueObjectId(vs);
+		if		(  ValueObjectFile(vd)  !=  NULL  ) {
+			xfree(ValueObjectFile(vd));
+		}
+		ValueObjectFile(vd) = StrDup(ValueObjectFile(vs));
 		break;
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_SYMBOL:
@@ -986,7 +1004,8 @@ DuplicateValue(
 		ValueBool(p) = FALSE;
 		break;
 	  case	GL_TYPE_OBJECT:
-		ValueObject(p) = 0;
+		ValueObjectId(p) = 0;
+		ValueObjectFile(p) = NULL;
 		break;
 	  case	GL_TYPE_RECORD:
 		/*	share name table		*/

@@ -1,18 +1,20 @@
 /*
-An exact numeric data type for the Postgres database system
-
-Original coding 1998, Jan Wieck.
-Copyright (C) 2001-2005 Ogochan.
-
-Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
-multiple-precision math library, most recently published as Algorithm
-786: Multiple-Precision Complex Arithmetic and Functions, ACM
-Transactions on Mathematical Software, Vol. 24, No. 4, December 1998,
-pages 359-367.
-
-This code came from Postgres, so this code is lisenced under BSDL.
+ * An exact numeric data type for the Postgres database system
+ * 
+ * Original coding 1998, Jan Wieck.
+ * Copyright (C) 2001-2006 Ogochan.
+ * 
+ * Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
+ * multiple-precision math library, most recently published as Algorithm
+ * 786: Multiple-Precision Complex Arithmetic and Functions, ACM
+ * Transactions on Mathematical Software, Vol. 24, No. 4, December 1998,
+ * pages 359-367.
+ * 
+ * This code came from Postgres, so this code is lisenced under BSDL.
+ */
+/*
+#define	DEBUG
 */
-
 #include	<ctype.h>
 #include	<float.h>
 #include	<math.h>
@@ -2788,6 +2790,7 @@ NumericFormat(
 	for	( f = format ; *f != '\0' ; f ++ )	{
 		switch	(*f)	{
 		  case	'\\':
+		  case	'$':
 			sup = *f;
 			fSup = TRUE;
 			break;
@@ -2886,6 +2889,7 @@ NumericFormat(
 				  case	'-':
 				  case	'+':
 				  case	'\\':
+				  case	'$':
 				  case	',':
 					if		(	(  fNSign  )
 							 &&	(  fMinus  ) )	{
@@ -2921,6 +2925,7 @@ NumericFormat(
 				switch	(*f)	{
 				  case	'Z':
 				  case	'\\':
+				  case	'$':
 				  case	'9':
 				  case	'-':
 				  case	'+':
@@ -2963,6 +2968,7 @@ NumericFormatToPrecision(
 				}
 			  case	'Z':
 			  case	'\\':
+			  case	'$':
 			  case	'9':
 				if		(  fSmall  ) {
 					(*scale) ++;

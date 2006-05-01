@@ -1,23 +1,23 @@
 /*
-libmondai -- MONTSUQI data access library
-Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
-Copyright (C) 2005 Ogochan.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-*/
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2005-2006 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -78,7 +78,7 @@ ValueToInteger(
 		ret = ValueBool(val);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret = ValueObject(val);
+		ret = ValueObjectId(val);
 		break;
 	  default:
 		ret = 0;
@@ -299,7 +299,7 @@ ENTER_FUNC;
 			LBS_EmitString(ValueStr(val),work);
 			break;
 		  case	GL_TYPE_OBJECT:
-			sprintf(work,"%lld",ValueObject(val));
+			sprintf(work,"%lld",ValueObjectId(val));
 			LBS_EmitString(ValueStr(val),work);
 			break;
 		  case	GL_TYPE_FLOAT:
@@ -530,10 +530,10 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObject(val) = 0;
+			ValueObjectId(val) = 0;
 			for	( ; slen > 0 ; slen -- )	{
 				if		(  isdigit(*str)  )	{
-					ValueObject(val) = ValueObject(val) * 10 + ( *str - '0' );
+					ValueObjectId(val) = ValueObjectId(val) * 10 + ( *str - '0' );
 				}
 				str ++;
 			}
@@ -667,7 +667,7 @@ SetValueInteger(
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObject(val) = ival;
+			ValueObjectId(val) = ival;
 			rc = TRUE;
 			break;
 		  default:
@@ -954,9 +954,9 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			if		(  str  !=  NULL  ) {
-				memcpy(&ValueObject(val),str,sizeof(MonObjectType));
+				memcpy(&ValueObjectId(val),str,sizeof(MonObjectType));
 			} else {
-				ValueObject(val) = 0;
+				ValueObjectId(val) = 0;
 			}
 			rc = TRUE;
 			break;
