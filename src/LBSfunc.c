@@ -421,6 +421,22 @@ LBS_EmitFix(
 	}
 }
 
+extern	byte	*
+LBS_ToByte(
+	LargeByteString	*lbs)
+{
+	byte	*ret;
+
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (byte *)xmalloc(LBS_Size(lbs));
+		RewindLBS(lbs);
+		memcpy(ret,LBS_Body(lbs),LBS_Size(lbs));
+	} else {
+		ret = NULL;
+	}
+	return	(ret);
+}
+
 extern	char	*
 LBS_ToString(
 	LargeByteString	*lbs)

@@ -154,7 +154,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			ValueObjectId(value) = *(MonObjectType *)p;
-			p += sizeof(ValueObject(value));
+			p += sizeof(ValueObjectId(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArraySize(value) = *(size_t *)p;
@@ -268,7 +268,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			*(MonObjectType *)p = ValueObjectId(value);
-			p += sizeof(ValueObject(value));
+			p += sizeof(ValueObjectId(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			*(size_t *)p = ValueArraySize(value);

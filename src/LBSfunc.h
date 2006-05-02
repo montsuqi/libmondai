@@ -55,6 +55,7 @@ extern	uint64_t		LBS_Fetch64(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	wchar_t			*LBS_ToWcs(LargeByteString *lbs);
+extern	byte			*LBS_ToByte(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			(((LargeByteString *)lbs)->ptr = 0)
