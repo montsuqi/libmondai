@@ -1,3 +1,7 @@
+2006-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (_NativeRestoreValue): externにした
+
 2006-05-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/value.h: Objectの構造を変更した

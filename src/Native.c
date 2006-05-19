@@ -385,6 +385,9 @@ ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		esize += sizeof(PacketDataType);
 		esize += sizeof(ValueAttributeType);
+		if		(  IS_VALUE_NIL(value)  ) {
+			fData = FALSE;
+		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			if		(  fData  ) {
@@ -479,6 +482,9 @@ ENTER_FUNC;
 		p += sizeof(PacketDataType);
 		*(ValueAttributeType *)p = ValueAttribute(value);
 		p += sizeof(ValueAttributeType);
+		if		(  IS_VALUE_NIL(value)  ) {
+			fData = FALSE;
+		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			if		(  fData  ) {
@@ -577,7 +583,7 @@ LEAVE_FUNC;
 	return	(p-pp);
 }
 
-static	size_t
+extern	size_t
 _NativeRestoreValue(
 	byte		*p,
 	ValueStruct	**ret,
@@ -602,6 +608,9 @@ ENTER_FUNC;
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		ValueAttribute(value) = attr;
+		if		(  IS_VALUE_NIL(value)  ) {
+			fData = FALSE;
+		}
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			if		(  fData  ) {

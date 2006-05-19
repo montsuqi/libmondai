@@ -571,7 +571,7 @@ ENTER_FUNC;
 			ValueString(to) = (char *)xmalloc(ValueStringSize(to));
 		}
 		memclear(ValueString(to),ValueStringSize(to));
-		memcpy(ValueString(to),ValueString(from),ValueStringSize(to));
+		memcpy(ValueString(to),ValueString(from),ValueStringSize(from));
 		if		(  ValueType(to)  ==  GL_TYPE_TEXT  ) {
 			ValueStringLength(to) = ValueStringLength(from);
 		}
@@ -586,7 +586,7 @@ ENTER_FUNC;
 			ValueByte(to) = (char *)xmalloc(ValueByteSize(to));
 		}
 		memclear(ValueByte(to),ValueByteSize(to));
-		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(to));
+		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(from));
 		if		(  ValueType(to)  ==  GL_TYPE_BINARY  ) {
 			ValueByteLength(to) = ValueByteLength(from);
 		}
@@ -625,6 +625,7 @@ CopyValue(
 ENTER_FUNC;
 	if		(  vd  ==  NULL  )	return;
 	if		(  vs  ==  NULL  )	return;
+	if		(  IS_VALUE_NIL(vs)  )	return;
 	ValueAttribute(vd) = ValueAttribute(vs);
 	switch	(vs->type) {
 	  case	GL_TYPE_INT:

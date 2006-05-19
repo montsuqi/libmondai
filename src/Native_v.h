@@ -30,5 +30,6 @@ extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 extern	ValueStruct	*NativeRestoreValue(byte *p, Bool fData);
 extern	size_t	NativeSaveValue(byte *p, ValueStruct *value, Bool fData);
 extern	size_t	NativeSaveSize(ValueStruct *value, Bool fData);
+extern	size_t	_NativeRestoreValue(byte *p, ValueStruct **ret, Bool fData);
 
 #endif

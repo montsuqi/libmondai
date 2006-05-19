@@ -219,7 +219,7 @@ main(
 			p += isize + strlen(infunc->bsep);
 			osize = outfunc->PackValue(outopt,out,rec);
 			if		(  strlen(outfunc->bsep)  >  0  ) {
-				fwrite(out,osize-strlen(outfunc->bsep),1,stdout);
+				fwrite(out,osize,1,stdout);
 				fwrite(outfunc->bsep,strlen(outfunc->bsep),1,stdout);
 			} else {
 				fwrite(out,osize,1,stdout);
