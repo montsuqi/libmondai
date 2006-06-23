@@ -1,3 +1,7 @@
+2006-06-23  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_EmitStringCodeset): 高速化
+
 2006-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/Native.c (_NativeRestoreValue): externにした

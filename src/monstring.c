@@ -18,8 +18,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/*
 #define	TRACE
+#define	DEBUG
+/*
 */
 
 #ifdef HAVE_CONFIG_H

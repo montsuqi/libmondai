@@ -32,6 +32,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<errno.h>
 #ifdef	WITH_I18N
 #include	<iconv.h>
 #include	<wchar.h>
@@ -281,7 +282,6 @@ LBS_EmitString(
 	}
 }
 
-#define	SIZE_CONV		10
 extern	void
 LBS_EmitStringCodeset(
 	LargeByteString	*lbs,
@@ -293,52 +293,43 @@ LBS_EmitStringCodeset(
 #ifdef	WITH_I18N
 	char	*oc
 	,		*istr;
-	char	obuff[SIZE_CONV];
-	size_t	count
-	,		sib
-	,		sob
-	,		csize;
+	char	*obuff;
+	size_t	sib
+		,	sob
+		,	obsize;
 	iconv_t	cd;
 	int		rc;
-	int		i;
 #endif
+	size_t	size;
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
 #ifdef	WITH_I18N
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
-			while	(  isize  >  0  )	{
-				count = 1;
-				do {
-					istr = str;
-					sib = count;
-					oc = obuff;
-					sob = SIZE_CONV;
-					if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  <  0  ) {
-						count ++;
-					}
-				}	while	(	(  rc            !=  0  )
-							&&	(  str[count-1]  !=  0  ) );
-				csize = SIZE_CONV - sob;
-				for	( oc = obuff , i = 0 ; i < csize ; i ++, oc ++ ) {
-					LBS_Emit(lbs,*oc);
-				}
-				str += count;
-				isize -= count;
-				osize -= csize;
-				if		(  osize  ==  0  )	break;
+			obsize = osize;
+			while	(TRUE) {
+				istr = str;
+				sib = isize;
+				obuff = (char *)xmalloc(obsize);
+				oc = obuff;
+				sob = obsize;
+				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	break;
+				if		(  errno  ==  E2BIG  ) {
+					xfree(obuff);
+					obsize *= 2;
+				} else
+					break;
 			}
+			LBS_ReserveSize(lbs,strlen(obuff)+1,FALSE);
+			strcpy(LBS_Body(lbs),obuff);
+			xfree(obuff);
 			iconv_close(cd);
 		} else {
 #endif
-			while	(  isize  >  0  )	{
-				LBS_Emit(lbs,*str);
-				str ++;
-				isize --;
-				osize --;
-				if		(  osize  ==  0  )	break;
-			}
+			size = isize < osize ? isize : osize;
+			LBS_ReserveSize(lbs,size+1,FALSE);
+			memcpy(LBS_Body(lbs),str,size);
 #ifdef	WITH_I18N
 		}
 #endif

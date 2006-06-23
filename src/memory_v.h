@@ -58,11 +58,21 @@ extern	void	SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
 #ifndef	New
 #define	New(s)				(s *)xmalloc(sizeof(s))
 #endif
+
+#ifdef	DEBUG
 #ifndef	xmalloc
 #define	xmalloc(s)			_xmalloc((s),__FILE__,__LINE__)
 #endif
 #ifndef	xfree
-#define	xfree(p)			_xfree((p),__FILE__,__LINE__)
+#define	xfree(p)			_xfree((p),__FILE__,__LINE__),(p) = NULL
+#endif
+#else
+#ifndef	xmalloc
+#define	xmalloc(s)			malloc(s)
+#endif
+#ifndef	xfree
+#define	xfree(p)			free(p),(p) = NULL
+#endif
 #endif
 
 #endif
