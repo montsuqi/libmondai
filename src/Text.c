@@ -451,15 +451,13 @@ SQL_UnPackValue(
 	ValueStruct	*value)
 {
 	int		i;
-	char	*q;
 	byte	*pp;
-	char	buff[SIZE_BUFF];
+	LargeByteString	*lbs;
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
+		lbs = NewLBS();
 		if		(  !IS_VALUE_STRUCTURE(value)  ) {
-			memset(buff,0,SIZE_BUFF);
-			q = buff;
 			if		(  *p  ==  '\''  ) {
 				p ++;
 				while	(  *p  !=  0  ) {
@@ -468,22 +466,22 @@ SQL_UnPackValue(
 					switch	(*p) {
 					  case	'\\':
 						p ++;
-						*q = *p;
+						LBS_EmitChar(lbs,*p);
 						break;
 					  case	'\'':
 						p ++;
 						switch	(*p) {
 						  case	'\'':
-							*q = '\'';
+							LBS_EmitChar(lbs,'\'');
 							break;
 						  default:
 							break;
 						}
 					  default:
-						*q = *p ++;
+						LBS_EmitChar(lbs,*p);
+						p ++;
 						break;
 					}
-					q ++;
 				}
 				p ++;
 				while	(	(  *p  !=  0    )
@@ -492,12 +490,12 @@ SQL_UnPackValue(
 			} else {
 				while	(	(  *p  !=  0    )
 						&&	(  *p  !=  ','  ) ) {
-					*q ++ = *p ++;
+					LBS_EmitChar(lbs,*p ++);
 				}
 				p ++;
 			}
-			*q = 0;
 		}
+		LBS_EmitEnd(lbs);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_BOOL:
@@ -511,7 +509,7 @@ SQL_UnPackValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_OBJECT:
-			SetValueString(value,buff,ConvCodeset(opt));
+			SetValueString(value,(char *)LBS_Body(lbs),ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -528,6 +526,7 @@ SQL_UnPackValue(
 			printf("invalid flag [%d]\n",value->type);
 			break;
 		}
+		FreeLBS(lbs);
 	}
 	return	(p-pp);
 }
@@ -535,24 +534,24 @@ SQL_UnPackValue(
 static	void
 SQL_Encode(
 	char	*str,
-	char	*p)
+	LargeByteString	*lbs)
 {
 	for	( ; *str != 0 ; str ++ ) {
 		switch	(*str) {
 		  case	'\'':
-			*p ++ = '\\';
-			*p ++ = '\'';
+			LBS_EmitChar(lbs,'\\');
+			LBS_EmitChar(lbs,'\'');
 			break;
 		  case	'\\':
-			*p ++ = '\\';
-			*p ++ = '\\';
+			LBS_EmitChar(lbs,'\\');
+			LBS_EmitChar(lbs,'\\');
 			break;
 		  default:
-			*p ++ = *str;
+			LBS_EmitChar(lbs,*str);
 			break;
 		}
 	}
-	*p = 0;
+	LBS_EmitEnd(lbs);
 }
 
 static	size_t
@@ -564,7 +563,7 @@ _SQL_PackValue(
 {
 	int		i;
 	char	*pp;
-	char	buff[SIZE_BUFF];
+	LargeByteString	*lbs;
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -575,10 +574,9 @@ _SQL_PackValue(
 			*fFirst = FALSE;
 			p += sprintf(p,"null");
 		} else
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
@@ -588,16 +586,21 @@ _SQL_PackValue(
 				p += sprintf(p,",");
 			}
 			*fFirst = FALSE;
-			SQL_Encode(ValueToString(value,ConvCodeset(opt)),buff);
-			p += sprintf(p,"\'%s\'",buff);
+			lbs = NewLBS();
+			SQL_Encode(ValueToString(value,ConvCodeset(opt)),lbs);
+			p += sprintf(p,"\'%s\'",(char *)LBS_Body(lbs));
+			FreeLBS(lbs);
 			break;
+		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_SYMBOL:
 			if		(  !*fFirst  ) {
 				p += sprintf(p,",");
 			}
 			*fFirst = FALSE;
-			SQL_Encode(ValueToString(value,ConvCodeset(opt)),buff);
-			p += sprintf(p,"%s",buff);
+			lbs = NewLBS();
+			SQL_Encode(ValueToString(value,ConvCodeset(opt)),lbs);
+			p += sprintf(p,"%s",(char *)LBS_Body(lbs));
+			FreeLBS(lbs);
 			break;
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
@@ -663,7 +666,6 @@ ENTER_FUNC;
 	switch	(value->type) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
@@ -687,6 +689,7 @@ ENTER_FUNC;
 		}
 		*fFirst = FALSE;
 		break;
+	  case	GL_TYPE_DBCODE:
 	  case	GL_TYPE_SYMBOL:
 		str = ValueToString(value,ConvCodeset(opt));
 		ret = 0;

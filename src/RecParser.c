@@ -187,6 +187,7 @@ ENTER_FUNC;
 	  case	T_NUMBER:
 	  case	T_DBCODE:
 	  case	T_VARCHAR:
+	  case	T_TEXT:
 		token = ComToken;
 		size = 0;
 		ssize = 0;
@@ -237,6 +238,8 @@ ENTER_FUNC;
 			  case	T_NUMBER:
 				value = NewValue(GL_TYPE_NUMBER);
 				break;
+			  case	T_TEXT:
+				value = NewValue(GL_TYPE_TEXT);
 			  default:
 				break;
 			}
@@ -267,10 +270,6 @@ ENTER_FUNC;
 		break;
 	  case	T_BINARY:
 		value = NewValue(GL_TYPE_BINARY);
-		GetSymbol;
-		break;
-	  case	T_TEXT:
-		value = NewValue(GL_TYPE_TEXT);
 		GetSymbol;
 		break;
 	  case	T_INT:

@@ -374,7 +374,6 @@ ENTER_FUNC;
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				len = ValueStringLength(val) < slen ?
@@ -416,6 +415,7 @@ ENTER_FUNC;
 #endif
 			rc = TRUE;
 			break;
+		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			len = slen;

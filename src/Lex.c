@@ -292,7 +292,8 @@ CheckReserved(
 
 #define	SKIP_SPACE(in)		\
 	while	(	(  ( c = GetChar(in) )  !=  0  )	\
-			&&	(  isspace(c)                  ) )	{	\
+			&&	(	(  isspace(c)              )	\
+				||	(  iscntrl(c)              ) ) )	{	\
 		if		(  c  ==  '\n'  ) {				\
 			c = ' ';							\
 			(in)->cLine ++;						\
@@ -422,6 +423,7 @@ Lex(
 	char	*p;
 	char	buff[SIZE_BUFF];
 	Bool	fDot;
+	LargeByteString	*lbs;
 
 ENTER_FUNC;
   retry:
@@ -449,29 +451,31 @@ ENTER_FUNC;
 		}
 		break;
 	  case	'"':
-		p = buff;
+		lbs = NewLBS();
 		while	(  ( c = GetChar(in) )  !=  '"'  ) {
 			if		(  c  ==  '\\'  ) {
 				c = GetChar(in);
 			}
-			*p ++ = c;
+			LBS_EmitChar(lbs,c);
 		}
-		*p = 0;
-		in->Symbol = (char *)xmalloc(strlen(buff)+1);
-		strcpy(in->Symbol,buff);
+		LBS_EmitEnd(lbs);
+		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
+		strcpy(in->Symbol,LBS_Body(lbs));
+		FreeLBS(lbs);
 		in->Token = T_SCONST;
 		break;
 	  case	'\'':
-		p = buff;
+		lbs = NewLBS();
 		while	(  ( c = GetChar(in) )  !=  '\''  ) {
 			if		(  c  ==  '\\'  ) {
 				c = GetChar(in);
 			}
-			*p ++ = c;
+			LBS_EmitChar(lbs,c);
 		}
-		*p = 0;
-		in->Symbol = (char *)xmalloc(strlen(buff)+1);
-		strcpy(in->Symbol,buff);
+		LBS_EmitEnd(lbs);
+		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
+		strcpy(in->Symbol,LBS_Body(lbs));
+		FreeLBS(lbs);
 		in->Token = T_SCONST;
 		break;
 	  case	'<':

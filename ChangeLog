@@ -1,26 +1,36 @@
+2006-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): æ–‡å­—åˆ—é•·ã®åˆ¶é™ã‚’ãªãã—ãŸ(å¤šåˆ†é‡ã„)
+
+2006-06-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c (SetValueStringWithLength): dbcodeÄtextÄˆ?Ä¸Ğ·Ä¤Ä‹Ä·Ä¿
+
+	* src/RecParser.c: textÄ‹Ä¹Äµ?ÄªÄ‡?Ä«Ä¨Ä¦Ä‹Ä·Ä¿
+
 2006-06-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_EmitStringCodeset): ¹âÂ®²½
+	* src/LBSfunc.c (LBS_EmitStringCodeset): ?Â®?
 
 2006-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (_NativeRestoreValue): extern¤Ë¤·¤¿
+	* src/Native.c (_NativeRestoreValue): externÄ‹Ä·Ä¿
 
 2006-05-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: Object¤Î¹½Â¤¤òÊÑ¹¹¤·¤¿
+	* src/value.h: ObjectÄ?Â¤Ä²??Ä·Ä¿
 
 2006-04-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (MakeReservedTable): Í½Ìó¸ì¤ÏÂçÊ¸»ú¾®Ê¸»ú¤Î¶èÊÌ¤ò¤ä¤á¤¿
+	* src/Lex.c (MakeReservedTable): ???ÄÂ§?????Ä?ÊŒÄ²Ä¤Ä¡Ä¿
 
 2006-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numeric.c (NumericFormatToPrecision): ÊÑ¿ôÊ¸»ú¤È¤·¤Æ$¤òÍ­¸ú¤Ë¤·¤¿
+	* src/numeric.c (NumericFormatToPrecision): ????ÄˆÄ·Ä†$Ä²??Ä‹Ä·Ä¿
 
 2006-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c (_CSV_UnPackValue): Excel·Á¼°¤Î¥Ğ¥°¤ò¼è¤Ã¤¿¡£²ş¹Ô¥³¡¼¥É¤Î°ã¤¤¤Ërobust¤Ë¤·¤¿
+	* src/Text.c (_CSV_UnPackValue): Excel??ÄÅÅ°Ä²?ÄƒÄ¿c??Å³|Å‰ÄĞ£Ä¤Ä‹robustÄ‹Ä·Ä¿
 
 2006-02-16  Noboru Saitou  <noborus@netlab.jp>
 
@@ -28,11 +38,11 @@
 
 2006-02-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numeric.c (NumericFormat): ¥Õ¥©¡¼¥Ş¥Ã¥ÈÊ¸»úÎó¤òÇË²õ¤¹¤ë¥Ğ¥°¤ò¼è¤Ã¤¿
+	* src/numeric.c (NumericFormat): Å•Å©|ÅÅƒÅˆ??Î³Ä²??Ä¹Ä«ÅÅ°Ä²?ÄƒÄ¿
 
 2005-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.h (ParErrorPrintf): ¥Ñ¡¼¥¶ÍÑ¤Î¥¨¥é¡¼¥á¥Ã¥»¡¼¥¸½ĞÎÏ
+	* src/Lex.h (ParErrorPrintf): Å‘|Å¶?ÄÅ¨Å©|Å¡ÅƒÅ»|Å¸?Î
 
 2005-10-13  Noboru Saitou  <noborus@netlab.jp>
 
@@ -40,15 +50,15 @@
 
 2005-09-15  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: GL_TYPE_SYMBOL¤òÄÉ²Ã(""¤Ç³ç¤é¤ì¤Ê¤¤Ê¸»úÎó)
+	* src/value.h: GL_TYPE_SYMBOLÄ²Ä‰?(""Ä‡?Ä©?ÄŠÄ¤??Î³)
 
 2005-09-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (PushLexInfoStream): stream¤Î¥Ñ¡¼¥º
+	* src/Lex.c (PushLexInfoStream): streamÄÅ‘|Åº
 
 2005-08-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (Lex): /* */¥¿¥¤¥×¤Î¥³¥á¥ó¥È¤ËÂĞ±ş¤·¤¿¡£¹ÔÆ¬!¤Î¥³¥á¥ó¥È¤ÎÂĞ±ş¤ò¤ä¤á¤¿
+	* src/Lex.c (Lex): /* */?Å¤Å—ÄÅ³Å¡Å³ÅˆÄ‹??Ä·Ä¿c??!ÄÅ³Å¡Å³ÅˆÄ??Ä²Ä¤Ä¡Ä¿
 
 2005-07-28  Noboru Saitou  <noborus@netlab.jp>
 
@@ -56,14 +66,14 @@
 
 2005-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SOAP.c (SOAP_LoadValue): XML¤«¤éValueStruct¤òºî¤ë½èÍı
+	* src/SOAP.c (SOAP_LoadValue): XMLÄ«Ä©ValueStructÄ²?Ä«??
 
-	* src/value.c (ValueAddArrayItem): ÄÉ²Ã
+	* src/value.c (ValueAddArrayItem): Ä‰?
 
 2005-06-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* COPYING: Ãøºî¸¢É½¼¨¤òÄ¾¤¹(¼ÂÂÖ¤ÈÂç¤­¤¯¤«¤±Î¥¤ì¤Æ¤¤¤¿¤¿¤á¡£¤½¤â¤½
-	¤âLGPL¤Ç¤Ê¤­¤ã¤¤¤±¤Ê¤«¤Ã¤¿¤Ï¤º¤¬GPL¤Ë¤Ê¤Ã¤Æ¤¤¤¿)
+	* COPYING: Ã¸????Ä²Ä¾Ä¹(??ÄˆÂ§?Ä¯Ä«Ä±Î¥?Ä†Ä¤Ä¿Ä¿Ä¡cÄ½Ä¢Ä½
+	Ä¢LGPLÄ‡ÄŠ?Ä£Ä¤Ä±ÄŠÄ«ÄƒÄ¿ÄÄº?GPLÄ‹ÄŠÄƒÄ†Ä¤Ä¿)
 
 2005-06-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -71,30 +81,30 @@
 
 2005-03-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (AssignValue): ÂåÆşÍÑ´Ø¿ô
+	* src/value.c (AssignValue): Â¥????
 
 2005-01-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (Lex): Ì¾Á°¤ÎÀèÆ¬¤Ë_¤òµö¤¹
+	* src/Lex.c (Lex): ?pÄ(?Ä‹_Ä²?Ä¹
 
 2005-01-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c: CSV, SQL¤Ë¤ÏËöÈø¤Î\0¤â¿ô¤ËÆş¤ì¤ë
+	* src/Text.c: CSV, SQLÄ‹Ä??Ä\0Ä¢?Ä‹??Ä«
 
 2005-01-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (CompareValue): ValueStruct¤ÎÃÍ¤ÎÈæ³Ó´Ø¿ô
+	* src/value.c (CompareValue): ValueStructÄÃÄ????
 
 2004-12-22  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: Ê¸»úÎó¤ÎÊİÂ¸¤ÎÌµÂÌ¤ò¤Ê¤¯¤·¤¿
+	* src/Native.c: ??Î³Ä?Â¸Ä??Ä²ÄŠÄ¯Ä·Ä¿
 
 2004-12-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/RecParser.c (ParValueDefine): ¹½Â¤ÂÎ¤ÎÉ½¸½¤Ë'()'¤â»È¤¦¤è¤¦¤Ë¤·¤¿
+	* src/RecParser.c (ParValueDefine): ?Â¤?Ä??Ä‹'()'Ä¢?Ä¦Ä¨Ä¦Ä‹Ä·Ä¿
 
-	* src/Lex.c (DropLexInfo): ¥á¥â¥ê¤Î¾¡¼ê¤Ê²òÊü¤ò¤ä¤á¤¿(¤à¤·¤í¥Ğ¥°¤Î¸µ)
-	¤Ş¤¿¡¢path¤Ë¾¡¼ê¤Ë'.'¤ò»ØÄê¤¹¤ë¤Î¤â¤ä¤á¤¿
+	* src/Lex.c (DropLexInfo): Å¡Å¢ÅªÄ??ÄŠ??Ä²Ä¤Ä¡Ä¿(Ä Ä·?ÅÅ°Ä?)
+	ÄÄ¿bpathÄ‹??Ä‹'.'Ä²?ÄªÄ¹Ä«ÄÄ¢Ä¤Ä¡Ä¿
 	
 2004-12-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -104,37 +114,37 @@
 
 2004-11-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (DuplicateValue): Ì¾Á°É½¤âÊ£À½¤¹¤ë¤è¤¦¤Ë¤·¤¿¡£¤³¤Î¤¿
-	¤á¡¢FreeValueStruct¤Ç¤ÏÌ¾Á°É½¤â²òÊü¤¹¤ë¤è¤¦¤Ë¤·¤¿
+	* src/value.c (DuplicateValue): ?p?Ä¢?=Ä¹Ä«Ä¨Ä¦Ä‹Ä·Ä¿cÄ³ÄÄ¿
+	Ä¡bFreeValueStructÄ‡Ä?p?Ä¢??Ä¹Ä«Ä¨Ä¦Ä‹Ä·Ä¿
 
-	* src/fixed.c: value.h¤«¤éÊ¬Î¥
+	* src/fixed.c: value.hÄ«Ä©?Î¥
 
 2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (NativeSaveValue): NativePackValue¤ÎÎ®ÍÑ¤ò¤ä¤á¡¢·¿¾ğÊó¤Î¤ßÊİÂ¸
+	* src/Native.c (NativeSaveValue): NativePackValueÄÎ®?Ä²Ä¤Ä¡b???ÄÄŸ?Â¸
 
-	* src/XML.c: alias¤Î½èÍıÄÉ²Ã
+	* src/XML.c: aliasÄ??Ä‰?
 
 2004-10-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: ValueStruct¤Îload/store
+	* src/Native.c: ValueStructÄload/store
 
 2004-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c (DD_ParseValueMem): ¥á¥â¥êÎÎ°è¤Îparse
+	* src/DDparser.c (DD_ParseValueMem): Å¡Å¢ÅªÎĞ¨Äparse
 
-	* src/Lex.c (GetFile): mmap¤ò»È¤¦¤è¤¦¤Ë¤·¤¿(¥á¥â¥êÎÎ°è¤òparse¤¹¤ë
-	µ¡Ç½¤òÉÕ²Ã¤¹¤ë¤¿¤á)
+	* src/Lex.c (GetFile): mmapÄ²?Ä¦Ä¨Ä¦Ä‹Ä·Ä¿(Å¡Å¢ÅªÎĞ¨Ä²parseÄ¹Ä«
+	??Ä²??Ä¹Ä«Ä¿Ä¡)
 
 2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: MonObjectType¤òlonglong¤Ë¤·¤¿
+	* src/value.h: MonObjectTypeÄ²longlongÄ‹Ä·Ä¿
 
 2004-06-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/option.c (GetOption): ¥Ø¥ë¥×¥á¥Ã¥»¡¼¥¸¤Î¶¯²½(¤Á¤ç¤Ã¤È¤À¤±)
+	* tools/option.c (GetOption): Å˜Å«Å—Å¡ÅƒÅ»|Å¸Ä??(ÄÄ§ÄƒÄˆÄ€Ä±)
 
-	* tools/monconv.c: ¥Ç¡¼¥¿ÊÑ´¹¥Ä¡¼¥ë(libmondai¤Î¥µ¥İ¡¼¥È¤·¤Æ¤¤¤ë·Á¼°´Ö¤ÎÁê¸ßÊÑ´¹)
+	* tools/monconv.c: Å‡|???Å„|Å«(libmondaiÄÅµÅ|ÅˆÄ·Ä†Ä¤Ä«???Äj???)
 
 2004-04-26  Kouji SHIMIZU  <shimizu@netlab.jp>
 
@@ -156,137 +166,137 @@
 
 2004-04-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c: NULL¤Î»ş¤ËÂĞ±ş
+	* src/LBSfunc.c: NULLÄ?Ä‹??
 
 2004-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/libmondai.h.in: É¸½à¤Î¥Ø¥Ã¥À¤ÈÌ¾Á°¤Î¾×ÆÍ¤·¤Æ¤¤¤ë¥Ø¥Ã¥À¤ÎÌ¾Á°ÊÑ¹¹
+	* src/libmondai.h.in: ??ÄÅ˜ÅƒÅ€Äˆ?pÄ??Ä·Ä†Ä¤Ä«Å˜ÅƒÅ€Ä?p??
 
 2004-02-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (PushLexInfo): ¥¨¥é¡¼¥á¥Ã¥»¡¼¥¸¤ÎÀ©¸æ¤ò²ÄÇ½¤Ë¤·¤¿
+	* src/Lex.c (PushLexInfo): Å¨Å©|Å¡ÅƒÅ»|Å¸Ä)?Ä²??Ä‹Ä·Ä¿
 
 2004-02-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: nil object¤Î½èÍı¤òÄÉ²Ã
+	* src/Native.c: nil objectÄ??Ä²Ä‰?
 
 2004-02-02  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/dotCOBOL.c (dotCOBOL_PackValue), src/OpenCOBOL.c (OpenCOBOL_PackValue): 
-	Ê¸»úÎó¤ÇNIL¤Î»ş¤Ë¤ÏLOW-VALUE¤ò¥»¥Ã¥È¤¹¤ë¤è¤¦¤Ë¤·¤¿
+	??Î³Ä‡NILÄ?Ä‹ÄLOW-VALUEÄ²Å»ÅƒÅˆÄ¹Ä«Ä¨Ä¦Ä‹Ä·Ä¿
 
 2004-01-31  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: °ú¿ô¥Á¥§¥Ã¥¯¤Î¶¯²½
+	* src/getset.c: Ğº?ÅÅ§ÅƒÅ¯Ä??
 
 2004-01-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (GetItemLongName): ¥ï¡¼¥Ë¥ó¥°¤òºï¤Ã¤¿(¼ÙËâ)
+	* src/value.c (GetItemLongName): Å¯|Å‹Å³Å°Ä²?ÄƒÄ¿(??)
 
 2004-01-11  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.cÂ¾: binary·¿ÄÉ²Ã
+	* src/value.cÂ¾: binary?Ä‰?
 
 2003-12-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: MonObjectType¤ÎÊ¸»úÎóÉ½¸½¤òÊÑ¤¨¤¿
+	* src/getset.c: MonObjectTypeÄ??Î³??Ä²?Ä¨Ä¿
 
 2003-12-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/monstring.c (StrToInt): Éä¹æÉÕ¤­¿ô»ú¤Î½èÍı¤òÄ¾¤·¤¿
+	* src/monstring.c (StrToInt): É¤?????Ä??Ä²Ä¾Ä·Ä¿
 
 2003-12-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/libmondai.h.in: libmondai¤¬¹ñºİ²½¤µ¤ì¤Æ¤¤¤ë¤«¤É¤¦¤«¤Î¥Õ¥é¥°¤òºî¤Ã¤¿
+	* src/libmondai.h.in: libmondai????Äµ?Ä†Ä¤Ä«Ä«Ä‰Ä¦Ä«ÄÅ•Å©Å°Ä²?ÄƒÄ¿
 
 2003-12-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (GetRecordItem): value¤¬NULL¤Î»ş¤Î½èÍı
+	* src/value.c (GetRecordItem): value?NULLÄ?Ä??
 
 2003-12-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: SIZE_SQL¤ÎÄêµÁ¤ò½ü¤¤¤¿(ÉÔÍ×)
+	* src/value.h: SIZE_SQLÄÄª?Ä²?Ä¤Ä¿(É”?)
 
 2003-12-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/memory.c : È¾¼«Æ°GCÉÕ¤­¥á¥â¥ê´ÉÍı¥ë¡¼¥Á¥ó
+	* src/memory.c : ??Æ°GC??Å¡Å¢Åª??Å«|ÅÅ³
 
 2003-12-10  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* Pack/UnPack¤ÎÉüµ¢ÃÍ¤òsize_t¤Ë¤·¤¿
+	* Pack/UnPackÄ??ÃÄ²size_tÄ‹Ä·Ä¿
 
 2003-12-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (NativePackValue): Ê¸»úÎóËöÈø¤Î\0¤Ïpack¤Î»ş¤Ë´Ş¤á¤ë¡£
-	¸Î¤Ëunpack¤Î»ş¤Ïstrcpy¤ÇÎÉ¤¤
+	* src/Native.c (NativePackValue): ??Î³??Ä\0ÄpackÄ?Ä‹?Ä¡Ä«c
+	?Ä‹unpackÄ?ÄstrcpyÄ‡Î‰Ä¤
 
 2003-11-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/memory.[ch]: misc.[ch]¤«¤éÊ¬Î¥
+	* src/memory.[ch]: misc.[ch]Ä«Ä©?Î¥
 
 2003-11-10  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/others.[ch]: Port, URL´Ø·¸¤Î´Ø¿ô¤òºï½ü(¤³¤Î¥é¥¤¥Ö¥é¥ê¤Ç¤Ï¥µ
-	¥İ¡¼¥È¤·¤Ê¤¤)
+	* src/others.[ch]: Port, URL??Ä??Ä²??(Ä³ÄÅ©Å¤Å–Å©ÅªÄ‡ÄÅµ
+	Å|ÅˆÄ·ÄŠÄ¤)
 
 2003-10-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: ¥á¥ó¥ĞÌ¾ÊÑ¹¹(¤¢¤Ş¤ê¤«¤³¤è¤¯¤Ê¤«¤Ã¤¿¤Î¤Ç)
+	* src/valueconv.h: Å¡Å³Å???(Ä¢ÄÄªÄ«Ä³Ä¨Ä¯ÄŠÄ«ÄƒÄ¿ÄÄ‡)
 
 2003-10-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* Ver 1.2.0 ¥ê¥ê¡¼¥¹(°ÂÄêÈÇ¥Ö¥é¥ó¥ÁºîÀ®)
+	* Ver 1.2.0 ÅªÅª|Å¹(Ğ‚Äª?Å–Å©Å³Å?.)
 
-	* src/testvalue.c: ÄÉ²Ã
+	* src/testvalue.c: Ä‰?
 
-	* src/getset.c (SetValueChar): ÄÉ²Ã
+	* src/getset.c (SetValueChar): Ä‰?
 
-	* src/Native.c : Ê¸»úÎó¤Îpack/unpack¤Î·Á¼°¤òÊÑ¹¹¤·¤¿
+	* src/Native.c : ??Î³Äpack/unpackÄ??Ä²??Ä·Ä¿
 
 2003-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: ¥¿¥°Ì¾¤òÊÑ¿ôÌ¾¤Ë°ìÃ×¤µ¤»¤¿·Á¼°
+	* src/XML.c: ?Å°?Ä²???Ä‹Ğ¬Ã—ÄµÄ»Ä¿??
 
 2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: libxml¤Ë¤âÂĞ±ş
+	* src/XML.c: libxmlÄ‹Ä¢??
 
-	* src/getset.c : Ê¸»úÎó¤ÎÁàºî¤òrobust¤Ë¤·¤¿(¥Ğ¥Ã¥Õ¥¡¥µ¥¤¥º¤ò°Õ¼±¤·
-	¤Æ¤¤¤ëÉôÊ¬¤ò¸º¤é¤·¤Ä¤Ä¤¢¤ë)
+	* src/getset.c : ??Î³Ä`?Ä²robustÄ‹Ä·Ä¿(ÅÅƒÅ•Å¡ÅµÅ¤ÅºÄ²Ğ•?Ä·
+	Ä†Ä¤Ä«??Ä²?Ä©Ä·Ä„Ä„Ä¢Ä«)
 
 2003-10-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: Ê¸»úÎó¤Î³ÊÇ¼ÊıË¡¤òÊÑ¹¹¤·¤¿(ÆâÉôÉ½¸½¤òÄ¾ÀÜÊİÂ¸¤¹¤ë
-	¤¿¤á)
+	* src/Native.c: ??Î³Ä????Ä²??Ä·Ä¿(????Ä²Ä¾?Â¸Ä¹Ä«
+	Ä¿Ä¡)
 
 2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: ValueStruct¤ÎÆâÉôÉ½¸½¤òutf8¤Ë¤·¤Æ¡¢Á´ÂÎÅª¤Ë¹ñºİ²½
-	¤·¤¿(utf8¤¬¥Ù¥¹¥È¤«¤É¤¦¤«¤Ï¤ï¤«¤é¤¸)
+	* src/getset.c: ValueStructÄ????Ä²utf8Ä‹Ä·Ä†bt?ÅªÄ‹???
+	Ä·Ä¿(utf8?Å™Å¹ÅˆÄ«Ä‰Ä¦Ä«ÄÄ¯Ä«Ä©Ä¸)
 
-	* src/debug.h: panda¤Î¤â¤Î¤ò»ı¤Ã¤ÆÍè¤¿(¤³¤Ã¤Á¤¬ÊØÍø)
+	* src/debug.h: pandaÄÄ¢ÄÄ²?ÄƒÄ†?Ä¿(Ä³ÄƒÄ???)
 
 2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: ¥Õ¥£¡¼¥ë¥ÉÌ¾ÊÑ¹¹(XML¤Î¥¿¥°¤Ë¹ç¤ï¤»¤ë)
+	* src/valueconv.h: Å•Å£|Å«Å‰???(XMLÄ?Å°Ä‹?Ä¯Ä»Ä«)
 
 2003-10-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: XML¤ËÂĞ±ş(Àµ¤·¤¯Æ°¤¯¤¬ÉÔ´°Á´)
+	* src/XML.c: XMLÄ‹??(5Ä·Ä¯Æ°Ä¯?É”?t)
 
 2003-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c : Æ±°ì¥ì¥³¡¼¥ÉÆâ¤Ç¤Îalias¤ò¤ä¤á¤¿¡£ÊÀ³²¤ÎÊı¤¬Âç¤­
-	¤¤¤Î¤Ç¡£
+	* src/DDparser.c : ?Ğ¬Å¬Å³|Å‰?Ä‡ÄaliasÄ²Ä¤Ä¡Ä¿cÊ€?Ä??Â§?
+	Ä¤ÄÄ‡c
 
 2003-10-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c (SetValueString): str¤¬NULL¤Î»ş¤Î½èÍı(NIL¤Ë¤·¤¿¤¬¡¢
-	¤³¤ì¤ÇÀµ¤·¤¤¤«¤É¤¦¤«¤ÏÉÔÌÀ)
+	* src/getset.c (SetValueString): str?NULLÄ?Ä??(NILÄ‹Ä·Ä¿?b
+	Ä³?Ä‡5Ä·Ä¤Ä«Ä‰Ä¦Ä«ÄÉ”?)
 
 2003-10-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c: ºÆÆş²ÄÇ½¤Ë¤·¤ÆÈÆÍÑ¥é¥¤¥Ö¥é¥ê¤Ë¤·¤¿
+	* src/Lex.c: ????Ä‹Ä·Ä†??Å©Å¤Å–Å©ÅªÄ‹Ä·Ä¿
 
 2004-09-29  Noboru Saitou  <noborus@netlab.jp>
 
@@ -294,73 +304,73 @@
 
 2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* tools/Makefile.am (LDADD): make distcheck¤¬ÄÌ¤ë¤è¤¦¤Ë¤·¤¿¡£
+	* tools/Makefile.am (LDADD): make distcheck?ÄŒÄ«Ä¨Ä¦Ä‹Ä·Ä¿c
 
 2003-09-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h, src/DDparser.[ch] : RecordStruct¤òÄÉ¤¤½Ğ¤¹¡£¤½¤ì¤Ë
-	È¼¤¤¡¢´Ø¿ô¤Î»ÅÍÍÅùÊÑ¹¹¤·¤¿
+	* src/value.h, src/DDparser.[ch] : RecordStructÄ²Ä‰Ä¤?Ä¹cÄ½?Ä‹
+	?Ä¤b??Ä??Å¹??Ä·Ä¿
 
 2003-09-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Emit): ÅÓÃæ¤Ëemit¤·¤¿»ş¤Î½èÍı¤òÀµ¤·¤¯¤·¤¿
+	* src/LBSfunc.c (LBS_Emit): Å“Ã¦Ä‹emitÄ·Ä¿?Ä??Ä²5Ä·Ä¯Ä·Ä¿
 
 2003-09-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c, src/Native.c, src/value.h: null¤Î¥µ¥İ¡¼¥È
+	* src/getset.c, src/Native.c, src/value.h: nullÄÅµÅ|Åˆ
 
 2003-09-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SQL*.[ch]: panda¤Ë°ÜÆ°(libmondai¤Ë¤¢¤ë¤Ù¤­¤Ç¤Ï¤Ê¤¤)
+	* src/SQL*.[ch]: pandaÄ‹ĞœÆ°(libmondaiÄ‹Ä¢Ä«Ä™?Ä‡ÄÄŠÄ¤)
 
-	* src/DDparser.c: DB¤Îµ¡Ç½¤òÈ´¤¤¤¿(libmondai¤Ë¤¢¤ë¤Ù¤­¤Ç¤Ï¤Ê¤¤)
+	* src/DDparser.c: DBÄ??Ä²?Ä¤Ä¿(libmondaiÄ‹Ä¢Ä«Ä™?Ä‡ÄÄŠÄ¤)
 
 2003-09-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: ConvFunc¤Îglobal²½
+	* src/valueconv.h: ConvFuncÄglobal?
 
 2003-09-03  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/valueconv.c (GetConvFunc): ÄÉ²Ã
+	* src/valueconv.c (GetConvFunc): Ä‰?
 
 2003-08-12  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Trim): LBS¤ÎËöÈø¤òÀÚ¤êµÍ¤á¤ë´Ø¿ô
+	* src/LBSfunc.c (LBS_Trim): LBSÄ??Ä²Äª?Ä¡Ä«??
 
 2003-07-30  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/value.h: RecordStruct¤Î¥á¥ó¥ĞÌ¾ÊÑ¹¹(¤ï¤«¤ê¤ä¤¹¤¤Ì¾Á°¤Ë)
+	* src/value.h: RecordStructÄÅ¡Å³Å???(Ä¯Ä«ÄªÄ¤Ä¹Ä¤?pÄ‹)
 
 2003-07-29  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/Text.c: CGI·Á¼°¤ËÂĞ±ş
+	* src/Text.c: CGI??Ä‹??
 
-	* src/others.c (EncodeStringLengthURL): Ä¹¤µ·×»»¤Î¸í¤ê¤òÄ¾¤·¤¿
+	* src/others.c (EncodeStringLengthURL): Ä¹Äµ×—?Ä?ÄªÄ²Ä¾Ä·Ä¿
 
 2003-07-19  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/valueconv.c: ¥Ñ¥é¥á¡¼¥¿¤ÎÊÑ¹¹¤ò¤·¤¿(¤¿¤À¤·¡¢µ¡Ç½Åª¤ËÌ¤¼ÂÁõ¤Î
-	¤â¤ÎÂ¿¿ô)
+	* src/valueconv.c: Å‘Å©Å¡|?Ä??Ä²Ä·Ä¿(Ä¿Ä€Ä·b??ÅªÄ‹??uÄ
+	Ä¢ÄÂ¿?)
 
 2003-07-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822¤ÎÌ¾Á°Ìµ¤·¤ËÂĞ±ş
+	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822Ä?p?Ä·Ä‹??
 
 2003-07-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c : CSV, RFC822¤Î·Á¼°¤ËÂĞ±ş¤·¤¿
+	* src/Text.c : CSV, RFC822Ä??Ä‹??Ä·Ä¿
 
 2003-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/misc.c (StringChop): ÄÉ²Ã
+	* src/misc.c (StringChop): Ä‰?
 
 2003-06-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c: Ãî¼è¤ê¤È°ìÉô´Ø¿ô¤Î¥Ş¥¯¥í²½¤ª¤è¤Ó¥Ç¡¼¥¿¥¢¥¯¥»¥¹¥Ş¥¯¥í¤ÎÄÉ²Ã
+	* src/LBSfunc.c: Ã®?ÄªÄˆĞ¬???ÄÅÅ¯Å­?ÄªÄ¨Ä“Å‡|?Å¢Å¯Å»Å¹ÅÅ¯Å­ÄÄ‰?
 
 2003-06-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (NewValue): °ì»şÅª¤ÊÃî»ß¤á(¾­ÍèÅª¤Ë¤ÏÈ´ËÜÅª¤ÊÂĞºö¤ò¤¹¤ë¤Ù¤­)
+	* src/value.c (NewValue): Ğ¬?ÅªÄŠÃ®?Ä¡(??ÅªÄ‹Ä??ÅªÄŠ??Ä²Ä¹Ä«Ä™?)
 
 2003-05-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -368,50 +378,50 @@
 
 2003-05-25  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numerici. : value.c¤«¤éÊ¬Î¥
+	* src/numerici. : value.cÄ«Ä©?Î¥
 
-	* src/value.c : Fixed´Ø·¸´Ø¿ô¤ÎÄÉ²Ã
+	* src/value.c : Fixed????ÄÄ‰?
 
 2003-05-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SQLparser.c (ParSQL): ¡ÖÌ¾Á°¡×¤ËÍ½Ìó¸ì¤¬»È¤¨¤ë¤è¤¦¤Ë¤·¤¿
+	* src/SQLparser.c (ParSQL): V?pWÄ‹?????Ä¨Ä«Ä¨Ä¦Ä‹Ä·Ä¿
 
 2003-05-19  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* Makefile.am (EXTRA_DIST): acconfig.h ¤ò EXTRA_DIST ¤«¤éºï½ü
+	* Makefile.am (EXTRA_DIST): acconfig.h Ä² EXTRA_DIST Ä«Ä©??
 
 2003-05-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/ : options.c, options.h, options.doc¤òºï½ü¤·¤¿(¤³¤³¤Ë¤¢¤ë¤Ù¤­¤Ç¤Ï¤Ê¤¤)
+	* src/ : options.c, options.h, options.docÄ²??Ä·Ä¿(Ä³Ä³Ä‹Ä¢Ä«Ä™?Ä‡ÄÄŠÄ¤)
 
 2003-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c (ParValue): Â¿¼¡¸µÄêµÁÂÎ¤Î½èÍı(´Ö°ã¤Ã¤Æ¤¤¤¿)
+	* src/DDparser.c (ParValue): Â¿??Äª??Ä??(?Ğ£ÄƒÄ†Ä¤Ä¿)
 
 2003-05-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c (_COBOL): COBOLÆó¼¡¸µÇÛÎóÌäÂêÂĞ±ş
+	* tools/rec2copy.c (_COBOL): COBOL???Ç›Î³?Âª??
 
 2003-05-15  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* configure.in: AC_CHECK_HEADERS ¤ÎÂè 2 °ú¿ô¤òºï½ü
-	* acconfig.h: ºï½ü
+	* configure.in: AC_CHECK_HEADERS ÄÂ¨ 2 Ğº?Ä²??
+	* acconfig.h: ??
 
 2003-05-15  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/hash.c: hash´Ø·¸´Ø¿ô¤òÊÌ¥Õ¥¡¥¤¥ë¤Ë¤·¤¿
+	* src/hash.c: hash????Ä²ÊŒÅ•Å¡Å¤Å«Ä‹Ä·Ä¿
 
 2003-05-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Duplicate): LBS¤ÎÊ£¼Ìµ¡Ç½ÄÉ²Ã
+	* src/LBSfunc.c (LBS_Duplicate): LBSÄ????Ä‰?
 
 2003-05-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (ParPort): host¤¬¤Ê¤¤»ş¤Ëlocalhost¤È¤ß¤Ê¤¹
+	* src/value.c (ParPort): host?ÄŠÄ¤?Ä‹localhostÄˆÄŸÄŠÄ¹
 
 2003-04-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.h: asize¤Î´ÉÍı¤òÄÉ²Ã¡¢size¤Ï¡Ö»È¤Ã¤¿Âç¤­¤µ¡×¤Ë¤·¤¿
+	* src/LBSfunc.h: asizeÄ??Ä²Ä‰?bsizeÄV?ÄƒÄ¿Â§?ÄµWÄ‹Ä·Ä¿
 
 2003-04-02  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -419,7 +429,7 @@
 
 2003-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c : ÊÑ¿ôÌ¾¤Ë¹½Â¤ÂÎ¤Î¹½Â¤¤òÈ¿±Ç¤µ¤»¤ëµ¡Ç½ÉÕ²Ã
+	* tools/rec2copy.c : ???Ä‹?Â¤?Ä?Â¤Ä²?Ñ‡ÄµÄ»Ä«????
 
 2003-03-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
@@ -430,7 +440,7 @@
 
 2003-03-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c : valueconv.c ¤«¤éÊ¬Î¥¤·¤¿
+	* src/Native.c : valueconv.c Ä«Ä©?Î¥Ä·Ä¿
 
 2003-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -438,9 +448,9 @@
 
 2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c: ¸À¸ì¤Î»ØÄê¤ò¤¹¤ë¤è¤¦¤Ë¤·¤¿
+	* tools/rec2copy.c: ??Ä?ÄªÄ²Ä¹Ä«Ä¨Ä¦Ä‹Ä·Ä¿
 
-	* src/dotCOBOL.c (dotCOBOL_SizeValue): Âç¤­¤µ¤òµá¤á¤ë´Ø¿ôÄÉ²Ã
+	* src/dotCOBOL.c (dotCOBOL_SizeValue): Â§?ÄµÄ²?Ä¡Ä«??Ä‰?
 
 	* src/OpenCOBOL.c (OpenCOBOL_SizeValue): 
 
@@ -452,7 +462,7 @@
 
 2003-03-12  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c: COPY¶ç¤òÀ¸À®¤¹¤ë¥×¥í¥°¥é¥à¤ò¿·µ¬ºîÀ®¤·¤¿
+	* tools/rec2copy.c: COPY?Ä²8.Ä¹Ä«Å—Å­Å°Å©Å Ä²???.Ä·Ä¿
 
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 

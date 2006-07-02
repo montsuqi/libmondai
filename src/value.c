@@ -952,8 +952,7 @@ DuplicateValue(
 	ValueStruct	*p;
 	int			i;
 
-	p = New(ValueStruct);
-	ValueType(p) = ValueType(template);
+	p = NewValue(ValueType(template));
 	ValueAttribute(p) = ValueAttribute(template);
 	ValueStr(p) = NULL;
 

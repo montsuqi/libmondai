@@ -17,7 +17,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 /*
 #define	TRACE
 */
@@ -54,21 +53,23 @@ _xmalloc(
 {
 	void	*ret;
 #ifdef	TRACE
-	size_t	*area;
+	byte	*area;
+	size_t	*sizea;
 
 	total += size; 
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
-	if		(  ( area = (size_t *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
+	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
 		exit(1);
 	}
-	*area = size;
-	ret = (void *)&area[1];
+	sizea = (size_t *)(area + size);
+	*sizea = size;
+	ret = area;
 	printf("allocate = %p, total = %d\n",ret,(int)total);fflush(stdout);
 	if		(  PoolHash  ==  NULL  ) {
 		PoolHash = NewIntHash();
 	}
-	g_hash_table_insert(PoolHash,ret,ret);
+	g_int_hash_table_insert(PoolHash,ret,sizea);
 #else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
@@ -88,15 +89,14 @@ _xfree(
 	size_t	*area;
 
 	if		(  p  ==  NULL  )	return;
-	if		(  g_hash_table_lookup(PoolHash,p)  ==  NULL  ) {
-		fprintf(stderr,"free duplicate in %s(%d)\n",fn,line);
+	if		(  ( area = g_int_hash_table_lookup(PoolHash,p) )  ==  NULL  ) {
+		fprintf(stderr,"%p free duplicate in %s(%d)\n",p,fn,line);
 		exit(1);
 	}
-	g_hash_table_remove(PoolHash,p);
-	area = (size_t *)p;
-	total -= area[-1];
-	printf("xfree %p %d byte in %s(%d)\n",p,(int)area[-1],fn,line);
-	free(&area[-1]);
+	g_int_hash_table_remove(PoolHash,p);
+	total -= *area;
+	printf("xfree %p %d byte in %s(%d)\n",p,(int)area[0],fn,line);fflush(stdout);
+	free(p);
 #else
 	if		(  p  ==  NULL  )	return;
 	free(p);
