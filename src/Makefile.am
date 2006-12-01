@@ -29,7 +29,8 @@ libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
 	-export-dynamic
 
-AM_CFLAGS	=	-O2 -Wall -Wunused -Wredundant-decls -Werror -funsigned-char
+AM_CFLAGS	=	-O4 -Wall -Wunused -Wredundant-decls -Wno-pointer-sign \
+	-Werror -funsigned-char
 
 EXTRA_DIST = libmondai.h.in
 
@@ -46,6 +47,7 @@ libmondaiinclude_HEADERS =	\
 	Native_v.h				\
 	Text_v.h				\
 	XML_v.h					\
+	php_v.h					\
 	SOAP_v.h				\
 	cobolvalue.h			\
 	others.h				\
@@ -76,6 +78,7 @@ libmondai_la_SOURCES	=	\
 	dotCOBOL.c				\
 	Native.c				\
 	Text.c					\
+	php.c					\
 	XML.c					\
 	SOAP.c					\
 	hash.c					\

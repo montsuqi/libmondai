@@ -128,7 +128,7 @@ main(
 		sprintf(name,"c.g[%d].h",i);
 		SetValueFloat(GetItemLongName(val,name),(double)i);
 		memset(str,0,SIZE_DATA);
-		for	( j = 0 , p = str ; j < ( i + 1) ; j ++ , p ++ ) {
+		for	( j = 0 , p = (byte *)str ; j < ( i + 1) ; j ++ , p ++ ) {
 			*p = '0' + ( j % 10 );
 		}
 		sprintf(name,"c.g[%d].i",i);
@@ -163,7 +163,7 @@ main(
 	printf("***** varchar(40) *****\n");
 	e = GetItemLongName(val,"q");
 	for	( i = 0 ; i < ValueStringLength(e) ; i ++ ) {
-		p = str;
+		p = (byte *)str;
 		for	( j = 0 ; j < i ; j ++ ) {
 			*p ++= j + '@';
 		}
@@ -186,7 +186,7 @@ main(
 	printf("***** text(with coding) *****\n");
 	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
-		p = str;
+		p = (byte *)str;
 		for	( j = 0 ; j < i ; j ++ ) {
 			*p ++= j + '@';
 		}
@@ -199,7 +199,7 @@ main(
 	printf("***** text *****\n");
 	e = GetItemLongName(val,"m");
 	for	( i = 0 ; i < 20 ; i ++ ) {
-		p = str;
+		p = (byte *)str;
 		for	( j = 0 ; j < i ; j ++ ) {
 			*p ++= j + '@';
 		}
@@ -319,7 +319,7 @@ main(
 #endif
 
 #ifdef	TEST_NATIVE1
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** Native(1) *****\n");
@@ -345,7 +345,7 @@ main(
 #endif
 
 #ifdef	TEST_NATIVE2
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** Native(2) *****\n");
@@ -371,7 +371,7 @@ main(
 
 #ifdef	TEST_OPENCOBOL
 	ConvSetSize(opt,100,100);
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** OpenCOBOL *****\n");
@@ -396,7 +396,7 @@ main(
 
 #ifdef	TEST_DOTCOBOL
 	ConvSetSize(opt,100,100);
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** dotCOBOL *****\n");
@@ -420,7 +420,7 @@ main(
 #endif
 
 #ifdef	TEST_CSV1
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(1) *****\n");
@@ -445,7 +445,7 @@ main(
 #endif
 
 #ifdef	TEST_CSV2
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(2) *****\n");
@@ -470,7 +470,7 @@ main(
 #endif
 
 #ifdef	TEST_CSV3
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(3) *****\n");
@@ -495,7 +495,7 @@ main(
 #endif
 
 #ifdef	TEST_CSVE
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CSV(E) *****\n");
@@ -520,7 +520,7 @@ main(
 #endif
 
 #ifdef	TEST_RFC822_1
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** RFC822(with name) *****\n");
@@ -550,7 +550,7 @@ main(
 #endif
 
 #ifdef	TEST_RFC822_2
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** RFC822(without name) *****\n");
@@ -577,7 +577,7 @@ main(
 #endif
 
 #ifdef	TEST_CGI
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** CGI *****\n");
@@ -605,7 +605,7 @@ main(
 #endif
 
 #ifdef	TEST_SQL
-	buff = (char *)xmalloc(SIZE_BUFF);
+	buff = (byte *)xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 
 	printf("***** SQL *****\n");

@@ -568,7 +568,7 @@ ENTER_FUNC;
 				xfree(ValueString(to));
 			}
 			ValueStringSize(to) = ValueStringSize(from);
-			ValueString(to) = (char *)xmalloc(ValueStringSize(to));
+			ValueString(to) = (byte *)xmalloc(ValueStringSize(to));
 		}
 		memclear(ValueString(to),ValueStringSize(to));
 		memcpy(ValueString(to),ValueString(from),ValueStringSize(from));
@@ -583,7 +583,7 @@ ENTER_FUNC;
 				xfree(ValueByte(to));
 			}
 			ValueByteSize(to) = ValueByteSize(from);
-			ValueByte(to) = (char *)xmalloc(ValueByteSize(to));
+			ValueByte(to) = (byte *)xmalloc(ValueByteSize(to));
 		}
 		memclear(ValueByte(to),ValueByteSize(to));
 		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(from));
@@ -952,93 +952,96 @@ DuplicateValue(
 	ValueStruct	*p;
 	int			i;
 
-	p = NewValue(ValueType(template));
-	ValueAttribute(p) = ValueAttribute(template);
-	ValueStr(p) = NULL;
-
-	switch	(ValueType(template)) {
-	  case	GL_TYPE_CHAR:
-	  case	GL_TYPE_VARCHAR:
-	  case	GL_TYPE_DBCODE:
-	  case	GL_TYPE_TEXT:
-	  case	GL_TYPE_SYMBOL:
-		if		(  ValueStringSize(template)  >  0  ) {
-			ValueString(p) = (char *)xmalloc(ValueStringSize(template));
-			memclear(ValueString(p),ValueStringSize(template));
-		} else {
-			ValueString(p) = NULL;
-        }
-		ValueStringLength(p) = ValueStringLength(template);
-		ValueStringSize(p) = ValueStringSize(template);
-		break;
-	  case	GL_TYPE_BYTE:
-	  case	GL_TYPE_BINARY:
-		if		(  ValueByteSize(template)  >  0  ) {
-			ValueByte(p) = (char *)xmalloc(ValueByteSize(template));
-			memclear(ValueByte(p),ValueByteSize(template));
-		} else {
-			ValueByte(p) = NULL;
-        }
-		ValueByteLength(p) = ValueByteLength(template);
-		ValueByteSize(p) = ValueByteSize(template);
-		break;
-	  case	GL_TYPE_NUMBER:
-		ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);
-		memcpy(ValueFixedBody(p),
-			   ValueFixedBody(template),
-			   ValueFixedLength(template)+1);
-		ValueFixedLength(p) = ValueFixedLength(template);
-		ValueFixedSlen(p) = ValueFixedSlen(template);
-		break;
-	  case	GL_TYPE_ARRAY:
-		ValueArrayItems(p) = 
-			MakeValueArray(ValueArrayPrototype(template),
-						   ValueArraySize(template));
-		ValueArraySize(p) = ValueArraySize(template);
-		ValueArrayExpandable(p) = ValueArrayExpandable(template);
-		break;
-	  case	GL_TYPE_INT:
-		ValueInteger(p) = 0;
-		break;
-	  case	GL_TYPE_BOOL:
-		ValueBool(p) = FALSE;
-		break;
-	  case	GL_TYPE_OBJECT:
-		ValueObjectId(p) = 0;
-		ValueObjectFile(p) = NULL;
-		break;
-	  case	GL_TYPE_RECORD:
-		/*	share name table		*/
-		ValueRecordMembers(p) = NewNameHash();
-		ValueRecordNames(p) =
-			(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
-		/*	duplicate data space	*/
-		ValueRecordItems(p) = 
-			(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueRecordSize(template));
-		ValueRecordSize(p) = ValueRecordSize(template);
-		for	( i = 0 ; i < ValueRecordSize(template) ; i ++ ) {
-			ValueRecordItem(p,i) = 
-				DuplicateValue(ValueRecordItem(template,i));
-			ValueRecordName(p,i) = StrDup(ValueRecordName(template,i));
-			g_hash_table_insert(ValueRecordMembers(p),
-								(gpointer)ValueRecordName(p,i),
-								(gpointer)(i+1));
+	if		(  template  !=  NULL  ) {
+		p = NewValue(ValueType(template));
+		ValueAttribute(p) = ValueAttribute(template);
+		ValueStr(p) = NULL;
+		switch	(ValueType(template)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
+			if		(  ValueStringSize(template)  >  0  ) {
+				ValueString(p) = (byte *)xmalloc(ValueStringSize(template));
+				memclear(ValueString(p),ValueStringSize(template));
+			} else {
+				ValueString(p) = NULL;
+			}
+			ValueStringLength(p) = ValueStringLength(template);
+			ValueStringSize(p) = ValueStringSize(template);
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			if		(  ValueByteSize(template)  >  0  ) {
+				ValueByte(p) = (byte *)xmalloc(ValueByteSize(template));
+				memclear(ValueByte(p),ValueByteSize(template));
+			} else {
+				ValueByte(p) = NULL;
+			}
+			ValueByteLength(p) = ValueByteLength(template);
+			ValueByteSize(p) = ValueByteSize(template);
+			break;
+		  case	GL_TYPE_NUMBER:
+			ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);
+			memcpy(ValueFixedBody(p),
+				   ValueFixedBody(template),
+				   ValueFixedLength(template)+1);
+			ValueFixedLength(p) = ValueFixedLength(template);
+			ValueFixedSlen(p) = ValueFixedSlen(template);
+			break;
+		  case	GL_TYPE_ARRAY:
+			ValueArrayItems(p) = 
+				MakeValueArray(ValueArrayPrototype(template),
+							   ValueArraySize(template));
+			ValueArraySize(p) = ValueArraySize(template);
+			ValueArrayExpandable(p) = ValueArrayExpandable(template);
+			break;
+		  case	GL_TYPE_INT:
+			ValueInteger(p) = 0;
+			break;
+		  case	GL_TYPE_BOOL:
+			ValueBool(p) = FALSE;
+			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObjectId(p) = 0;
+			ValueObjectFile(p) = NULL;
+			break;
+		  case	GL_TYPE_RECORD:
+			/*	share name table		*/
+			ValueRecordMembers(p) = NewNameHash();
+			ValueRecordNames(p) =
+				(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
+			/*	duplicate data space	*/
+			ValueRecordItems(p) = 
+				(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueRecordSize(template));
+			ValueRecordSize(p) = ValueRecordSize(template);
+			for	( i = 0 ; i < ValueRecordSize(template) ; i ++ ) {
+				ValueRecordItem(p,i) = 
+					DuplicateValue(ValueRecordItem(template,i));
+				ValueRecordName(p,i) = StrDup(ValueRecordName(template,i));
+				g_hash_table_insert(ValueRecordMembers(p),
+									(gpointer)ValueRecordName(p,i),
+									(gpointer)(i+1));
+			}
+			break;
+		  case	GL_TYPE_VALUES:
+			ValueValuesItems(p) = 
+				(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueValuesSize(template));
+			ValueValuesSize(p) = ValueValuesSize(template);
+			for	( i = 0 ; i < ValueValuesSize(template) ; i ++ ) {
+				ValueValuesItem(p,i) = 
+					DuplicateValue(ValueValuesItem(template,i));
+			}
+			break;
+		  case	GL_TYPE_ALIAS:
+			ValueAliasName(p) = StrDup(ValueAliasName(template));
+			break;
+		  default:
+			break;
 		}
-		break;
-	  case	GL_TYPE_VALUES:
-		ValueValuesItems(p) = 
-			(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueValuesSize(template));
-		ValueValuesSize(p) = ValueValuesSize(template);
-		for	( i = 0 ; i < ValueValuesSize(template) ; i ++ ) {
-			ValueValuesItem(p,i) = 
-				DuplicateValue(ValueValuesItem(template,i));
-		}
-		break;
-	  case	GL_TYPE_ALIAS:
-		ValueAliasName(p) = StrDup(ValueAliasName(template));
-		break;
-	  default:
-		break;
+	} else {
+		p = NULL;
 	}
 	return	(p);
 }

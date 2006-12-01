@@ -64,6 +64,8 @@
 #define	T_ALIAS			(T_YYBASE +14)
 #define	T_BINARY		(T_YYBASE +15)
 #define	T_UNIQ			(T_YYBASE +16)
+#define	T_PRIMARY		(T_YYBASE +17)
+#define	T_KEY			(T_YYBASE +18)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -84,8 +86,9 @@ static	TokenTable	tokentable[] = {
 	{	"dbcode"	,T_DBCODE	},
 	{	"virtual"	,T_VIRTUAL	},
 	{	"alias"		,T_ALIAS	},
-	{	"uniq"		,T_UNIQ		},
-	{	""			,0	}
+	{	"primary"	,T_PRIMARY	},
+	{	"key"		,T_KEY		},
+	{	""			,0			}
 };
 
 static	GHashTable	*Reserved;
@@ -254,13 +257,13 @@ ENTER_FUNC;
 			  case	GL_TYPE_BYTE:
 				ValueByteLength(value) = size;
 				ValueByteSize(value) = size;
-				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
 				memclear(ValueByte(value),ValueByteSize(value));
 				break;
 			  default:
 				ValueStringLength(value) = size;
 				ValueStringSize(value) = size+1;
-				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),ValueStringSize(value));
 				break;
 			}

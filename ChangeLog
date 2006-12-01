@@ -1,30 +1,34 @@
+2006-12-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* gcc 4.xへの対応
+
 2006-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (Lex): $BJ8;zNsD9$N@)8B$r$J$/$7$?(B($BB?J,=E$$(B)
+	* src/Lex.c (Lex): 文字列長の制限をなくした(多分重い)
 
 2006-06-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_EmitStringCodeset): $B9bB.2=(B
+	* src/LBSfunc.c (LBS_EmitStringCodeset): 高速化
 
 2006-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (_NativeRestoreValue): extern$B$K$7$?(B
+	* src/Native.c (_NativeRestoreValue): externにした
 
 2006-05-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: Object$B$N9=B$$rJQ99$7$?(B
+	* src/value.h: Objectの構造を変更した
 
 2006-04-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (MakeReservedTable): $BM=Ls8l$OBgJ8;z>.J8;z$N6hJL$r$d$a$?(B
+	* src/Lex.c (MakeReservedTable): 予約語は大文字小文字の区別をやめた
 
 2006-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numeric.c (NumericFormatToPrecision): $BJQ?tJ8;z$H$7$F(B$$B$rM-8z$K$7$?(B
+	* src/numeric.c (NumericFormatToPrecision): 変数文字として$を有効にした
 
 2006-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c (_CSV_UnPackValue): Excel$B7A<0$N%P%0$r<h$C$?!#2~9T%3!<%I$N0c$$$K(Brobust$B$K$7$?(B
+	* src/Text.c (_CSV_UnPackValue): Excel形式のバグを取った。改行コードの違いにrobustにした
 
 2006-02-16  Noboru Saitou  <noborus@netlab.jp>
 
@@ -32,11 +36,11 @@
 
 2006-02-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numeric.c (NumericFormat): $B%U%)!<%^%C%HJ8;zNs$rGK2u$9$k%P%0$r<h$C$?(B
+	* src/numeric.c (NumericFormat): フォーマット文字列を破壊するバグを取った
 
 2005-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.h (ParErrorPrintf): $B%Q!<%6MQ$N%(%i!<%a%C%;!<%8=PNO(B
+	* src/Lex.h (ParErrorPrintf): パーザ用のエラーメッセージ出力
 
 2005-10-13  Noboru Saitou  <noborus@netlab.jp>
 
@@ -44,15 +48,15 @@
 
 2005-09-15  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: GL_TYPE_SYMBOL$B$rDI2C(B(""$B$G3g$i$l$J$$J8;zNs(B)
+	* src/value.h: GL_TYPE_SYMBOLを追加(""で括られない文字列)
 
 2005-09-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (PushLexInfoStream): stream$B$N%Q!<%:(B
+	* src/Lex.c (PushLexInfoStream): streamのパーズ
 
 2005-08-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (Lex): /* */$B%?%$%W$N%3%a%s%H$KBP1~$7$?!#9TF,(B!$B$N%3%a%s%H$NBP1~$r$d$a$?(B
+	* src/Lex.c (Lex): /* */タイプのコメントに対応した。行頭!のコメントの対応をやめた
 
 2005-07-28  Noboru Saitou  <noborus@netlab.jp>
 
@@ -60,14 +64,14 @@
 
 2005-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SOAP.c (SOAP_LoadValue): XML$B$+$i(BValueStruct$B$r:n$k=hM}(B
+	* src/SOAP.c (SOAP_LoadValue): XMLからValueStructを作る処理
 
-	* src/value.c (ValueAddArrayItem): $BDI2C(B
+	* src/value.c (ValueAddArrayItem): 追加
 
 2005-06-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* COPYING: $BCx:n8"I=<($rD>$9(B($B<BBV$HBg$-$/$+$1N%$l$F$$$?$?$a!#$=$b$=(B
-	$B$b(BLGPL$B$G$J$-$c$$$1$J$+$C$?$O$:$,(BGPL$B$K$J$C$F$$$?(B)
+	* COPYING: 著作権表示を直す(実態と大きくかけ離れていたため。そもそ
+	もLGPLでなきゃいけなかったはずがGPLになっていた)
 
 2005-06-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -75,30 +79,30 @@
 
 2005-03-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (AssignValue): $BBeF~MQ4X?t(B
+	* src/value.c (AssignValue): 代入用関数
 
 2005-01-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (Lex): $BL>A0$N@hF,$K(B_$B$r5v$9(B
+	* src/Lex.c (Lex): 名前の先頭に_を許す
 
 2005-01-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c: CSV, SQL$B$K$OKvHx$N(B\0$B$b?t$KF~$l$k(B
+	* src/Text.c: CSV, SQLには末尾の\0も数に入れる
 
 2005-01-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (CompareValue): ValueStruct$B$NCM$NHf3S4X?t(B
+	* src/value.c (CompareValue): ValueStructの値の比較関数
 
 2004-12-22  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: $BJ8;zNs$NJ]B8$NL5BL$r$J$/$7$?(B
+	* src/Native.c: 文字列の保存の無駄をなくした
 
 2004-12-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/RecParser.c (ParValueDefine): $B9=B$BN$NI=8=$K(B'()'$B$b;H$&$h$&$K$7$?(B
+	* src/RecParser.c (ParValueDefine): 構造体の表現に'()'も使うようにした
 
-	* src/Lex.c (DropLexInfo): $B%a%b%j$N>!<j$J2rJ|$r$d$a$?(B($B$`$7$m%P%0$N85(B)
-	$B$^$?!"(Bpath$B$K>!<j$K(B'.'$B$r;XDj$9$k$N$b$d$a$?(B
+	* src/Lex.c (DropLexInfo): メモリの勝手な解放をやめた(むしろバグの元)
+	また、pathに勝手に'.'を指定するのもやめた
 	
 2004-12-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -108,37 +112,37 @@
 
 2004-11-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (DuplicateValue): $BL>A0I=$bJ#@=$9$k$h$&$K$7$?!#$3$N$?(B
-	$B$a!"(BFreeValueStruct$B$G$OL>A0I=$b2rJ|$9$k$h$&$K$7$?(B
+	* src/value.c (DuplicateValue): 名前表も複製するようにした。このた
+	め、FreeValueStructでは名前表も解放するようにした
 
-	* src/fixed.c: value.h$B$+$iJ,N%(B
+	* src/fixed.c: value.hから分離
 
 2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (NativeSaveValue): NativePackValue$B$NN.MQ$r$d$a!"7?>pJs$N$_J]B8(B
+	* src/Native.c (NativeSaveValue): NativePackValueの流用をやめ、型情報のみ保存
 
-	* src/XML.c: alias$B$N=hM}DI2C(B
+	* src/XML.c: aliasの処理追加
 
 2004-10-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: ValueStruct$B$N(Bload/store
+	* src/Native.c: ValueStructのload/store
 
 2004-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c (DD_ParseValueMem): $B%a%b%jNN0h$N(Bparse
+	* src/DDparser.c (DD_ParseValueMem): メモリ領域のparse
 
-	* src/Lex.c (GetFile): mmap$B$r;H$&$h$&$K$7$?(B($B%a%b%jNN0h$r(Bparse$B$9$k(B
-	$B5!G=$rIU2C$9$k$?$a(B)
+	* src/Lex.c (GetFile): mmapを使うようにした(メモリ領域をparseする
+	機能を付加するため)
 
 2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: MonObjectType$B$r(Blonglong$B$K$7$?(B
+	* src/value.h: MonObjectTypeをlonglongにした
 
 2004-06-20  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/option.c (GetOption): $B%X%k%W%a%C%;!<%8$N6/2=(B($B$A$g$C$H$@$1(B)
+	* tools/option.c (GetOption): ヘルプメッセージの強化(ちょっとだけ)
 
-	* tools/monconv.c: $B%G!<%?JQ49%D!<%k(B(libmondai$B$N%5%]!<%H$7$F$$$k7A<04V$NAj8_JQ49(B)
+	* tools/monconv.c: データ変換ツール(libmondaiのサポートしている形式間の相互変換)
 
 2004-04-26  Kouji SHIMIZU  <shimizu@netlab.jp>
 
@@ -160,137 +164,137 @@
 
 2004-04-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c: NULL$B$N;~$KBP1~(B
+	* src/LBSfunc.c: NULLの時に対応
 
 2004-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/libmondai.h.in: $BI8=`$N%X%C%@$HL>A0$N>WFM$7$F$$$k%X%C%@$NL>A0JQ99(B
+	* src/libmondai.h.in: 標準のヘッダと名前の衝突しているヘッダの名前変更
 
 2004-02-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c (PushLexInfo): $B%(%i!<%a%C%;!<%8$N@)8f$r2DG=$K$7$?(B
+	* src/Lex.c (PushLexInfo): エラーメッセージの制御を可能にした
 
 2004-02-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: nil object$B$N=hM}$rDI2C(B
+	* src/Native.c: nil objectの処理を追加
 
 2004-02-02  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/dotCOBOL.c (dotCOBOL_PackValue), src/OpenCOBOL.c (OpenCOBOL_PackValue): 
-	$BJ8;zNs$G(BNIL$B$N;~$K$O(BLOW-VALUE$B$r%;%C%H$9$k$h$&$K$7$?(B
+	文字列でNILの時にはLOW-VALUEをセットするようにした
 
 2004-01-31  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: $B0z?t%A%'%C%/$N6/2=(B
+	* src/getset.c: 引数チェックの強化
 
 2004-01-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (GetItemLongName): $B%o!<%K%s%0$r:o$C$?(B($B<YKb(B)
+	* src/value.c (GetItemLongName): ワーニングを削った(邪魔)
 
 2004-01-11  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c$BB>(B: binary$B7?DI2C(B
+	* src/value.c他: binary型追加
 
 2003-12-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: MonObjectType$B$NJ8;zNsI=8=$rJQ$($?(B
+	* src/getset.c: MonObjectTypeの文字列表現を変えた
 
 2003-12-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/monstring.c (StrToInt): $BId9fIU$-?t;z$N=hM}$rD>$7$?(B
+	* src/monstring.c (StrToInt): 符号付き数字の処理を直した
 
 2003-12-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/libmondai.h.in: libmondai$B$,9q:]2=$5$l$F$$$k$+$I$&$+$N%U%i%0$r:n$C$?(B
+	* src/libmondai.h.in: libmondaiが国際化されているかどうかのフラグを作った
 
 2003-12-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (GetRecordItem): value$B$,(BNULL$B$N;~$N=hM}(B
+	* src/value.c (GetRecordItem): valueがNULLの時の処理
 
 2003-12-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h: SIZE_SQL$B$NDj5A$r=|$$$?(B($BITMW(B)
+	* src/value.h: SIZE_SQLの定義を除いた(不要)
 
 2003-12-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/memory.c : $BH><+F0(BGC$BIU$-%a%b%j4IM}%k!<%A%s(B
+	* src/memory.c : 半自動GC付きメモリ管理ルーチン
 
 2003-12-10  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* Pack/UnPack$B$NI|5"CM$r(Bsize_t$B$K$7$?(B
+	* Pack/UnPackの復帰値をsize_tにした
 
 2003-12-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c (NativePackValue): $BJ8;zNsKvHx$N(B\0$B$O(Bpack$B$N;~$K4^$a$k!#(B
-	$B8N$K(Bunpack$B$N;~$O(Bstrcpy$B$GNI$$(B
+	* src/Native.c (NativePackValue): 文字列末尾の\0はpackの時に含める。
+	故にunpackの時はstrcpyで良い
 
 2003-11-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/memory.[ch]: misc.[ch]$B$+$iJ,N%(B
+	* src/memory.[ch]: misc.[ch]から分離
 
 2003-11-10  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/others.[ch]: Port, URL$B4X78$N4X?t$r:o=|(B($B$3$N%i%$%V%i%j$G$O%5(B
-	$B%]!<%H$7$J$$(B)
+	* src/others.[ch]: Port, URL関係の関数を削除(このライブラリではサ
+	ポートしない)
 
 2003-10-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: $B%a%s%PL>JQ99(B($B$"$^$j$+$3$h$/$J$+$C$?$N$G(B)
+	* src/valueconv.h: メンバ名変更(あまりかこよくなかったので)
 
 2003-10-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* Ver 1.2.0 $B%j%j!<%9(B($B0BDjHG%V%i%s%A:n@.(B)
+	* Ver 1.2.0 リリース(安定版ブランチ作成)
 
-	* src/testvalue.c: $BDI2C(B
+	* src/testvalue.c: 追加
 
-	* src/getset.c (SetValueChar): $BDI2C(B
+	* src/getset.c (SetValueChar): 追加
 
-	* src/Native.c : $BJ8;zNs$N(Bpack/unpack$B$N7A<0$rJQ99$7$?(B
+	* src/Native.c : 文字列のpack/unpackの形式を変更した
 
 2003-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: $B%?%0L>$rJQ?tL>$K0lCW$5$;$?7A<0(B
+	* src/XML.c: タグ名を変数名に一致させた形式
 
 2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: libxml$B$K$bBP1~(B
+	* src/XML.c: libxmlにも対応
 
-	* src/getset.c : $BJ8;zNs$NA`:n$r(Brobust$B$K$7$?(B($B%P%C%U%!%5%$%:$r0U<1$7(B
-	$B$F$$$kItJ,$r8:$i$7$D$D$"$k(B)
+	* src/getset.c : 文字列の操作をrobustにした(バッファサイズを意識し
+	ている部分を減らしつつある)
 
 2003-10-21  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c: $BJ8;zNs$N3JG<J}K!$rJQ99$7$?(B($BFbItI=8=$rD>@\J]B8$9$k(B
-	$B$?$a(B)
+	* src/Native.c: 文字列の格納方法を変更した(内部表現を直接保存する
+	ため)
 
 2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c: ValueStruct$B$NFbItI=8=$r(Butf8$B$K$7$F!"A4BNE*$K9q:]2=(B
-	$B$7$?(B(utf8$B$,%Y%9%H$+$I$&$+$O$o$+$i$8(B)
+	* src/getset.c: ValueStructの内部表現をutf8にして、全体的に国際化
+	した(utf8がベストかどうかはわからじ)
 
-	* src/debug.h: panda$B$N$b$N$r;}$C$FMh$?(B($B$3$C$A$,JXMx(B)
+	* src/debug.h: pandaのものを持って来た(こっちが便利)
 
 2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: $B%U%#!<%k%IL>JQ99(B(XML$B$N%?%0$K9g$o$;$k(B)
+	* src/valueconv.h: フィールド名変更(XMLのタグに合わせる)
 
 2003-10-17  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/XML.c: XML$B$KBP1~(B($B@5$7$/F0$/$,IT40A4(B)
+	* src/XML.c: XMLに対応(正しく動くが不完全)
 
 2003-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c : $BF10l%l%3!<%IFb$G$N(Balias$B$r$d$a$?!#J@32$NJ}$,Bg$-(B
-	$B$$$N$G!#(B
+	* src/DDparser.c : 同一レコード内でのaliasをやめた。弊害の方が大き
+	いので。
 
 2003-10-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c (SetValueString): str$B$,(BNULL$B$N;~$N=hM}(B(NIL$B$K$7$?$,!"(B
-	$B$3$l$G@5$7$$$+$I$&$+$OITL@(B)
+	* src/getset.c (SetValueString): strがNULLの時の処理(NILにしたが、
+	これで正しいかどうかは不明)
 
 2003-10-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Lex.c: $B:FF~2DG=$K$7$FHFMQ%i%$%V%i%j$K$7$?(B
+	* src/Lex.c: 再入可能にして汎用ライブラリにした
 
 2004-09-29  Noboru Saitou  <noborus@netlab.jp>
 
@@ -298,73 +302,73 @@
 
 2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* tools/Makefile.am (LDADD): make distcheck$B$,DL$k$h$&$K$7$?!#(B
+	* tools/Makefile.am (LDADD): make distcheckが通るようにした。
 
 2003-09-27  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.h, src/DDparser.[ch] : RecordStruct$B$rDI$$=P$9!#$=$l$K(B
-	$BH<$$!"4X?t$N;EMMEyJQ99$7$?(B
+	* src/value.h, src/DDparser.[ch] : RecordStructを追い出す。それに
+	伴い、関数の仕様等変更した
 
 2003-09-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Emit): $BESCf$K(Bemit$B$7$?;~$N=hM}$r@5$7$/$7$?(B
+	* src/LBSfunc.c (LBS_Emit): 途中にemitした時の処理を正しくした
 
 2003-09-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/getset.c, src/Native.c, src/value.h: null$B$N%5%]!<%H(B
+	* src/getset.c, src/Native.c, src/value.h: nullのサポート
 
 2003-09-08  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SQL*.[ch]: panda$B$K0\F0(B(libmondai$B$K$"$k$Y$-$G$O$J$$(B)
+	* src/SQL*.[ch]: pandaに移動(libmondaiにあるべきではない)
 
-	* src/DDparser.c: DB$B$N5!G=$rH4$$$?(B(libmondai$B$K$"$k$Y$-$G$O$J$$(B)
+	* src/DDparser.c: DBの機能を抜いた(libmondaiにあるべきではない)
 
 2003-09-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/valueconv.h: ConvFunc$B$N(Bglobal$B2=(B
+	* src/valueconv.h: ConvFuncのglobal化
 
 2003-09-03  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/valueconv.c (GetConvFunc): $BDI2C(B
+	* src/valueconv.c (GetConvFunc): 追加
 
 2003-08-12  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Trim): LBS$B$NKvHx$r@Z$j5M$a$k4X?t(B
+	* src/LBSfunc.c (LBS_Trim): LBSの末尾を切り詰める関数
 
 2003-07-30  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/value.h: RecordStruct$B$N%a%s%PL>JQ99(B($B$o$+$j$d$9$$L>A0$K(B)
+	* src/value.h: RecordStructのメンバ名変更(わかりやすい名前に)
 
 2003-07-29  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/Text.c: CGI$B7A<0$KBP1~(B
+	* src/Text.c: CGI形式に対応
 
-	* src/others.c (EncodeStringLengthURL): $BD9$57W;;$N8m$j$rD>$7$?(B
+	* src/others.c (EncodeStringLengthURL): 長さ計算の誤りを直した
 
 2003-07-19  OGOSHI  <ogochan@nurs.or.jp>
 
-	* src/valueconv.c: $B%Q%i%a!<%?$NJQ99$r$7$?(B($B$?$@$7!"5!G=E*$KL$<BAu$N(B
-	$B$b$NB??t(B)
+	* src/valueconv.c: パラメータの変更をした(ただし、機能的に未実装の
+	もの多数)
 
 2003-07-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822$B$NL>A0L5$7$KBP1~(B
+	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822の名前無しに対応
 
 2003-07-07  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Text.c : CSV, RFC822$B$N7A<0$KBP1~$7$?(B
+	* src/Text.c : CSV, RFC822の形式に対応した
 
 2003-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/misc.c (StringChop): $BDI2C(B
+	* src/misc.c (StringChop): 追加
 
 2003-06-09  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c: $BCn<h$j$H0lIt4X?t$N%^%/%m2=$*$h$S%G!<%?%"%/%;%9%^%/%m$NDI2C(B
+	* src/LBSfunc.c: 虫取りと一部関数のマクロ化およびデータアクセスマクロの追加
 
 2003-06-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (NewValue): $B0l;~E*$JCn;_$a(B($B>-MhE*$K$OH4K\E*$JBP:v$r$9$k$Y$-(B)
+	* src/value.c (NewValue): 一時的な虫止め(将来的には抜本的な対策をするべき)
 
 2003-05-30  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -372,50 +376,50 @@
 
 2003-05-25  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/numerici. : value.c$B$+$iJ,N%(B
+	* src/numerici. : value.cから分離
 
-	* src/value.c : Fixed$B4X784X?t$NDI2C(B
+	* src/value.c : Fixed関係関数の追加
 
 2003-05-23  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/SQLparser.c (ParSQL): $B!VL>A0!W$KM=Ls8l$,;H$($k$h$&$K$7$?(B
+	* src/SQLparser.c (ParSQL): 「名前」に予約語が使えるようにした
 
 2003-05-19  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* Makefile.am (EXTRA_DIST): acconfig.h $B$r(B EXTRA_DIST $B$+$i:o=|(B
+	* Makefile.am (EXTRA_DIST): acconfig.h を EXTRA_DIST から削除
 
 2003-05-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/ : options.c, options.h, options.doc$B$r:o=|$7$?(B($B$3$3$K$"$k$Y$-$G$O$J$$(B)
+	* src/ : options.c, options.h, options.docを削除した(ここにあるべきではない)
 
 2003-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/DDparser.c (ParValue): $BB?<!85Dj5ABN$N=hM}(B($B4V0c$C$F$$$?(B)
+	* src/DDparser.c (ParValue): 多次元定義体の処理(間違っていた)
 
 2003-05-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c (_COBOL): COBOL$BFs<!85G[NsLdBjBP1~(B
+	* tools/rec2copy.c (_COBOL): COBOL二次元配列問題対応
 
 2003-05-15  Koji SHIMIZU  <shimizu@netlab.jp>
 
-	* configure.in: AC_CHECK_HEADERS $B$NBh(B 2 $B0z?t$r:o=|(B
-	* acconfig.h: $B:o=|(B
+	* configure.in: AC_CHECK_HEADERS の第 2 引数を削除
+	* acconfig.h: 削除
 
 2003-05-15  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/hash.c: hash$B4X784X?t$rJL%U%!%$%k$K$7$?(B
+	* src/hash.c: hash関係関数を別ファイルにした
 
 2003-05-05  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.c (LBS_Duplicate): LBS$B$NJ#<L5!G=DI2C(B
+	* src/LBSfunc.c (LBS_Duplicate): LBSの複写機能追加
 
 2003-05-03  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/value.c (ParPort): host$B$,$J$$;~$K(Blocalhost$B$H$_$J$9(B
+	* src/value.c (ParPort): hostがない時にlocalhostとみなす
 
 2003-04-28  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/LBSfunc.h: asize$B$N4IM}$rDI2C!"(Bsize$B$O!V;H$C$?Bg$-$5!W$K$7$?(B
+	* src/LBSfunc.h: asizeの管理を追加、sizeは「使った大きさ」にした
 
 2003-04-02  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -423,7 +427,7 @@
 
 2003-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c : $BJQ?tL>$K9=B$BN$N9=B$$rH?1G$5$;$k5!G=IU2C(B
+	* tools/rec2copy.c : 変数名に構造体の構造を反映させる機能付加
 
 2003-03-27  Koji SHIMIZU  <shimizu@netlab.jp>
 
@@ -434,7 +438,7 @@
 
 2003-03-16  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* src/Native.c : valueconv.c $B$+$iJ,N%$7$?(B
+	* src/Native.c : valueconv.c から分離した
 
 2003-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
 
@@ -442,9 +446,9 @@
 
 2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c: $B8@8l$N;XDj$r$9$k$h$&$K$7$?(B
+	* tools/rec2copy.c: 言語の指定をするようにした
 
-	* src/dotCOBOL.c (dotCOBOL_SizeValue): $BBg$-$5$r5a$a$k4X?tDI2C(B
+	* src/dotCOBOL.c (dotCOBOL_SizeValue): 大きさを求める関数追加
 
 	* src/OpenCOBOL.c (OpenCOBOL_SizeValue): 
 
@@ -456,7 +460,7 @@
 
 2003-03-12  Masami Ogoshi  <ogochan@nurs.or.jp>
 
-	* tools/rec2copy.c: COPY$B6g$r@8@.$9$k%W%m%0%i%`$r?75,:n@.$7$?(B
+	* tools/rec2copy.c: COPY句を生成するプログラムを新規作成した
 
 2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
 

@@ -27,6 +27,7 @@
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
+#ifdef	USE_SOAP
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -221,16 +222,17 @@ main(
 
 	val2 = DuplicateValue(val);
 
-	SOAP_UnPackValue(val2,buff,method);
+	SOAP_UnPackValue(val2,(char *)buff,method);
 
 	printf("method = [%s]\n",method);
 	DumpByXML(val2,"mcparea");
 
 	SOAP_PackValue(buff,val,"Put","mcp","http://oreore",TRUE,FALSE);
-	val2 = SOAP_LoadValue(buff,method);
+	val2 = SOAP_LoadValue((char *)buff,method);
 	printf("method = [%s]\n",method);
 	DumpByXML(val2,"mcparea");
 	//DumpValueStruct(val2);
 
 	return	(0);
 }
+#endif

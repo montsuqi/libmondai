@@ -201,10 +201,10 @@ ValueToLBS(
 	ValueStruct	*val,
 	char		*codeset)
 {
-	char	work[SIZE_NUMBUF+1];
-	char	work2[SIZE_NUMBUF+2];
+	byte	work[SIZE_NUMBUF+1];
+	byte	work2[SIZE_NUMBUF+2];
 	byte	*p
-	,		*q;
+		,	*q;
 	int		i;
 	int		size;
 	LargeByteString	*ret;
@@ -224,7 +224,6 @@ ENTER_FUNC;
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
 			RewindLBS(ValueStr(val));
 			LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 								  ValueStringSize(val),
@@ -237,6 +236,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
+		  case	GL_TYPE_DBCODE:
 			if		(  ValueString(val)  !=  NULL  ) {
 				if		(  codeset  ==  NULL  ) {
 					LBS_ReserveSize(ValueStr(val),strlen(ValueString(val))+1,FALSE);
@@ -347,13 +347,13 @@ SetValueStringWithLength(
 	,		fPoint;
 	int		i;
 	size_t	len;
-	char	*p;
-	char	buff[SIZE_NUMBUF+1]
-	,		sbuff[SIZE_LONGNAME+1];
+	byte	*p;
+	byte	buff[SIZE_NUMBUF+1]
+		,	sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
 #ifdef	WITH_I18N
-	char	*q;
+	byte	*q;
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
@@ -384,8 +384,8 @@ ENTER_FUNC;
 					sib = len;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
-						*q = 0;
-						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
+						memclear(ValueString(val),ValueStringSize(val));
+						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  ==  0  )	break;
 						if		(  errno  ==  E2BIG ) {
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
@@ -394,7 +394,7 @@ ENTER_FUNC;
 					} else {
 						ValueStringSize(val) = 1;
 					}
-					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
+					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
 				};
 				iconv_close(cd);
 				*q = 0;
@@ -406,7 +406,7 @@ ENTER_FUNC;
 						xfree(ValueString(val));
 					}
 					ValueStringSize(val) = size;
-					ValueString(val) = (char *)xmalloc(size);
+					ValueString(val) = (byte *)xmalloc(size);
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				strcpy(ValueString(val),str);
@@ -427,8 +427,8 @@ ENTER_FUNC;
 					sib = len + 1;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
-						*q = 0;
-						if		(  iconv(cd,&istr,&sib,&q,&sob)  ==  0  )	break;
+						memclear(ValueString(val),ValueStringSize(val));
+						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  ==  0  )	break;
 						if		(  errno  ==  E2BIG ) {
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
@@ -437,8 +437,7 @@ ENTER_FUNC;
 					} else {
 						ValueStringSize(val) = 1;
 					}
-					ValueString(val) = (char *)xmalloc(ValueStringSize(val));
-					memclear(ValueString(val),ValueStringSize(val));
+					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
 				};
 				iconv_close(cd);
 				len = ValueStringSize(val) - sob - 1;
@@ -450,7 +449,7 @@ ENTER_FUNC;
 						xfree(ValueString(val));
 					}
 					ValueStringSize(val) = size;
-					ValueString(val) = (char *)xmalloc(size);
+					ValueString(val) = (byte *)xmalloc(size);
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				strcpy(ValueString(val),str);
@@ -504,7 +503,7 @@ ENTER_FUNC;
 						xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = size;
-				ValueByte(val) = (char *)xmalloc(size);
+				ValueByte(val) = (byte *)xmalloc(size);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			p = ValueByte(val);
@@ -550,7 +549,7 @@ ENTER_FUNC;
 				sib = slen;
 				sob = SIZE_NUMBUF;
 				p = sbuff;
-				iconv(cd,&istr,&sib,&p,&sob);
+				iconv(cd,&istr,&sib,(void*)&p,&sob);
 				iconv_close(cd);
 				*p = 0;
 				str = sbuff;
@@ -901,7 +900,7 @@ ENTER_FUNC;
 						xfree(ValueString(val));
 					}
 					ValueStringSize(val) = size;
-					ValueString(val) = (char *)xmalloc(size);
+					ValueString(val) = (byte *)xmalloc(size);
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				if		(  str  !=  NULL  ) {
@@ -927,7 +926,7 @@ ENTER_FUNC;
 					xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = slen;
-				ValueByte(val) = (char *)xmalloc(slen);
+				ValueByte(val) = (byte *)xmalloc(slen);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			if		(  str  !=  NULL  ) {

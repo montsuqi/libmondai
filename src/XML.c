@@ -59,7 +59,7 @@ typedef struct	{
 	Bool		fStart;
 	CONVOPT		*opt;
 }	ValueContext;
-#define	NextName(ctx)	(((ctx)->longname)+strlen((ctx)->longname))
+#define	NextName(ctx)	(xmlChar *)(((ctx)->longname)+strlen((ctx)->longname))
 
 static	XMLOPT	*
 NewXMLOPT(void)
@@ -418,13 +418,13 @@ ENTER_FUNC;
 #endif
 			}
 			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"</%s:%s>",opt->recname,name);
+				p += sprintf((char *)p,"</%s:%s>",opt->recname,name);
 			} else {
-				p += sprintf(p,"</%s>",name);
+				p += sprintf((char *)p,"</%s>",name);
 			}
 			break;
 		}
-		p += PutCR(opt,p);
+		p += PutCR(opt,(char *)p);
 		opt->nIndent --;
 	}
 LEAVE_FUNC;
@@ -444,16 +444,16 @@ XML_PackValue(
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf(p,"<?xml version=\"1.0\"");
+		p += sprintf((char *)p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
 #else
-		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
 #endif
-		p += sprintf(p,"?>");
-		p += PutCR(opt,p);
+		p += sprintf((char *)p,"?>");
+		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
 	} else {
 		opt->nIndent = -1;
@@ -461,32 +461,32 @@ ENTER_FUNC;
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			p += sprintf(p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-			p += PutCR(opt,p);
+			p += sprintf((char *)p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+			p += PutCR(opt,(char *)p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
 			p +=_XML_PackValue1(opt,p,opt->recname,value,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			p += sprintf(p,"</lm:block>");
+			p += sprintf((char *)p,"</lm:block>");
 		}
 		break;
 	  case	XML_TYPE2:
 	  default:
 		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+				p += sprintf((char *)p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
 							 ,opt->recname,opt->recname,NS_URI,opt->recname);
 			} else {
-				p += sprintf(p,"<data>");
+				p += sprintf((char *)p,"<data>");
 			}
-			p += PutCR(opt,p);
+			p += PutCR(opt,(char *)p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
 			p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			p += sprintf(p,"</%s:data>",opt->recname);
+			p += sprintf((char *)p,"</%s:data>",opt->recname);
 		}
 		break;
 	}
@@ -507,30 +507,30 @@ XML1_PackValue(
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf(p,"<?xml version=\"1.0\"");
+		p += sprintf((char *)p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
 #else
-		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
 #endif
-		p += sprintf(p,"?>");
-		p += PutCR(opt,p);
+		p += sprintf((char *)p,"?>");
+		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
 	} else {
 		opt->nIndent = -1;
 	}
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf(p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-		p += PutCR(opt,p);
+		p += sprintf((char *)p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
+		p += PutCR(opt,(char *)p);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
 		p +=_XML_PackValue1(opt,p,opt->recname,value,buff);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		p += sprintf(p,"</lm:block>");
+		p += sprintf((char *)p,"</lm:block>");
 	}
 	*p = 0;
 LEAVE_FUNC;
@@ -549,16 +549,16 @@ XML2_PackValue(
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf(p,"<?xml version=\"1.0\"");
+		p += sprintf((char *)p,"<?xml version=\"1.0\"");
 #ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf(p," encoding=\"%s\"",ConvCodeset(opt));
+			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
 #else
-		p += sprintf(p," encoding=\"%s\"",LIBXML_CODE);
+		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
 #endif
-		p += sprintf(p,"?>");
-		p += PutCR(opt,p);
+		p += sprintf((char *)p,"?>");
+		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
 	} else {
 		opt->nIndent = -1;
@@ -566,18 +566,18 @@ ENTER_FUNC;
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		if		(  opt->recname  !=  NULL  ) {
-			p += sprintf(p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
+			p += sprintf((char *)p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
 						 ,opt->recname,opt->recname,NS_URI,opt->recname);
 		} else {
-			p += sprintf(p,"<data>");
+			p += sprintf((char *)p,"<data>");
 		}
-		p += PutCR(opt,p);
+		p += PutCR(opt,(char *)p);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
 		p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		p += sprintf(p,"</%s:data>",opt->recname);
+		p += sprintf((char *)p,"</%s:data>",opt->recname);
 	}
 	*p = 0;
 LEAVE_FUNC;
@@ -876,7 +876,7 @@ GetAttribute(
 
 	ret = NULL;
 	while	( *atts  !=  NULL  ) {
-		if		(  stricmp(*atts,name)  ==  0  ) {
+		if		(  stricmp((char *)*atts,(char *)name)  ==  0  ) {
 			ret = *(atts + 1);
 			break;
 		}
@@ -892,16 +892,16 @@ startElement1_(
 	xmlChar	**atts)
 {
 	xmlChar	*vname
-	,		*p
-	,		*q;
+		,	*p
+		,	*q;
 
 	p = NextName(ctx);
 	q = p;
-	if		(  ( vname = (char *)GetAttribute(atts,(xmlChar *)"name") )  !=  NULL  ) {
+	if		(  ( vname = GetAttribute(atts,(xmlChar *)"name") )  !=  NULL  ) {
 		if		(  (char *)p  !=  ctx->longname  ) {
 			*p++ = '.';
 		}
-		sprintf(p,"%s",(char *)vname);
+		sprintf((char *)p,"%s",(char *)vname);
 	}
 #ifdef	DEBUG
 	printf("startElement_(%s)[%s]\n",(char *)name,ctx->longname);
@@ -911,18 +911,18 @@ startElement1_(
 		*q = 0;
 		ctx->fStart = TRUE;
 	} else
-	if		(  stricmp(name,"lm:record")  ==  0  ) {
+	if		(  stricmp((char *)name,"lm:record")  ==  0  ) {
 		if		(  ctx->value  ==  NULL  ) {
 			*q = 0;
 		}
 		ctx->value = GetItemLongName(ctx->root,ctx->longname);
 		ctx->fStart = FALSE;
 	} else
-	if		(  stricmp(name,"lm:array")  ==  0  ) {
+	if		(  stricmp((char *)name,"lm:array")  ==  0  ) {
 		*q = 0;
 		ctx->fStart = FALSE;
 	} else
-	if		(  stricmp(name,"lm:block")  ==  0  ) {
+	if		(  stricmp((char *)name,"lm:block")  ==  0  ) {
 		ctx->value = NULL;
 		ctx->fStart = FALSE;
 	}
@@ -938,9 +938,9 @@ endElement1_(
 #ifdef	DEBUG
 	printf("endElement_(%s)\n",(char *)name);
 #endif
-	if		(	(  stricmp(name,"lm:array")  ==  0  )
-			||	(  stricmp(name,"lm:record")  ==  0  ) ) {
-		if		(  ( p = strrchr(ctx->longname,'.') )  !=  NULL  ) {
+	if		(	(  stricmp((char *)name,"lm:array")  ==  0  )
+			||	(  stricmp((char *)name,"lm:record")  ==  0  ) ) {
+		if		(  ( p = (xmlChar *)strrchr(ctx->longname,'.') )  !=  NULL  ) {
 			*p = 0;
 		} else {
 			*ctx->longname = 0;
@@ -1024,18 +1024,18 @@ startElement2_(
 	int		count;
 	Bool	fArray;
 
-	strcpy(buff,name);
-	if		(  ( p = strchr(buff,':')  )  !=  NULL  ) {
+	strcpy((char *)buff,(char *)name);
+	if		(  ( p = (xmlChar *)strchr((char *)buff,':')  )  !=  NULL  ) {
 		*p = 0;
 		rname = buff;
 		vname = p + 1;
 	} else {
-		rname = "";
+		rname = (xmlChar *)"";
 		vname = buff;
 	}
-	if		(  ( p = strchr(vname,':')  )  !=  NULL  ) {
+	if		(  ( p = (xmlChar *)strchr((char *)vname,':')  )  !=  NULL  ) {
 		*p = 0;
-		count = atoi(p+1);
+		count = atoi((char *)p+1);
 		fArray = TRUE;
 	} else {
 		fArray = FALSE;
@@ -1048,9 +1048,9 @@ startElement2_(
 		*p++ = '.';
 	}
 	if		(  fArray  ) {
-		sprintf(p,"%s[%d]",(char *)vname,count);
+		sprintf((char *)p,"%s[%d]",(char *)vname,count);
 	} else {
-		sprintf(p,"%s",(char *)vname);
+		sprintf((char *)p,"%s",(char *)vname);
 	}
 #ifdef	DEBUG
 	printf("startElement_(%s)[%s]\n",(char *)name,ctx->longname);
@@ -1061,15 +1061,15 @@ startElement2_(
 			ctx->value = NULL;
 			ctx->fStart = FALSE;
 		} else {
-			type = (char *)GetAttribute(atts,(xmlChar *)"type");
-			if		(  stricmp(type,"record")  ==  0  ) {
+			type = GetAttribute(atts,(xmlChar *)"type");
+			if		(  stricmp((char *)type,"record")  ==  0  ) {
 				if		(  ctx->value  ==  NULL  ) {
 					*q = 0;
 				}
 				ctx->value = GetItemLongName(ctx->root,ctx->longname);
 				ctx->fStart = FALSE;
 			} else
-			if		(  stricmp(type,"array")  ==  0  ) {
+			if		(  stricmp((char *)type,"array")  ==  0  ) {
 				*q = 0;
 				ctx->fStart = FALSE;
 			} else {
@@ -1097,24 +1097,24 @@ endElement2_(
 #ifdef	DEBUG
 	printf("endElement_(%s)\n",(char *)name);
 #endif
-	strcpy(buff,name);
-	if		(  ( p = strchr(buff,':')  )  !=  NULL  ) {
+	strcpy((char *)buff,(char *)name);
+	if		(  ( p = (xmlChar *)strchr((char *)buff,':')  )  !=  NULL  ) {
 		*p = 0;
 		rname = buff;
 		vname = p + 1;
 	} else {
-		rname = "";
+		rname = (xmlChar *)"";
 		vname = buff;
 	}
-	if		(  ( p = strchr(vname,':')  )  !=  NULL  ) {
+	if		(  ( p = (xmlChar *)strchr((char *)vname,':')  )  !=  NULL  ) {
 		*p = 0;
 	}
 
-	if		(  ( p = strrchr(ctx->longname,'.') )  !=  NULL  ) {
-		if		(  ( q = strchr(p+1,'[')  )  !=  NULL  ) {
+	if		(  ( p = (xmlChar *)strrchr((char *)ctx->longname,'.') )  !=  NULL  ) {
+		if		(  ( q = (xmlChar *)strchr((char *)p+1,'[')  )  !=  NULL  ) {
 			*q = 0;
 		}
-		if		(  strcmp(p+1,vname)  ==  0  ) {
+		if		(  strcmp((char *)p+1,(char *)vname)  ==  0  ) {
 			*p = 0;
 		}
 		if		(  q  !=  NULL  ) {
@@ -1197,7 +1197,7 @@ XML_UnPackValue(
 ENTER_FUNC;
 	ctx = New(ValueContext);
 	ctx->root = value;
-	ctx->buff = (char *)xmalloc(1);
+	ctx->buff = (xmlChar *)xmalloc(1);
 	ctx->size = 1;
 	ctx->fStart = FALSE;
 	ctx->opt = opt;
@@ -1208,10 +1208,10 @@ ENTER_FUNC;
 	pp = p;
 	switch	(ConvXmlType(opt)) {
 	  case	XML_TYPE1:
-		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
+		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,(char *)p,strlen((char *)p));
 		break;
 	  case	XML_TYPE2:
-		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
+		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,(char *)p,strlen((char *)p));
 		break;
 	}
     xmlCleanupParser();
@@ -1233,7 +1233,7 @@ XML1_UnPackValue(
 ENTER_FUNC;
 	ctx = New(ValueContext);
 	ctx->root = value;
-	ctx->buff = (char *)xmalloc(1);
+	ctx->buff = (xmlChar *)xmalloc(1);
 	ctx->size = 1;
 	ctx->fStart = FALSE;
 	ctx->opt = opt;
@@ -1242,7 +1242,7 @@ ENTER_FUNC;
 
 	SetNil(value);
 	pp = p;
-	xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,p,strlen(p));
+	xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,(char *)p,strlen((char *)p));
     xmlCleanupParser();
 	xfree(ctx->buff);
 	xfree(ctx);
@@ -1262,7 +1262,7 @@ XML2_UnPackValue(
 ENTER_FUNC;
 	ctx = New(ValueContext);
 	ctx->root = value;
-	ctx->buff = (char *)xmalloc(1);
+	ctx->buff = (xmlChar *)xmalloc(1);
 	ctx->size = 1;
 	ctx->fStart = FALSE;
 	ctx->opt = opt;
@@ -1271,7 +1271,7 @@ ENTER_FUNC;
 
 	SetNil(value);
 	pp = p;
-	xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,p,strlen(p));
+	xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,(char *)p,strlen((char *)p));
     xmlCleanupParser();
 	xfree(ctx->buff);
 	xfree(ctx);

@@ -55,7 +55,12 @@ extern	void	SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
 #define	ReleasePoolByPool(p)		_ReleasePool(p)
 #define	ReleasePoolByName(n)		_ReleasePool(GetPool(n))
 #define	New(s)						(s *)xmalloc(sizeof(s))
+
+#ifndef	xmalloc
 #define	xmalloc(s)					_xmalloc((s),__FILE__,__LINE__)
+#endif
+#ifndef	xfree
 #define	xfree(p)					_xfree((p),__FILE__,__LINE__),(p) = NULL
+#endif
 
 #endif

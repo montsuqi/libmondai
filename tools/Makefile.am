@@ -20,6 +20,9 @@
 
 bin_PROGRAMS = rec2copy monconv
 
+AM_CFLAGS	=	-O4 -Wall -Wunused -Wredundant-decls -Wno-pointer-sign \
+	-Werror -funsigned-char
+
 LDADD 		=	\
 	$(GLIB_LIBS)						\
 	$(XML_LIBS)						\

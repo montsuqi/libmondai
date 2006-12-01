@@ -63,7 +63,6 @@
 #define	XMLNsBody(cur)				(char *)((cur)->ns->href)
 #define	XMLNsPrefix(cur)			((cur)->ns->prefix)
 #define	XMLName(cur)				(char *)((cur)->name)
-#define	XMLGetProp(tree,name)		xmlGetProp((tree),(name))
 #define	XMLGetNsProp(tree,name,ns)	xmlGetNsProp((tree),(name),(ns))
 
 #ifdef	DEBUG
@@ -160,8 +159,8 @@ SearchNode(
 	char		*prop,
 	char		*pvalue)
 {
-	char	*thisns;
-	char	*thisnn;
+	xmlChar	*thisns
+		,	*thisnn;
 	xmlNodePtr	ret;
 
 ENTER_FUNC;
@@ -217,7 +216,7 @@ _SOAP_UnPackValue(
 	xmlNode		*node)
 {
 	int		i;
-	char	*href
+	xmlChar	*href
 		,	*xsi_null;
 	byte	*buff;
 	xmlChar	*text;
@@ -264,13 +263,14 @@ ENTER_FUNC;
 						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
 						&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
 					buff = (byte *)xmalloc(strlen(text));
-					size = DecodeBase64(buff,strlen(text),text,strlen(text));
+					size = DecodeBase64(buff,strlen(text),text,
+										strlen(text));
 					if		(  size  >  ValueByteSize(value)  ) {
 						if		(  ValueByte(value)  !=  NULL  ) {
 							xfree(ValueByte(value));
 						}
 						ValueByteSize(value) = size;
-						ValueByte(value) = (char *)xmalloc(size);
+						ValueByte(value) = (byte *)xmalloc(size);
 					}
 					memclear(ValueByte(value),ValueByteSize(value));
 					memcpy(ValueByte(value),buff,size);
@@ -387,7 +387,7 @@ _SOAP_LoadValue(
 	GHashTable	*ids,
 	xmlNode		*node)
 {
-	char		*href
+	xmlChar		*href
 		,		*tname
 		,		*xsi_null
 		,		*text;
@@ -441,10 +441,11 @@ ENTER_FUNC;
 							&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
 							&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
 						buff = (byte *)xmalloc(strlen(text));
-						size = DecodeBase64(buff,strlen(text),text,strlen(text));
+						size = DecodeBase64(buff,strlen(text),text,
+											strlen(text));
 						ValueByteSize(value) = size;
 						ValueByteLength(value) = size;
-						ValueByte(value) = (char *)xmalloc(size);
+						ValueByte(value) = (byte *)xmalloc(size);
 						memclear(ValueByte(value),ValueByteSize(value));
 						memcpy(ValueByte(value),buff,size);
 						xfree(buff);

@@ -54,7 +54,7 @@ ParCommandLine(
 	,			*q;
 	char		**cmd;
 
-dbgmsg(">ParCommandLine");
+ENTER_FUNC;
 	n = 0;
 	p = line;
 	while	(  *p  !=  0  ) {
@@ -86,7 +86,7 @@ dbgmsg(">ParCommandLine");
 		}
 	}
 	cmd[n] = NULL;
-dbgmsg("<ParCommandLine");
+LEAVE_FUNC;
 
 	return	(cmd); 
 }
@@ -100,6 +100,7 @@ ExpandPath(
 	char	*p
 	,		*q;
 
+ENTER_FUNC;
 	p = path;
 	while	(  *org  !=  0  ) {
 		if		(  *org  ==  '~'  ) {
@@ -121,6 +122,7 @@ ExpandPath(
 		org ++;
 	}
 	*p = 0;
+LEAVE_FUNC;
 	return	(path);
 }
 
@@ -152,7 +154,7 @@ DecodeStringURL(
 extern	size_t
 EncodeStringURL(
 	char	*q,
-	byte	*p)
+	char	*p)
 {
 	char	*qq;
 
@@ -175,7 +177,7 @@ EncodeStringURL(
 
 extern	size_t
 EncodeStringLengthURL(
-	byte	*p)
+	char	*p)
 {
 	size_t	ret;
 

@@ -115,7 +115,7 @@ ENTER_FUNC;
 					xfree(ValueByte(value));
 				}
 				ValueByteSize(value) = size;
-				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueByte(value),size);
@@ -138,7 +138,7 @@ ENTER_FUNC;
 					xfree(ValueString(value));
 				}
 				ValueStringSize(value) = size;
-				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
@@ -662,7 +662,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueByteSize(value) = size;
-				ValueByte(value) = (char *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				if		(  fData  ) {
@@ -686,7 +686,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
-				ValueString(value) = (char *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
 				if		(  fData  ) {
 					strcpy(ValueString(value),p);

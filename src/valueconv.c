@@ -45,6 +45,8 @@
 #include	"Native_v.h"
 #include	"Text_v.h"
 #include	"XML_v.h"
+#include	"php_v.h"
+#include	"others.h"
 #include	"valueconv.h"
 #include	"debug.h"
 
@@ -74,6 +76,9 @@ static	ConvFuncs	funcs[] = {
 
 	{	"CGI",					FALSE,	"&",					"\n",
 		CGI_PackValue,			CGI_UnPackValue,		CGI_SizeValue		},
+
+	{	"PHP",					FALSE,	"",						"",
+		PHP_PackValue,			PHP_UnPackValue,		PHP_SizeValue		},
 
 #ifdef	USE_XML
 	{	"XML",					FALSE,	"\n",					"\n",
@@ -115,6 +120,31 @@ GetConvFunc(
 	}
 	return	(func);
 }
+
+extern	size_t
+EncodeLength(
+	CONVOPT		*opt,
+	char		*in)
+{
+	size_t	result;
+
+	switch	(ConvEncoding(opt)) {
+	  case	STRING_ENCODING_NULL:
+		result = strlen(in);
+		break;
+	  case	STRING_ENCODING_URL:
+		result = EncodeStringLengthURL(in);
+		break;
+	  case	STRING_ENCODING_BASE64:
+		result = EncodeLengthBase64(in);
+		break;
+	  default:
+		result = 0;
+		break;
+	}
+	return	(result);
+}
+
 
 extern	void
 ConvSetLanguage(

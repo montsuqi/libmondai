@@ -68,6 +68,7 @@ extern	ConvFuncs	*GetConvFunc(char *name);
 extern	void		ConvSetLanguage(char *name);
 extern	CONVOPT		*NewConvOpt(void);
 extern	void		DestroyConvOpt(CONVOPT *opt);
+extern	size_t	EncodeLength(CONVOPT *opt, char *in);
 
 #define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
 #define	ConvSetCodeset(opt,cod)		(opt)->codeset = (cod)

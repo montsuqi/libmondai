@@ -62,7 +62,7 @@ NameCompare(
 	gconstpointer	s1,
 	gconstpointer	s2)
 {
-	return	(!strcmp((char *)s1,(char *)s2));
+	return	(!strcmp(s1,s2));
 }
 
 extern	GHashTable	*

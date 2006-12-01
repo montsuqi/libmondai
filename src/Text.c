@@ -212,7 +212,7 @@ IsComma(
 static	size_t
 __CSV_PackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
@@ -220,7 +220,7 @@ __CSV_PackValue(
 	char		*buff)
 {
 	int		i;
-	char	*pp;
+	byte	*pp;
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -509,7 +509,7 @@ SQL_UnPackValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_OBJECT:
-			SetValueString(value,(char *)LBS_Body(lbs),ConvCodeset(opt));
+			SetValueString(value,LBS_Body(lbs),ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -557,12 +557,12 @@ SQL_Encode(
 static	size_t
 _SQL_PackValue(
 	CONVOPT		*opt,
-	char		*p,
+	byte		*p,
 	ValueStruct	*value,
 	Bool		*fFirst)
 {
 	int		i;
-	char	*pp;
+	byte	*pp;
 	LargeByteString	*lbs;
 
 	pp = p;
@@ -759,7 +759,7 @@ SQL_SizeValue(
 static	byte	*
 RFC822_SkipNext(
 	CONVOPT	*opt,
-	char	*p)
+	byte	*p)
 {
 	switch	(opt->encode) {
 	  case	STRING_ENCODING_NULL:
@@ -797,8 +797,8 @@ DecodeName(
 static	size_t
 EncodeString(
 	CONVOPT		*opt,
-	byte		*out,
-	char		*in)
+	char		*out,
+	byte		*in)
 {
 	size_t	result;
 
@@ -812,30 +812,6 @@ EncodeString(
 		break;
 	  case	STRING_ENCODING_BASE64:
 		result = EncodeBase64(out,-1,in,strlen(in));
-		break;
-	  default:
-		result = 0;
-		break;
-	}
-	return	(result);
-}
-
-static	size_t
-EncodeLength(
-	CONVOPT		*opt,
-	char		*in)
-{
-	size_t	result;
-
-	switch	(ConvEncoding(opt)) {
-	  case	STRING_ENCODING_NULL:
-		result = strlen(in);
-		break;
-	  case	STRING_ENCODING_URL:
-		result = EncodeStringLengthURL(in);
-		break;
-	  case	STRING_ENCODING_BASE64:
-		result = EncodeLengthBase64(in);
 		break;
 	  default:
 		result = 0;
@@ -875,7 +851,7 @@ _RFC822_UnPackValueNoNamed(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value,
-	char		*buff)
+	byte		*buff)
 {
 	int		i;
 	byte	*q
@@ -941,9 +917,9 @@ _RFC822_UnPackValueNamed(
 	CONVOPT		*opt,
 	byte		*p,
 	ValueStruct	*value,
-	char		*buff)
+	byte		*buff)
 {
-	char	str[SIZE_LONGNAME+1];
+	byte	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
 	byte	*q
@@ -1015,7 +991,7 @@ RFC822_UnPackValue(
 	ValueStruct	*value)
 {
 	size_t	ret;
-	char	buff[SIZE_BUFF];
+	byte	buff[SIZE_BUFF];
 
 ENTER_FUNC;
 	p = StrDup(p);
@@ -1039,7 +1015,7 @@ _RFC822_PackValue(
 	char		*buff)
 {
 	int		i;
-	char	*str;
+	byte	*str;
 	byte	*pp;
 
 ENTER_FUNC;
@@ -1205,7 +1181,7 @@ RFC822_SizeValue(
 static	byte	*
 CGI_SkipNext(
 	CONVOPT	*opt,
-	char	*p)
+	byte	*p)
 {
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '&'   )
@@ -1220,12 +1196,12 @@ _CGI_UnPackValue(
 	byte		*p,
 	ValueStruct	*value)
 {
-	char	buff[SIZE_BUFF+1];
-	char	str[SIZE_LONGNAME+1];
+	byte	buff[SIZE_BUFF+1];
+	byte	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
-	char	*q
-	,		ch;
+	byte	*q
+		,	ch;
 	byte	*pp;
 	ValueStruct	*e;
 

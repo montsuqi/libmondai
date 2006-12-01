@@ -136,6 +136,7 @@ main(
 				   "\tXML1(tag is data class)\n"
 				   "\tXML2(tag is data name)\n"
 				   "\tCGI('name=value&...)\n"
+				   "\tPHP(PHP serialize)\n"
 				   "\tRFC822('name: value\\n')\n"
 		);
 
@@ -145,6 +146,7 @@ main(
 		fprintf(stderr,"can not found %s input record define.\n",fl->name);
 		exit(1);
 	}
+	type = 0;
 	if		(  !strlicmp(InLang,"xml")  ) {
 		if		(  !strlicmp(InLang,"xml2")  ) {
 			type = XML_TYPE2;

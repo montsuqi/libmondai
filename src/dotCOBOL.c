@@ -92,7 +92,7 @@ dotCOBOL_UnPackValue(
 {
 	int		i;
 	char	buff[SIZE_BUFF];
-	char	*str;
+	byte	*str;
 	byte	*pp;
 
 dbgmsg(">dotCOBOL_UnPackValue");
@@ -118,7 +118,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_BINARY:
-			str = (char *)xmalloc((opt->textsize)*sizeof(byte));
+			str = (byte *)xmalloc((opt->textsize)*sizeof(byte));
 			memcpy(str,p,opt->textsize);
 			p += opt->textsize;
 			SetValueBinary(value,str,opt->textsize);
@@ -126,7 +126,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			str = (char *)xmalloc((opt->textsize+1)*sizeof(char));
+			str = (byte *)xmalloc((opt->textsize+1)*sizeof(char));
 			memcpy(str,p,opt->textsize);
 			str[opt->textsize] = 0;
 			p += opt->textsize;
@@ -137,7 +137,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (char *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
+			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
 			memcpy(str,p,ValueStringLength(value));
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
