@@ -1,5 +1,7 @@
 2006-12-01  Masami Ogoshi  <ogochan@nurs.or.jp>
 
+	* src/php.c: PHP serializerへの対応
+
 	* gcc 4.xへの対応
 
 2006-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
