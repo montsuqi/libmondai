@@ -5,7 +5,7 @@ dnl AM_PATH_LIBMONDAI([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND 
 dnl Test for libmondai, and define LIBMONDAI_CFLAGS and LIBMONDAI_LIBS
 dnl
 
-AC_DEFUN(AM_PATH_LIBMONDAI,
+AC_DEFUN([AM_PATH_LIBMONDAI],
 [dnl 
 dnl Get the cflags and libraries from the libmondai-config script
 dnl
