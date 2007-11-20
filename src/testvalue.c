@@ -1,7 +1,8 @@
+
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2002 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2003-2006 Ogochan.
+ * Copyright (C) 2003-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -126,8 +127,8 @@ ENTER_FUNC;
 	p += sprintf(p,		"private	{");
 	p += sprintf(p,			"count	int;");
 	p += sprintf(p,			"swindow	char(%d)[];",SIZE_NAME);
-	p += sprintf(p,			"state		char(1)[%d];",stacksize);
-	p += sprintf(p,			"index		int[%d];",stacksize);
+	p += sprintf(p,			"state		char(1)[%d];",(int)stacksize);
+	p += sprintf(p,			"index		int[%d];",(int)stacksize);
 	p += sprintf(p,			"pstatus	char(1);");
 	p += sprintf(p,			"pputtype 	char(1);");
 	p += sprintf(p,			"prc		char(1);");
@@ -173,9 +174,9 @@ main(
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
 	SetValueString(GetItemLongName(val,"rc"),"0",SRC_CODE);
 
-	SetValueString(GetItemLongName(val,"dc.window"),"1 √À",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.window"),"1 √ã",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.widget"),"widget",SRC_CODE);
-	SetValueString(GetItemLongName(val,"dc.event"),"1002 ∞ÂŒ≈µ°¥ÿæ Û°ºΩÍ∫ﬂ√œ°¢œ¢ÕÌ¿Ë",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.event"),"1002 ",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.fromwin"),"fromwin",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.status"),"status",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.puttype"),"puttype",SRC_CODE);
@@ -260,7 +261,7 @@ printf("** variable size (end)**\n");fflush(stdout);
 
 
 	printf("***** Value duplicate *****\n");
-	val3 = DuplicateValue(val);
+	val3 = DuplicateValue(val,FALSE);
 	printf("***** Value duplicate (end)*****\n");
 
 	printf("***** after duplicate ****\n");

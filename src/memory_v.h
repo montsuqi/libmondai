@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2006 Ogochan.
+ * Copyright (C) 1989-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,6 +55,7 @@ extern	void	SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
 #define	ReleasePoolByPool(p)		_ReleasePool(p)
 #define	ReleasePoolByName(n)		_ReleasePool(GetPool(n))
 #define	New(s)						(s *)xmalloc(sizeof(s))
+#define	NewArea(pool,s)				(s *)GetAreaByPool((pool),sizeof(s))
 
 #ifndef	xmalloc
 #define	xmalloc(s)					_xmalloc((s),__FILE__,__LINE__)

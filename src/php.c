@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2006-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +16,10 @@
  * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
+ */
+
+/*
+ *	This module is not supporting datetime, date, time.
  */
 
 /*
@@ -196,7 +199,7 @@ _PHP_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			str = ValueToString(value,ConvCodeset(opt));
-			p += sprintf(p,"s:%d:\"%s\"",strlen(str),str);
+			p += sprintf(p,"s:%ld:\"%s\"",strlen(str),str);
 			break;
 		  case	GL_TYPE_BOOL:
 			if		(  ValueBool(value)  ) {

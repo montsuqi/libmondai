@@ -1,5 +1,5 @@
 # libmondai -- MONTSUQI data access library
-# Copyright (C) 2005-2006 Ogochan.
+# Copyright (C) 2005-2007 Ogochan.
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,13 +23,14 @@ TESTSOAP  =  testsoap
 else
 TESTSOAP  =
 endif
-noinst_PROGRAMS = testconv testvalue testmem $(TESTSOAP)
+noinst_PROGRAMS = testfixed testconv testvalue testmem $(TESTSOAP)
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
 	-export-dynamic
 
-AM_CFLAGS	=	-O4 -Wall -Wunused -Wredundant-decls -funsigned-char
+AM_CFLAGS	=	-O4 -Wall -Wunused -Wredundant-decls -funsigned-char \
+	-Wno-pointer-sign
 
 EXTRA_DIST = libmondai.h.in
 
@@ -39,6 +40,7 @@ libmondai.h: libmondai.h.in
 libmondaiincludedir = $(includedir)/libmondai
 
 libmondaiinclude_HEADERS =	\
+	lock.h					\
 	misc_v.h				\
 	LBSfunc.h				\
 	OpenCOBOL_v.h			\
@@ -47,6 +49,7 @@ libmondaiinclude_HEADERS =	\
 	Text_v.h				\
 	XML_v.h					\
 	php_v.h					\
+	json_v.h				\
 	SOAP_v.h				\
 	cobolvalue.h			\
 	others.h				\
@@ -70,28 +73,30 @@ INCLUDES 			= 		\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=	\
-	misc.c					\
-	LBSfunc.c				\
-	cobolvalue.c			\
-	OpenCOBOL.c				\
-	dotCOBOL.c				\
-	Native.c				\
-	Text.c					\
-	php.c					\
-	XML.c					\
-	SOAP.c					\
-	hash.c					\
-	getset.c				\
-	value.c					\
-	valueconv.c				\
-	fixed.c					\
-	numerici.c				\
-	others.c				\
-	RecParser.c				\
-	Lex.c					\
-	memory.c				\
-	monstring.c				\
-	numeric.c				\
+	misc.c							\
+	lock.c			lock.h			\
+	LBSfunc.c		LBSfunc.h		\
+	cobolvalue.c	cobolvalue.h	\
+	OpenCOBOL.c		OpenCOBOL_v.h	\
+	dotCOBOL.c		dotCOBOL_v.h	\
+	Native.c		Native_v.h		\
+	Text.c			Text_v.h		\
+	php.c			php_v.h			\
+	json.c			json_v.h		\
+	XML.c			XML_v.h			\
+	SOAP.c			SOAP_v.h		\
+	hash.c			hash_v.h		\
+	getset.c		getset.h		\
+	value.c			value.h			\
+	valueconv.c		valueconv.h		\
+	fixed.c			fixed_v.h		\
+	numerici.c		numerici.h		\
+	others.c		others.h		\
+	RecParser.c		RecParser.h		\
+	Lex.c			Lex.h			\
+	memory.c		memory_v.h		\
+	monstring.c		monstring.h		\
+	numeric.c		numeric.h		\
 	debug.h
 
 LDADD 				=		\
@@ -131,3 +136,10 @@ testmem_INCLUDES 	= 		\
 
 testmem_SOURCES		=		\
 	testmem.c
+
+testfixed_INCLUDES 	= 		\
+	$(GLIB_CFLAGS) 			\
+	-I$(top_srcdir)
+
+testfixed_SOURCES		=		\
+	testfixed.c

@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan
+ * Copyright (C) 2004-2007 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -160,20 +160,16 @@ extern	void	*
 LBS_FetchPointer(
 	LargeByteString	*lbs)
 {
-#ifdef __alpha__
-	long		ret;
+#ifdef	__LP64__
+	uint64_t	ret;
 #else
-	int		ret;
-#endif /* defined( __alpha__ ) */
+	uint32_t	ret;
+#endif
 	int		i;
 
 	if		(  lbs  !=  NULL  ) {
 		ret = 0;
-#if defined( __alpha__ )
-		for	( i = 0 ; i < sizeof(int) ; i ++ ) {
-#else
-		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
-#endif /* defined( __alpha__ ) */
+		for	( i = 0 ; i < sizeof(ret) ; i ++ ) {
 			ret <<= 8;
 			ret |= LBS_FetchByte(lbs);
 		}
@@ -192,7 +188,7 @@ LBS_FetchInt(
 
 	ret = 0;
 	if		(  lbs  !=  NULL  ) {
-		for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
+		for	( i = 0 ; i < sizeof(int) ; i ++ ) {
 			ret <<= 8;
 			ret |= LBS_FetchByte(lbs);
 		}
@@ -299,48 +295,17 @@ LBS_EmitStringCodeset(
 		,	sob;
 	iconv_t	cd;
 	int		rc;
-#if	0
-	int		i;
-	char	obuff[SIZE_CONV];
-	size_t	count
-		,	csize;
-#else
 	char	*obuff;
 	size_t	obsize
 		,	ssize;
 #endif
-#endif
-	size_t	size;
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
 #ifdef	WITH_I18N
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
-#if	0
-			while	(  isize  >  0  )	{
-				count = 1;
-				do {
-					istr = str;
-					sib = count;
-					oc = obuff;
-					sob = SIZE_CONV;
-					if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  <  0  ) {
-						count ++;
-					}
-				}	while	(	(  rc            !=  0  )
-							&&	(  str[count-1]  !=  0  ) );
-				csize = SIZE_CONV - sob;
-				for	( oc = obuff , i = 0 ; i < csize ; i ++, oc ++ ) {
-					LBS_Emit(lbs,*oc);
-				}
-				str += count;
-				isize -= count;
-				osize -= csize;
-				if		(  osize  ==  0  )	break;
-			}
-#else
-			obsize = isize * 3;
+			obsize = isize * 3 + 1;
 			while	(TRUE) {
 				istr = str;
 				sib = isize;
@@ -354,18 +319,22 @@ ENTER_FUNC;
 				} else
 					break;
 			}
+			*oc = 0;
 			ssize = obsize - sob + sizeof(wchar_t);
 			LBS_ReserveSize(lbs,ssize,FALSE);
 			memclear(LBS_Body(lbs),ssize);
 			memcpy(LBS_Body(lbs),obuff,ssize);
 			xfree(obuff);
-#endif
 			iconv_close(cd);
 		} else {
 #endif
-			size = isize < osize ? isize : osize;
-			LBS_ReserveSize(lbs,size+1,FALSE);
-			memcpy(LBS_Body(lbs),str,size);
+			while	(  isize  >  0  )	{
+				LBS_Emit(lbs,*str);
+				str ++;
+				isize --;
+				osize --;
+				if		(  osize  ==  0  )	break;
+			}
 #ifdef	WITH_I18N
 		}
 #endif
@@ -379,21 +348,21 @@ LBS_EmitPointer(
 	void			*p)
 {
  	if		(  lbs  !=  NULL  ) {
-#ifdef __alpha__
-		LBS_Emit(lbs,(((long)p & 0xFF00000000000000) >> 56));
-		LBS_Emit(lbs,(((long)p & 0x00FF000000000000) >> 48));
-		LBS_Emit(lbs,(((long)p & 0x0000FF0000000000) >> 40));
-		LBS_Emit(lbs,(((long)p & 0x000000FF00000000) >> 32));
-		LBS_Emit(lbs,(((long)p & 0x00000000FF000000) >> 24));
-		LBS_Emit(lbs,(((long)p & 0x0000000000FF0000) >> 16));
-		LBS_Emit(lbs,(((long)p & 0x000000000000FF00) >>  8));
-		LBS_Emit(lbs,(((long)p & 0x00000000000000FF)      ));
+#ifdef	__LP64__
+		LBS_Emit(lbs,(((uint64_t)p & 0xFF00000000000000) >> 56));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00FF000000000000) >> 48));
+		LBS_Emit(lbs,(((uint64_t)p & 0x0000FF0000000000) >> 40));
+		LBS_Emit(lbs,(((uint64_t)p & 0x000000FF00000000) >> 32));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00000000FF000000) >> 24));
+		LBS_Emit(lbs,(((uint64_t)p & 0x0000000000FF0000) >> 16));
+		LBS_Emit(lbs,(((uint64_t)p & 0x000000000000FF00) >>  8));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00000000000000FF)      ));
 #else
-		LBS_Emit(lbs,(((int)p & 0xFF000000) >> 24));
-		LBS_Emit(lbs,(((int)p & 0x00FF0000) >> 16));
-		LBS_Emit(lbs,(((int)p & 0x0000FF00) >>  8));
-		LBS_Emit(lbs,(((int)p & 0x000000FF)      ));
-#endif /*__alpha__ */
+		LBS_Emit(lbs,(((uint32_t)p & 0xFF000000) >> 24));
+		LBS_Emit(lbs,(((uint32_t)p & 0x00FF0000) >> 16));
+		LBS_Emit(lbs,(((uint32_t)p & 0x0000FF00) >>  8));
+		LBS_Emit(lbs,(((uint32_t)p & 0x000000FF)      ));
+#endif
 	}
 }
 

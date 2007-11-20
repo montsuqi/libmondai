@@ -1,6 +1,5 @@
-.deps
-.libs
-Makefile
-Makefile.in
 rec2copy
 monconv
+Makefile
+.libs
+.deps

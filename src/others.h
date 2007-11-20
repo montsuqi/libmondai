@@ -30,6 +30,9 @@ extern	char		*ExpandPath(char *org,char *base);
 extern	size_t		DecodeStringURL(byte *q, char *p);
 extern	size_t		EncodeStringURL(char *q, char *p);
 extern	size_t		EncodeStringLengthURL(char *q);
+extern	size_t		EncodeStringLengthBackslash(char *p);
+extern	size_t		EncodeStringBackslash(char *q, char *p);
+
 extern	size_t		EncodeBase64(char *out, int size, byte *in, size_t len);
 extern	size_t		DecodeBase64(byte *out, int size, char *in, size_t len);
 extern	size_t		EncodeLengthBase64(char *str);

@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,7 @@
 #include	"memory_v.h"
 #include	"monstring.h"
 #include	"others.h"
+#include	"valueconv.h"
 #include	"XML_v.h"
 #include	"debug.h"
 
@@ -66,35 +67,13 @@ NewXMLOPT(void)
 {
 	XMLOPT	*ret;
 
+ENTER_FUNC;
 	ret = New(XMLOPT);
-	ret->fIndent = FALSE;
-	ret->fType = FALSE;
 	ret->type = XML_TYPE1;
 	ret->fOutput = XML_OUT_HEADER | XML_OUT_TAILER | XML_OUT_BODY;
 
+LEAVE_FUNC;
 	return	(ret);
-}
-
-extern	void
-ConvSetIndent(
-	CONVOPT	*opt,
-	Bool	v)
-{
-	if		(  opt->appendix  ==  NULL  ) {
-		opt->appendix = NewXMLOPT();
-	}
-	((XMLOPT *)opt->appendix)->fIndent = v;
-}
-
-extern	void
-ConvSetType(
-	CONVOPT	*opt,
-	Bool	v)
-{
-	if		(  opt->appendix  ==  NULL  ) {
-		opt->appendix = NewXMLOPT();
-	}
-	((XMLOPT *)opt->appendix)->fType = v;
 }
 
 extern	void
@@ -113,10 +92,12 @@ ConvSetOutput(
 	CONVOPT	*opt,
 	byte	v)
 {
+ENTER_FUNC;
 	if		(  opt->appendix  ==  NULL  ) {
 		opt->appendix = NewXMLOPT();
 	}
 	((XMLOPT *)opt->appendix)->fOutput = v;
+LEAVE_FUNC;
 }
 
 static	char	*
@@ -150,39 +131,6 @@ XML_Encode(
 #endif
 }
 
-extern	size_t
-PutCR(
-	CONVOPT		*opt,
-	char		*p)
-{
-	size_t	size;
-
-	if		(  ConvIndent(opt)  ) {
-		*p = '\n';
-		size = 1;
-	} else {
-		size = 0;
-	}
-	return	(size);
-}
-
-extern	size_t
-IndentLine(
-	CONVOPT		*opt,
-	byte		*p)
-{
-	int		i;
-	size_t	size;
-
-	if		(  ConvIndent(opt)  ) {
-		for	( i = 0 ; i < opt->nIndent ; i ++ )	*p ++ = ' ';
-		size = opt->nIndent;
-	} else {
-		size = 0;
-	}
-	return	(size);
-}
-
 static	size_t
 _XML_PackValue1(
 	CONVOPT		*opt,
@@ -196,15 +144,20 @@ _XML_PackValue1(
 	byte	*pp;
 
 ENTER_FUNC;
-	if		(  IS_VALUE_NIL(value)  )	return	(0);
 	pp = p;
 	if		(  value  !=  NULL  ) {
+		//if		(  IS_VALUE_NIL(value)  )	return	(0);
 		opt->nIndent ++;
 		p += IndentLine(opt,p);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
-			p += sprintf(p,"<lm:array name=\"%s\" count=\"%d\">"
-						 ,name,ValueArraySize(value));
+			if		(  name  !=  NULL  ) {
+				p += sprintf(p,"<lm:array name=\"%s\" count=\"%d\">"
+							 ,name,(int)ValueArraySize(value));
+			} else {
+				p += sprintf(p,"<lm:array count=\"%d\">"
+							 ,(int)ValueArraySize(value));
+			}
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s[%d]",name,i);
@@ -214,8 +167,13 @@ ENTER_FUNC;
 			p += sprintf(p,"</lm:array>");
 			break;
 		  case	GL_TYPE_RECORD:
-			p += sprintf(p,"<lm:record name=\"%s\" size=\"%d\">"
-						 ,name,ValueRecordSize(value));
+			if		(  name  !=  NULL  ) {
+				p += sprintf(p,"<lm:record name=\"%s\" size=\"%d\">"
+							 ,name,(int)ValueRecordSize(value));
+			} else {
+				p += sprintf(p,"<lm:record size=\"%d\">"
+							 ,(int)ValueRecordSize(value));
+			}
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
@@ -224,12 +182,20 @@ ENTER_FUNC;
 			p += sprintf(p,"</lm:record>");
 			break;
 		  case	GL_TYPE_ALIAS:
-			p += sprintf(p,"<lm:alias name=\"%s\">",name);
+			if		(  name  !=  NULL  ) {
+				p += sprintf(p,"<lm:alias name=\"%s\">",name);
+			} else {
+				p += sprintf(p,"<lm:alias>");
+			}
 			p += sprintf(p,"%s",ValueAliasName(value));
 			p += sprintf(p,"</lm:alias>");
 			break;
 		  default:
-			p += sprintf(p,"<lm:item name=\"%s\"",name);
+			if		(  name  !=  NULL  ) {
+				p += sprintf(p,"<lm:item name=\"%s\"",name);
+			} else {
+				p += sprintf(p,"<lm:item");
+			}
 			if		(  ConvType(opt)  ) {
 				p += sprintf(p," type=");
 				switch	(ValueType(value)) {
@@ -240,35 +206,44 @@ ENTER_FUNC;
 					p += sprintf(p,"\"bool\"");
 					break;
 				  case	GL_TYPE_BYTE:
-					p += sprintf(p,"\"byte\" size=\"%d\"",ValueByteLength(value));
+					p += sprintf(p,"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
 					break;
 				  case	GL_TYPE_BINARY:
-					p += sprintf(p,"\"binary\" size=\"%d\"",ValueByteLength(value));
+					p += sprintf(p,"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
 					break;
 				  case	GL_TYPE_CHAR:
-					p += sprintf(p,"\"char\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"char\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_VARCHAR:
-					p += sprintf(p,"\"varchar\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_TEXT:
-					p += sprintf(p,"\"text\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"text\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_SYMBOL:
-					p += sprintf(p,"\"symbol\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_DBCODE:
-					p += sprintf(p,"\"dbcode\" size=\"%d\"",ValueStringLength(value));
+					p += sprintf(p,"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_NUMBER:
 					p += sprintf(p,"\"number\" size=\"%d\" ssize=\"%d\"",
-								 ValueFixedLength(value),ValueFixedSlen(value));
+								 (int)ValueFixedLength(value),(int)ValueFixedSlen(value));
 					break;
 				  case	GL_TYPE_FLOAT:
 					p += sprintf(p,"\"float\"");
 					break;
 				  case	GL_TYPE_OBJECT:
 					p += sprintf(p,"\"object\"");
+					break;
+				  case	GL_TYPE_TIMESTAMP:
+					p += sprintf(p,"\"timestamp\"");
+					break;
+				  case	GL_TYPE_DATE:
+					p += sprintf(p,"\"date\"");
+					break;
+				  case	GL_TYPE_TIME:
+					p += sprintf(p,"\"time\"");
 					break;
 				  default:
 					break;
@@ -317,7 +292,7 @@ ENTER_FUNC;
 			} else {
 				p += sprintf(p,"<%s type=\"array\"",name);
 			}
-			p += sprintf(p," count=\"%d\">",ValueArraySize(value));
+			p += sprintf(p," count=\"%d\">",(int)ValueArraySize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s:%d",name,i);
@@ -336,7 +311,7 @@ ENTER_FUNC;
 			} else {
 				p += sprintf(p,"<%s type=\"record\"",name);
 			}
-			p += sprintf(p," size=\"%d\">",ValueRecordSize(value));
+			p += sprintf(p," size=\"%d\">",(int)ValueRecordSize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
@@ -376,35 +351,44 @@ ENTER_FUNC;
 				p += sprintf(p,"\"bool\"");
 				break;
 			  case	GL_TYPE_BYTE:
-				p += sprintf(p,"\"byte\" size=\"%d\"",ValueByteLength(value));
+				p += sprintf(p,"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
 				break;
 			  case	GL_TYPE_BINARY:
-				p += sprintf(p,"\"binary\" size=\"%d\"",ValueByteLength(value));
+				p += sprintf(p,"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
 				break;
 			  case	GL_TYPE_CHAR:
-				p += sprintf(p,"\"char\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"char\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_VARCHAR:
-				p += sprintf(p,"\"varchar\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_TEXT:
-				p += sprintf(p,"\"text\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"text\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_SYMBOL:
-				p += sprintf(p,"\"symbol\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_DBCODE:
-				p += sprintf(p,"\"dbcode\" size=\"%d\"",ValueStringLength(value));
+				p += sprintf(p,"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_NUMBER:
 				p += sprintf(p,"\"number\" size=\"%d\" ssize=\"%d\"",
-							 ValueFixedLength(value),ValueFixedSlen(value));
+							 (int)ValueFixedLength(value),(int)ValueFixedSlen(value));
 				break;
 			  case	GL_TYPE_FLOAT:
 				p += sprintf(p,"\"float\"");
 				break;
 			  case	GL_TYPE_OBJECT:
 				p += sprintf(p,"\"object\"");
+				break;
+			  case	GL_TYPE_TIMESTAMP:
+				p += sprintf(p,"\"timestamp\"");
+				break;
+			  case	GL_TYPE_DATE:
+				p += sprintf(p,"\"date\"");
+				break;
+			  case	GL_TYPE_TIME:
+				p += sprintf(p,"\"time\"");
 				break;
 			  default:
 				break;
@@ -577,7 +561,11 @@ ENTER_FUNC;
 		p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		p += sprintf((char *)p,"</%s:data>",opt->recname);
+		if		(  opt->recname  !=  NULL  ) {
+			p += sprintf((char *)p,"</%s:data>",opt->recname);
+		} else {
+			p += sprintf((char *)p,"</data>");
+		}
 	}
 	*p = 0;
 LEAVE_FUNC;
@@ -1292,39 +1280,47 @@ _XML_SizeValue1(
 
 	size = 0;
 	if		(  value  !=  NULL  ) {
-		if		(  IS_VALUE_NIL(value)  )	return	(0);
+		//if		(  IS_VALUE_NIL(value)  )	return	(0);
 		opt->nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			size += opt->nIndent;
-		}
+		size += IndentLine(opt,NULL);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
-			size += sprintf(buff,"<lm:array name=\"%s\" count=\"%d\">"
-							,name,ValueArraySize(value));
+			if		(  name  !=  NULL  ) {
+				size += sprintf(buff,"<lm:array name=\"%s\" count=\"%d\">",
+								name,(int)ValueArraySize(value));
+			} else {
+				size += sprintf(buff,"<lm:array count=\"%d\">",
+								(int)ValueArraySize(value));
+			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s[%d]",name,i);
 				size += _XML_SizeValue1(opt,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += opt->nIndent;
-			}
+			size += IndentLine(opt,NULL);
 			size += 11;		//	</lm:array>
 			break;
 		  case	GL_TYPE_RECORD:
-			size += sprintf(buff,"<lm:record name=\"%s\" size=\"%d\">"
-							,name,ValueRecordSize(value));
+			if		(  name  !=  NULL  ) {
+				size += sprintf(buff,"<lm:record name=\"%s\" size=\"%d\">",
+								name,(int)ValueRecordSize(value));
+			} else {
+				size += sprintf(buff,"<lm:record size=\"%d\">",
+								(int)ValueRecordSize(value));
+			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				size += _XML_SizeValue1(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += opt->nIndent;
-			}
+			size += IndentLine(opt,NULL);
 			size += 12;		//	</lm:record>
 			break;
 		  default:
-			size += sprintf(buff,"<lm:item name=\"%s\"",name);
+			if		(  name  !=  NULL  ) {
+				size += sprintf(buff,"<lm:item name=\"%s\"",name);
+			} else {
+				size += sprintf(buff,"<lm:item");
+			}
 			if		(  ConvType(opt)  ) {
 				size += 6;		//	" type="
 				switch	(ValueType(value)) {
@@ -1336,41 +1332,50 @@ _XML_SizeValue1(
 					break;
 				  case	GL_TYPE_BYTE:
 					size += sprintf(buff,
-									"\"byte\" size=\"%d\"",ValueByteLength(value));
+									"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
 					break;
 				  case	GL_TYPE_BINARY:
 					size += sprintf(buff,
-									"\"binary\" size=\"%d\"",ValueByteLength(value));
+									"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
 					break;
 				  case	GL_TYPE_CHAR:
 					size += sprintf(buff,
-									"\"char\" size=\"%d\"",ValueStringLength(value));
+									"\"char\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_VARCHAR:
 					size += sprintf(buff,
-									"\"varchar\" size=\"%d\"",ValueStringLength(value));
+									"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_TEXT:
 					size += sprintf(buff,
-									"\"text\" size=\"%d\"",ValueStringLength(value));
+									"\"text\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_SYMBOL:
 					size += sprintf(buff,
-									"\"symbol\" size=\"%d\"",ValueStringLength(value));
+									"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_DBCODE:
 					size += sprintf(buff,
-									"\"dbcode\" size=\"%d\"",ValueStringLength(value));
+									"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
 					break;
 				  case	GL_TYPE_NUMBER:
 					size += sprintf(buff,"\"number\" size=\"%d\" ssize=\"%d\"",
-									ValueFixedLength(value),ValueFixedSlen(value));
+									(int)ValueFixedLength(value),(int)ValueFixedSlen(value));
 					break;
 				  case	GL_TYPE_FLOAT:
 					size += 7;			//	"float"
 					break;
 				  case	GL_TYPE_OBJECT:
 					size += 8;			//	"object"
+					break;
+				  case	GL_TYPE_TIMESTAMP:
+					size += 9;			//	"timestamp"
+					break;
+				  case	GL_TYPE_DATE:
+					size += 4;			//	"date"
+					break;
+				  case	GL_TYPE_TIME:
+					size += 8;			//	"time"
 					break;
 				  case	GL_TYPE_ALIAS:
 				  default:
@@ -1409,26 +1414,22 @@ _XML_SizeValue2(
 	if		(  value  !=  NULL  ) {
 		if		(  IS_VALUE_NIL(value)  )	return	(0);
 		opt->nIndent ++;
-		if		(  ConvIndent(opt)  ) {
-			size += opt->nIndent;
-		}
+		size += IndentLine(opt,NULL);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_ARRAY:
 			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:%s type=\"array\" count=\"%d\">"
-								,opt->recname,name,ValueArraySize(value));
+				size += sprintf(buff,"<%s:%s type=\"array\" count=\"%d\">",
+								opt->recname,name,(int)ValueArraySize(value));
 			} else {
-				size += sprintf(buff,"<%s type=\"array\" count=\"%d\">"
-								,name,ValueArraySize(value));
+				size += sprintf(buff,"<%s type=\"array\" count=\"%d\">",
+								name,(int)ValueArraySize(value));
 			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				sprintf(num,"%s:%d",name,i);
 				size += _XML_SizeValue2(opt,num,ValueArrayItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += opt->nIndent;
-			}
+			size += IndentLine(opt,NULL);
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
 			} else {
@@ -1437,19 +1438,17 @@ _XML_SizeValue2(
 			break;
 		  case	GL_TYPE_RECORD:
 			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:%s type=\"record\" size=\"%d\">"
-								,opt->recname,name,ValueRecordSize(value));
+				size += sprintf(buff,"<%s:%s type=\"record\" size=\"%d\">",
+								opt->recname,name,(int)ValueRecordSize(value));
 			} else {
-				size += sprintf(buff,"<%s type=\"record\" size=\"%d\">"
-								,name,ValueRecordSize(value));
+				size += sprintf(buff,"<%s type=\"record\" size=\"%d\">",
+								name,(int)ValueRecordSize(value));
 			}
 			size += PutCR(opt,buff);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				size += _XML_SizeValue2(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
 			}
-			if		(  ConvIndent(opt)  ) {
-				size += opt->nIndent;
-			}
+			size += IndentLine(opt,NULL);
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
 			} else {
@@ -1472,41 +1471,50 @@ _XML_SizeValue2(
 				break;
 			  case	GL_TYPE_BYTE:
 				size += sprintf(buff,
-								"\"byte\" size=\"%d\"",ValueByteLength(value));
+								"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
 				break;
 			  case	GL_TYPE_BINARY:
 				size += sprintf(buff,
-								"\"binary\" size=\"%d\"",ValueByteLength(value));
+								"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
 				break;
 			  case	GL_TYPE_CHAR:
 				size += sprintf(buff,
-								"\"char\" size=\"%d\"",ValueStringLength(value));
+								"\"char\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_VARCHAR:
 				size += sprintf(buff,
-								"\"varchar\" size=\"%d\"",ValueStringLength(value));
+								"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_TEXT:
 				size += sprintf(buff,
-								"\"text\" size=\"%d\"",ValueStringLength(value));
+								"\"text\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_SYMBOL:
 				size += sprintf(buff,
-								"\"symbol\" size=\"%d\"",ValueStringLength(value));
+								"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_DBCODE:
 				size += sprintf(buff,
-								"\"dbcode\" size=\"%d\"",ValueStringLength(value));
+								"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
 				break;
 			  case	GL_TYPE_NUMBER:
 				size += sprintf(buff,"\"number\" size=\"%d\" ssize=\"%d\"",
-								ValueFixedLength(value),ValueFixedSlen(value));
+								(int)ValueFixedLength(value),(int)ValueFixedSlen(value));
 				break;
 			  case	GL_TYPE_FLOAT:
 				size += 7;			//	"float"
 				break;
 			  case	GL_TYPE_OBJECT:
 				size += 8;			//	"object"
+				break;
+			  case	GL_TYPE_TIMESTAMP:
+				size += 9;			//	"timestamp"
+				break;
+			  case	GL_TYPE_DATE:
+				size += 4;			//	"date"
+				break;
+			  case	GL_TYPE_TIME:
+				size += 8;			//	"time"
 				break;
 			  case	GL_TYPE_ALIAS:
 			  default:
@@ -1541,6 +1549,7 @@ XML_SizeValue(
 	char	buff[SIZE_BUFF+1];
 	size_t	size;
 
+ENTER_FUNC;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size = 19;			//	<?xml version="1.0"
 #ifdef	USE_XML2
@@ -1598,6 +1607,7 @@ XML_SizeValue(
 		}
 		break;
 	}
+LEAVE_FUNC;
 	return	(size);
 }
 

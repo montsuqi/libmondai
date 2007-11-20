@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -260,7 +260,7 @@ MakeReservedTable(
 ENTER_FUNC;
 	res = NewNameiHash();
 	for	( i = 0 ; table[i].token  !=  0 ; i ++ ) {
-		g_hash_table_insert(res,StrDup(table[i].str),(gpointer)table[i].token);
+		g_hash_table_insert(res,StrDup(table[i].str),(gpointer)(long)table[i].token);
 	}
 LEAVE_FUNC;
 	return	(res);
@@ -283,7 +283,7 @@ CheckReserved(
 	int		ret;
 
 	if		(  ( p = g_hash_table_lookup(in->Reserved,str) ) !=  NULL  ) {
-		ret = (int)p;
+		ret = (int)(long)p;
 	} else {
 		ret = T_SYMBOL;
 	}
@@ -417,7 +417,7 @@ DumpCURFILE(
 extern	int
 Lex(
 	CURFILE	*in,
-	Bool	fName)
+	int		type)
 {
 	int		c;
 	char	*p;
@@ -438,16 +438,31 @@ ENTER_FUNC;
 		goto	retry;
 		break;
 	  case	'/':
-		if		(  ( c = GetChar(in) )  !=  '*'  ) {
-			UnGetChar(in,c);
-			in->Token = '/';
+		if		(  type  ==  LEX_GET_STRING  ) {
+			lbs = NewLBS();
+			while	(  ( c = GetChar(in) )  !=  '/'  ) {
+				if		(  c  ==  '\\'  ) {
+					c = GetChar(in);
+				}
+				LBS_EmitChar(lbs,c);
+			}
+			LBS_EmitEnd(lbs);
+			in->Symbol = (char *)xmalloc(LBS_Size(lbs));
+			strcpy(in->Symbol,LBS_Body(lbs));
+			FreeLBS(lbs);
+			in->Token = T_RCONST;
 		} else {
-			do {
-				while	(  ( c = GetChar(in) )  !=  '*'  );
-				if		(  ( c = GetChar(in) )  ==  '/'  )	break;
+			if		(  ( c = GetChar(in) )  !=  '*'  ) {
 				UnGetChar(in,c);
-			}	while	(TRUE);
-			goto	retry;
+				in->Token = '/';
+			} else {
+				do {
+					while	(  ( c = GetChar(in) )  !=  '*'  );
+					if		(  ( c = GetChar(in) )  ==  '/'  )	break;
+					UnGetChar(in,c);
+				}	while	(TRUE);
+				goto	retry;
+			}
 		}
 		break;
 	  case	'"':
@@ -534,10 +549,10 @@ ENTER_FUNC;
 			*p = 0;
 			in->Symbol = (char *)xmalloc(strlen(buff)+1);
 			strcpy(in->Symbol,buff);
-			if		(  fName  ) {
-				in->Token = T_SYMBOL;
-			} else {
+			if		(  type  ==  LEX_GET_SYMBOL  ) {
 				in->Token = CheckReserved(in,in->Symbol);
+			} else {
+				in->Token = T_SYMBOL;
 			}
 		} else
 		if		(  isdigit(c) )	{

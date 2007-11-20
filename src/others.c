@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -318,3 +318,45 @@ DecodeBase64(
 	return outp - out;
 }
 
+/*
+ *	backslash encoding
+ */
+
+extern	size_t
+EncodeStringLengthBackslash(
+	char	*p)
+{
+	size_t	ret;
+
+	ret = 0;
+	while	(  *p  !=  0  ) {
+		if		(	(  *p  ==  '"'   )
+				||	(  *p  ==  '\\'  ) ) {
+			ret += 2;
+		} else {
+			ret ++;
+		}
+		p ++;
+	}
+	return	(ret);
+}
+
+extern	size_t
+EncodeStringBackslash(
+	char	*q,
+	char	*p)
+{
+	char	*qq;
+
+	qq = q;
+	while	(  *p  !=  0  ) {
+		if		(	(  *p  ==  '"'   )
+				||	(  *p  ==  '\\'  ) ) {
+			*q ++ = '\\';
+		}
+		*q ++ = *p;
+		p ++;
+	}
+	*q = 0;
+	return	(q-qq);
+}

@@ -3,7 +3,7 @@
 AC_INIT(src)
 
 LIBMONDAI_MAJOR_VERSION=1
-LIBMONDAI_MINOR_VERSION=3
+LIBMONDAI_MINOR_VERSION=4
 LIBMONDAI_MICRO_VERSION=0
 
 LIBMONDAI_VERSION=$LIBMONDAI_MAJOR_VERSION.$LIBMONDAI_MINOR_VERSION.$LIBMONDAI_MICRO_VERSION
@@ -62,13 +62,9 @@ AC_SUBST(LIBMONDAI_I18N)
 dnl ***************************************************************************
 dnl GLib
 dnl ***************************************************************************
-
-GLIB_REQUIRED_VERSION=1.2.0
-
-AM_PATH_GLIB($GLIB_REQUIRED_VERSION, :,
-  AC_MSG_ERROR([
-*** Glib $GLIB_REQUIRED_VERSION or better is required. The latest version of 
-*** Glib is always available from ftp://ftp.gtk.org/.]))
+PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.0)
+AC_SUBST(GLIB_CFLAGS)
+AC_SUBST(GLIB_LIBS)
 
 dnl ***************************************************************************
 dnl libxml

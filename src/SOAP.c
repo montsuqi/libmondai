@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2005-2006 Ogochan.
+ * Copyright (C) 2005-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -241,6 +241,9 @@ ENTER_FUNC;
 			  case	GL_TYPE_DBCODE:
 			  case	GL_TYPE_TEXT:
 			  case	GL_TYPE_SYMBOL:
+			  case	GL_TYPE_TIMESTAMP:
+			  case	GL_TYPE_TIME:
+			  case	GL_TYPE_DATE:
 				if		(	(  XMLNodeType(node)  ==      XML_ELEMENT_NODE  )
 						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
 						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )

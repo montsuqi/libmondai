@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan
+ * Copyright (C) 2004-2007 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #define	T_SCONST		(YYBASE +3)
 #define	T_ICONST		(YYBASE +4)
 #define	T_NCONST		(YYBASE +5)
+#define	T_RCONST		(YYBASE +6)
 
 #define	T_LT			'<'
 #define	T_LE			(YYBASE +10)
@@ -89,11 +90,16 @@ extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp, char *path, GHashTable
 extern	void			DropLexInfo(CURFILE **in);
 extern	void			LexInit(void);
 extern	GHashTable		*MakeReservedTable(TokenTable *table);
-extern	int				Lex(CURFILE *in, Bool fSymbol);
 extern	void			SetReserved(CURFILE *in, GHashTable *res);
 
-#define	GetSymbol		(ComToken = Lex(in,FALSE))
-#define	GetName			(ComToken = Lex(in,TRUE))
+#define	LEX_GET_SYMBOL	1
+#define	LEX_GET_NAME	2
+#define	LEX_GET_STRING	3
+
+extern	int				Lex(CURFILE *in, int type);
+#define	GetSymbol		(ComToken = Lex(in,LEX_GET_SYMBOL))
+#define	GetName			(ComToken = Lex(in,LEX_GET_NAME))
+#define	GetString		(ComToken = Lex(in,LEX_GET_STRING))
 #define	ComToken		(in->Token)
 #define	ComInt			(in->Int)
 #define	ComSymbol		(in->Symbol)
@@ -101,11 +107,15 @@ extern	void			SetReserved(CURFILE *in, GHashTable *res);
 #define	ParError(msg)				{			\
 	in->fError=TRUE;							\
 	printf("%s:%d:%s\n",in->fn,in->cLine,msg);	\
+	GetSymbol;									\
 }
 #define	ParErrorPrintf(...)	{					\
 	in->fError=TRUE;							\
 	printf("%s:%d:",in->fn,in->cLine);			\
 	printf(__VA_ARGS__);						\
+	GetSymbol;									\
 }
+
+#define	ERROR_BREAK		if (in->fError) break
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2006 Ogochan.
+ * Copyright (C) 1989-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,10 +35,16 @@
 #include	"monstring.h"
 #include	"libmondai.h"
 #include	"memory_v.h"
+#include	"lock.h"
 #include	"debug.h"
 
 
-static	GHashTable	*PoolTable = NULL;
+typedef	struct	{
+	LOCKOBJECT;
+	GHashTable	*hash;
+}	POOLMGR;
+
+static	POOLMGR	*PoolTable = NULL;
 
 #ifdef	TRACE
 static	size_t	total = 0;
@@ -107,7 +113,12 @@ extern	POOL	*
 GetPool(
 	char	*name)
 {
-	return	(g_hash_table_lookup(PoolTable,name));
+	POOL	*ret;
+
+	LockWrite(PoolTable);
+	ret = g_hash_table_lookup(PoolTable->hash,name);
+	UnLock(PoolTable);
+	return	(ret);
 }
 
 extern	void	*
@@ -200,8 +211,10 @@ _ReleasePool(
 ENTER_FUNC;
 	if		(  pool  !=  NULL  ) {
 		if		(  pool->name  !=  NULL  ) {
-			g_hash_table_remove(PoolTable,pool->name);
+			LockWrite(PoolTable);
+			g_hash_table_remove(PoolTable->hash,pool->name);
 			xfree(pool->name);
+			UnLock(PoolTable);
 		}
 		if		(  ( rp = pool->head )  !=  NULL  ) {
 			while	(  rp  !=  NULL  )	{
@@ -229,14 +242,17 @@ ENTER_FUNC;
 		pool = (POOL *)xmalloc(sizeof(POOL));
 		pool->name = NULL;
 		pool->head = NULL;
-	} else
-	if		(  g_hash_table_lookup(PoolTable,name)  ==  NULL  ) {
-		pool = (POOL *)xmalloc(sizeof(POOL));
-		pool->name = StrDup(name);
-		pool->head = NULL;
-		g_hash_table_insert(PoolTable,pool->name,pool);
 	} else {
-		pool = NULL;
+		LockWrite(PoolTable);
+		if		(  g_hash_table_lookup(PoolTable->hash,name)  ==  NULL  ) {
+			pool = (POOL *)xmalloc(sizeof(POOL));
+			pool->name = StrDup(name);
+			pool->head = NULL;
+			g_hash_table_insert(PoolTable->hash,pool->name,pool);
+		} else {
+			pool = NULL;
+		}
+		UnLock(PoolTable);
 	}
 LEAVE_FUNC;
 	return	(pool); 
@@ -246,23 +262,30 @@ extern	void
 InitPool(void)
 {
 	if		(  PoolTable  ==  NULL  ) {
-		PoolTable = NewNameHash();
+		PoolTable = New(POOLMGR);
+		PoolTable->hash = NewNameHash();
+		InitLock(PoolTable);
 	}
+}
+
+static	void
+_Release(
+	char	*name,
+	POOL	*pool,
+	void	*dummy)
+{
+	_ReleasePool(pool);
 }
 
 extern	void
 ReleaseAllPool(void)
 {
-	void	_Release(
-		char	*name,
-		POOL	*pool,
-		void	*dummy)
-	{
-		_ReleasePool(pool);
-	}
 	if		(  PoolTable  !=  NULL  ) {
-		g_hash_table_foreach(PoolTable,(GHFunc)_Release,NULL);
-		g_hash_table_destroy(PoolTable);
+		LockWrite(PoolTable);
+		g_hash_table_foreach(PoolTable->hash,(GHFunc)_Release,NULL);
+		g_hash_table_destroy(PoolTable->hash);
+		UnLock(PoolTable);
+		DestroyLock(PoolTable);
 	}
 	PoolTable = NULL;
 }

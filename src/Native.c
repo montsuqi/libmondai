@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2006 Ogochan.
+ * Copyright (C) 2005-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,19 @@ ENTER_FUNC;
 			ValueInteger(value) = *(int *)p;
 			p += sizeof(int);
 			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			ValueDateTimeSec(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeMin(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeHour(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeMDay(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeMon(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeYear(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeWDay(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeYDay(value) = *(int *)p;	p += sizeof(int);
+			ValueDateTimeIsdst(value) = *(int *)p;	p += sizeof(int);
+			break;
 		  case	GL_TYPE_BOOL:
 			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
@@ -155,6 +168,18 @@ ENTER_FUNC;
 		  case	GL_TYPE_OBJECT:
 			ValueObjectId(value) = *(MonObjectType *)p;
 			p += sizeof(ValueObjectId(value));
+			if		(  ValueObjectFile(value)  !=  NULL  ) {
+				xfree(ValueObjectFile(value));
+			}
+			if		(  ( size = *(size_t *)p )  >  0  ) {
+				p += sizeof(size_t);
+				ValueObjectFile(value) = (char *)xmalloc(size);
+				strcpy(ValueObjectFile(value),p);
+				p += size;
+			} else {
+				p += sizeof(size_t);
+				ValueObjectFile(value) = NULL;
+			}
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArraySize(value) = *(size_t *)p;
@@ -192,132 +217,174 @@ LEAVE_FUNC;
 	return	(p-q);
 }
 
-extern	size_t
-NativePackValue(
-	CONVOPT	*opt,
+static	size_t
+_NativePackValue(
 	byte	*p,
-	ValueStruct	*value)
+	ValueStruct	*value,
+	Bool	fName)
 {
 	int		i;
-	Bool	fName;
 	size_t	size;
 	byte	*pp;
 
 ENTER_FUNC;
 	pp = p;
-	if		(  value  !=  NULL  ) {
-		if		(  opt  !=  NULL  ) { 
-			fName = opt->fName;
-		} else {
-			fName = FALSE;
-		}
-		*(PacketDataType *)p = ValueType(value);
-		p += sizeof(PacketDataType);
-		*(ValueAttributeType *)p = ValueAttribute(value);
-		p += sizeof(ValueAttributeType);
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_INT:
-			*(int *)p = ValueInteger(value);
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_BOOL:
-			*(char *)p = ValueBool(value) ? 'T' : 'F';
+	*(PacketDataType *)p = ValueType(value);
+	p += sizeof(PacketDataType);
+	*(ValueAttributeType *)p = ValueAttribute(value);
+	p += sizeof(ValueAttributeType);
+	switch	(ValueType(value)) {
+	  case	GL_TYPE_INT:
+		*(int *)p = ValueInteger(value);
+		p += sizeof(int);
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_DATE:
+	  case	GL_TYPE_TIME:
+		*(int *)p = ValueDateTimeSec(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeMin(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeHour(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeMDay(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeMon(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeYear(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeWDay(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeYDay(value);	p += sizeof(int);
+		*(int *)p = ValueDateTimeIsdst(value);	p += sizeof(int);
+		break;
+	  case	GL_TYPE_BOOL:
+		*(char *)p = ValueBool(value) ? 'T' : 'F';
+		p ++;
+		break;
+	  case	GL_TYPE_FLOAT:
+		*(double *)p = ValueFloat(value);
+		p += sizeof(double);
+		break;
+	  case	GL_TYPE_NUMBER:
+		*(size_t *)p = ValueFixedLength(value);
+		p += sizeof(size_t);
+		*(size_t *)p = ValueFixedSlen(value);
+		p += sizeof(size_t);
+		memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+		p += ValueFixedLength(value);
+		break;
+	  case	GL_TYPE_BYTE:
+		memcpy(p,ValueByte(value),ValueByteLength(value));
+		p += ValueByteLength(value);
+		break;
+	  case	GL_TYPE_BINARY:
+		size = ValueByteLength(value);
+		*(size_t *)p = size;
+		p += sizeof(size_t);
+		memcpy(p,ValueByte(value),size);
+		p += size;
+		break;
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
+		size = ValueStringSize(value);
+		*(size_t *)p = size;
+		p += sizeof(size_t);
+		*(size_t *)p = ValueStringLength(value);
+		p += sizeof(size_t);
+		if		(	(  ValueString(value)  ==  NULL  )
+				||	(  size                ==  0     ) ) {
+			*p = 0;
 			p ++;
-			break;
-		  case	GL_TYPE_FLOAT:
-			*(double *)p = ValueFloat(value);
-			p += sizeof(double);
-			break;
-		  case	GL_TYPE_NUMBER:
-			*(size_t *)p = ValueFixedLength(value);
-			p += sizeof(size_t);
-			*(size_t *)p = ValueFixedSlen(value);
-			p += sizeof(size_t);
-			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
-			p += ValueFixedLength(value);
-			break;
-		  case	GL_TYPE_BYTE:
-			memcpy(p,ValueByte(value),ValueByteLength(value));
-			p += ValueByteLength(value);
-			break;
-		  case	GL_TYPE_BINARY:
-			size = ValueByteLength(value);
-			*(size_t *)p = size;
-			p += sizeof(size_t);
-			memcpy(p,ValueByte(value),size);
-			p += size;
-			break;
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_SYMBOL:
-			size = ValueStringSize(value);
-			*(size_t *)p = size;
-			p += sizeof(size_t);
-			*(size_t *)p = ValueStringLength(value);
-			p += sizeof(size_t);
-			if		(	(  ValueString(value)  ==  NULL  )
-					||	(  size                ==  0     ) ) {
-				*p = 0;
-				p ++;
-			} else {
-				strcpy(p,ValueString(value));
-				p += strlen(ValueString(value)) + 1;
-			}
-			break;
-		  case	GL_TYPE_OBJECT:
-			*(MonObjectType *)p = ValueObjectId(value);
-			p += sizeof(ValueObjectId(value));
-			break;
-		  case	GL_TYPE_ARRAY:
-			*(size_t *)p = ValueArraySize(value);
-			p += sizeof(size_t);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativePackValue(opt,p,ValueArrayItem(value,i));
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			*(size_t *)p = ValueRecordSize(value);
-			p += sizeof(size_t);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				if		(  fName  ) {
-					*p = 0xFF;
-					p ++;
-					strcpy(p,ValueRecordName(value,i));
-					p += strlen(ValueRecordName(value,i))+1;
-				}
-				p += NativePackValue(opt,p,ValueRecordItem(value,i));
-			}
-			break;
-		  default:
-			break;
+		} else {
+			strcpy(p,ValueString(value));
+			p += strlen(ValueString(value)) + 1;
 		}
+		break;
+	  case	GL_TYPE_OBJECT:
+		*(MonObjectType *)p = ValueObjectId(value);
+		p += sizeof(ValueObjectId(value));
+		if		(  ValueObjectFile(value)  !=  NULL  ) {
+			size = strlen(ValueObjectFile(value)) + 1;
+			*(size_t *)p = size;
+			p += sizeof(size_t);
+			strcpy(p,ValueObjectFile(value));
+			p += size;
+		} else {
+			*(size_t *)p = 0;
+			p += sizeof(size_t);
+		}
+		break;
+	  case	GL_TYPE_ARRAY:
+		*(size_t *)p = ValueArraySize(value);
+		p += sizeof(size_t);
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			p += _NativePackValue(p,ValueArrayItem(value,i),fName);
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		*(size_t *)p = ValueRecordSize(value);
+		p += sizeof(size_t);
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			if		(  fName  ) {
+				*p = 0xFF;
+				p ++;
+				strcpy(p,ValueRecordName(value,i));
+				p += strlen(ValueRecordName(value,i))+1;
+			}
+			p += _NativePackValue(p,ValueRecordItem(value,i),fName);
+		}
+		break;
+	  default:
+		break;
 	}
 LEAVE_FUNC;
 	return	(p-pp);
 }
 
 extern	size_t
-NativeSizeValue(
+NativePackValue(
 	CONVOPT	*opt,
+	byte	*p,
 	ValueStruct	*val)
 {
-	int		i;
 	size_t	ret;
-	Bool	fName;
+	Bool	fName
+		,	fType;
 
 	if		(  val  ==  NULL  )	return	(0);
 ENTER_FUNC;
 	if		(  opt  !=  NULL  ) { 
 		fName = opt->fName;
+		fType = opt->fType;
 	} else {
 		fName = FALSE;
+		fType = FALSE;
 	}
+	if		(	(  fName  )
+			&&	(  fType  ) ) {
+		ret = NativeSaveValue(p,val,TRUE);
+	} else {
+		ret = _NativePackValue(p,val,fName);
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
+static	size_t
+_NativeSizeValue(
+	ValueStruct	*val,
+	Bool		fName)
+{
+	int		i;
+	size_t	ret;
+
+ENTER_FUNC;
 	ret = sizeof(PacketDataType) + sizeof(ValueAttributeType);
 	switch	(ValueType(val)) {
 	  case	GL_TYPE_INT:
 		ret += sizeof(int);
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_DATE:
+	  case	GL_TYPE_TIME:
+		ret += sizeof(int) * 9;
 		break;
 	  case	GL_TYPE_BOOL:
 		ret += 1;
@@ -348,11 +415,15 @@ ENTER_FUNC;
 		break;
 	  case	GL_TYPE_OBJECT:
 		ret += sizeof(MonObjectType);
+		ret += sizeof(size_t);
+		if		(  ValueObjectFile(val)  !=  NULL  ) {
+			ret += strlen(ValueObjectFile(val)) + 1;
+		}
 		break;
 	  case	GL_TYPE_ARRAY:
 		ret += sizeof(size_t);
 		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-			ret += NativeSizeValue(opt,ValueArrayItem(val,i));
+			ret += _NativeSizeValue(ValueArrayItem(val,i),fName);
 		}
 		break;
 	  case	GL_TYPE_RECORD:
@@ -361,11 +432,39 @@ ENTER_FUNC;
 			if		(  fName  ) {
 				ret += strlen(ValueRecordName(val,i))+1+1;
 			}
-			ret += NativeSizeValue(opt,ValueRecordItem(val,i));
+			ret += _NativeSizeValue(ValueRecordItem(val,i),fName);
 		}
 		break;
 	  default:
 		break;
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
+extern	size_t
+NativeSizeValue(
+	CONVOPT	*opt,
+	ValueStruct	*val)
+{
+	size_t	ret;
+	Bool	fName
+		,	fType;
+
+	if		(  val  ==  NULL  )	return	(0);
+ENTER_FUNC;
+	if		(  opt  !=  NULL  ) { 
+		fName = opt->fName;
+		fType = opt->fType;
+	} else {
+		fName = FALSE;
+		fType = FALSE;
+	}
+	if		(	(  fName  )
+			&&	(  fType  ) ) {
+		ret = NativeSaveSize(val,TRUE);
+	} else {
+		ret = _NativeSizeValue(val,fName);
 	}
 LEAVE_FUNC;
 	return	(ret);
@@ -394,6 +493,13 @@ ENTER_FUNC;
 				esize += sizeof(int);
 			}
 			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			if		(  fData  ) {
+				esize += sizeof(int) * 9;
+			}
+			break;
 		  case	GL_TYPE_BOOL:
 			if		(  fData  ) {
 				esize ++;
@@ -414,7 +520,6 @@ ENTER_FUNC;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 			size = ValueByteLength(value);
-			esize += size;
 			esize += sizeof(size_t);
 			if		(  fData  ) {
 				esize += size;
@@ -425,7 +530,6 @@ ENTER_FUNC;
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			esize += ValueStringSize(value);
 			esize += sizeof(size_t);
 			esize += sizeof(size_t);
 			if		(  fData  ) {
@@ -490,6 +594,21 @@ ENTER_FUNC;
 			if		(  fData  ) {
 				*(int *)p = ValueInteger(value);
 				p += sizeof(int);
+			}
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			if		(  fData  ) {
+				*(int *)p = ValueDateTimeSec(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeMin(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeHour(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeMDay(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeMon(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeYear(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeWDay(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeYDay(value);	p += sizeof(int);
+				*(int *)p = ValueDateTimeIsdst(value);	p += sizeof(int);
 			}
 			break;
 		  case	GL_TYPE_BOOL:
@@ -620,6 +739,31 @@ ENTER_FUNC;
 				ValueInteger(value) = 0;
 			}
 			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			if		(  fData  ) {
+				ValueDateTimeSec(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeMin(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeHour(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeMDay(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeMon(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeYear(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeWDay(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeYDay(value) = *(int *)p;	p += sizeof(int);
+				ValueDateTimeIsdst(value) = *(int *)p;	p += sizeof(int);
+			} else {
+				ValueDateTimeSec(value) = 0;
+				ValueDateTimeMin(value) = 0;
+				ValueDateTimeHour(value) = 0;
+				ValueDateTimeMDay(value) = 0;
+				ValueDateTimeMon(value) = 0;
+				ValueDateTimeYear(value) = 0;
+				ValueDateTimeWDay(value) = 0;
+				ValueDateTimeYDay(value) = 0;
+				ValueDateTimeIsdst(value) = 0;
+			}
+			break;
 		  case	GL_TYPE_BOOL:
 			if		(  fData  ) {
 				ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
@@ -736,7 +880,7 @@ ENTER_FUNC;
 				ValueRecordName(value,i) = name;
 				g_hash_table_insert(ValueRecordMembers(value),
 									(gpointer)ValueRecordName(value,i),
-									(gpointer)(i+1));
+									(gpointer)((long)i+1));
 				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
 			}
 			break;
@@ -766,3 +910,4 @@ NativeRestoreValue(
 	_NativeRestoreValue(p,&val,fData);
 	return	(val);
 }
+

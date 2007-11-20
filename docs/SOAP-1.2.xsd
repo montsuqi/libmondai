@@ -1,7 +1,7 @@
 <!-- Schema defined in the SOAP version 1.2 specification
      9 July 2001 Working Draft:
      http://www.w3.org/TR/2001/WD-soap12-20010709/
-     $Id: SOAP-1.2.xsd,v 1.1 2005-06-14 11:28:06 ogochan Exp $
+     $Id: SOAP-1.2.xsd,v 1.2 2007-11-20 08:06:59 yusuke Exp $
 
      Copyright 2001 W3C (Massachusetts Institute of Technology,
      Institut National de Recherche en Informatique et en Automatique,

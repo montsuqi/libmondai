@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,28 +57,28 @@ static	size_t	SizeBuff;
 
 static	ARG_TABLE	option[] = {
 	{	"inlang",	STRING,		TRUE,	(void*)&InLang	,
-		"$BF~NO7A<0L>(B"			 						},
+		"入力形式名"			 						},
 	{	"outlang",	STRING,		TRUE,	(void*)&OutLang	,
-		"$B=PNO7A<0L>(B"			 						},
+		"出力形式名"			 						},
 	{	"incode",	STRING,		TRUE,	(void*)&InCode	,
-		"$BF~NOJ8;z%3!<%I(B" 								},
+		"入力文字コード" 								},
 	{	"outcode",	STRING,		TRUE,	(void*)&OutCode	,
-		"$B=PNOJ8;z%3!<%I(B" 								},
+		"出力文字コード" 								},
 
 	{	"inencode",	STRING,		TRUE,	(void*)&InEncode,
-		"$BF~NOJ8;zNs(Bencoding" 							},
+		"入力文字列encoding" 							},
 	{	"outencode",STRING,		TRUE,	(void*)&OutEncode,
-		"$B=PNOJ8;zNs(Bencoding" 							},
+		"出力文字列encoding" 							},
 
 	{	"intextsize",INTEGER,	TRUE,	(void*)&InTextSize,
-		"text$B$N:GBgD9(B"									},
+		"textの最大長"									},
 	{	"inarraysize",INTEGER,	TRUE,	(void*)&InArraySize,
-		"$B2DJQMWAGG[Ns$N:GBg7+$jJV$7?t(B"					},
+		"可変要素配列の最大繰り返し数"					},
 
 	{	"outtextsize",INTEGER,	TRUE,	(void*)&OutTextSize,
-		"text$B$N:GBgD9(B"									},
+		"textの最大長"									},
 	{	"outarraysize",INTEGER,	TRUE,	(void*)&OutArraySize,
-		"$B2DJQMWAGG[Ns$N:GBg7+$jJV$7?t(B"					},
+		"可変要素配列の最大繰り返し数"					},
 
 	{	NULL,		0,			FALSE,	NULL,	NULL 	}
 };
@@ -137,6 +137,7 @@ main(
 				   "\tXML2(tag is data name)\n"
 				   "\tCGI('name=value&...)\n"
 				   "\tPHP(PHP serialize)\n"
+				   "\tJSON(JSON serialize)\n"
 				   "\tRFC822('name: value\\n')\n"
 		);
 

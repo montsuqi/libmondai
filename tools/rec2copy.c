@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2002 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2003-2006 Ogochan.
+ * Copyright (C) 2003-2007 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,6 +150,18 @@ static	char	PrevName[SIZE_BUFF];
 static	int		PrevCount;
 static	char	*PrevSuffix[] = { "X","Y","Z" };
 static	void
+SubItem(
+	char	*name,
+	char	*buff)
+{
+	PutLevel(level+1,TRUE);
+	PrevCount = 0;
+	PutName(name);
+	PutTab(4);
+	PutString(buff);
+}
+
+static	void
 _COBOL(
 	ValueStruct	*val)
 {
@@ -176,27 +188,108 @@ _COBOL(
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
-		sprintf(buff,"PIC X(%d)",ValueStringLength(val));
+		sprintf(buff,"PIC X(%d)",(int)ValueStringLength(val));
 		PutString(buff);
 		break;
 	  case	GL_TYPE_OBJECT:
-		sprintf(buff,"PIC X(%d)",sizeof(int)+SIZE_OID);
+		sprintf(buff,"PIC X(%d)",(int)sizeof(int)+SIZE_OID);
 		PutString(buff);
 		break;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(val)  ==  0  ) {
-			sprintf(buff,"PIC S9(%d)",ValueFixedLength(val));
+			sprintf(buff,"PIC S9(%d)",(int)ValueFixedLength(val));
 		} else {
 			sprintf(buff,"PIC S9(%d)V9(%d)",
-					(ValueFixedLength(val) - ValueFixedSlen(val)),
-					ValueFixedSlen(val));
+					(int)(ValueFixedLength(val) - ValueFixedSlen(val)),
+					(int)ValueFixedSlen(val));
 		}
 		PutString(buff);
 		break;
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_BINARY:
-		sprintf(buff,"PIC X(%d)",Conv->textsize);
+		sprintf(buff,"PIC X(%d)",(int)Conv->textsize);
 		PutString(buff);
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+		printf(".\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-YEAR",namebuff);
+		} else {
+			sprintf(buff,"%s-YEAR",PrevName);
+		}
+		SubItem(buff,"PIC 9(4).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MONTH",namebuff);
+		} else {
+			sprintf(buff,"%s-MONTH",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MDAY",namebuff);
+		} else {
+			sprintf(buff,"%s-MDAY",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-HOUR",namebuff);
+		} else {
+			sprintf(buff,"%s-HOUR",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MIN ",namebuff);
+		} else {
+			sprintf(buff,"%s-MIN ",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-SEC ",namebuff);
+		} else {
+			sprintf(buff,"%s-SEC ",PrevName);
+		}
+		SubItem(buff,"PIC 9(2)");
+		break;
+	  case	GL_TYPE_TIME:
+		printf(".\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-HOUR",namebuff);
+		} else {
+			sprintf(buff,"%s-HOUR",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MIN ",namebuff);
+		} else {
+			sprintf(buff,"%s-MIN ",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-SEC ",namebuff);
+		} else {
+			sprintf(buff,"%s-SEC ",PrevName);
+		}
+		SubItem(buff,"PIC 9(2)");
+		break;
+	  case	GL_TYPE_DATE:
+		printf(".\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-YEAR",namebuff);
+		} else {
+			sprintf(buff,"%s-YEAR",PrevName);
+		}
+		SubItem(buff,"PIC 9(4).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MONTH",namebuff);
+		} else {
+			sprintf(buff,"%s-MONTH",PrevName);
+		}
+		SubItem(buff,"PIC 9(2).\n");
+		if		(  fFull  )	{
+			sprintf(buff,"%s-MDAY",namebuff);
+		} else {
+			sprintf(buff,"%s-MDAY",PrevName);
+		}
+		SubItem(buff,"PIC 9(2)");
 		break;
 	  case	GL_TYPE_ARRAY:
 		tmp = ValueArrayItem(val,0);
@@ -292,7 +385,7 @@ SIZE(
 	PutLevel(level,TRUE);
 	PutName("filler");
 	PutTab(8);
-	sprintf(buff,"PIC X(%d)",SizeValue(Conv,val));
+	sprintf(buff,"PIC X(%d)",(int)SizeValue(Conv,val));
 	PutString(buff);
 	level --;
 }
@@ -327,21 +420,21 @@ dbgmsg("<MakeFromRecord");
 
 static	ARG_TABLE	option[] = {
 	{	"lang",		STRING,		TRUE,	(void*)&Lang	,
-		"ÂÐ¾Ý¸À¸ìÌ¾"			 						},
+		"å¯¾è±¡è¨€èªžå"			 						},
 	{	"textsize",	INTEGER,	TRUE,	(void*)&TextSize,
-		"text¤ÎºÇÂçÄ¹"									},
+		"textã®æœ€å¤§é•·"									},
 	{	"arraysize",INTEGER,	TRUE,	(void*)&ArraySize,
-		"²ÄÊÑÍ×ÁÇÇÛÎó¤ÎºÇÂç·«¤êÊÖ¤·¿ô"					},
+		"å¯å¤‰è¦ç´ é…åˆ—ã®æœ€å¤§ç¹°ã‚Šè¿”ã—æ•°"					},
 	{	"prefix",	STRING,		TRUE,	(void*)&Prefix,
-		"¹àÌÜÌ¾¤ÎÁ°¤ËÉÕ²Ã¤¹¤ëÊ¸»úÎó"					},
+		"é …ç›®åã®å‰ã«ä»˜åŠ ã™ã‚‹æ–‡å­—åˆ—"					},
 	{	"name",		STRING,		TRUE,	(void*)&RecName,
-		"¥ì¥³¡¼¥É¤ÎÌ¾Á°"								},
+		"ãƒ¬ã‚³ãƒ¼ãƒ‰ã®åå‰"								},
 	{	"filler",	BOOLEAN,	TRUE,	(void*)&fFiller,
-		"¥ì¥³¡¼¥É¤ÎÃæ¿È¤òFILLER¤Ë¤¹¤ë"					},
+		"ãƒ¬ã‚³ãƒ¼ãƒ‰ã®ä¸­èº«ã‚’FILLERã«ã™ã‚‹"					},
 	{	"full",		BOOLEAN,	TRUE,	(void*)&fFull,
-		"³¬ÁØ¹½Â¤¤òÌ¾Á°¤ËÈ¿±Ç¤¹¤ë"						},
+		"éšŽå±¤æ§‹é€ ã‚’åå‰ã«åæ˜ ã™ã‚‹"						},
 	{	"noconv",	BOOLEAN,	TRUE,	(void*)&fNoConv,
-		"¹àÌÜÌ¾¤òÂçÊ¸»ú¤Ë²Ã¹©¤·¤Ê¤¤"					},
+		"é …ç›®åã‚’å¤§æ–‡å­—ã«åŠ å·¥ã—ãªã„"					},
 	{	NULL,		0,			FALSE,	NULL,	NULL 	}
 };
 

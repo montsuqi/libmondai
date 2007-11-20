@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,7 @@
 #include	"types.h"
 #include	"misc_v.h"
 #include	"memory_v.h"
+#include	"monstring.h"
 #include	"value.h"
 #include	"hash_v.h"
 #include	"OpenCOBOL_v.h"
@@ -46,6 +47,7 @@
 #include	"Text_v.h"
 #include	"XML_v.h"
 #include	"php_v.h"
+#include	"json_v.h"
 #include	"others.h"
 #include	"valueconv.h"
 #include	"debug.h"
@@ -79,6 +81,9 @@ static	ConvFuncs	funcs[] = {
 
 	{	"PHP",					FALSE,	"",						"",
 		PHP_PackValue,			PHP_UnPackValue,		PHP_SizeValue		},
+
+	{	"JSON",					FALSE,	"",						"",
+		JSON_PackValue,			JSON_UnPackValue,		JSON_SizeValue		},
 
 #ifdef	USE_XML
 	{	"XML",					FALSE,	"\n",					"\n",
@@ -138,6 +143,9 @@ EncodeLength(
 	  case	STRING_ENCODING_BASE64:
 		result = EncodeLengthBase64(in);
 		break;
+	  case	STRING_ENCODING_BACKSLASH:
+		result = EncodeStringLengthBackslash(in);
+		break;
 	  default:
 		result = 0;
 		break;
@@ -152,7 +160,7 @@ ConvSetLanguage(
 {
 	ConvFuncs	*func;
 
-dbgmsg(">SetLanguage");
+ENTER_FUNC;
 	if		(  name  !=  NULL  ) {
 		if		(  ( func = GetConvFunc(name) )  ==  NULL  ) {
 			fprintf(stderr,"can not found %s convert rule\n",name);
@@ -166,7 +174,54 @@ dbgmsg(">SetLanguage");
 		UnPackValue = NULL;
 		SizeValue = NULL;
 	}
-dbgmsg("<SetLanguage");
+LEAVE_FUNC;
+}
+
+extern	void
+ConvSetIndent(
+	CONVOPT	*opt,
+	Bool	v)
+{
+	if		(  opt  !=  NULL  ) {
+		opt->fIndent = v;
+	}
+}
+
+extern	size_t
+PutCR(
+	CONVOPT		*opt,
+	char		*p)
+{
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		if		(  p  !=  NULL  ) {
+			*p = '\n';
+		}
+		size = 1;
+	} else {
+		size = 0;
+	}
+	return	(size);
+}
+
+extern	size_t
+IndentLine(
+	CONVOPT		*opt,
+	byte		*p)
+{
+	int		i;
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		if		(  p  !=  NULL  ) {
+			for	( i = 0 ; i < opt->nIndent ; i ++ )	*p ++ = ' ';
+		}
+		size = opt->nIndent;
+	} else {
+		size = 0;
+	}
+	return	(size);
 }
 
 extern	CONVOPT	*
@@ -181,6 +236,43 @@ NewConvOpt(void)
 	ret->arraysize = 10;
 	ret->encode = STRING_ENCODING_NULL;
 	ret->appendix = NULL;
+	ret->fIndent = FALSE;
+	ret->fType = FALSE;
+	ret->fName = FALSE;
+	ret->nIndent = 0;
+
+	return	(ret);
+}
+
+extern	CONVOPT	*
+DuplicateConvOpt(
+	CONVOPT	*opt)
+{
+	CONVOPT	*ret;
+
+	if		(  opt  ==  NULL  ) {
+		ret = NewConvOpt();
+	} else {
+		ret = New(CONVOPT);
+		if		(  opt->codeset  !=  NULL  ) {
+			ret->codeset = StrDup(opt->codeset);
+		} else {
+			ret->codeset = NULL;
+		}
+		if		(  opt->recname  !=  NULL  ) {
+			ret->recname = StrDup(opt->recname);
+		} else {
+			ret->recname = NULL;
+		}
+		ret->textsize = opt->textsize;
+		ret->arraysize = opt->arraysize;
+		ret->encode = opt->encode;
+		ret->appendix = opt->appendix;
+		ret->fIndent = opt->fIndent;
+		ret->fType = opt->fType;
+		ret->fName = opt->fName;
+		ret->nIndent = opt->nIndent;
+	}
 
 	return	(ret);
 }
@@ -189,5 +281,7 @@ extern	void
 DestroyConvOpt(
 	CONVOPT	*opt)
 {
+	xfree(opt->codeset);
+	xfree(opt->recname);
 	xfree(opt);
 }

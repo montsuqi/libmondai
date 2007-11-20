@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,10 +28,9 @@
 #define	XML_OUT_HEADER		0x01
 #define	XML_OUT_BODY		0x02
 #define	XML_OUT_TAILER		0x04
+#define	XML_OUT_ALL			0x07
 
 typedef	struct {
-	Bool	fIndent;
-	Bool	fType;
 	byte	fOutput;
 	int		type;
 }	XMLOPT;
@@ -39,19 +38,12 @@ typedef	struct {
 #define	XML_TYPE1		1
 #define	XML_TYPE2		2
 
-#define	ConvIndent(opt)		\
-		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fIndent)
-
-#define	ConvType(opt)		\
-		((opt)->appendix != NULL) && (((XMLOPT *)(opt)->appendix)->fType)
-
-#define	ConvOutput(opt)		(((XMLOPT *)(opt)->appendix)->fOutput)
+#define	ConvOutput(opt)		(((opt)->appendix == NULL) ? XML_OUT_ALL :	\
+							 (((XMLOPT *)(opt)->appendix)->fOutput))
 
 #define	ConvXmlType(opt)	\
 		(((opt)->appendix == NULL) ? XML_TYPE1 : (((XMLOPT *)(opt)->appendix)->type))
 
-extern	void	ConvSetIndent(CONVOPT *opt, Bool v);
-extern	void	ConvSetType(CONVOPT *opt, Bool v);
 extern	void	ConvSetXmlType(CONVOPT *opt, int type);
 extern	void	ConvSetOutput(CONVOPT *opt, byte v);
 
@@ -69,8 +61,5 @@ extern	size_t	XML2_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 extern	void	DestroyXMLOPT(XMLOPT *opt);
 extern	void	DestroyConvOptXML(CONVOPT *opt);
-
-extern	size_t	PutCR(CONVOPT *opt, char *p);
-extern	size_t	IndentLine(CONVOPT *opt, byte *p);
 
 #endif

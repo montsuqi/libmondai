@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,9 +24,10 @@
 
 #include	"value.h"
 
-#define	STRING_ENCODING_NULL	0
-#define	STRING_ENCODING_URL		1
-#define	STRING_ENCODING_BASE64	2
+#define	STRING_ENCODING_NULL		0
+#define	STRING_ENCODING_URL			1
+#define	STRING_ENCODING_BASE64		2
+#define	STRING_ENCODING_BACKSLASH	3
 
 typedef	struct {
 	char	*codeset;
@@ -36,10 +37,13 @@ typedef	struct {
 	size_t	arraysize;
 	Bool	fName;
 	void	*appendix;
+	Bool	fIndent;
+	Bool	fType;
 	int		nIndent;
 }	CONVOPT;
 
 #define	ConvEncoding(opt)			((opt)->encode)
+#define	ConvIndent(opt)				((opt)->fIndent)
 
 typedef	struct {
 	char	*name;
@@ -67,14 +71,21 @@ GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 extern	ConvFuncs	*GetConvFunc(char *name);
 extern	void		ConvSetLanguage(char *name);
 extern	CONVOPT		*NewConvOpt(void);
+extern	CONVOPT		*DuplicateConvOpt(CONVOPT *opt);
 extern	void		DestroyConvOpt(CONVOPT *opt);
-extern	size_t	EncodeLength(CONVOPT *opt, char *in);
+extern	size_t		EncodeLength(CONVOPT *opt, char *in);
+extern	void		ConvSetIndent(CONVOPT *opt, Bool v);
+extern	size_t		PutCR(CONVOPT *opt, char *p);
+extern	size_t		IndentLine(CONVOPT *opt, byte *p);
 
 #define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
 #define	ConvSetCodeset(opt,cod)		(opt)->codeset = (cod)
 #define	ConvSetRecName(opt,rec)		(opt)->recname = (rec)
 #define	ConvSetEncoding(opt,en)		(opt)->encode = (en)
 #define	ConvSetUseName(opt,f)		(opt)->fName = (f)
+#define	ConvType(opt)				((opt)->fType)
+#define	ConvSetType(opt,v)			(opt)->fType = (v)
+
 #define	ConvSetAppendix(opt,a)		(opt)->appendix = (a)
 
 #define	ConvCodeset(opt)			(((opt) == NULL) ? "utf-8" : ((opt)->codeset))

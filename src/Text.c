@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -127,6 +127,9 @@ _CSV_UnPackValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			SetValueString(value,buff,ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -248,6 +251,9 @@ __CSV_PackValue(
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			if		(  fNsep  ) {
 				p += sprintf(p,"\"%s\",",ValueToString(value,ConvCodeset(opt)));
 			} else {
@@ -384,6 +390,9 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_TIME:
+	  case	GL_TYPE_DATE:
 		ret = strlen(ValueToString(value,ConvCodeset(opt))) + 1;
 		if		(  fNsep  )	ret += 2;
 		break;
@@ -509,6 +518,9 @@ SQL_UnPackValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			SetValueString(value,LBS_Body(lbs),ConvCodeset(opt));
 			break;
 		  case	GL_TYPE_ARRAY:
@@ -604,6 +616,9 @@ _SQL_PackValue(
 			break;
 		  case	GL_TYPE_NUMBER:
 		  case	GL_TYPE_INT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_FLOAT:
 			if		(  !*fFirst  ) {
 				p += sprintf(p,",");
@@ -712,6 +727,9 @@ ENTER_FUNC;
 	  case	GL_TYPE_NUMBER:
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_TIME:
+	  case	GL_TYPE_DATE:
 		ret = strlen(ValueToString(value,ConvCodeset(opt)));
 		if		(  !*fFirst  ) {
 			ret ++;
@@ -885,6 +903,9 @@ _RFC822_UnPackValueNoNamed(
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			q = p;
 			while	(	(  *p  !=  0     )
 					&&	(  *p  !=  '\n'  ) )	p ++;
@@ -967,6 +988,9 @@ ENTER_FUNC;
 					  case	GL_TYPE_INT:
 					  case	GL_TYPE_FLOAT:
 					  case	GL_TYPE_OBJECT:
+					  case	GL_TYPE_TIMESTAMP:
+					  case	GL_TYPE_TIME:
+					  case	GL_TYPE_DATE:
 						*p = 0;
 						SetValueString(e,q,ConvCodeset(opt));
 						break;
@@ -1044,6 +1068,9 @@ ENTER_FUNC;
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			if		(  opt->fName  ) {
 				p+= sprintf(p,"%s: ",longname);
 			}
@@ -1130,6 +1157,9 @@ dbgmsg(">_RFC822_SizeValue");
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
 	  case	GL_TYPE_OBJECT:
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_TIME:
+	  case	GL_TYPE_DATE:
 		ret = strlen(ValueToString(value,ConvCodeset(opt))) + 1;
 		if		(  opt->fName  ) {
 			ret += strlen(longname) + 2;
@@ -1279,6 +1309,9 @@ _CGI_PackValue(
 		  case	GL_TYPE_INT:
 		  case	GL_TYPE_FLOAT:
 		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_TIME:
+		  case	GL_TYPE_DATE:
 			q = ValueToString(value,ConvCodeset(opt));
 			p += sprintf(p,"%s=",longname);
 			p += EncodeString(opt,p,q);
@@ -1352,6 +1385,9 @@ dbgmsg(">_CGI_SizeValue");
 	  case	GL_TYPE_INT:
 	  case	GL_TYPE_FLOAT:
 	  case	GL_TYPE_OBJECT:
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_TIME:
+	  case	GL_TYPE_DATE:
 		ret = EncodeLength(opt,ValueToString(value,ConvCodeset(opt))) + strlen(longname) + 2;
 		break;
 	  case	GL_TYPE_ARRAY:

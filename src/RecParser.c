@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2006 Ogochan.
+ * Copyright (C) 2005-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -60,12 +60,16 @@
 #define	T_DBCODE		(T_YYBASE +10)
 #define	T_OBJECT		(T_YYBASE +11)
 #define	T_FLOAT			(T_YYBASE +12)
-#define	T_VIRTUAL		(T_YYBASE +13)
-#define	T_ALIAS			(T_YYBASE +14)
-#define	T_BINARY		(T_YYBASE +15)
-#define	T_UNIQ			(T_YYBASE +16)
-#define	T_PRIMARY		(T_YYBASE +17)
-#define	T_KEY			(T_YYBASE +18)
+#define	T_TIMESTAMP		(T_YYBASE +13)
+#define	T_DATE			(T_YYBASE +14)
+#define	T_TIME			(T_YYBASE +15)
+
+#define	T_VIRTUAL		(T_YYBASE +16)
+#define	T_ALIAS			(T_YYBASE +17)
+#define	T_BINARY		(T_YYBASE +18)
+#define	T_UNIQ			(T_YYBASE +19)
+#define	T_PRIMARY		(T_YYBASE +20)
+#define	T_KEY			(T_YYBASE +21)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -76,6 +80,9 @@ static	TokenTable	tokentable[] = {
 	{	"char"		,T_CHAR		},
 	{	"varchar"	,T_VARCHAR	},
 	{	"float"		,T_FLOAT	},
+	{	"timestamp"	,T_TIMESTAMP},
+	{	"date"		,T_DATE		},
+	{	"time"		,T_TIME		},
 	{	"input"		,T_INPUT	},
 	{	"int"		,T_INT		},
 	{	"integer"	,T_INT		},
@@ -147,6 +154,7 @@ ParValueDefine(
 	,			*array;
 	ArrayDimension	*next
 	,				*curr;
+	Bool		fExpandable;
 
 ENTER_FUNC;
 	SetReserved(in,Reserved); 
@@ -170,7 +178,7 @@ ENTER_FUNC;
 					size = 0;
 				}
 				if		(  ComToken  ==  ']'  ) {
-					p += sprintf(p,"[%d]",size);
+					p += sprintf(p,"[%d]",(int)size);
 				} else {
 					Error("invalid sufix");
 				}
@@ -194,6 +202,7 @@ ENTER_FUNC;
 		token = ComToken;
 		size = 0;
 		ssize = 0;
+		fExpandable = FALSE;
 		if		(  GetSymbol  ==  '('  ) {
 			if		(  GetSymbol  ==  T_ICONST  ) {
 				size = ComInt;
@@ -222,7 +231,12 @@ ENTER_FUNC;
 			}
 			GetSymbol;
 		} else {
-			size = 1;
+			if		(	(  token  ==  T_DBCODE  )
+					||	(  token  ==  T_TEXT    ) ) {
+				fExpandable = TRUE;
+			} else {
+				size = 1;
+			}
 		}
 		if		(  !in->fError  ) {
 			switch	(token) {
@@ -261,10 +275,15 @@ ENTER_FUNC;
 				memclear(ValueByte(value),ValueByteSize(value));
 				break;
 			  default:
-				ValueStringLength(value) = size;
-				ValueStringSize(value) = size+1;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
-				memclear(ValueString(value),ValueStringSize(value));
+				if		(  fExpandable  ) {
+					ValueIsExpandable(value);
+				} else {
+					ValueIsNonExpandable(value);
+					ValueStringLength(value) = size;
+					ValueStringSize(value) = size+1;
+					ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+					memclear(ValueString(value),ValueStringSize(value));
+				}
 				break;
 			}
 		} else {
@@ -273,6 +292,7 @@ ENTER_FUNC;
 		break;
 	  case	T_BINARY:
 		value = NewValue(GL_TYPE_BINARY);
+		ValueIsExpandable(value);
 		GetSymbol;
 		break;
 	  case	T_INT:
@@ -281,6 +301,18 @@ ENTER_FUNC;
 		break;
 	  case	T_FLOAT:
 		value = NewValue(GL_TYPE_FLOAT);
+		GetSymbol;
+		break;
+	  case	T_TIMESTAMP:
+		value = NewValue(GL_TYPE_TIMESTAMP);
+		GetSymbol;
+		break;
+	  case	T_DATE:
+		value = NewValue(GL_TYPE_DATE);
+		GetSymbol;
+		break;
+	  case	T_TIME:
+		value = NewValue(GL_TYPE_TIME);
 		GetSymbol;
 		break;
 	  case	T_BOOL:
@@ -324,12 +356,13 @@ ENTER_FUNC;
 	for	( curr = next ; curr != NULL ; ) {
 		array = NewValue(GL_TYPE_ARRAY);
 		ValueArraySize(array) = curr->count;
-		ValueArrayExpandable(array) = curr->fExpandable;
 		ValueArrayPrototype(array) = value;
 		if		(  curr->fExpandable  ) {
+			ValueIsExpandable(array);
 			ValueArrayItems(array) = NULL;
 		} else {
-			ValueArrayItems(array) = MakeValueArray(value,curr->count);
+			ValueIsNonExpandable(array);
+			ValueArrayItems(array) = MakeValueArray(value,curr->count,FALSE);
 		}
 		next = curr->next;
 		xfree(curr);
@@ -375,8 +408,7 @@ ENTER_FUNC;
 			GetSymbol;
 		}
 		if		(  ComToken  ==  ';'  ) {
-			GetSymbol;
-			/*	OK	*/
+			GetName;
 		} else {
 			Error("; missing");
 		}
@@ -392,7 +424,7 @@ ENTER_FUNC;
 		/*	OK	*/
 	} else {
 		printf("token = %d [%c]\n",ComToken,ComToken);
-		Error("syntax error");
+		Error("syntax error(invalid structure define(s))");
 	}
 LEAVE_FUNC;
 }

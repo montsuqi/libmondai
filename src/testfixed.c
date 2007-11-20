@@ -1,6 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2005-2006 Ogochan.
+ * Copyright (C) 2000-2002 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2003-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +18,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
 #include	<stdio.h>
 #include	"numeric.h"
 
@@ -27,7 +29,7 @@ _dump(
 	char	*name,
 	Numeric	v)
 {
-	printf("%s->varlen   = %d\n",name,v->varlen);
+	printf("%s->varlen   = %d\n",name,(int)v->varlen);
 	printf("%s->n_weight = %d\n",name,v->n_weight);
 	printf("%s->n_rscale = %d\n",name,v->n_rscale);
 	printf("%s->n_sign_dscale = %d\n",name,v->n_sign_dscale);

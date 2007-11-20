@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -114,7 +114,11 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			ValueObjectId(value) = *(MonObjectType *)p;
-			p += sizeof(ValueObject(value));
+			p += sizeof(ValueObjectId(value));
+			if		(  ValueObjectFile(value)  !=  NULL  ) {
+				xfree(ValueObjectFile(value));
+				ValueObjectFile(value) = NULL;
+			}
 			break;
 		  case	GL_TYPE_BYTE:
 			memcpy(ValueByte(value),p,ValueByteLength(value));
@@ -140,7 +144,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
+			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(byte));
 			memcpy(str,p,ValueStringLength(value));
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
@@ -153,6 +157,32 @@ ENTER_FUNC;
 			FixedCobol2C(buff,ValueFixedLength(value));
 			strcpy(ValueFixedBody(value),buff);
 			p += ValueFixedLength(value);
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
+			mktime(&ValueDateTime(value));
+			break;
+		  case	GL_TYPE_TIME:
+			ValueDateTimeYear(value) = 0;
+			ValueDateTimeMon(value) = 0;
+			ValueDateTimeMDay(value) = 0;
+			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
+			break;
+		  case	GL_TYPE_DATE:
+			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeHour(value) = 0;
+			ValueDateTimeMin(value) = 0;
+			ValueDateTimeSec(value) = 0;
+			mktime(&ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -236,7 +266,28 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			*(MonObjectType *)p = ValueObjectId(value);
-			p += sizeof(ValueObject(value));
+			p += sizeof(ValueObjectId(value));
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+			p += sprintf(p,"%04d%02d%02d%02d%02d%02d",
+						 ValueDateTimeYear(value),
+						 ValueDateTimeMon(value),
+						 ValueDateTimeMDay(value),
+						 ValueDateTimeHour(value),
+						 ValueDateTimeMin(value),
+						 ValueDateTimeSec(value));
+			break;
+		  case	GL_TYPE_DATE:
+			p += sprintf(p,"%04d%02d%02d",
+						 ValueDateTimeYear(value),
+						 ValueDateTimeMon(value),
+						 ValueDateTimeMDay(value));
+			break;
+		  case	GL_TYPE_TIME:
+			p += sprintf(p,"%02d%02d%02d",
+						 ValueDateTimeHour(value),
+						 ValueDateTimeMin(value),
+						 ValueDateTimeSec(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
@@ -292,7 +343,16 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = ValueFixedLength(value);
 		break;
 	  case	GL_TYPE_OBJECT:
-		ret = sizeof(ValueObject(value));
+		ret = sizeof(ValueObjectId(value));
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+		ret = 8 + 6;
+		break;
+	  case	GL_TYPE_DATE:
+		ret = 8;
+		break;
+	  case	GL_TYPE_TIME:
+		ret = 6;
 		break;
 	  case	GL_TYPE_ARRAY:
 		if		(  value->body.ArrayData.count  >  0  ) {

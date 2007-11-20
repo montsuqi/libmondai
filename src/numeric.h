@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 1998 Jan Wieck.
- * Copyright (C) 2001-2006 Ogochan.
+ * Copyright (C) 2001-2007 Ogochan.
  * 
  * Many of the algorithmic ideas are borrowed from David M. Smith's "FM"
  * multiple-precision math library, most recently published as Algorithm

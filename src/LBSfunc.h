@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan
+ * Copyright (C) 2004-2007 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,9 +58,9 @@ extern	wchar_t			*LBS_ToWcs(LargeByteString *lbs);
 extern	byte			*LBS_ToByte(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
-#define	RewindLBS(lbs)			(((LargeByteString *)lbs)->ptr = 0)
+#define	RewindLBS(lbs)			(((LargeByteString *)(lbs))->ptr = 0)
 #define	LBS_UnFetchChar(lbs)	LBS_Seek((lbs),-1,SEEK_CUR)
-#define	LBS_Peek(lbs)			(((LargeByteString *)lbs)->body[((LargeByteString *)lbs)->ptr])
+#define	LBS_Peek(lbs)			(((LargeByteString *)(lbs))->body[((LargeByteString *)(lbs))->ptr])
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitChar(lbs,c)		LBS_Emit((lbs),(c))
@@ -73,5 +73,5 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_Ptr(lbs)			(&((LargeByteString *)(lbs))->body[((LargeByteString *)(lbs))->ptr])
 #define	LBS_GetPos(lbs)			(((LargeByteString *)(lbs))->ptr)
 #define	LBS_SetPos(lbs,pos)		(((LargeByteString *)(lbs))->ptr = (pos))
-#define	LBS_Eof(lbs)			(((LargeByteString *)(lbs))->ptr >= ((LargeByteString *)lbs)->size)
+#define	LBS_Eof(lbs)			(((LargeByteString *)(lbs))->ptr >= ((LargeByteString *)(lbs))->size)
 #endif

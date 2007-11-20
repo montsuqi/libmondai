@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2006 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -109,20 +109,21 @@ NewNameiHash(void)
 	return	(ret);
 }
 
+static	void
+_ClearNames(
+	gpointer	key,
+	gpointer	value,
+	gpointer	user_data)
+{
+	xfree(key);
+}
+
 extern	void
 DestroySymbols(
 	GHashTable		*sym)
 {
-	void	ClearNames(
-		gpointer	key,
-		gpointer	value,
-		gpointer	user_data)
-		{
-			xfree(key);
-		}
-
 	if		(  sym  !=  NULL  ) {
-		g_hash_table_foreach(sym,(GHFunc)ClearNames,NULL);
+		g_hash_table_foreach(sym,(GHFunc)_ClearNames,NULL);
 		g_hash_table_destroy(sym);
 	}
 }
@@ -131,7 +132,7 @@ static	guint
 IntHash(
 	gconstpointer	key)
 {
-	return	((guint)key);
+	return	((guint)(long)key);
 }
 
 static	gint
@@ -139,7 +140,7 @@ IntCompare(
 	gconstpointer	s1,
 	gconstpointer	s2)
 {
-	return	( (int)s1 == (int)s2 );
+	return	( (int)(long)s1 == (int)(long)s2 );
 }
 
 extern	GHashTable	*
