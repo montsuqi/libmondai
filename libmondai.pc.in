@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+target=libmondai
+
+Name: libmondai
+Description: MON Data Access Interface library
+Version: @VERSION@
+Requires: glib-2.0 libxml-2.0
+Libs: @GLIB_LIBS@ @XML_LIBS@ -L@libdir@ -lmondai -lm
+Cflags: @GLIB_CFLAGS@ @XML_CFLAGS@ -I@includedir@/libmondai
+

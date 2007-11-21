@@ -147,6 +147,7 @@ src/libmondai.h
 docs/Makefile
 libmondai-config
 libmondai-config.1
+libmondai.pc
 ], [chmod +x libmondai-config])
 
 dnl ***************************************************************************

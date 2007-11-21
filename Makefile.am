@@ -3,6 +3,9 @@ SUBDIRS = 					\
 	tools 					\
 	docs
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libmondai.pc
+
 bin_SCRIPTS = 					\
 	libmondai-config
 
