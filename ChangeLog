@@ -1,3 +1,8 @@
+2007-11-21  Noboru Saitou  <noborus@netlab.jp>
+
+	* configure.in: configure.ac に変更
+	* configure.ac: autoupdateで更新
+
 2007-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* configure.in: glibをglib2にした

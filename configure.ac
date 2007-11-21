@@ -1,6 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT(src)
+AC_INIT
+AC_CONFIG_SRCDIR([src])
 
 LIBMONDAI_MAJOR_VERSION=1
 LIBMONDAI_MINOR_VERSION=4
@@ -17,13 +18,27 @@ AC_SUBST(LIBMONDAI_VERSION)
 AC_SUBST(LTVERSION)
 
 AM_INIT_AUTOMAKE(libmondai, $LIBMONDAI_VERSION)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
 AC_PROG_CC
 AC_ISC_POSIX
-AM_PROG_CC_STDC
+AC_PROG_CC
+AC_DIAGNOSE([obsolete],[AC_PROG_CC
+AC_DIAGNOSE([obsolete],[AM_PROG_CC_STDC:
+	your code should no longer depend upon `am_cv_prog_cc_stdc', but upon
+	`ac_cv_prog_cc_stdc'.  Remove this warning and the assignment when
+	you adjust the code.  You can also remove the above call to
+	AC_PROG_CC if you already called it elsewhere.])
+am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
+:
+	your code should no longer depend upon `am_cv_prog_cc_stdc', but upon
+	`ac_cv_prog_cc_stdc'.  Remove this warning and the assignment when
+	you adjust the code.  You can also remove the above call to
+	AC_PROG_CC if you already called it elsewhere.])
+am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
+
 AC_PROG_INSTALL
 AM_PROG_LIBTOOL
 AC_PROG_MAKE_SET
@@ -139,7 +154,7 @@ fi
 
 dnl ***************************************************************************
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 src/Makefile
 tools/Makefile
@@ -148,7 +163,9 @@ docs/Makefile
 libmondai-config
 libmondai-config.1
 libmondai.pc
-], [chmod +x libmondai-config])
+])
+AC_CONFIG_COMMANDS([default],[chmod +x libmondai-config],[])
+AC_OUTPUT
 
 dnl ***************************************************************************
 dnl output result
