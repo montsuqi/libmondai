@@ -22,34 +22,39 @@ AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
+AC_PROG_CXX
 AC_PROG_CC
-AC_ISC_POSIX
-AC_PROG_CC
-AC_DIAGNOSE([obsolete],[AC_PROG_CC
-AC_DIAGNOSE([obsolete],[AM_PROG_CC_STDC:
-	your code should no longer depend upon `am_cv_prog_cc_stdc', but upon
-	`ac_cv_prog_cc_stdc'.  Remove this warning and the assignment when
-	you adjust the code.  You can also remove the above call to
-	AC_PROG_CC if you already called it elsewhere.])
-am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
-:
-	your code should no longer depend upon `am_cv_prog_cc_stdc', but upon
-	`ac_cv_prog_cc_stdc'.  Remove this warning and the assignment when
-	you adjust the code.  You can also remove the above call to
-	AC_PROG_CC if you already called it elsewhere.])
-am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
-
+AC_PROG_CPP
 AC_PROG_INSTALL
-AM_PROG_LIBTOOL
+AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+AM_PROG_LIBTOOL
+
+# Checks for libraries.
 
 # Checks for header files.
+AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([unistd.h dirent.h fnmatch.h])
+AC_CHECK_HEADERS([fcntl.h float.h stdint.h stdlib.h string.h unistd.h wchar.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
 AC_C_CONST
-AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_STRUCT_TM
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_MKTIME
+AC_FUNC_MMAP
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([localtime_r memset mkdir munmap strchr strdup strrchr strtol])
 
 dnl ***************************************************************************
 dnl Find pkg-config
