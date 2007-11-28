@@ -121,11 +121,11 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_BYTE			(PacketDataType)0x31
 #define	GL_TYPE_BINARY			(PacketDataType)0x32
 
-#define	GL_TYPE_TIMESTAMP		(PacketDataType)0x40
-#define	GL_TYPE_DATE			(PacketDataType)0x41
-#define	GL_TYPE_TIME			(PacketDataType)0x42
+#define	GL_TYPE_OBJECT			(PacketDataType)0x40
 
-#define	GL_TYPE_OBJECT			(PacketDataType)0x50
+#define	GL_TYPE_TIMESTAMP		(PacketDataType)0x50
+#define	GL_TYPE_DATE			(PacketDataType)0x51
+#define	GL_TYPE_TIME			(PacketDataType)0x52
 
 #define	GL_TYPE_STRUCTURE		(PacketDataType)0x80
 #define	GL_TYPE_ARRAY			(PacketDataType)0x81
