@@ -169,7 +169,7 @@ ValueToFixed(
 		ret = NewFixed(14,0);
 		sprintf(ret->sval,"%04d%02d%02d%02d%02d%02d",
 				ValueDateTimeYear(val),
-				ValueDateTimeMon(val),
+				ValueDateTimeMon(val) + 1,
 				ValueDateTimeMDay(val),
 				ValueDateTimeHour(val),
 				ValueDateTimeMin(val),
@@ -179,7 +179,7 @@ ValueToFixed(
 		ret = NewFixed(8,0);
 		sprintf(ret->sval,"%04d%02d%02d",
 				ValueDateTimeYear(val),
-				ValueDateTimeMon(val),
+				ValueDateTimeMon(val) + 1,
 				ValueDateTimeMDay(val));
 		break;
 	  case	GL_TYPE_TIME:
@@ -371,7 +371,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_TIMESTAMP:
 			sprintf(work,"%04d%02d%02d%02d%02d%02d",
 					ValueDateTimeYear(val),
-					ValueDateTimeMon(val),
+					ValueDateTimeMon(val) + 1,
 					ValueDateTimeMDay(val),
 					ValueDateTimeHour(val),
 					ValueDateTimeMin(val),
@@ -381,7 +381,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_DATE:
 			sprintf(work,"%04d%02d%02d",
 					ValueDateTimeYear(val),
-					ValueDateTimeMon(val),
+					ValueDateTimeMon(val) + 1,
 					ValueDateTimeMDay(val));
 			LBS_EmitString(ValueStr(val),work);
 			break;
@@ -671,18 +671,18 @@ ENTER_FUNC;
 				rc = TRUE;
 				break;
 			  case	GL_TYPE_TIMESTAMP:
-				ValueDateTimeYear(val) = StrToInt(str,4);	str += 4;
-				ValueDateTimeMon(val) = StrToInt(str,2);	str += 2;
-				ValueDateTimeMDay(val) = StrToInt(str,2);	str += 2;
-				ValueDateTimeHour(val) = StrToInt(str,2);	str += 2;
-				ValueDateTimeMin(val) = StrToInt(str,2);	str += 2;
-				ValueDateTimeSec(val) = StrToInt(str,2);	str += 2;
+				ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
+				ValueDateTimeMon(val) = StrToInt(str,2) - 1;	str += 2;
+				ValueDateTimeMDay(val) = StrToInt(str,2);		str += 2;
+				ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
+				ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
+				ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
 				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 				break;
 			  case	GL_TYPE_DATE:
-				ValueDateTimeYear(val) = StrToInt(str,4);	str += 4;
-				ValueDateTimeMon(val) = StrToInt(str,2);	str += 2;
-				ValueDateTimeMDay(val) = StrToInt(str,2);	str += 2;
+				ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
+				ValueDateTimeMon(val) = StrToInt(str,2) - 1;	str += 2;
+				ValueDateTimeMDay(val) = StrToInt(str,2);		str += 2;
 				ValueDateTimeHour(val) = 0;
 				ValueDateTimeMin(val) = 0;
 				ValueDateTimeSec(val) = 0;
@@ -962,19 +962,19 @@ SetValueFixed(
 			break;
 		  case	GL_TYPE_TIMESTAMP:
 			str = fval->sval;
-			ValueDateTimeYear(val) = StrToInt(str,4);	str += 4;
-			ValueDateTimeMon(val) = StrToInt(str,2);	str += 2;
-			ValueDateTimeMDay(val) = StrToInt(str,2);	str += 2;
-			ValueDateTimeHour(val) = StrToInt(str,2);	str += 2;
-			ValueDateTimeMin(val) = StrToInt(str,2);	str += 2;
-			ValueDateTimeSec(val) = StrToInt(str,2);	str += 2;
+			ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
+			ValueDateTimeMon(val) = StrToInt(str,2) - 1;	str += 2;
+			ValueDateTimeMDay(val) = StrToInt(str,2);		str += 2;
+			ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
+			ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
+			ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
 			rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			break;
 		  case	GL_TYPE_DATE:
 			str = fval->sval;
-			ValueDateTimeYear(val) = StrToInt(str,4);	str += 4;
-			ValueDateTimeMon(val) = StrToInt(str,2);	str += 2;
-			ValueDateTimeMDay(val) = StrToInt(str,2);	str += 2;
+			ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
+			ValueDateTimeMon(val) = StrToInt(str,2) - 1;	str += 2;
+			ValueDateTimeMDay(val) = StrToInt(str,2);		str += 2;
 			ValueDateTimeHour(val) = 0;
 			ValueDateTimeMin(val) = 0;
 			ValueDateTimeSec(val) = 0;
@@ -1235,7 +1235,7 @@ SetValueDateTime(
 		  case	GL_TYPE_NUMBER:
 			sprintf(str,"%04d%02d%02d%02d%02d%02d",
 					tval.tm_year,
-					tval.tm_mon,
+					tval.tm_mon + 1,
 					tval.tm_mday,
 					tval.tm_hour,
 					tval.tm_min,
@@ -1283,23 +1283,23 @@ ValueToDateTime(
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_SYMBOL:
 		str = ValueString(val);
-		ret.tm_year = StrToInt(str,4);	str += 4;
-		ret.tm_mon = StrToInt(str,2);	str += 2;
-		ret.tm_mday = StrToInt(str,2);	str += 2;
-		ret.tm_hour = StrToInt(str,2);	str += 2;
-		ret.tm_min = StrToInt(str,2);	str += 2;
-		ret.tm_sec = StrToInt(str,2);	str += 2;
+		ret.tm_year = StrToInt(str,4);		str += 4;
+		ret.tm_mon = StrToInt(str,2) - 1;	str += 2;
+		ret.tm_mday = StrToInt(str,2);		str += 2;
+		ret.tm_hour = StrToInt(str,2);		str += 2;
+		ret.tm_min = StrToInt(str,2);		str += 2;
+		ret.tm_sec = StrToInt(str,2);		str += 2;
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_NUMBER:
 		xval = &ValueFixed(val);
 		str = xval->sval;
-		ret.tm_year = StrToInt(str,4);	str += 4;
-		ret.tm_mon = StrToInt(str,2);	str += 2;
-		ret.tm_mday = StrToInt(str,2);	str += 2;
-		ret.tm_hour = StrToInt(str,2);	str += 2;
-		ret.tm_min = StrToInt(str,2);	str += 2;
-		ret.tm_sec = StrToInt(str,2);	str += 2;
+		ret.tm_year = StrToInt(str,4);		str += 4;
+		ret.tm_mon = StrToInt(str,2) - 1;	str += 2;
+		ret.tm_mday = StrToInt(str,2);		str += 2;
+		ret.tm_hour = StrToInt(str,2);		str += 2;
+		ret.tm_min = StrToInt(str,2);		str += 2;
+		ret.tm_sec = StrToInt(str,2);		str += 2;
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_INT:
@@ -1352,9 +1352,9 @@ ValueToDate(
 	  case	GL_TYPE_TEXT:
 	  case	GL_TYPE_SYMBOL:
 		str = ValueString(val);
-		ret.tm_year = StrToInt(str,4);	str += 4;
-		ret.tm_mon = StrToInt(str,2);	str += 2;
-		ret.tm_mday = StrToInt(str,2);	str += 2;
+		ret.tm_year = StrToInt(str,4);		str += 4;
+		ret.tm_mon = StrToInt(str,2) - 1;	str += 2;
+		ret.tm_mday = StrToInt(str,2);		str += 2;
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;
@@ -1363,9 +1363,9 @@ ValueToDate(
 	  case	GL_TYPE_NUMBER:
 		xval = &ValueFixed(val);
 		str = xval->sval;
-		ret.tm_year = StrToInt(str,4);	str += 4;
-		ret.tm_mon = StrToInt(str,2);	str += 2;
-		ret.tm_mday = StrToInt(str,2);	str += 2;
+		ret.tm_year = StrToInt(str,4);		str += 4;
+		ret.tm_mon = StrToInt(str,2) - 1;	str += 2;
+		ret.tm_mday = StrToInt(str,2);		str += 2;
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;

@@ -98,7 +98,8 @@ StrToInt(
 	for	( ; len > 0 ; len -- )	{
 		if		(  isdigit(*str)  )	{
 			ret = ret * 10 + ( *str - '0' );
-		}
+		} else
+			break;
 		str ++;
 	}
 	return	(ret*sign);

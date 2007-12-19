@@ -1,3 +1,7 @@
+2007-12-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/monstring.c (StrToInt): 小数点以下を正しく切り捨てる
+
 2007-11-21  Noboru Saitou  <noborus@netlab.jp>
 
 	* configure.in: configure.ac に変更
