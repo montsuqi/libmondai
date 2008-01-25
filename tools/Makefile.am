@@ -20,7 +20,7 @@
 
 bin_PROGRAMS = rec2copy monconv
 
-AM_CFLAGS	=	-O4 -Wall -Wunused -Wredundant-decls -funsigned-char  \
+AM_CFLAGS	=	-Wall -Wunused -Wredundant-decls -funsigned-char  \
 	-Wno-pointer-sign
 
 LDADD 		=	\
