@@ -5,6 +5,7 @@ libmondai-config
 config.status
 config.log
 config.h
+aclocal.m4
 autom4te.cache
 Makefile
 Makefile.in
