@@ -1,25 +1,28 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT
+
+AC_PREREQ(2.61)
+AC_INIT([libmondai],[1.4.1])
+AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src])
-
-LIBMONDAI_MAJOR_VERSION=1
-LIBMONDAI_MINOR_VERSION=4
-LIBMONDAI_MICRO_VERSION=0
-
-LIBMONDAI_VERSION=$LIBMONDAI_MAJOR_VERSION.$LIBMONDAI_MINOR_VERSION.$LIBMONDAI_MICRO_VERSION
-LTVERSION=`expr $LIBMONDAI_MAJOR_VERSION + $LIBMONDAI_MINOR_VERSION`:$LIBMONDAI_MICRO_VERSION:$LIBMONDAI_MINOR_VERSION
-
-AC_SUBST(LIBMONDAI_MAJOR_VERSION)
-AC_SUBST(LIBMONDAI_MINOR_VERSION)
-AC_SUBST(LIBMONDAI_MICRO_VERSION)
-
-AC_SUBST(LIBMONDAI_VERSION)
-AC_SUBST(LTVERSION)
-
-AM_INIT_AUTOMAKE(libmondai, $LIBMONDAI_VERSION)
 AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
+
+MAJOR_VERSION=`echo AC_PACKAGE_VERSION|sed 's/\(.*\)\.\(.*\)\.\(.*\)/\1/'|sed 's/\([0-9][0-9]*\).*/\1/'`
+MINOR_VERSION=`echo AC_PACKAGE_VERSION|sed 's/\(.*\)\.\(.*\)\.\(.*\)/\2/'|sed 's/\([0-9][0-9]*\).*/\1/'`
+MICRO_VERSION=`echo AC_PACKAGE_VERSION|sed 's/\(.*\)\.\(.*\)\.\(.*\)/\3/'|sed 's/\([0-9][0-9]*\).*/\1/'`
+
+LTVERSION=`expr $MAJOR_VERSION + $MINOR_VERSION`:$MICRO_VERSION:$MINOR_VERSION
+
+AC_DEFINE_UNQUOTED(PACKAGE,"$PACKAGE","")
+AC_DEFINE_UNQUOTED(VERSION,"$VERSION","")
+
+AC_SUBST(MAJOR_VERSION)
+AC_SUBST(MINOR_VERSION)
+AC_SUBST(MICRO_VERSION)
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+AC_SUBST(LTVERSION)
 
 # Checks for programs.
 AC_PROG_CXX
@@ -179,7 +182,7 @@ dnl ***************************************************************************
 echo "------------------------------------------------------"
 echo "libmondai Configuration:"
 echo ""
-echo "  VERSION:               $LIBMONDAI_VERSION"
+echo "  VERSION:               $VERSION"
 echo "  LTVERSION:             $LTVERSION"
 echo "  i18n Support:          $USE_I18N"
 echo "  libxml Support:        $USE_LIBXML"

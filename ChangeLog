@@ -1,3 +1,7 @@
+2008-01-25  Noboru Saitou  <noborus@netlab.jp>
+
+	* configure.ac: autoconf更新,　LIBMONDAI_VERSIONをVERSIONに変更
+
 2007-12-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/monstring.c (StrToInt): 小数点以下を正しく切り捨てる

@@ -109,7 +109,7 @@
 /* "" */
 #undef LIBXML_CODE
 
-/* Name of package */
+/* "" */
 #undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
@@ -145,7 +145,7 @@
 /* "" */
 #undef USE_XML2
 
-/* Version number of package */
+/* "" */
 #undef VERSION
 
 /* "" */
