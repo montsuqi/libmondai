@@ -2,7 +2,7 @@
  * libmondai -- MONTSUQI data access library
  * 
  * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2007 Ogochan.
+ * Copyright (C) 2005-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

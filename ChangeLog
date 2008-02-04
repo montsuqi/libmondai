@@ -2,6 +2,14 @@
 
 	* configure.ac: autoconf更新,　LIBMONDAI_VERSIONをVERSIONに変更
 
+2008-01-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/others.c (ExpandPath): 環境変数やシェルの実行結果を取り込むことが出来るようにした(要するにshellの文字列定義と同じ)
+
+2008-01-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/OpenCOBOL.c (IntegerCobol2C): OpenCOBOLのバイナリフォーマット変更に追従
+
 2007-12-19  Masami Ogoshi  <ogochan@nurs.or.jp>
 
 	* src/monstring.c (StrToInt): 小数点以下を正しく切り捨てる

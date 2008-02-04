@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2007 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,9 +48,33 @@
 #define	IntegerC2Cobol	IntegerCobol2C
 static	void
 IntegerCobol2C(
+	CONVOPT	*opt,
 	int		*ival)
 {
-	/*	NOP	*/
+	char	*p
+	,		c;
+
+#ifndef	WORDS_BIGENDIAN
+	if		(  opt->fBigEndian  ) {
+		p = (char *)ival;
+		c = p[3];
+		p[3] = p[0];
+		p[0] = c;
+		c = p[2];
+		p[2] = p[1];
+		p[1] = c;
+	}
+#else
+	if		(  !opt->fBigEndian  ) {
+		p = (char *)ival;
+		c = p[3];
+		p[3] = p[0];
+		p[0] = c;
+		c = p[2];
+		p[2] = p[1];
+		p[1] = c;
+	}
+#endif
 }
 
 /*
@@ -101,7 +125,7 @@ ENTER_FUNC;
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
-			IntegerCobol2C(&value->body.IntegerData);
+			IntegerCobol2C(opt,&value->body.IntegerData);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
@@ -219,7 +243,7 @@ ENTER_FUNC;
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			*(int *)p = value->body.IntegerData;
-			IntegerC2Cobol((int *)p);
+			IntegerC2Cobol(opt,(int *)p);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:

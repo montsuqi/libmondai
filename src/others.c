@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2007 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -97,16 +97,60 @@ ExpandPath(
 	char	*base)
 {
 	static	char	path[SIZE_LONGNAME+1];
+	char	buff[SIZE_LONGNAME+1];
 	char	*p
-	,		*q;
+		,	*pp
+		,	*q;
+	FILE	*fp;
+	int		c;
 
 ENTER_FUNC;
 	p = path;
 	while	(  *org  !=  0  ) {
-		if		(  *org  ==  '~'  ) {
+		switch	(*org) {
+		  case	'$':
+			org ++;
+			pp = buff;
+			while	(	(  isalpha(*org)  )
+					||	(  isdigit(*org)  )
+					||	(  *org  ==  '_'  ) ) {
+				*pp ++ = *org ++;
+			}
+			*pp = 0;
+			if		(  ( q = getenv(buff) )  !=  NULL  ) {
+				p += sprintf(p,"%s",q);
+			}
+			break;
+		  case	'`':
+			org ++;
+			pp = buff;
+			while	(	(  *org  !=  0    )
+					&&	(  *org  !=  '`'  )	) {
+				if		(  *org  ==  '\\'  ) {
+					org ++;
+				}
+				*pp ++ = *org ++;
+			}
+			*pp = 0;
+			if		(  ( fp = popen(buff,"r") )  !=  NULL  ) {
+				while	(  ( c = fgetc(fp) )  !=  EOF  ) {
+					if		(	(  c  !=  '\r'  )
+							&&	(  c  !=  '\n'  ) ) {
+						if		(  isspace(c)  ) {
+							c = ' ';
+						}
+						*p ++ = c;
+					}
+				}
+				pclose(fp);
+			}
+			org ++;
+			break;
+		  case	'~':
 			p += sprintf(p,"%s",getenv("HOME"));
-		} else
-		if		(  *org  ==  '='  ) {
+			org ++;
+			break;
+		  case	'=':
 			if		(  base  ==  NULL  ) {
 				if		(  ( q = getenv("BASE_DIR") )  !=  NULL  ) {
 					p += sprintf(p,"%s",q);
@@ -116,10 +160,16 @@ ENTER_FUNC;
 			} else {
 				p += sprintf(p,"%s",base);
 			}
-		} else {
-			*p ++ = *org;
+			org ++;
+			break;
+		  case	'\\':
+			org ++;
+			*p ++ = *org ++;
+			break;
+		  default:
+			*p ++ = *org ++;
+			break;
 		}
-		org ++;
 	}
 	*p = 0;
 LEAVE_FUNC;

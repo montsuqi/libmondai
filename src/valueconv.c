@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2007 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -239,6 +239,7 @@ NewConvOpt(void)
 	ret->fIndent = FALSE;
 	ret->fType = FALSE;
 	ret->fName = FALSE;
+	ret->fBigEndian = FALSE;
 	ret->nIndent = 0;
 
 	return	(ret);
@@ -271,6 +272,7 @@ DuplicateConvOpt(
 		ret->fIndent = opt->fIndent;
 		ret->fType = opt->fType;
 		ret->fName = opt->fName;
+		ret->fBigEndian = opt->fBigEndian;
 		ret->nIndent = opt->nIndent;
 	}
 
