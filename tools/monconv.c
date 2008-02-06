@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2004-2007 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,31 +54,39 @@ static	char	*OutCode;
 static	char	*InEncode;
 static	char	*OutEncode;
 static	size_t	SizeBuff;
+static	Bool	fInBigEndian;
+static	Bool	fOutBigEndian;
 
 static	ARG_TABLE	option[] = {
 	{	"inlang",	STRING,		TRUE,	(void*)&InLang	,
-		"入力形式名"			 						},
+		"input language type name"						},
 	{	"outlang",	STRING,		TRUE,	(void*)&OutLang	,
-		"出力形式名"			 						},
+		"output language type name"						},
+
 	{	"incode",	STRING,		TRUE,	(void*)&InCode	,
-		"入力文字コード" 								},
+		"input character encoding" 						},
 	{	"outcode",	STRING,		TRUE,	(void*)&OutCode	,
-		"出力文字コード" 								},
+		"output character encoding" 					},
 
 	{	"inencode",	STRING,		TRUE,	(void*)&InEncode,
-		"入力文字列encoding" 							},
+		"input string encoding" 						},
 	{	"outencode",STRING,		TRUE,	(void*)&OutEncode,
-		"出力文字列encoding" 							},
+		"output string encoding" 						},
 
 	{	"intextsize",INTEGER,	TRUE,	(void*)&InTextSize,
-		"textの最大長"									},
+		"input max length of text(for COBOL)"			},
 	{	"inarraysize",INTEGER,	TRUE,	(void*)&InArraySize,
-		"可変要素配列の最大繰り返し数"					},
+		"input max items of array(for COBOL)"			},
 
 	{	"outtextsize",INTEGER,	TRUE,	(void*)&OutTextSize,
-		"textの最大長"									},
+		"output max length of text(for COBOL)"			},
 	{	"outarraysize",INTEGER,	TRUE,	(void*)&OutArraySize,
-		"可変要素配列の最大繰り返し数"					},
+		"output max items of array(for COBOL)"			},
+
+	{	"inbigendian",BOOLEAN,	TRUE,	(void*)&fInBigEndian,
+		"input integer is bigendian" 					},
+	{	"outbigendian",BOOLEAN,	TRUE,	(void*)&fOutBigEndian,
+		"output integer is bigendian" 					},
 
 	{	NULL,		0,			FALSE,	NULL,	NULL 	}
 };
@@ -98,6 +106,9 @@ SetDefault(void)
 
 	InEncode = "null";
 	OutEncode = "null";
+
+	fInBigEndian = FALSE;
+	fOutBigEndian = FALSE;
 
 	SizeBuff = 1024 * 1024;
 }
@@ -178,6 +189,7 @@ main(
 		}
 		ConvSetRecName(inopt,StrDup(ValueName));
 		ConvSetUseName(inopt,TRUE);
+		inopt->fBigEndian = fInBigEndian;
 	}
 	if		(  !strlicmp(OutLang,"xml")  ) {
 		if		(  !stricmp(OutLang,"xml2")  ) {
@@ -209,6 +221,7 @@ main(
 		}
 		ConvSetRecName(outopt,StrDup(ValueName));
 		ConvSetUseName(outopt,TRUE);
+		outopt->fBigEndian = fOutBigEndian;
 	}
 
 	fstat(fileno(stdin),&sb);

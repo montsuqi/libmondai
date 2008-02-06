@@ -1,8 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-
 AC_PREREQ(2.61)
-AC_INIT([libmondai],[1.4.1])
+AC_INIT([libmondai],[1.4.2])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([config.h])
@@ -25,7 +24,6 @@ AC_SUBST(VERSION)
 AC_SUBST(LTVERSION)
 
 # Checks for programs.
-AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -45,6 +43,7 @@ AC_CHECK_HEADERS([fcntl.h float.h stdint.h stdlib.h string.h unistd.h wchar.h])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_CONST
+AC_C_BIGENDIAN
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_STRUCT_TM
