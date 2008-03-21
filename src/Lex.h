@@ -106,12 +106,12 @@ extern	int				Lex(CURFILE *in, int type);
 
 #define	ParError(msg)				{			\
 	in->fError=TRUE;							\
-	printf("%s:%d:%s\n",in->fn,in->cLine,msg);	\
+	fprintf(stderr,"%s:%d:%s\n",in->fn,in->cLine,msg);	\
 	GetSymbol;									\
 }
 #define	ParErrorPrintf(...)	{					\
 	in->fError=TRUE;							\
-	printf("%s:%d:",in->fn,in->cLine);			\
+	fprintf(stderr,"%s:%d:",in->fn,in->cLine);			\
 	printf(__VA_ARGS__);						\
 	GetSymbol;									\
 }
