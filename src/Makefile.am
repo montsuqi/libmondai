@@ -99,47 +99,28 @@ libmondai_la_SOURCES	=	\
 	numeric.c		numeric.h		\
 	debug.h
 
+libmondai_la_LIBADD	=		\
+	$(GLIB_LIBS)			\
+	$(XML_LIBS)				
+
 LDADD 				=		\
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
 	$(top_builddir)/src/libmondai.la
 
-testconv_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	$(XML_CFLAGS)			\
-	-I$(top_srcdir)
-
 testconv_SOURCES	=		\
 	testconv.c
-
-testvalue_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	$(XML_CFLAGS)			\
-	-I$(top_srcdir)
 
 testvalue_SOURCES	=		\
 	testvalue.c
 
 if SOAP
-testsoap_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	$(XML_CFLAGS)			\
-	-I$(top_srcdir)
-
 testsoap_SOURCES	=		\
 	testsoap.c
 endif
 
-testmem_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	-I$(top_srcdir)
-
 testmem_SOURCES		=		\
 	testmem.c
-
-testfixed_INCLUDES 	= 		\
-	$(GLIB_CFLAGS) 			\
-	-I$(top_srcdir)
 
 testfixed_SOURCES		=		\
 	testfixed.c
