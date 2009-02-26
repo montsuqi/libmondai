@@ -52,6 +52,7 @@ typedef	struct	{
 #define	LockWrite(obj)		_Lock(&((obj)->lock),FALSE)
 #define	UnLock(obj)			_UnLock(&((obj)->lock))
 
+extern	void	LockDebug(Bool debug);
 extern	void	_Lock(_LOCKOBJECT *lock, Bool fRead);
 extern	void	_UnLock(_LOCKOBJECT *lock);
 extern	void	_WaitLock(pthread_cond_t *cond, _LOCKOBJECT *lock);

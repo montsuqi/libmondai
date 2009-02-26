@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2008 Ogochan.
+ * Copyright (C) 2000-2009 Ogochan & JMA (Japan Medical Association).
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -63,13 +62,14 @@
 #define	T_TIMESTAMP		(T_YYBASE +13)
 #define	T_DATE			(T_YYBASE +14)
 #define	T_TIME			(T_YYBASE +15)
+#define	T_ENUM			(T_YYBASE +16)
 
-#define	T_VIRTUAL		(T_YYBASE +16)
-#define	T_ALIAS			(T_YYBASE +17)
-#define	T_BINARY		(T_YYBASE +18)
-#define	T_UNIQ			(T_YYBASE +19)
-#define	T_PRIMARY		(T_YYBASE +20)
-#define	T_KEY			(T_YYBASE +21)
+#define	T_VIRTUAL		(T_YYBASE +17)
+#define	T_ALIAS			(T_YYBASE +18)
+#define	T_BINARY		(T_YYBASE +19)
+#define	T_UNIQ			(T_YYBASE +20)
+#define	T_PRIMARY		(T_YYBASE +21)
+#define	T_KEY			(T_YYBASE +22)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -83,6 +83,7 @@ static	TokenTable	tokentable[] = {
 	{	"timestamp"	,T_TIMESTAMP},
 	{	"date"		,T_DATE		},
 	{	"time"		,T_TIME		},
+	{	"enum"		,T_ENUM		},
 	{	"input"		,T_INPUT	},
 	{	"int"		,T_INT		},
 	{	"integer"	,T_INT		},
@@ -98,7 +99,7 @@ static	TokenTable	tokentable[] = {
 	{	""			,0			}
 };
 
-static	GHashTable	*Reserved;
+static	GHashTable	*Reserved = NULL;
 
 extern	void
 SetValueAttribute(
@@ -433,8 +434,10 @@ LEAVE_FUNC;
 extern	void
 RecParserInit(void)
 {
-	LexInit();
-	Reserved = MakeReservedTable(tokentable);
+	if		(  Reserved  ==  NULL  ) {
+		LexInit();
+		Reserved = MakeReservedTable(tokentable);
+	}
 }
 
 extern	ValueStruct	*
@@ -458,20 +461,19 @@ ENTER_FUNC;
 			xfree(in->ValueName);
 		}
 		in->ValueName = StrDup(ComSymbol);
-		if		(  GetSymbol  == '{'  ) {
-			ret = NewValue(GL_TYPE_RECORD);
-			ValueAttribute(ret) = attr;
-			GetName;
-			ParValueDefines(in,ret);
-			if		(  in->fError  ) {
-				ret = NULL;
-			}
-		} else {
+		GetSymbol;
+	}
+	if		(  ComToken  ==  '{'  ) {
+		ret = NewValue(GL_TYPE_RECORD);
+		ValueAttribute(ret) = attr;
+		GetName;
+		ParValueDefines(in,ret);
+		if		(  in->fError  ) {
 			ret = NULL;
-			Error("syntax error");
 		}
 	} else {
 		ret = NULL;
+		Error("syntax error");
 	}
 LEAVE_FUNC;
 	return	(ret);

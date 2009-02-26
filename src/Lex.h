@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan
+ * Copyright (C) 2004-2009 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -111,8 +111,8 @@ extern	int				Lex(CURFILE *in, int type);
 }
 #define	ParErrorPrintf(...)	{					\
 	in->fError=TRUE;							\
-	fprintf(stderr,"%s:%d:",in->fn,in->cLine);			\
-	printf(__VA_ARGS__);						\
+	fprintf(stderr,"%s:%d:",in->fn,in->cLine);	\
+	fprintf(stderr,__VA_ARGS__);				\
 	GetSymbol;									\
 }
 

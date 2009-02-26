@@ -1,3 +1,25 @@
+2009-01-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/lock.c (LockDebug): ロックの深さを表示させる機能
+
+2009-01-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/json.c : バイナリの扱いをやめた(無理がある)
+
+2008-07-15  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (DuplicateValue): arrayの処理を正しくした
+
+2008-04-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/RecParser.c (RecParseMain): 無名recordの処理を正しく
+
+	* src/ruby.c (recval_clear, recval_initialize): ValueStruct関係のmethodを追加
+
+2008-04-20  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (ReadyDirective): includeパスにExpandPathを使うようにした
+
 2008-01-25  Noboru Saitou  <noborus@netlab.jp>
 
 	* configure.ac: autoconf更新,　LIBMONDAI_VERSIONをVERSIONに変更

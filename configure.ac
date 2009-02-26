@@ -159,6 +159,59 @@ if test "x$USE_LIBXML2" != "xno"; then
    AC_DEFINE(USE_XML2,1,"")
 fi
 
+dnl *************************************************************************** 
+dnl for Ruby
+dnl *************************************************************************** 
+
+enable_ruby="no"
+AC_ARG_WITH(ruby, 
+[  --with-ruby=PATH        path to ruby],[
+    if test "x$withval" = "xyes"; then
+      AC_PATH_PROG(RUBY, ruby, no)
+    else
+      AC_MSG_CHECKING(for ruby)
+      RUBY="$withval"
+      AC_MSG_RESULT($RUBY)
+    fi
+    if test "x$RUBY" != "xno"; then
+      AC_MSG_CHECKING(for ruby version >= 1.8.0)
+      if $RUBY -e 'exit(RUBY_VERSION >= "1.8.0" ? 0 : 1)'; then
+        AC_MSG_RESULT(yes)
+      else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR(Ruby version is too old)
+      fi
+      archdir=`$RUBY -r rbconfig -e 'print Config::CONFIG[["archdir"]]'`
+      if test -f $archdir/ruby.h; then
+        AC_DEFINE(HAVE_RUBY,1,"")
+        enable_ruby="yes"
+        RUBY_CFLAGS="-I${archdir}"
+        RUBY_SHARED=`$RUBY -r rbconfig -e 'print Config::CONFIG[["ENABLE_SHARED"]]'`
+        if test "$RUBY_SHARED" = "yes"; then
+          RUBY_LIBS=`$RUBY -r rbconfig -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBRUBYARG"]].gsub(/-L\./, "-L" + Config::CONFIG[["libdir"]]) + " " + Config::CONFIG[["LIBS"]]'`
+          RUBY_EXT_LIBS="$RUBY_LIBS"
+        else
+          RUBY_LIBS=`$RUBY -r rbconfig -e 'print Config::CONFIG[["libdir"]] + "/" + Config::CONFIG[["LIBRUBY_A"]] + " " + Config::CONFIG[["LIBS"]]'`
+          RUBY_EXT_LIBS=`$RUBY -r rbconfig -e 'Config::CONFIG[["LIBS"]]'`
+        fi
+        rubylibdir=`$RUBY -r rbconfig -e 'print Config::CONFIG[["rubylibdir"]]'`
+        rubyarchdir=`$RUBY -r rbconfig -e 'print Config::CONFIG[["archdir"]]'`
+      else
+        AC_MSG_ERROR(ruby.h not found)
+      fi
+    fi
+    AC_SUBST(RUBY) 
+    AC_SUBST(RUBY_CFLAGS) 
+    AC_SUBST(RUBY_SHARED)
+    AC_SUBST(RUBY_LIBS)
+    AC_SUBST(RUBY_EXT_LIBS)
+    AC_SUBST(rubylibdir) 
+    AC_SUBST(rubyarchdir) 
+],[
+    AC_MSG_CHECKING(for ruby)
+    AC_MSG_RESULT(no)
+])
+
 dnl ***************************************************************************
 
 AC_CONFIG_FILES([

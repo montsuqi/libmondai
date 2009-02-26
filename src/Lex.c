@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 2000-2008 Ogochan & JMA (Japan Medical Association).
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -197,7 +196,8 @@ LEAVE_FUNC;
 static	void
 DoInclude(
 	CURFILE	*in,
-	char	*fn)
+	char	*fn,
+	Bool	fFull)
 {
 	INCFILE	*back;
 	char	name[SIZE_LONGNAME+1];
@@ -217,7 +217,11 @@ ENTER_FUNC;
 	in->ftop = back;
 	back->fp = in->fp;
 	if		(  in->path  !=  NULL  ) {
-		strcpy(buff,in->path);
+		if		(  fFull  ) {
+			strcpy(buff,in->path);
+		} else {
+			strcpy(buff,ExpandPath(in->path,NULL));
+		}
 	} else {
 		strcpy(buff,".");
 	}
@@ -226,7 +230,11 @@ ENTER_FUNC;
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
 			*q = 0;
 		}
-		sprintf(name,"%s/%s",p,fn);
+		if		(  fFull  ) {
+			sprintf(name,"%s/%s",p,fn);
+		} else {
+			sprintf(name,"%s/%s",p,ExpandPath(fn,NULL));
+		}
 		if		(  ( in->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
@@ -346,6 +354,7 @@ ReadyDirective(
 	char	*p;
 	char	buff[SIZE_LONGNAME+1];
 	int		c;
+	Bool	fFull;
 
 ENTER_FUNC;
 	SKIP_SPACE(in);
@@ -356,6 +365,7 @@ ENTER_FUNC;
 		*p ++ = c;
 	}
 	*p = 0;
+	fFull = FALSE;
 	if		(  !strlicmp(buff,"include")  ) {
 		SKIP_SPACE(in);
 		p = buff;
@@ -364,18 +374,20 @@ ENTER_FUNC;
 			while	(  ( c = GetChar(in) )  !=  '"'  ) {
 				*p ++ = c;
 			}
+			fFull = TRUE;
 			break;
 		  case	'<':
 			while	(  ( c = GetChar(in) )  !=  '>'  ) {
 				*p ++ = c;
 			}
+			fFull = FALSE;
 			break;
 		  default:
 			break;
 		}
 		*p = 0;
 		if		(  *buff  !=  0  ) {
-			DoInclude(in,buff);
+			DoInclude(in,buff,fFull);
 		}
 	} else {
 		UnGetChar(in,c);

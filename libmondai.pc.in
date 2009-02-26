@@ -10,4 +10,3 @@ Version: @VERSION@
 Requires: glib-2.0
 Libs: -L@libdir@ -lmondai -lm
 Cflags: -I@includedir@/libmondai
-

@@ -172,6 +172,7 @@ ENTER_FUNC;
 		}
 	}
 	*p = 0;
+	dbgprintf("path = [%s]",path);
 LEAVE_FUNC;
 	return	(path);
 }

@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2008 Ogochan.
+ * Copyright (C) 2005-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1111,8 +1111,11 @@ DuplicateValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			ValueArrayItems(p) = 
-				MakeValueArray(ValueArrayPrototype(template),
-							   ValueArraySize(template),fCopy);
+				(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
+			for	( i = 0 ; i < ValueArraySize(template) ; i ++ ) {
+				ValueArrayItem(p,i) = 
+					DuplicateValue(ValueArrayItem(template,i),fCopy);
+			}
 			ValueArraySize(p) = ValueArraySize(template);
 			break;
 		  case	GL_TYPE_RECORD:

@@ -1,6 +1,6 @@
 /*
  * PANDA -- a simple transaction monitor
- * Copyright (C) 2007-2008 Ogochan.
+ * Copyright (C) 2007-2009 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,14 @@
 #include	"lock.h"
 #include	"debug.h"
 
+static	Bool	fDebug = FALSE;
+extern	void
+LockDebug(
+	Bool	debug)
+{
+	fDebug = debug;
+}
+
 extern	void
 _Lock(
 	_LOCKOBJECT	*lock,
@@ -40,6 +48,10 @@ _Lock(
 			lock->wwrite --;
 		}
 		lock->rwlock = -1;
+	}
+	if		(  fDebug  ) {
+		printf("lock %s rw = %d ww = %d\n", ( fRead ? "read" : "write"), lock->rwlock, lock->wwrite);
+		fflush(stdout);
 	}
 	pthread_mutex_unlock(&lock->mutex);
 }
@@ -66,6 +78,10 @@ _UnLock(
 	if		(  fWaitRead  ) {
 		pthread_cond_signal(&lock->reader_ok);
 	}
+	if		(  fDebug  ) {
+		printf("unlock rw = %d ww = %d\n", lock->rwlock, lock->wwrite);
+		fflush(stdout);
+	}
 }
 
 extern	void
@@ -75,6 +91,10 @@ _WaitLock(
 {
 	Bool	fWriter;
 
+	if		(  fDebug  ) {
+		printf("wait rw = %d ww = %d\n", lock->rwlock, lock->wwrite);
+		fflush(stdout);
+	}
 	fWriter = FALSE;
 	pthread_mutex_lock(&lock->mutex);
 	if		(  lock->rwlock  <  0  ) {

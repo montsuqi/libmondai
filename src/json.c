@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2007-2008 Ogochan.
+ * Copyright (C) 2007-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,20 +48,54 @@
 			while	(	( *(p)  !=  0     )			\
 					&&	(  isspace(*(p))  ) )	(p) ++
 
-static	char	*
+static	size_t
 ParseString(
-	char	*p,
-	char	*str)
+	byte	*p,
+	byte	**str)
 {
-	while	(	(  *str  !=  0  )
-			&&	(  *str  !=  '"'  ) ) {
-		if		(  *str  ==  '\\'  )	{
-			*p ++ = *str ++;
+	size_t	size;
+	byte	*s;
+
+	size = 0;
+	s = *str;
+	while	(	(  *s  !=  0  )
+			&&	(  *s  !=  '"'  ) ) {
+		switch	(*s) {
+		  case	'\\':
+			s ++;
+			switch	(*s) {
+			  case	'u':
+				*p =  ( *(s+1) << 12 )
+					| ( *(s+2) << 8  )
+					| ( *(s+3) << 4  )
+					| ( *(s+4)       );
+				s += 4;
+			  case	'n':
+				*p = '\n';
+				break;
+			  case	'r':
+				*p = '\r';
+				break;
+			  case	't':
+				*p = '\t';
+				break;
+			  default:
+				*p = *s;
+				break;
+			}
+			break;
+		  default:
+			*p = *s;
+			break;
 		}
-		*p ++ = *str ++;
+		p ++;
+		s ++;
+		size ++;
 	}
 	*p = 0;
-	return	(str);
+	(*str) = s;
+
+	return	(size);
 }
 
 static	size_t
@@ -75,6 +109,13 @@ ParseStringSize(
 			&&	(  *p  !=  '"'  ) ) {
 		if		(  *p  ==  '\\'  ) {
 			p ++;
+			switch	(*p) {
+			  case	'u':
+				p+= 4;
+				break;
+			  default:
+				break;
+			}
 		}
 		p ++;
 		size ++;
@@ -109,10 +150,11 @@ ENTER_FUNC;
 					&&	(  *p  !=  '}'  ) ) {
 				if		(  *p  ==  '"'  ) {
 					p ++;
-					p = ParseString(name,p);
+					(void)ParseString(name,&p);
 					dbgprintf("name = [%s]",name);
 					e = GetRecordItem(value,name);
 					p ++;
+					dbgprintf("[%c]",*p);
 					SKIP_SPACE(p);
 					if		(  *p  !=  ':'  )	break;
 					p ++;
@@ -147,10 +189,10 @@ ENTER_FUNC;
 		  case	'"':
 			p ++;
 			size = ParseStringSize(p);
-			str = (char *)xmalloc(size);
-			p = ParseString(str,p);
-			dbgprintf("str = [%s]%d",str,(int)size);
-			SetValueString(value,str,"utf8");
+			str = (byte *)xmalloc(size+1);
+			size = ParseString(str,&p);
+			dbgprintf("str = %d",(int)size);
+			SetValueBinary(value,str,size);
 			xfree(str);
 			if		(  *p  !=  0  )	p ++;
 			break;
@@ -184,7 +226,9 @@ ENTER_FUNC;
 			}
 			break;
 		}
-	}					
+		if		(  *p  ==  0  )	goto	quit;
+	}
+  quit:;
 LEAVE_FUNC;
 	return	(p-pp);
 }
@@ -236,8 +280,12 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
+#if	0
 			str = ValueToString(value,"utf-8");
 			p += sprintf(p,"\"%s\"",str);
+#else
+			p += sprintf(p,"\"\"");
+#endif
 			break;
 		  case	GL_TYPE_BOOL:
 			if		(  ValueBool(value)  ) {
@@ -339,7 +387,11 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
+#if	0
 			ret += strlen(ValueToString(value,"utf-8")) + 2;
+#else
+			ret = 2;
+#endif
 			break;
 		  case	GL_TYPE_BOOL:
 			if		(  ValueBool(value)  ) {
@@ -437,7 +489,7 @@ ENTER_FUNC;
 					&&	(  *p  !=  '}'  ) ) {
 				if		(  *p  ==  '"'  ) {
 					p ++;
-					p = ParseString(name,p);
+					(void)ParseString(name,&p);
 					dbgprintf("name = [%s]",name);
 					p ++;
 					SKIP_SPACE(p);
@@ -478,7 +530,7 @@ ENTER_FUNC;
 			p ++;
 			size = ParseStringSize(p);
 			str = (char *)xmalloc(size+1);
-			p = ParseString(str,p);
+			(void)ParseString(str,&p);
 			dbgprintf("str = [%s]%d",str,(int)size);
 			value = NewValue(GL_TYPE_TEXT);
 			SetValueString(value,str,"utf8");

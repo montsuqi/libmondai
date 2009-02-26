@@ -2842,7 +2842,7 @@ NumericFormat(
 		*p = 0;
 		len --;
 	} else {
-		*(p + 1) = 0;
+		//*(p + 1) = 0;
 	}
 
 	p = buf + len;

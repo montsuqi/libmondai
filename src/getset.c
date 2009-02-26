@@ -49,6 +49,8 @@
 #include	"getset.h"
 #include	"debug.h"
 
+//#define	BINARY_IS_BASE64
+
 extern	int
 ValueToInteger(
 	ValueStruct	*val)
@@ -281,6 +283,14 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
+#ifdef	BINARY_IS_BASE64
+			size = ( ( ValueByteLength(val) + 2 ) / 3 ) * 4;
+			p = (char *)xmalloc(size);
+			size = EncodeBase64(p,size,ValueByte(val),ValueByteLength(val));
+			LBS_ReserveSize(ValueStr(val),size+1);
+			strcpy(ValueStrBody(val),p);
+			xfree(p);
+#else
 			p = ValueByte(val);
 			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
 				switch	(*p) {
@@ -331,6 +341,7 @@ ENTER_FUNC;
 					LBS_EmitByte(ValueStr(val),0);
 				}
 			}
+#endif
 			break;
 		  case	GL_TYPE_NUMBER:
 			strcpy(work,ValueFixedBody(val));
@@ -423,6 +434,9 @@ DecodeStringToBinary(
 	size_t	size,
 	char	*str)
 {
+#ifdef	BINARY_IS_BASE64
+	DecodeBase64(p,size,str,strlen(str));
+#else
 	int		i;
 
 	for	( i = 0 ; i < size ; i ++ , p ++ ) {
@@ -464,6 +478,7 @@ DecodeStringToBinary(
 			str ++;
 		}
 	}
+#endif
 }
 
 extern	Bool
@@ -562,6 +577,16 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_BINARY:
+#ifdef	BINARY_IS_BASE64
+			p = (byte *)xmalloc(strlen(str));
+			size = strlen(str);
+			size = DecodeBase64(p,size,str,size);
+			if		(  ValueByte(val)  !=  NULL  ) {
+				xfree(ValueByte(val));
+			}
+			ValueByteSize(val) = strlen(str);
+			ValueByte(val) = p;
+#else
 			size = 0;
 			for	( p = str ; *p != 0 ; ) {
 				if		(  *p  ==  '\\'  ) {
@@ -585,6 +610,7 @@ ENTER_FUNC;
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			DecodeStringToBinary(ValueByte(val),size,str);
+#endif
 			ValueByteLength(val) = size;
 			rc = TRUE;
 			break;
