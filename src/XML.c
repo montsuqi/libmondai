@@ -467,10 +467,18 @@ ENTER_FUNC;
 			p += PutCR(opt,(char *)p);
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
+			if		(  opt->recname  !=  NULL  ) {
+				p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
+			} else {
+				p +=_XML_PackValue2(opt,p,"value",value,buff);
+			}
 		}
 		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			p += sprintf((char *)p,"</%s:data>",opt->recname);
+			if		(  opt->recname  !=  NULL  ) {
+				p += sprintf((char *)p,"</%s:data>",opt->recname);
+			} else {
+				p += sprintf((char *)p,"</data>");
+			}
 		}
 		break;
 	}
@@ -558,7 +566,11 @@ ENTER_FUNC;
 		p += PutCR(opt,(char *)p);
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-		p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
+		if		(  opt->recname  !=  NULL  ) {
+			p +=_XML_PackValue2(opt,p,opt->recname,value,buff);
+		} else {
+			p +=_XML_PackValue2(opt,p,"value",value,buff);
+		}
 	}
 	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
 		if		(  opt->recname  !=  NULL  ) {
