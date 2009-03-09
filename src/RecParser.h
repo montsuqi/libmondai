@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
@@ -19,10 +19,27 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_REC_PARSER_H
+#define	_INC_REC_PARSER_H
+#include	<glib.h>
 
+#include	"Lex.h"
+
+extern	ValueStruct	*ParValueDefine(CURFILE *in);
+extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
+extern	void		RecParserInit(void);
+extern	ValueStruct	*RecParseValue(char *name, char **ValueName);
+extern	ValueStruct	*RecParseValueMem(char *mem, char **ValueName);
+extern	ValueStruct	*RecParseMain(CURFILE *in);
+
+#undef	GLOBAL
+#ifdef	_REC_PARSER
+#define	GLOBAL		/*	*/
+#else
+#define	GLOBAL		extern
+#endif
+
+GLOBAL	char	*RecordDir;
+
+#undef	GLOBAL
 #endif

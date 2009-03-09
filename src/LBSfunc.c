@@ -1,23 +1,23 @@
-/*	PANDA -- a simple transaction monitor
-
-Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
-
-This module is part of PANDA.
-
-	PANDA is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
-to anyone for the consequences of using it or for whether it serves
-any particular purpose or works at all, unless he says so in writing.
-Refer to the GNU General Public License for full details. 
-
-	Everyone is granted permission to copy, modify and redistribute
-PANDA, but only under the conditions described in the GNU General
-Public License.  A copy of this license is supposed to have been given
-to you along with PANDA so you can know your rights and
-responsibilities.  It should be in a file named COPYING.  Among other
-things, the copyright notice and this notice must be preserved on all
-copies. 
-*/
+/*
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2008 Ogochan
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -32,11 +32,15 @@ copies.
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
+#include	<errno.h>
+#ifdef	WITH_I18N
+#include	<iconv.h>
+#include	<wchar.h>
+#endif
 #include	<math.h>
 
 #include	"types.h"
-#include	"misc.h"
-#include	"value.h"
+#include	"libmondai.h"
 #include	"LBSfunc.h"
 #include	"debug.h"
 
@@ -47,8 +51,9 @@ NewLBS(void)
 
 	lbs = New(LargeByteString);
 	lbs->ptr = 0;
-	lbs->size = SIZE_GLOWN;
-	lbs->body = xmalloc(lbs->size);
+	lbs->size = 0;
+	lbs->asize = 0;
+	lbs->body = NULL;
 
 	return	(lbs);
 }
@@ -66,22 +71,58 @@ FreeLBS(
 }
 
 extern	void
-LBS_RequireSize(
+LBS_ReserveSize(
 	LargeByteString	*lbs,
 	size_t			size,
 	Bool			fKeep)
 {
 	byte	*body;
 
-	if		(  lbs->size  <  size  ) {
-		body = (byte *)xmalloc(size);
-		if		(  fKeep  ) {
-			memcpy(body,lbs->body,lbs->size);
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->asize  <  size  ) {
+			body = (byte *)xmalloc(size);
+			if		(  fKeep  ) {
+				memcpy(body,lbs->body,lbs->size);
+			}
+			if		(  lbs->body  !=  NULL  ) {
+				xfree(lbs->body);
+			}
+			lbs->body = body;
+			lbs->asize = size;
 		}
-		lbs->body = body;
 		lbs->size = size;
+		lbs->ptr = size;
 	}
-	lbs->ptr = size;
+}
+
+extern	void
+LBS_Seek(
+	LargeByteString	*lbs,
+	size_t			off,
+	int				whence)
+{
+	size_t		newpos;
+
+	if		(  lbs  !=  NULL  ) {
+		switch	(whence) {
+		  case	SEEK_SET:
+			newpos = off;
+			break;
+		  case	SEEK_CUR:
+			newpos = lbs->ptr + off;
+			break;
+		  case	SEEK_END:
+			newpos = lbs->size - off;
+			break;
+		  default:
+			newpos = lbs->ptr;
+			break;
+		}
+		if		(  newpos  >  lbs->size  ) {
+			LBS_ReserveSize(lbs,newpos,TRUE);
+		}
+		lbs->ptr = newpos;
+	}
 }
 
 extern	int
@@ -90,9 +131,13 @@ LBS_FetchByte(
 {
 	int		ret;
 
-	if		(  lbs->ptr  <  lbs->size  ) {
-		ret = lbs->body[lbs->ptr];
-		lbs->ptr ++;
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  <  lbs->size  ) {
+			ret = lbs->body[lbs->ptr];
+			lbs->ptr ++;
+		} else {
+			ret = -1;
+		}
 	} else {
 		ret = -1;
 	}
@@ -105,10 +150,7 @@ LBS_FetchChar(
 {
 	int		ret;
 
-	if		(  ( ret = LBS_FetchByte(lbs) )  ==  LBS_QUOTE_MSB  ) {
-		ret = 0x80 | LBS_FetchByte(lbs);
-	}
-	if		(  ret  <  0  ) {
+	if		(  ( ret = LBS_FetchByte(lbs) )  <  0  )	{
 		ret = 0;
 	}
 	return	(ret);
@@ -118,13 +160,21 @@ extern	void	*
 LBS_FetchPointer(
 	LargeByteString	*lbs)
 {
-	int		ret;
+#ifdef	__LP64__
+	uint64_t	ret;
+#else
+	uint32_t	ret;
+#endif
 	int		i;
 
-	ret = 0;
-	for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
-		ret <<= 8;
-		ret |= LBS_FetchByte(lbs);
+	if		(  lbs  !=  NULL  ) {
+		ret = 0;
+		for	( i = 0 ; i < sizeof(ret) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
+	} else {
+		ret = 0;
 	}
 	return	((void *)ret);
 }
@@ -137,9 +187,28 @@ LBS_FetchInt(
 	int		i;
 
 	ret = 0;
-	for	( i = 0 ; i < sizeof(void *) ; i ++ ) {
-		ret <<= 8;
-		ret |= LBS_FetchByte(lbs);
+	if		(  lbs  !=  NULL  ) {
+		for	( i = 0 ; i < sizeof(int) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
+	}
+	return	(ret);
+}
+
+extern	uint64_t
+LBS_Fetch64(
+	LargeByteString	*lbs)
+{
+	uint64_t	ret;
+	int			i;
+
+	ret = 0;
+	if		(  lbs  !=  NULL  ) {
+		for	( i = 0 ; i < sizeof(uint64_t) ; i ++ ) {
+			ret <<= 8;
+			ret |= LBS_FetchByte(lbs);
+		}
 	}
 	return	(ret);
 }
@@ -148,8 +217,13 @@ extern	void
 LBS_EmitStart(
 	LargeByteString	*lbs)
 {
-	lbs->ptr = 0;
-	memclear(lbs->body,lbs->size);
+	if		(  lbs  !=  NULL  ) {
+		lbs->ptr = 0;
+		lbs->size = 0;
+		if		(  lbs->asize  >  0  ) {
+			memclear(lbs->body,lbs->asize);
+		}
+	}
 }
 
 extern	void
@@ -159,27 +233,35 @@ LBS_Emit(
 {
 	byte	*body;
 
-	if		(  lbs->ptr  ==  lbs->size  ) {
-		lbs->size += SIZE_GLOWN;
-		body = (byte *)xmalloc(lbs->size);
-		memcpy(body,lbs->body,lbs->ptr);
-		xfree(lbs->body);
-		lbs->body = body;
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  ==  lbs->asize  ) {
+			lbs->asize += SIZE_GLOWN;
+			body = (byte *)xmalloc(lbs->asize);
+			if		(  lbs->body  !=  NULL  ) {
+				memcpy(body,lbs->body,lbs->ptr);
+				xfree(lbs->body);
+			}
+			lbs->body = body;
+		}
+		lbs->body[lbs->ptr] = code;
+		lbs->ptr ++;
+		if		(  lbs->ptr  >  lbs->size  ) {
+			lbs->size = lbs->ptr;
+		}
 	}
-	lbs->body[lbs->ptr] = code;
-	lbs->ptr ++;
 }
 
 extern	void
-LBS_EmitChar(
+LBS_Trim(
 	LargeByteString	*lbs,
-	char			c)
+	size_t			size)
 {
-	if		(  ( c & 0x80 )  ==  0x80  ) {
-		LBS_Emit(lbs,LBS_QUOTE_MSB);
-		LBS_Emit(lbs,(c & 0x7F));
-	} else {
-		LBS_Emit(lbs,c);
+	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->ptr  >=  size  ) {
+			memclear(&lbs->body[lbs->ptr - size],size);
+			lbs->ptr -= size;
+			lbs->size -= size;
+		}
 	}
 }
 
@@ -188,10 +270,76 @@ LBS_EmitString(
 	LargeByteString	*lbs,
 	char			*str)
 {
-	while	(  *str  !=  0  ) {
-		LBS_EmitChar(lbs,*str);
-		str ++;
+	if		(  lbs  !=  NULL  ) {
+		while	(  *str  !=  0  ) {
+			LBS_EmitChar(lbs,*str);
+			str ++;
+		}
 	}
+}
+
+#define	SIZE_CONV		10
+
+extern	void
+LBS_EmitStringCodeset(
+	LargeByteString	*lbs,
+	char			*str,
+	size_t			isize,
+	size_t			osize,
+	char			*codeset)
+{
+#ifdef	WITH_I18N
+	char	*oc
+	,		*istr;
+	size_t	sib
+		,	sob;
+	iconv_t	cd;
+	int		rc;
+	char	*obuff;
+	size_t	obsize
+		,	ssize;
+#endif
+
+ENTER_FUNC;
+ 	if		(  lbs  !=  NULL  ) {
+#ifdef	WITH_I18N
+		if		(  codeset  !=  NULL  ) {
+			cd = iconv_open(codeset,"utf8");
+			obsize = isize * 3 + 1;
+			while	(TRUE) {
+				istr = str;
+				sib = isize;
+				obuff = (char *)xmalloc(obsize);
+				oc = obuff;
+				sob = obsize;
+				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	break;
+				if		(  errno  ==  E2BIG  ) {
+					xfree(obuff);
+					obsize *= 2;
+				} else
+					break;
+			}
+			*oc = 0;
+			ssize = obsize - sob + sizeof(wchar_t);
+			LBS_ReserveSize(lbs,ssize,FALSE);
+			memclear(LBS_Body(lbs),ssize);
+			memcpy(LBS_Body(lbs),obuff,ssize);
+			xfree(obuff);
+			iconv_close(cd);
+		} else {
+#endif
+			while	(  isize  >  0  )	{
+				LBS_Emit(lbs,*str);
+				str ++;
+				isize --;
+				osize --;
+				if		(  osize  ==  0  )	break;
+			}
+#ifdef	WITH_I18N
+		}
+#endif
+	}
+LEAVE_FUNC;
 }
 
 extern	void
@@ -199,10 +347,23 @@ LBS_EmitPointer(
 	LargeByteString	*lbs,
 	void			*p)
 {
-	LBS_Emit(lbs,(((int)p & 0xFF000000) >> 24));
-	LBS_Emit(lbs,(((int)p & 0x00FF0000) >> 16));
-	LBS_Emit(lbs,(((int)p & 0x0000FF00) >>  8));
-	LBS_Emit(lbs,(((int)p & 0x000000FF)      ));
+ 	if		(  lbs  !=  NULL  ) {
+#ifdef	__LP64__
+		LBS_Emit(lbs,(((uint64_t)p & 0xFF00000000000000) >> 56));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00FF000000000000) >> 48));
+		LBS_Emit(lbs,(((uint64_t)p & 0x0000FF0000000000) >> 40));
+		LBS_Emit(lbs,(((uint64_t)p & 0x000000FF00000000) >> 32));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00000000FF000000) >> 24));
+		LBS_Emit(lbs,(((uint64_t)p & 0x0000000000FF0000) >> 16));
+		LBS_Emit(lbs,(((uint64_t)p & 0x000000000000FF00) >>  8));
+		LBS_Emit(lbs,(((uint64_t)p & 0x00000000000000FF)      ));
+#else
+		LBS_Emit(lbs,(((uint32_t)p & 0xFF000000) >> 24));
+		LBS_Emit(lbs,(((uint32_t)p & 0x00FF0000) >> 16));
+		LBS_Emit(lbs,(((uint32_t)p & 0x0000FF00) >>  8));
+		LBS_Emit(lbs,(((uint32_t)p & 0x000000FF)      ));
+#endif
+	}
 }
 
 extern	void
@@ -210,10 +371,29 @@ LBS_EmitInt(
 	LargeByteString	*lbs,
 	int				i)
 {
-	LBS_Emit(lbs,((i & 0xFF000000) >> 24));
-	LBS_Emit(lbs,((i & 0x00FF0000) >> 16));
-	LBS_Emit(lbs,((i & 0x0000FF00) >>  8));
-	LBS_Emit(lbs,((i & 0x000000FF)      ));
+ 	if		(  lbs  !=  NULL  ) {
+		LBS_Emit(lbs,((i & 0xFF000000) >> 24));
+		LBS_Emit(lbs,((i & 0x00FF0000) >> 16));
+		LBS_Emit(lbs,((i & 0x0000FF00) >>  8));
+		LBS_Emit(lbs,((i & 0x000000FF)      ));
+	}
+}
+
+extern	void
+LBS_Emit64(
+	LargeByteString	*lbs,
+	uint64_t		i)
+{
+ 	if		(  lbs  !=  NULL  ) {
+		LBS_Emit(lbs,((i & 0xFF00000000000000LL) >> 56));
+		LBS_Emit(lbs,((i & 0x00FF000000000000LL) >> 48));
+		LBS_Emit(lbs,((i & 0x0000FF0000000000LL) >> 40));
+		LBS_Emit(lbs,((i & 0x000000FF00000000LL) >> 32));
+		LBS_Emit(lbs,((i & 0x00000000FF000000LL) >> 24));
+		LBS_Emit(lbs,((i & 0x0000000000FF0000LL) >> 16));
+		LBS_Emit(lbs,((i & 0x000000000000FF00LL) >>  8));
+		LBS_Emit(lbs,((i & 0x00000000000000FFLL)      ));
+	}
 }
 
 extern	void
@@ -222,49 +402,82 @@ LBS_EmitFix(
 {
 	byte	*body;
 
-	if		(  lbs->ptr  >  0  ) {
-		body = (byte *)xmalloc(lbs->ptr);
-		memcpy(body,lbs->body,lbs->ptr);
-		xfree(lbs->body);
-		lbs->body = body;
-	} else {
-		xfree(lbs->body);
-		lbs->body = NULL;
+ 	if		(  lbs  !=  NULL  ) {
+		if		(  lbs->size  >  0  ) {
+			body = (byte *)xmalloc(lbs->size);
+			memcpy(body,lbs->body,lbs->size);
+			xfree(lbs->body);
+			lbs->body = body;
+		} else {
+			xfree(lbs->body);
+			lbs->body = NULL;
+		}
+		lbs->asize = lbs->size;
+		lbs->ptr = 0;
 	}
-	lbs->size = lbs->ptr;
-	lbs->ptr = 0;
 }
 
-extern	size_t
-LBS_StringLength(
+extern	byte	*
+LBS_ToByte(
 	LargeByteString	*lbs)
 {
-	size_t	size;
-	int		c;
+	byte	*ret;
 
-	size = 0;
-	RewindLBS(lbs);
-	while	(  ( c = LBS_FetchByte(lbs) )  >  0  ) {
-		if		(  c  !=  LBS_QUOTE_MSB  ) {
-			size ++;
-		}
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (byte *)xmalloc(LBS_Size(lbs));
+		RewindLBS(lbs);
+		memcpy(ret,LBS_Body(lbs),LBS_Size(lbs));
+	} else {
+		ret = NULL;
 	}
-	return	(size);
+	return	(ret);
 }
 
 extern	char	*
 LBS_ToString(
 	LargeByteString	*lbs)
 {
-	char	*ret
-	,		*p;
+	char	*ret;
 
-	ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
-	p = ret;
-	RewindLBS(lbs);
-	while	(  ( *p = LBS_FetchChar(lbs) )  !=  0  ) {
-		p ++;
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (char *)xmalloc(LBS_StringLength(lbs) + 1);
+		RewindLBS(lbs);
+		strncpy(ret,LBS_Body(lbs),LBS_Size(lbs));
+		ret[LBS_Size(lbs)] = 0;
+	} else {
+		ret = NULL;
 	}
-	*p = 0;
 	return	(ret);
 }
+
+extern	wchar_t	*
+LBS_ToWcs(
+	LargeByteString	*lbs)
+{
+	wchar_t	*ret;
+
+ 	if		(  lbs  !=  NULL  ) {
+		ret = (wchar_t *)xmalloc(LBS_Size(lbs) + sizeof(wchar_t));
+		wcscpy(ret,LBS_Body(lbs));
+	} else {
+		ret = NULL;
+	}
+	return	(ret);
+}
+
+extern	LargeByteString	*
+LBS_Duplicate(
+	LargeByteString	*lbs)
+{
+	LargeByteString	*ret;
+
+ 	if		(  lbs  !=  NULL  ) {
+		ret = NewLBS();
+		LBS_ReserveSize(ret,lbs->size,FALSE);
+		memcpy(ret->body,lbs->body,lbs->size);
+	} else {
+		ret = NULL;
+	}
+	return	(ret);
+}
+

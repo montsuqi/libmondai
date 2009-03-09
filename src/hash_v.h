@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
@@ -19,10 +19,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_HASH_H
+#define	_INC_HASH_H
+#include	<glib.h>
+
+typedef	struct {
+	size_t	count;
+	void	**item;
+}	Chunk;
+
+extern	GHashTable	*NewNameHash(void);
+extern	void		DestroySymbols(GHashTable *sym);
+extern	GHashTable	*NewNameiHash(void);
+extern	GHashTable	*NewIntHash(void);
+extern	Chunk		*NewChunk(void);
+extern	void		ChunkAppend(Chunk *chunk, void *body);
+extern	void		ChunkDestroy(Chunk *chunk);
+
+#define	g_int_hash_table_insert(h,i,d)		g_hash_table_insert((h),(void *)(i),(d))
+#define	g_int_hash_table_foreach(h,p,a)		g_hash_table_foreach((h),(p),(a))
+#define	g_int_hash_table_lookup(h,i)		g_hash_table_lookup((h),(void *)(i))
+#define	g_int_hash_table_remove(h,i)		g_hash_table_remove((h),(void *)(i))
 
 #endif

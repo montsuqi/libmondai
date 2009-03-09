@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +18,27 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_MONDAI_STRING_H
+#define	_INC_MONDAI_STRING_H
+
+#include	<string.h>
+#include	"types.h"
+
+#define	memclear(b,s)	memset((b),0,(s))
+#define	strlcmp(s1,s2)	strncmp((s1),(s2),strlen(s2))
+#define	strlicmp(s1,s2)	strnicmp((s1),(s2),strlen(s2))
+
+#ifdef	__GNUC__
+extern	int		stricmp(char *s1, char *s2);
+extern	int		strnicmp(char *s1, char *s2, size_t l);
+#endif
+
+extern	char	*StrDup(char *s);
+extern	char	*IntStrDup(int val);
+extern	char	*StringChop(char *str);
+extern	long	StrToInt(char *str, size_t len);
+extern	long	HexToInt(char *str, size_t len);
+extern	char	*IntToStr(char *str, long val, size_t len);
+extern	size_t	CharLength(byte c);
 
 #endif

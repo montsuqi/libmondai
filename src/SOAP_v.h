@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 2005-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +18,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_SOAP_VALUE_H
+#define	_INC_SOAP_VALUE_H
+
+#include	"XML_v.h"
+
+extern	size_t	SOAP_PackValue(byte *p, ValueStruct *value, char *method,
+							   char *prefix, char *uri, Bool fIndent, Bool fBodyOnly);
+extern	void	SOAP_UnPackValue(ValueStruct *val, char *data, char *method);
+extern	ValueStruct	*SOAP_LoadValue(char *data, char *method);
 
 #endif

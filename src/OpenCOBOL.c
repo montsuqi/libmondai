@@ -1,23 +1,23 @@
-/*	PANDA -- a simple transaction monitor
-
-Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
-
-This module is part of PANDA.
-
-	PANDA is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
-to anyone for the consequences of using it or for whether it serves
-any particular purpose or works at all, unless he says so in writing.
-Refer to the GNU General Public License for full details. 
-
-	Everyone is granted permission to copy, modify and redistribute
-PANDA, but only under the conditions described in the GNU General
-Public License.  A copy of this license is supposed to have been given
-to you along with PANDA so you can know your rights and
-responsibilities.  It should be in a file named COPYING.  Among other
-things, the copyright notice and this notice must be preserved on all
-copies. 
-*/
+/*
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2008 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -35,18 +35,46 @@ copies.
 #include    <sys/types.h>
 
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
 #include	"value.h"
 #include	"cobolvalue.h"
+#include	"others.h"
+#include	"monstring.h"
 #include	"OpenCOBOL_v.h"
+#include	"getset.h"
 #include	"debug.h"
 
 #define	IntegerC2Cobol	IntegerCobol2C
 static	void
 IntegerCobol2C(
+	CONVOPT	*opt,
 	int		*ival)
 {
-	/*	NOP	*/
+	char	*p
+	,		c;
+
+#ifndef	WORDS_BIGENDIAN
+	if		(  opt->fBigEndian  ) {
+		p = (char *)ival;
+		c = p[3];
+		p[3] = p[0];
+		p[0] = c;
+		c = p[2];
+		p[2] = p[1];
+		p[1] = c;
+	}
+#else
+	if		(  !opt->fBigEndian  ) {
+		p = (char *)ival;
+		c = p[3];
+		p[3] = p[0];
+		p[0] = c;
+		c = p[2];
+		p[2] = p[1];
+		p[1] = c;
+	}
+#endif
 }
 
 /*
@@ -79,132 +107,296 @@ FixedC2Cobol(
 	}
 }
 
-extern	char	*
+extern	size_t
 OpenCOBOL_UnPackValue(
-	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	CONVOPT	*opt,
+	byte	*p,
+	ValueStruct	*value)
 {
 	int		i;
-	char	buff[SIZE_BUFF];
+	char	buff[SIZE_NUMBUF+1];
+	byte	*str;
+	byte	*q;
 
+ENTER_FUNC;
+	q = p; 
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		ValueIsNonNil(value);
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			value->body.IntegerData = *(int *)p;
-			IntegerCobol2C(&value->body.IntegerData);
+			ValueInteger(value) = *(int *)p;
+			IntegerCobol2C(opt,&value->body.IntegerData);
 			p += sizeof(int);
 			break;
+		  case	GL_TYPE_FLOAT:
+			ValueFloat(value) = *(double *)p;
+			p += sizeof(double);
+			break;
 		  case	GL_TYPE_BOOL:
-			value->body.BoolData = ( *(char *)p == 'T' ) ? TRUE : FALSE;
+			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
 			p ++;
 			break;
+		  case	GL_TYPE_OBJECT:
+			ValueObjectId(value) = *(MonObjectType *)p;
+			p += sizeof(ValueObjectId(value));
+			if		(  ValueObjectFile(value)  !=  NULL  ) {
+				xfree(ValueObjectFile(value));
+				ValueObjectFile(value) = NULL;
+			}
+			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(ValueByte(value),p,ValueByteLength(value));
+			p += ValueByteLength(value);
+			break;
+		  case	GL_TYPE_BINARY:
+			str = (byte *)xmalloc((opt->textsize)*sizeof(byte));
+			memcpy(str,p,opt->textsize);
+			p += opt->textsize;
+			SetValueBinary(value,str,opt->textsize);
+			xfree(str);
 			break;
 		  case	GL_TYPE_TEXT:
-			if		(  value->body.CharData.sval  !=  NULL  ) {
-				if		(  value->body.CharData.len  <  textsize  ) {
-					xfree(value->body.CharData.sval);
-					value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-					value->body.CharData.len = textsize;
-				}
-			} else {
-				value->body.CharData.sval = (char *)xmalloc(textsize + 1);
-				value->body.CharData.len = textsize;
-			}
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += textsize;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+		  case	GL_TYPE_SYMBOL:
+			str = (byte *)xmalloc((opt->textsize+1)*sizeof(char));
+			memcpy(str,p,opt->textsize);
+			str[opt->textsize] = 0;
+			p += opt->textsize;
+			StringCobol2C(str,opt->textsize);
+			SetValueString(value,str,ConvCodeset(opt));
+			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
-			StringCobol2C(value->body.CharData.sval,value->body.CharData.len);
+			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(byte));
+			memcpy(str,p,ValueStringLength(value));
+			str[ValueStringLength(value)] = 0;
+			p += ValueStringLength(value);
+			StringCobol2C(str,ValueStringLength(value));
+			SetValueString(value,str,ConvCodeset(opt));
+			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(buff,p,ValueFixed(value)->flen);
-			FixedCobol2C(buff,ValueFixed(value)->flen);
-			strcpy(ValueFixed(value)->sval,buff);
-			p += value->body.FixedData.flen;
+			memcpy(buff,p,ValueFixedLength(value));
+			FixedCobol2C(buff,ValueFixedLength(value));
+			strcpy(ValueFixedBody(value),buff);
+			p += ValueFixedLength(value);
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
+			mktime(&ValueDateTime(value));
+			break;
+		  case	GL_TYPE_TIME:
+			ValueDateTimeYear(value) = 0;
+			ValueDateTimeMon(value) = 0;
+			ValueDateTimeMDay(value) = 0;
+			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
+			break;
+		  case	GL_TYPE_DATE:
+			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeHour(value) = 0;
+			ValueDateTimeMin(value) = 0;
+			ValueDateTimeSec(value) = 0;
+			mktime(&ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = OpenCOBOL_UnPackValue(p,value->body.ArrayData.item[i],textsize);
+				p += OpenCOBOL_UnPackValue(opt,p,value->body.ArrayData.item[i]);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = OpenCOBOL_UnPackValue(p,value->body.RecordData.item[i],textsize);
+				p += OpenCOBOL_UnPackValue(opt,p,value->body.RecordData.item[i]);
 			}
 			break;
 		  default:
+			ValueIsNil(value);
 			break;
 		}
 	}
-	return	(p);
+LEAVE_FUNC;
+	return	(p-q);
 }
 
-extern	char	*
+extern	size_t
 OpenCOBOL_PackValue(
-	char	*p,
-	ValueStruct	*value,
-	size_t	textsize)
+	CONVOPT	*opt,
+	byte	*p,
+	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
+	byte	*pp;
 
+ENTER_FUNC;
+	pp = p; 
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			*(int *)p = value->body.IntegerData;
-			IntegerC2Cobol((int *)p);
+			IntegerC2Cobol(opt,(int *)p);
 			p += sizeof(int);
+			break;
+		  case	GL_TYPE_FLOAT:
+			*(double *)p = value->body.FloatData;
+			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
 			*(char *)p = value->body.BoolData ? 'T' : 'F';
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			memcpy(p,ValueByte(value),ValueByteLength(value));
+			p += ValueByteLength(value);
+			break;
+		  case	GL_TYPE_BINARY:
+			memclear(p,opt->textsize);
+			size = ( opt->textsize < ValueByteLength(value) ) ? opt->textsize : ValueByteLength(value);
+			memcpy(p,ValueToBinary(value),size);
+			p += opt->textsize;
 			break;
 		  case	GL_TYPE_TEXT:
-			size = ( textsize < value->body.CharData.len ) ? textsize :
-				value->body.CharData.len;
-			memcpy(p,value->body.CharData.sval,size);
-			StringC2Cobol(p,textsize);
-			p += textsize;
+		  case	GL_TYPE_SYMBOL:
+			memclear(p,opt->textsize);
+			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
+			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
+			StringC2Cobol(p,opt->textsize);
+			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			StringC2Cobol(value->body.CharData.sval,value->body.CharData.len);
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
+			if		(  IS_VALUE_NIL(value)  ) {
+				memclear(p,ValueStringLength(value));	/*	LOW-VALUE	*/
+			} else {
+				memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
+				StringC2Cobol(p,ValueStringLength(value));
+			}
+			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixed(value)->sval,ValueFixed(value)->flen);
-			FixedC2Cobol(p,ValueFixed(value)->flen);
-			p += value->body.FixedData.flen;
+			memcpy(p,ValueFixedBody(value),ValueFixedLength(value));
+			FixedC2Cobol(p,ValueFixedLength(value));
+			p += ValueFixedLength(value);
+			break;
+		  case	GL_TYPE_OBJECT:
+			*(MonObjectType *)p = ValueObjectId(value);
+			p += sizeof(ValueObjectId(value));
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+			p += sprintf(p,"%04d%02d%02d%02d%02d%02d",
+						 ValueDateTimeYear(value),
+						 ValueDateTimeMon(value),
+						 ValueDateTimeMDay(value),
+						 ValueDateTimeHour(value),
+						 ValueDateTimeMin(value),
+						 ValueDateTimeSec(value));
+			break;
+		  case	GL_TYPE_DATE:
+			p += sprintf(p,"%04d%02d%02d",
+						 ValueDateTimeYear(value),
+						 ValueDateTimeMon(value),
+						 ValueDateTimeMDay(value));
+			break;
+		  case	GL_TYPE_TIME:
+			p += sprintf(p,"%02d%02d%02d",
+						 ValueDateTimeHour(value),
+						 ValueDateTimeMin(value),
+						 ValueDateTimeSec(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = OpenCOBOL_PackValue(p,value->body.ArrayData.item[i],textsize);
+				p += OpenCOBOL_PackValue(opt,p,value->body.ArrayData.item[i]);
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = OpenCOBOL_PackValue(p,value->body.RecordData.item[i],textsize);
+				p += OpenCOBOL_PackValue(opt,p,value->body.RecordData.item[i]);
 			}
 			break;
 		  default:
 			break;
 		}
 	}
-	return	(p);
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+OpenCOBOL_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	int		i
+	,		n;
+	size_t	ret;
+
+	if		(  value  ==  NULL  )	return	(0);
+dbgmsg(">OpenCOBOL_SizeValue");
+	switch	(value->type) {
+	  case	GL_TYPE_INT:
+		ret = sizeof(int);
+		break;
+	  case	GL_TYPE_FLOAT:
+		ret = sizeof(double);
+		break;
+	  case	GL_TYPE_BOOL:
+		ret = 1;
+		break;
+	  case	GL_TYPE_BINARY:
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
+		ret = opt->textsize;
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		ret = ValueStringLength(value);
+		break;
+	  case	GL_TYPE_NUMBER:
+		ret = ValueFixedLength(value);
+		break;
+	  case	GL_TYPE_OBJECT:
+		ret = sizeof(ValueObjectId(value));
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+		ret = 8 + 6;
+		break;
+	  case	GL_TYPE_DATE:
+		ret = 8;
+		break;
+	  case	GL_TYPE_TIME:
+		ret = 6;
+		break;
+	  case	GL_TYPE_ARRAY:
+		if		(  value->body.ArrayData.count  >  0  ) {
+			n = value->body.ArrayData.count;
+		} else {
+			n = opt->arraysize;
+		}
+		ret = OpenCOBOL_SizeValue(opt,value->body.ArrayData.item[0]) * n;
+		break;
+	  case	GL_TYPE_RECORD:
+		ret = 0;
+		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
+			ret += OpenCOBOL_SizeValue(opt,value->body.RecordData.item[i]);
+		}
+		break;
+	  default:
+		ret = 0;
+		break;
+	}
+dbgmsg("<OpenCOBOL_SizeValue");
+	return	(ret);
 }
 

@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
@@ -18,11 +18,13 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#ifndef	_PHP_VALUE_H
+#define	_PHP_VALUE_H
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#include	"valueconv.h"
+
+extern	size_t	PHP_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	PHP_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	PHP_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
@@ -19,10 +19,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_FIXED_H
+#define	_INC_FIXED_H
+
+typedef	struct {
+	size_t		flen;
+	size_t		slen;
+	char		*sval;
+}	Fixed;
+
+extern	int			FixedToInt(Fixed *xval);
+extern	void		FloatToFixed(Fixed *xval, double fval);
+extern	void		IntToFixed(Fixed *xval, int ival);
+extern	double		FixedToFloat(Fixed *xval);
+extern	Fixed		*NewFixed(int flen, int slen);
+
+extern	void		FreeFixed(Fixed *xval);
+extern	void		FixedRescale(Fixed *to, Fixed *fr);
 
 #endif

@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +18,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_MISC_H
+#define	_INC_MISC_H
 
+#include	<string.h>
+#include	"types.h"
+
+extern	FILE	*Fopen(char *name, char *mode);
+extern	void	MakeCobolX(char *to, size_t len, char *from);
+extern	void	CopyCobol(char *to, char *from);
+extern	void	AdjustByteOrder(void *to, void *from, size_t size);
+extern	void	PrintFixString(char *s, int len);
 #endif

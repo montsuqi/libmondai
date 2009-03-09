@@ -1,7 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 2007-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +18,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_JSON_VALUE_H
+#define	_INC_JSON_VALUE_H
+#include	"valueconv.h"
+
+extern	size_t	JSON_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	JSON_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	JSON_SizeValue(CONVOPT *opt, ValueStruct *value);
+
+extern	size_t	JSON_Parse(char *str, ValueStruct **ret);
 
 #endif

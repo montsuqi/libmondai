@@ -1,23 +1,23 @@
-/*	PANDA -- a simple transaction monitor
-
-Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
-
-This module is part of PANDA.
-
-	PANDA is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
-to anyone for the consequences of using it or for whether it serves
-any particular purpose or works at all, unless he says so in writing.
-Refer to the GNU General Public License for full details. 
-
-	Everyone is granted permission to copy, modify and redistribute
-PANDA, but only under the conditions described in the GNU General
-Public License.  A copy of this license is supposed to have been given
-to you along with PANDA so you can know your rights and
-responsibilities.  It should be in a file named COPYING.  Among other
-things, the copyright notice and this notice must be preserved on all
-copies. 
-*/
+/*
+ * libmondai -- MONTSUQI data access library
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2008 Ogochan.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 /*
 #define	DEBUG
@@ -34,185 +34,256 @@ copies.
 #include	<ctype.h>
 #include	<glib.h>
 #include	<math.h>
-
+#define	_VALUECONV
 #include	"types.h"
-#include	"misc.h"
+#include	"misc_v.h"
+#include	"memory_v.h"
+#include	"monstring.h"
 #include	"value.h"
+#include	"hash_v.h"
 #include	"OpenCOBOL_v.h"
 #include	"dotCOBOL_v.h"
-#define	_VALUECONV
+#include	"Native_v.h"
+#include	"Text_v.h"
+#include	"XML_v.h"
+#include	"php_v.h"
+#include	"json_v.h"
+#include	"others.h"
 #include	"valueconv.h"
 #include	"debug.h"
 
-
-typedef	char	*(*ConvFunc)(char *p, ValueStruct *value, size_t textsize);
-
-typedef	struct {
-	char	*name;
-	char	*(*Pack)(char *p, ValueStruct *value, size_t textsize);
-	char	*(*UnPack)(char *p, ValueStruct *value, size_t textsize);
-}	ConvFuncs;
-
-extern	char	*
-NativeUnPackValue(
-	char	*p,
-	ValueStruct	*value)
-{
-	int		i;
-	size_t	size;
-
-dbgmsg(">NativeUnPackValue");
-	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
-		  case	GL_TYPE_INT:
-			memcpy(&value->body.IntegerData,p,sizeof(int));
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_BOOL:
-			value->body.BoolData = ( *(char *)p == 'T' ) ? TRUE : FALSE;
-			p ++;
-			break;
-		  case	GL_TYPE_BYTE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			p += value->body.CharData.len;
-			break;
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-			memcpy(value->body.CharData.sval,p,value->body.CharData.len);
-			value->body.CharData.sval[value->body.CharData.len] = 0;
-			p += value->body.CharData.len;
-			break;
-		  case	GL_TYPE_TEXT:
-			memcpy(&size,p,sizeof(size_t));
-			p += sizeof(size_t);
-			if		(  size  !=  value->body.CharData.len  ) {
-				xfree(value->body.CharData.sval);
-				value->body.CharData.sval = (char *)xmalloc(size+1);
-				value->body.CharData.len = size;
-			}
-			memcpy(value->body.CharData.sval,p,size);
-			p += size;
-			break;
-		  case	GL_TYPE_NUMBER:
-			memcpy(value->body.FixedData.sval,p,value->body.FixedData.flen);
-			p += value->body.FixedData.flen;
-			break;
-		  case	GL_TYPE_OBJECT:
-			memcpy(&value->body.Object.apsid,p,sizeof(int));
-			p += sizeof(int);
-			memcpy(&value->body.Object.oid,p,sizeof(int));
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.ArrayData.item[i]);
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativeUnPackValue(p,value->body.RecordData.item[i]);
-			}
-			break;
-		  default:
-			break;
-		}
-	}
-dbgmsg("<NativeUnPackValue");
-	return	(p);
-}
-
-extern	char	*
-NativePackValue(
-	char	*p,
-	ValueStruct	*value)
-{
-	int		i;
-
-dbgmsg(">NativePackValue");
-	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
-		  case	GL_TYPE_INT:
-			memcpy(p,&value->body.IntegerData,sizeof(int));
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_BOOL:
-			*(char *)p = value->body.BoolData ? 'T' : 'F';
-			p ++;
-			break;
-		  case	GL_TYPE_BYTE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
-			break;
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
-			break;
-		  case	GL_TYPE_TEXT:
-			memcpy(p,&value->body.CharData.len,sizeof(size_t));
-			p += sizeof(size_t);
-			memcpy(p,value->body.CharData.sval,value->body.CharData.len);
-			p += value->body.CharData.len;
-			break;
-		  case	GL_TYPE_NUMBER:
-			memcpy(p,ValueFixed(value)->sval,ValueFixed(value)->flen);
-			p += value->body.FixedData.flen;
-			break;
-		  case	GL_TYPE_OBJECT:
-			memcpy(p,&value->body.Object.apsid,sizeof(int));
-			p += sizeof(int);
-			memcpy(p,&value->body.Object.oid,sizeof(int));
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.ArrayData.item[i]);
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p = NativePackValue(p,value->body.RecordData.item[i]);
-			}
-			break;
-		  default:
-			break;
-		}
-	}
-dbgmsg("<NativePackValue");
-	return	(p);
-}
-
 static	ConvFuncs	funcs[] = {
-	{	"OpenCOBOL",OpenCOBOL_PackValue,			OpenCOBOL_UnPackValue	},
-	{	"dotCOBOL",	dotCOBOL_PackValue,				dotCOBOL_UnPackValue	},
-	{	NULL,		(ConvFunc)NativePackValue,		(ConvFunc)NativeUnPackValue		}
+
+	{	"OpenCOBOL",			TRUE,	"",						"",
+		OpenCOBOL_PackValue,	OpenCOBOL_UnPackValue,	OpenCOBOL_SizeValue	},
+
+	{	"dotCOBOL",				TRUE,	"",						"",
+		dotCOBOL_PackValue,		dotCOBOL_UnPackValue,	dotCOBOL_SizeValue	},
+
+	{	"CSV1",					FALSE,	",",					"\n",
+		CSV1_PackValue,			CSV_UnPackValue,		CSV1_SizeValue		},
+	{	"CSV2",					FALSE,	",",					"\n",
+		CSV2_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
+	{	"CSV3",					FALSE,	",",					"\n",
+		CSV3_PackValue,			CSV_UnPackValue,		CSV3_SizeValue		},
+	{	"CSVE",					FALSE,	",",					"\n",
+		CSVE_PackValue,			CSV_UnPackValue,		CSVE_SizeValue		},
+	{	"CSV",					FALSE,	",",					"\n",
+		CSV_PackValue,			CSV_UnPackValue,		CSV_SizeValue		},
+	{	"RFC822",				FALSE,	"\n",					"\n",
+		RFC822_PackValue,		RFC822_UnPackValue,		RFC822_SizeValue	},
+
+	{	"SQL",					FALSE,	",",					"\n",
+		SQL_PackValue,			SQL_UnPackValue,		SQL_SizeValue		},
+
+	{	"CGI",					FALSE,	"&",					"\n",
+		CGI_PackValue,			CGI_UnPackValue,		CGI_SizeValue		},
+
+	{	"PHP",					FALSE,	"",						"",
+		PHP_PackValue,			PHP_UnPackValue,		PHP_SizeValue		},
+
+	{	"JSON",					FALSE,	"",						"",
+		JSON_PackValue,			JSON_UnPackValue,		JSON_SizeValue		},
+
+#ifdef	USE_XML
+	{	"XML",					FALSE,	"\n",					"\n",
+		XML_PackValue,			XML_UnPackValue,		XML_SizeValue		},
+	{	"XML1",					FALSE,	"\n",					"\n",
+		XML1_PackValue,			XML2_UnPackValue,		XML2_SizeValue		},
+	{	"XML2",					FALSE,	"\n",					"\n",
+		XML2_PackValue,			XML2_UnPackValue,		XML2_SizeValue		},
+#endif
+
+	{	"Native",				TRUE,	"",						"",
+		NativePackValue,		NativeUnPackValue,		NativeSizeValue		},
+
+	{	NULL,					TRUE,	"",						"",
+		NativePackValue,		NativeUnPackValue,		NativeSizeValue		}
 };
 
 static	GHashTable	*FuncTable = NULL;
 
-extern	void
-SetLanguage(
+extern	ConvFuncs	*
+GetConvFunc(
 	char	*name)
 {
-	int		i;
 	ConvFuncs	*func;
+	int			i;
 
-dbgmsg(">SetLanguage");
-	if		(  FuncTable  ==  NULL  ) {
-		FuncTable = NewNameHash();
-		for	( i = 0 ; funcs[i].name  !=  NULL ; i ++ ) {
-			if		(  g_hash_table_lookup(FuncTable,funcs[i].name)  ==  NULL  ) {
-				g_hash_table_insert(FuncTable,funcs[i].name,&funcs[i]);
+	if		(  name  !=  NULL  ) {
+		if		(  FuncTable  ==  NULL  ) {
+			FuncTable = NewNameHash();
+			for	( i = 0 ; funcs[i].name  !=  NULL ; i ++ ) {
+				if		(  g_hash_table_lookup(FuncTable,funcs[i].name)  ==  NULL  ) {
+					g_hash_table_insert(FuncTable,funcs[i].name,&funcs[i]);
+				}
 			}
 		}
+		func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name);
+	} else {
+		func = NULL;
 	}
-	if		(  ( func = (ConvFuncs *)g_hash_table_lookup(FuncTable,name) )  ==  NULL  ) {
-		fprintf(stderr,"can not found %s convert rule\n",name);
-		exit(1);
+	return	(func);
+}
+
+extern	size_t
+EncodeLength(
+	CONVOPT		*opt,
+	char		*in)
+{
+	size_t	result;
+
+	switch	(ConvEncoding(opt)) {
+	  case	STRING_ENCODING_NULL:
+		result = strlen(in);
+		break;
+	  case	STRING_ENCODING_URL:
+		result = EncodeStringLengthURL(in);
+		break;
+	  case	STRING_ENCODING_BASE64:
+		result = EncodeLengthBase64(in);
+		break;
+	  case	STRING_ENCODING_BACKSLASH:
+		result = EncodeStringLengthBackslash(in);
+		break;
+	  default:
+		result = 0;
+		break;
 	}
-	PackValue = func->Pack;
-	UnPackValue = func->UnPack;
-dbgmsg("<SetLanguage");
+	return	(result);
+}
+
+
+extern	void
+ConvSetLanguage(
+	char	*name)
+{
+	ConvFuncs	*func;
+
+ENTER_FUNC;
+	if		(  name  !=  NULL  ) {
+		if		(  ( func = GetConvFunc(name) )  ==  NULL  ) {
+			fprintf(stderr,"can not found %s convert rule\n",name);
+			exit(1);
+		}
+		PackValue = func->PackValue;
+		UnPackValue = func->UnPackValue;
+		SizeValue = func->SizeValue;
+	} else {
+		PackValue = NULL;
+		UnPackValue = NULL;
+		SizeValue = NULL;
+	}
+LEAVE_FUNC;
+}
+
+extern	void
+ConvSetIndent(
+	CONVOPT	*opt,
+	Bool	v)
+{
+	if		(  opt  !=  NULL  ) {
+		opt->fIndent = v;
+	}
+}
+
+extern	size_t
+PutCR(
+	CONVOPT		*opt,
+	char		*p)
+{
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		if		(  p  !=  NULL  ) {
+			*p = '\n';
+		}
+		size = 1;
+	} else {
+		size = 0;
+	}
+	return	(size);
+}
+
+extern	size_t
+IndentLine(
+	CONVOPT		*opt,
+	byte		*p)
+{
+	int		i;
+	size_t	size;
+
+	if		(  ConvIndent(opt)  ) {
+		if		(  p  !=  NULL  ) {
+			for	( i = 0 ; i < opt->nIndent ; i ++ )	*p ++ = ' ';
+		}
+		size = opt->nIndent;
+	} else {
+		size = 0;
+	}
+	return	(size);
+}
+
+extern	CONVOPT	*
+NewConvOpt(void)
+{
+	CONVOPT	*ret;
+
+	ret = New(CONVOPT);
+	ret->codeset = NULL;
+	ret->recname = NULL;
+	ret->textsize = 100;
+	ret->arraysize = 10;
+	ret->encode = STRING_ENCODING_NULL;
+	ret->appendix = NULL;
+	ret->fIndent = FALSE;
+	ret->fType = FALSE;
+	ret->fName = FALSE;
+	ret->fBigEndian = FALSE;
+	ret->nIndent = 0;
+
+	return	(ret);
+}
+
+extern	CONVOPT	*
+DuplicateConvOpt(
+	CONVOPT	*opt)
+{
+	CONVOPT	*ret;
+
+	if		(  opt  ==  NULL  ) {
+		ret = NewConvOpt();
+	} else {
+		ret = New(CONVOPT);
+		if		(  opt->codeset  !=  NULL  ) {
+			ret->codeset = StrDup(opt->codeset);
+		} else {
+			ret->codeset = NULL;
+		}
+		if		(  opt->recname  !=  NULL  ) {
+			ret->recname = StrDup(opt->recname);
+		} else {
+			ret->recname = NULL;
+		}
+		ret->textsize = opt->textsize;
+		ret->arraysize = opt->arraysize;
+		ret->encode = opt->encode;
+		ret->appendix = opt->appendix;
+		ret->fIndent = opt->fIndent;
+		ret->fType = opt->fType;
+		ret->fName = opt->fName;
+		ret->fBigEndian = opt->fBigEndian;
+		ret->nIndent = opt->nIndent;
+	}
+
+	return	(ret);
+}
+
+extern	void
+DestroyConvOpt(
+	CONVOPT	*opt)
+{
+	xfree(opt->codeset);
+	xfree(opt->recname);
+	xfree(opt);
 }

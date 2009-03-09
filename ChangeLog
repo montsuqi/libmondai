@@ -1,3 +1,586 @@
+2008-01-25  Noboru Saitou  <noborus@netlab.jp>
+
+	* configure.ac: autoconf更新,　LIBMONDAI_VERSIONをVERSIONに変更
+
+2008-01-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/others.c (ExpandPath): 環境変数やシェルの実行結果を取り込むことが出来るようにした(要するにshellの文字列定義と同じ)
+
+2008-01-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/OpenCOBOL.c (IntegerCobol2C): OpenCOBOLのバイナリフォーマット変更に追従
+
+2007-12-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/monstring.c (StrToInt): 小数点以下を正しく切り捨てる
+
+2007-11-21  Noboru Saitou  <noborus@netlab.jp>
+
+	* configure.in: configure.ac に変更
+	* configure.ac: autoupdateで更新
+
+2007-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* configure.in: glibをglib2にした
+
+2007-10-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/json.c (JSON_Parse): JSONから型定義なしにValueStructを作成
+
+2007-09-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/lock.c: 多重ロックを前提とするために追加
+
+2007-09-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): 正規表現の読み込み
+
+2007-09-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory.c: thread safeに
+
+	* src/lock.h: ロック関係のマクロ(pandaから移動)
+
+2007-09-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.c (DuplicateConvOpt): 追加(あると便利)
+
+2007-09-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (DuplicateValue, MakeValueArray): 内容の複製を制御
+
+2007-09-12  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory_v.h (NewArea): GetAreaによるNew
+
+2007-09-11  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/libmondai.h.in: JSON, PHP追加
+
+2007-08-21  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/json.c: JSONの処理追加
+
+2007-08-05  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* configure.in: Ver 1.3.9リリース(次回stable版は1.4.0)
+
+2007-08-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: 日付時刻型、日付型、時刻型のサポート(デバッグは追い追い)
+
+2007-07-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (NativeUnPackValue, NativePackValue)
+	(NativeSizeValue): GL_TYPE_OBJECTの実体ファイル名の保持
+
+	* src/RecParser.c (ParValueDefine): 領域拡張可能属性の解析
+
+	* src/getset.c (ValueToLBS, SetValueStringWithLength): 文字列系の処理の統合
+
+	* src/value.h: ValueAttributeTypeを16bitにした(8bitでは足りなくなったため)
+	GL_ATTR_EXLANDABLE(領域拡張可能属性)
+	ValueArrayExpandable廃止(GL_ATTR_EXPANDABLEを使う)
+
+2007-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.h (ParErrorPrintf): エラー時にシンボルを進めることにした
+	(同じエラーが出続けることを避けるため)
+	
+2007-06-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Ver 1.3.0 release
+
+2007-02-14  ogochan  <ogochan@nurs.or.jp>
+
+	* src/RecParser.c (ParValueDefines): 予約語と名前がかぶっても問題
+	が起きないように、名前を読む時にGetNameにした
+
+2007-02-08  ogochan  <ogochan@nurs.or.jp>
+
+	* LP64に対応した
+
+2006-12-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/php.c: PHP serializerへの対応
+
+	* gcc 4.xへの対応
+
+2006-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): 文字列長の制限をなくした(多分重い)
+
+2006-06-23  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_EmitStringCodeset): 高速化
+
+2006-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (_NativeRestoreValue): externにした
+
+2006-05-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: Objectの構造を変更した
+
+2006-04-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (MakeReservedTable): 予約語は大文字小文字の区別をやめた
+
+2006-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/numeric.c (NumericFormatToPrecision): 変数文字として$を有効にした
+
+2006-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c (_CSV_UnPackValue): Excel形式のバグを取った。改行コードの違いにrobustにした
+
+2006-02-16  Noboru Saitou  <noborus@netlab.jp>
+
+	* Ver 1.2.6 release
+
+2006-02-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/numeric.c (NumericFormat): フォーマット文字列を破壊するバグを取った
+
+2005-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.h (ParErrorPrintf): パーザ用のエラーメッセージ出力
+
+2005-10-13  Noboru Saitou  <noborus@netlab.jp>
+
+        * Ver 1.2.5 release
+
+2005-09-15  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: GL_TYPE_SYMBOLを追加(""で括られない文字列)
+
+2005-09-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (PushLexInfoStream): streamのパーズ
+
+2005-08-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): /* */タイプのコメントに対応した。行頭!のコメントの対応をやめた
+
+2005-07-28  Noboru Saitou  <noborus@netlab.jp>
+
+	* src/Lex.c (DropLexInfo): fix memory leak
+
+2005-06-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SOAP.c (SOAP_LoadValue): XMLからValueStructを作る処理
+
+	* src/value.c (ValueAddArrayItem): 追加
+
+2005-06-21  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* COPYING: 著作権表示を直す(実態と大きくかけ離れていたため。そもそ
+	もLGPLでなきゃいけなかったはずがGPLになっていた)
+
+2005-06-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SOAP.c: SOAP marshaling
+
+2005-03-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (AssignValue): 代入用関数
+
+2005-01-23  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (Lex): 名前の先頭に_を許す
+
+2005-01-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c: CSV, SQLには末尾の\0も数に入れる
+
+2005-01-01  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (CompareValue): ValueStructの値の比較関数
+
+2004-12-22  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: 文字列の保存の無駄をなくした
+
+2004-12-20  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/RecParser.c (ParValueDefine): 構造体の表現に'()'も使うようにした
+
+	* src/Lex.c (DropLexInfo): メモリの勝手な解放をやめた(むしろバグの元)
+	また、pathに勝手に'.'を指定するのもやめた
+	
+2004-12-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/: DDparser.[ch] -> RecParser.[ch]
+
+	* src/Lex.h: reentrante & thread safe
+
+2004-11-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (DuplicateValue): 名前表も複製するようにした。このた
+	め、FreeValueStructでは名前表も解放するようにした
+
+	* src/fixed.c: value.hから分離
+
+2004-11-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (NativeSaveValue): NativePackValueの流用をやめ、型情報のみ保存
+
+	* src/XML.c: aliasの処理追加
+
+2004-10-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: ValueStructのload/store
+
+2004-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (DD_ParseValueMem): メモリ領域のparse
+
+	* src/Lex.c (GetFile): mmapを使うようにした(メモリ領域をparseする
+	機能を付加するため)
+
+2004-08-04  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: MonObjectTypeをlonglongにした
+
+2004-06-20  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/option.c (GetOption): ヘルプメッセージの強化(ちょっとだけ)
+
+	* tools/monconv.c: データ変換ツール(libmondaiのサポートしている形式間の相互変換)
+
+2004-04-26  Kouji SHIMIZU  <shimizu@netlab.jp>
+
+	* configure.in: Change `--with-i18n' to `--enable-i18n',
+	`--with-xml2' to `--enable-xml2'.
+	Change default option `i18n' and `xml2' enabled.
+	
+	* configure.in: Change default `--with-xml2' option to off.
+
+2004-04-24  Kouji SHIMIZU  <shimizu@netlab.jp>
+
+	* configure.in: version up to `1.2.1'. output result.
+	* acconfig.h: Removed.
+	
+	* src/Makefile.am: Throw make distcheck.
+	
+	* libmondai-config.1.in: New file, man page.
+	* Makefile.am: Append man_MANS.
+
+2004-04-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c: NULLの時に対応
+
+2004-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/libmondai.h.in: 標準のヘッダと名前の衝突しているヘッダの名前変更
+
+2004-02-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c (PushLexInfo): エラーメッセージの制御を可能にした
+
+2004-02-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: nil objectの処理を追加
+
+2004-02-02  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/dotCOBOL.c (dotCOBOL_PackValue), src/OpenCOBOL.c (OpenCOBOL_PackValue): 
+	文字列でNILの時にはLOW-VALUEをセットするようにした
+
+2004-01-31  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c: 引数チェックの強化
+
+2004-01-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (GetItemLongName): ワーニングを削った(邪魔)
+
+2004-01-11  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c他: binary型追加
+
+2003-12-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c: MonObjectTypeの文字列表現を変えた
+
+2003-12-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/monstring.c (StrToInt): 符号付き数字の処理を直した
+
+2003-12-24  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/libmondai.h.in: libmondaiが国際化されているかどうかのフラグを作った
+
+2003-12-21  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (GetRecordItem): valueがNULLの時の処理
+
+2003-12-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h: SIZE_SQLの定義を除いた(不要)
+
+2003-12-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory.c : 半自動GC付きメモリ管理ルーチン
+
+2003-12-10  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Pack/UnPackの復帰値をsize_tにした
+
+2003-12-08  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c (NativePackValue): 文字列末尾の\0はpackの時に含める。
+	故にunpackの時はstrcpyで良い
+
+2003-11-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/memory.[ch]: misc.[ch]から分離
+
+2003-11-10  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/others.[ch]: Port, URL関係の関数を削除(このライブラリではサ
+	ポートしない)
+
+2003-10-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: メンバ名変更(あまりかこよくなかったので)
+
+2003-10-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Ver 1.2.0 リリース(安定版ブランチ作成)
+
+	* src/testvalue.c: 追加
+
+	* src/getset.c (SetValueChar): 追加
+
+	* src/Native.c : 文字列のpack/unpackの形式を変更した
+
+2003-10-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/XML.c: タグ名を変数名に一致させた形式
+
+2003-10-24  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/XML.c: libxmlにも対応
+
+	* src/getset.c : 文字列の操作をrobustにした(バッファサイズを意識し
+	ている部分を減らしつつある)
+
+2003-10-21  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c: 文字列の格納方法を変更した(内部表現を直接保存する
+	ため)
+
+2003-10-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c: ValueStructの内部表現をutf8にして、全体的に国際化
+	した(utf8がベストかどうかはわからじ)
+
+	* src/debug.h: pandaのものを持って来た(こっちが便利)
+
+2003-10-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: フィールド名変更(XMLのタグに合わせる)
+
+2003-10-17  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/XML.c: XMLに対応(正しく動くが不完全)
+
+2003-10-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c : 同一レコード内でのaliasをやめた。弊害の方が大き
+	いので。
+
+2003-10-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c (SetValueString): strがNULLの時の処理(NILにしたが、
+	これで正しいかどうかは不明)
+
+2003-10-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Lex.c: 再入可能にして汎用ライブラリにした
+
+2004-09-29  Noboru Saitou  <noborus@netlab.jp>
+
+        * Ver 1.2.2 release
+
+2003-09-27  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* tools/Makefile.am (LDADD): make distcheckが通るようにした。
+
+2003-09-27  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.h, src/DDparser.[ch] : RecordStructを追い出す。それに
+	伴い、関数の仕様等変更した
+
+2003-09-26  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_Emit): 途中にemitした時の処理を正しくした
+
+2003-09-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/getset.c, src/Native.c, src/value.h: nullのサポート
+
+2003-09-08  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SQL*.[ch]: pandaに移動(libmondaiにあるべきではない)
+
+	* src/DDparser.c: DBの機能を抜いた(libmondaiにあるべきではない)
+
+2003-09-05  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/valueconv.h: ConvFuncのglobal化
+
+2003-09-03  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/valueconv.c (GetConvFunc): 追加
+
+2003-08-12  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_Trim): LBSの末尾を切り詰める関数
+
+2003-07-30  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/value.h: RecordStructのメンバ名変更(わかりやすい名前に)
+
+2003-07-29  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/Text.c: CGI形式に対応
+
+	* src/others.c (EncodeStringLengthURL): 長さ計算の誤りを直した
+
+2003-07-19  OGOSHI  <ogochan@nurs.or.jp>
+
+	* src/valueconv.c: パラメータの変更をした(ただし、機能的に未実装の
+	もの多数)
+
+2003-07-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c (_RFC822_UnPackValueNoNamed): RFC822の名前無しに対応
+
+2003-07-07  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Text.c : CSV, RFC822の形式に対応した
+
+2003-06-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/misc.c (StringChop): 追加
+
+2003-06-09  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c: 虫取りと一部関数のマクロ化およびデータアクセスマクロの追加
+
+2003-06-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (NewValue): 一時的な虫止め(将来的には抜本的な対策をするべき)
+
+2003-05-30  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* Ver 1.0.1 release
+
+2003-05-25  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/numerici. : value.cから分離
+
+	* src/value.c : Fixed関係関数の追加
+
+2003-05-23  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/SQLparser.c (ParSQL): 「名前」に予約語が使えるようにした
+
+2003-05-19  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* Makefile.am (EXTRA_DIST): acconfig.h を EXTRA_DIST から削除
+
+2003-05-19  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/ : options.c, options.h, options.docを削除した(ここにあるべきではない)
+
+2003-05-18  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (ParValue): 多次元定義体の処理(間違っていた)
+
+2003-05-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c (_COBOL): COBOL二次元配列問題対応
+
+2003-05-15  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* configure.in: AC_CHECK_HEADERS の第 2 引数を削除
+	* acconfig.h: 削除
+
+2003-05-15  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/hash.c: hash関係関数を別ファイルにした
+
+2003-05-05  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_Duplicate): LBSの複写機能追加
+
+2003-05-03  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/value.c (ParPort): hostがない時にlocalhostとみなす
+
+2003-04-28  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.h: asizeの管理を追加、sizeは「使った大きさ」にした
+
+2003-04-02  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/LBSfunc.c (LBS_RequireSize): fix memory leak
+
+2003-03-29  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c : 変数名に構造体の構造を反映させる機能付加
+
+2003-03-27  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* tools/rec2copy.c (is_return): New static variable, for output return
+	flag .
+	(PutName): Set is_return = TRUE if over threshold.
+	(COBOL): Output return if is_return is TRUE.
+
+2003-03-16  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/Native.c : valueconv.c から分離した
+
+2003-03-14  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* src/DDparser.c (ReadRecordDefine): move from drive.c
+
+2003-03-13  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c: 言語の指定をするようにした
+
+	* src/dotCOBOL.c (dotCOBOL_SizeValue): 大きさを求める関数追加
+
+	* src/OpenCOBOL.c (OpenCOBOL_SizeValue): 
+
+2003-03-13  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* tools/Makefile.am (LDADD, INCLUDES): Fixed.
+
+	* aclocal.m4: Removed file because it is generated aclocal.
+
+2003-03-12  Masami Ogoshi  <ogochan@nurs.or.jp>
+
+	* tools/rec2copy.c: COPY句を生成するプログラムを新規作成した
+
+2003-03-10  Koji SHIMIZU  <shimizu@netlab.jp>
+
+	* src/libmondai.h.in: Included `DDparser.h'.
+
+	* src/Makefile.am (libmondaiincludedir): 
+	* libmondai-config.in: Changed install headers directory to
+	`$(includedir)/libmondai' from `$(includedir)'.
+	
+	* src/Makefile.am (libmondai_la_SOURCES): Added `debug.h'.
+
+	* makecopyright: Removed file.
+	* Makefile.am (EXTRA_DIST): Removed makecopyright.
+
+	* libmondai.m4: Bug fix in version check c program.
+
 2003-03-07  Koji SHIMIZU  <shimizu@netlab.jp>
 
 	Added libmondai.m4 to define `AM_PATH_LIBMONDAI'.

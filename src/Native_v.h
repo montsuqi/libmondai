@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2008 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_COBOL_VALUE_H
-#define	_COBOL_VALUE_H
-extern	void	DumpCobol(char *name, char *p, size_t size);
-extern	void	StringCobol2C(char *str, size_t size);
-extern	void	StringC2Cobol(char *p, size_t size);
+#ifndef	_INC_NATIVE_VALUE_H
+#define	_INC_NATIVE_VALUE_H
+#include	"valueconv.h"
+
+extern	size_t	NativeUnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	NativePackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
+
+extern	ValueStruct	*NativeRestoreValue(byte *p, Bool fData);
+extern	size_t	NativeSaveValue(byte *p, ValueStruct *value, Bool fData);
+extern	size_t	NativeSaveSize(ValueStruct *value, Bool fData);
+extern	size_t	_NativeRestoreValue(byte *p, ValueStruct **ret, Bool fData);
 
 #endif
