@@ -1,3 +1,7 @@
+2009-03-13  Noboru Saitou  <noborus@netlab.jp>
+
+	* libs/monstring.c: StrnDupの追加
+
 2008-01-25  Noboru Saitou  <noborus@netlab.jp>
 
 	* configure.ac: autoconf更新,　LIBMONDAI_VERSIONをVERSIONに変更

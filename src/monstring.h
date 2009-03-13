@@ -34,6 +34,7 @@ extern	int		strnicmp(char *s1, char *s2, size_t l);
 #endif
 
 extern	char	*StrDup(char *s);
+extern	char	*StrnDup(char *s, size_t len);
 extern	char	*IntStrDup(int val);
 extern	char	*StringChop(char *str);
 extern	long	StrToInt(char *str, size_t len);
