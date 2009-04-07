@@ -100,35 +100,47 @@ ENTER_FUNC;
 LEAVE_FUNC;
 }
 
-static	char	*
+static	char *	
 XML_Encode(
 	char	*str,
 	char	*buff)
 {
-#if	0
 	char	*p;
 
 	p = buff;
 	for	( ; *str != 0 ; str ++ ) {
-		if		(  *str  <  0x20  ) {
-			switch	(*str) {
-			  case	' ':
-			  case	0x1B:
-				*p ++ = *str;
-				break;
-			  default:
-				p += sprintf(p,"\\%02X",*str);
-				break;
-			}
-		} else {
+#if	1
+		switch(*str) {
+		case '<':
+			memcpy(p, "&lt;", strlen("&lt;"));
+			p += strlen("&lt;");
+			break;
+		case '>':
+			memcpy(p, "&gt;", strlen("&gt;"));
+			p += strlen("&gt;");
+			break;
+		case '&':
+			memcpy(p, "&amp;", strlen("&amp;"));
+			p += strlen("&amp;");
+			break;
+		case '\'':
+			memcpy(p, "&apos;", strlen("&apos;"));
+			p += strlen("&apos;");
+			break;
+		case '\"':
+			memcpy(p, "&quot;", strlen("&quot;"));
+			p += strlen("&quot;");
+			break;
+		default:
 			*p ++ = *str;
+			break;
 		}
+#else
+		*p ++ = *str;
+#endif
 	}
 	*p = 0;
-	return	(buff);
-#else
-	return	(str);
-#endif
+	return	buff;
 }
 
 static	size_t
@@ -295,7 +307,7 @@ ENTER_FUNC;
 			p += sprintf(p," count=\"%d\">",(int)ValueArraySize(value));
 			p += PutCR(opt,p);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s:%d",name,i);
+				sprintf(num,"%s",name);
 				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i),buff);
 			}
 			p += IndentLine(opt,p);
@@ -1287,6 +1299,7 @@ _XML_SizeValue1(
 	char		*buff)
 {
 	char	num[SIZE_NAME+1];
+	char	buff2[SIZE_BUFF+1];
 	int		i;
 	size_t	size;
 
@@ -1397,9 +1410,9 @@ _XML_SizeValue1(
 			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff2));
 #else
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff2));
 #endif
 			}
 			size += 10;		//	"</lm:item>"
@@ -1419,6 +1432,7 @@ _XML_SizeValue2(
 	char		*buff)
 {
 	char	num[SIZE_NAME+1];
+	char	buff2[SIZE_BUFF+1];
 	int		i;
 	size_t	size;
 
@@ -1535,9 +1549,9 @@ _XML_SizeValue2(
 			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
 #ifdef	USE_XML2
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,ConvCodeset(opt)),buff2));
 #else
-				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff));
+				size += sprintf(buff,"%s",XML_Encode(ValueToString(value,LIBXML_CODE),buff2));
 #endif
 			}
 			if		(  opt->recname  !=  NULL  ) {
