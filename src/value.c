@@ -1117,7 +1117,6 @@ DuplicateValue(
 			break;
 		  case	GL_TYPE_RECORD:
 			/*	share name table		*/
-			ValueRecordMembers(p) = NewNameHash();
 			ValueRecordNames(p) =
 				(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
 			/*	duplicate data space	*/
