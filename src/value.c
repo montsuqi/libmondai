@@ -1006,6 +1006,7 @@ DuplicateValue(
 	Bool		fCopy)
 {
 	ValueStruct	*p;
+	ValueStruct	**ret;
 	int			i;
 
 	if		(  template  !=  NULL  ) {
@@ -1110,9 +1111,11 @@ DuplicateValue(
 			ValueFixedSlen(p) = ValueFixedSlen(template);
 			break;
 		  case	GL_TYPE_ARRAY:
-			ValueArrayItems(p) = 
-				MakeValueArray(ValueArrayPrototype(template),
-							   ValueArraySize(template),fCopy);
+			ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
+			for	( i = 0 ; i < ValueArraySize(template) ; i ++ ) {
+				ret[i] = DuplicateValue(ValueArrayItem(template,i),fCopy);
+			}
+			ValueArrayItems(p) = ret;
 			ValueArraySize(p) = ValueArraySize(template);
 			break;
 		  case	GL_TYPE_RECORD:
