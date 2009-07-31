@@ -1099,16 +1099,15 @@ DuplicateValue(
 			break;
 		  case	GL_TYPE_NUMBER:
 			ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);
+			ValueFixedLength(p) = ValueFixedLength(template);
 			if		(  fCopy  ) {
 				memcpy(ValueFixedBody(p),
 					   ValueFixedBody(template),
 					   ValueFixedLength(template)+1);
+				ValueFixedSlen(p) = ValueFixedSlen(template);
 			} else {
-				memclear(ValueFixedBody(p),
-						 ValueFixedLength(template)+1);
+				SetValueStringWithLength(p, "0.0", strlen("0.0"), NULL);
 			}
-			ValueFixedLength(p) = ValueFixedLength(template);
-			ValueFixedSlen(p) = ValueFixedSlen(template);
 			break;
 		  case	GL_TYPE_ARRAY:
 			ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
