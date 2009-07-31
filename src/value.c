@@ -463,12 +463,12 @@ DumpValueStruct(
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			printf("record members = %d\n",(int)ValueRecordSize(val));
+			printf("<-- record members = %d\n",(int)ValueRecordSize(val));
 			fflush(stdout);
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
 				DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
 			}
-			printf("--\n");
+			printf("-->\n");
 			break;
 		  case	GL_TYPE_ALIAS:
 			printf("alias name = [%s]\n",ValueAliasName(val));
@@ -1100,11 +1100,11 @@ DuplicateValue(
 		  case	GL_TYPE_NUMBER:
 			ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);
 			ValueFixedLength(p) = ValueFixedLength(template);
+			ValueFixedSlen(p) = ValueFixedSlen(template);
 			if		(  fCopy  ) {
 				memcpy(ValueFixedBody(p),
 					   ValueFixedBody(template),
 					   ValueFixedLength(template)+1);
-				ValueFixedSlen(p) = ValueFixedSlen(template);
 			} else {
 				SetValueStringWithLength(p, "0.0", strlen("0.0"), NULL);
 			}
