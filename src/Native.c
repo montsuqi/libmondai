@@ -449,7 +449,9 @@ ENTER_FUNC;
 		  case	GL_TYPE_SYMBOL:
 			esize += sizeof(size_t);
 			esize += sizeof(size_t);
-			esize += strlen(ValueString(value)) + 1;
+			if (ValueString(value) != NULL) {
+				esize += strlen(ValueString(value)) + 1;
+			}
 			break;
 		  case	GL_TYPE_OBJECT:
 			esize += sizeof(MonObjectType);
@@ -551,8 +553,10 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			*(size_t *)p = ValueStringLength(value);
 			p += sizeof(size_t);
-			strcpy(p,ValueString(value));
-			p += strlen(ValueString(value)) + 1;
+			if (ValueString(value) != NULL) {
+				strcpy(p,ValueString(value));
+				p += strlen(ValueString(value)) + 1;
+			}
 			break;
 		  case	GL_TYPE_OBJECT:
 			*(MonObjectType *)p = ValueObjectId(value);
