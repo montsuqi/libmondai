@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2008 Ogochan.
+ * Copyright (C) 2005-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -523,6 +523,11 @@ ENTER_FUNC;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 #ifdef	WITH_I18N
+			if		(	(  codeset  !=  NULL  )
+					&&	(	(  stricmp(codeset,"utf8")   ==  0  )
+						||	(  stricmp(codeset,"utf-8")  ==  0  ) ) )	{
+				codeset = NULL;
+			}
 			if		(  codeset  !=  NULL  ) {
 				if		(  IS_VALUE_EXPANDABLE(val)  ) {
 					len = slen;

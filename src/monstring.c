@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2008 Ogochan.
+ * Copyright (C) 1989-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -74,6 +74,23 @@ StrDup(
 	if		(  s  !=  NULL  ) {
 		str = xmalloc(strlen(s)+1);
 		strcpy(str,s);
+	} else {
+		str = NULL;
+	}
+	return	(str);
+}
+
+extern	char	*
+StrnDup(
+	char	*s,
+	size_t	len)
+{
+	char	*str;
+
+	if		(  s  !=  NULL  ) {
+		str = xmalloc(len+1);
+		strncpy(str,s,len);
+		str[len] = '\0';
 	} else {
 		str = NULL;
 	}

@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan
+ * Copyright (C) 2004-2009 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@
 #include	"valueconv.h"
 
 extern	size_t	NativeUnPackValue(CONVOPT *opt,byte *p, ValueStruct *value);
+extern	size_t	NativeUnPackValueNew(CONVOPT *opt,byte *p, ValueStruct **ret);
 extern	size_t	NativePackValue(CONVOPT *opt, byte *p, ValueStruct *value);
 extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 

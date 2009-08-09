@@ -134,6 +134,7 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_VALUES			(PacketDataType)0x84
 
 #define	GL_ATTR_NIL				(ValueAttributeType)0x8000
+#define	GL_ATTR_NON_NULL		(ValueAttributeType)0x0100
 #define	GL_ATTR_EXPANDABLE		(ValueAttributeType)0x0080
 #define	GL_ATTR_UNIQ			(ValueAttributeType)0x0040
 #define	GL_ATTR_DESC			(ValueAttributeType)0x0020
@@ -148,6 +149,7 @@ typedef	struct _ValueStruct	{
 #define	CHAR_NIL				0x01
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
+#define	IS_VALUE_NON_NULL(v)	(((v)->attr & GL_ATTR_NON_NULL) == GL_ATTR_NON_NULL)
 #define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
 #define	IS_VALUE_ALIAS(v)		(((v)->attr & GL_ATTR_ALIAS) == GL_ATTR_ALIAS)
 #define	IS_VALUE_UPDATE(v)		(((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
@@ -256,5 +258,6 @@ extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
 
 extern	void		FreeValueStruct(ValueStruct *val);
 extern	void		DumpValueStruct(ValueStruct *val);
+extern	Bool		NormalizeValue(ValueStruct *value);
 
 #endif

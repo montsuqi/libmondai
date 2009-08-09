@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2000-2008 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2009 Ogochan & JMA (Japan Medical Association).
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -88,6 +88,7 @@ PushLexInfo(
 	FILE	*fp;
 
 ENTER_FUNC;
+	dbgprintf("fname = [%s]",name);
 	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
 		fstat(fileno(fp),&sb);
 		info = NewCURFILE(in,path,res);
@@ -235,6 +236,7 @@ ENTER_FUNC;
 		} else {
 			sprintf(name,"%s/%s",p,ExpandPath(fn,NULL));
 		}
+		dbgprintf("fname = [%s]",name);
 		if		(  ( in->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
@@ -357,7 +359,10 @@ ReadyDirective(
 	Bool	fFull;
 
 ENTER_FUNC;
-	SKIP_SPACE(in);
+	while	(	(  ( c = GetChar(in) )  !=  0  )
+			&&	(  c  !=  '\n'  )
+			&&	(  isspace(c)   ) );
+	if		(  c  ==  '\n'  )	return;
 	p = buff;
 	*p ++ = c;
 	while	(	( ( c = GetChar(in) )  !=  0  )

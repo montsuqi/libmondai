@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2008 Ogochan.
+ * Copyright (C) 1989-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,8 @@ extern	void	*
 _xmalloc(
 	size_t	size,
 	char	*fn,
-	int		line)
+	int		line,
+	Bool	fClear)
 {
 	void	*ret;
 #ifdef	TRACE
@@ -67,6 +68,10 @@ _xmalloc(
 	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
 		exit(1);
+	} else {
+		if		(  fClear  ) {
+			memclear(ret,size);
+		}
 	}
 	sizea = (size_t *)(area + size);
 	*sizea = size;
@@ -82,6 +87,23 @@ _xmalloc(
 		exit(1);
 	}
 #endif
+	return	(ret);
+}
+
+extern	void	*
+_xrealloc(
+	void	*p,
+	size_t	size,
+	char	*fn,
+	int		line)
+{
+	void	*ret;
+
+	dbgprintf("xrealloc %s(%d),size = %d,",fn,line,size);
+	if		(  ( ret = realloc(p,size) )  ==  NULL  )	{
+		printf("no memory space!! %s(%d)\n",fn,line);
+		exit(1);
+	}
 	return	(ret);
 }
 

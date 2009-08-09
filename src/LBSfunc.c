@@ -303,6 +303,11 @@ LBS_EmitStringCodeset(
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
 #ifdef	WITH_I18N
+		if		(	(  codeset  !=  NULL  )
+				&&	(	(  stricmp(codeset,"utf8")   ==  0  )
+					||	(  stricmp(codeset,"utf-8")  ==  0  ) ) )	{
+			codeset = NULL;
+		}
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
 			obsize = isize * 3 + 1;

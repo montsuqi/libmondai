@@ -24,6 +24,8 @@
 #include	<string.h>
 #include	"types.h"
 
+#define CLAMP(x, low, high)			(((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+
 extern	FILE	*Fopen(char *name, char *mode);
 extern	void	MakeCobolX(char *to, size_t len, char *from);
 extern	void	CopyCobol(char *to, char *from);

@@ -47,7 +47,8 @@
 #include	"hash_v.h"
 #include	"debug.h"
 
-#define	DUMP_LOCALE		"euc-jp"
+//#define	DUMP_LOCALE		"euc-jp"
+#define	DUMP_LOCALE		"utf-8"
 
 extern	ValueStruct	*
 NewValue(
@@ -153,8 +154,8 @@ FreeValueStruct(
 	int		i;
 
 	if		(  val  !=  NULL  ) {
-		dbgprintf("type = %02X\n",val->type);
-		switch	(val->type) {
+		dbgprintf("type = %02X\n",(int)ValueType(val));
+		switch	(ValueType(val)) {
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 				FreeValueStruct(ValueArrayItem(val,i));
@@ -463,12 +464,12 @@ DumpValueStruct(
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			printf("record members = %d\n",(int)ValueRecordSize(val));
+ 			printf("<-- record members = %d\n",(int)ValueRecordSize(val));
 			fflush(stdout);
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
 				DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
 			}
-			printf("--\n");
+! 			printf("-->\n");
 			break;
 		  case	GL_TYPE_ALIAS:
 			printf("alias name = [%s]\n",ValueAliasName(val));
@@ -668,7 +669,10 @@ CopyValue(
 ENTER_FUNC;
 	if		(  vd  ==  NULL  )	return;
 	if		(  vs  ==  NULL  )	return;
-	if		(  IS_VALUE_NIL(vs)  )	return;
+	if		(  IS_VALUE_NIL(vs)  )	{
+        ValueIsNil(vd);
+		return;
+	}
 	ValueAttribute(vd) = ValueAttribute(vs);
 	switch	(vs->type) {
 	  case	GL_TYPE_INT:
@@ -1006,6 +1010,7 @@ DuplicateValue(
 	Bool		fCopy)
 {
 	ValueStruct	*p;
+	ValueStruct	**ret;
 	int			i;
 
 	if		(  template  !=  NULL  ) {
@@ -1098,24 +1103,22 @@ DuplicateValue(
 			break;
 		  case	GL_TYPE_NUMBER:
 			ValueFixedBody(p) = (char *)xmalloc(ValueFixedLength(template)+1);
+			ValueFixedLength(p) = ValueFixedLength(template);
+			ValueFixedSlen(p) = ValueFixedSlen(template);
 			if		(  fCopy  ) {
 				memcpy(ValueFixedBody(p),
 					   ValueFixedBody(template),
 					   ValueFixedLength(template)+1);
 			} else {
-				memclear(ValueFixedBody(p),
-						 ValueFixedLength(template)+1);
+				SetValueStringWithLength(p, "0.0", strlen("0.0"), NULL);
 			}
-			ValueFixedLength(p) = ValueFixedLength(template);
-			ValueFixedSlen(p) = ValueFixedSlen(template);
 			break;
 		  case	GL_TYPE_ARRAY:
-			ValueArrayItems(p) = 
-				(ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
+			ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
 			for	( i = 0 ; i < ValueArraySize(template) ; i ++ ) {
-				ValueArrayItem(p,i) = 
-					DuplicateValue(ValueArrayItem(template,i),fCopy);
+ 				ret[i] = DuplicateValue(ValueArrayItem(template,i),fCopy);
 			}
+ 			ValueArrayItems(p) = ret;
 			ValueArraySize(p) = ValueArraySize(template);
 			break;
 		  case	GL_TYPE_RECORD:
@@ -1186,7 +1189,8 @@ ENTER_FUNC;
 	items[ValueRecordSize(upper)] = value;
 	dname = StrDup(name);
 	names[ValueRecordSize(upper)] = dname;
-	if		(  name  !=  NULL  ) {
+	if		(	(  name   !=  NULL  )
+			&&	(  *name  !=  0     ) ) {
 		if		(  g_hash_table_lookup(ValueRecordMembers(upper),name)  ==  NULL  ) {
 			g_hash_table_insert(ValueRecordMembers(upper),
 								(gpointer)dname,
@@ -1231,3 +1235,41 @@ ENTER_FUNC;
 LEAVE_FUNC;
 }
 
+extern	Bool
+NormalizeValue(
+	ValueStruct	*value)
+{
+	int		i;
+	Bool	fNil;
+
+	fNil = TRUE;
+	if		(  value  !=  NULL  )	{
+		switch	(ValueType(value))	{
+		  case	GL_TYPE_ARRAY:
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				if		(  NormalizeValue(ValueArrayItem(value,i)) )	{
+					fNil = FALSE;
+				}
+			}
+			break;
+		  case	GL_TYPE_RECORD:
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				if		(  NormalizeValue(ValueRecordItem(value,i)) )	{
+					fNil = FALSE;
+				}
+			}
+			break;
+		  default:
+			if		(  !IS_VALUE_NIL(value)  )	{
+				fNil = FALSE;
+			}
+			break;
+		}
+		if		(  fNil  )	{
+			ValueIsNil(value);
+		} else {
+			ValueIsNonNil(value);
+		}
+	}
+	return	(!fNil);
+}

@@ -70,6 +70,8 @@
 #define	T_UNIQ			(T_YYBASE +20)
 #define	T_PRIMARY		(T_YYBASE +21)
 #define	T_KEY			(T_YYBASE +22)
+#define	T_NOT			(T_YYBASE +23)
+#define	T_NULL			(T_YYBASE +24)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -96,6 +98,10 @@ static	TokenTable	tokentable[] = {
 	{	"alias"		,T_ALIAS	},
 	{	"primary"	,T_PRIMARY	},
 	{	"key"		,T_KEY		},
+	{	"uniq"		,T_UNIQ 	},
+	{	"unique"	,T_UNIQ 	},
+	{	"not"		,T_NOT		},
+	{	"null"		,T_NULL		},
 	{	""			,0			}
 };
 
@@ -388,25 +394,37 @@ ENTER_FUNC;
 		strcpy(name,ComSymbol);
 		value = ParValueDefine(in);
 		attr = ValueAttribute(upper);
-		while	(  ComToken  ==  ','  ) {
-			switch	(GetSymbol) {
-			  case	T_INPUT:
-				attr |= GL_ATTR_INPUT;
-				break;
-			  case	T_OUTPUT:
-				attr |= GL_ATTR_OUTPUT;
-				break;
-			  case	T_VIRTUAL:
-				attr |= GL_ATTR_VIRTUAL;
-				break;
-			  case	T_UNIQ:
-				attr |= GL_ATTR_UNIQ;
-				break;
-			  default:
-				Error("invalid attribute modifier");
-				break;
-			}
-			GetSymbol;
+		if		(  ComToken  != ';'  ) {
+			do {
+				if		(  ComToken  ==  ','  ) {
+					GetSymbol;
+				}
+				switch	(ComToken) {
+				  case	T_INPUT:
+					attr |= GL_ATTR_INPUT;
+					break;
+				  case	T_OUTPUT:
+					attr |= GL_ATTR_OUTPUT;
+					break;
+				  case	T_VIRTUAL:
+					attr |= GL_ATTR_VIRTUAL;
+					break;
+				  case	T_UNIQ:
+					attr |= GL_ATTR_UNIQ;
+					break;
+				  case	T_NOT:
+					if		(  GetSymbol  ==  T_NULL  ) {
+						attr |= GL_ATTR_NON_NULL;
+					} else {
+						Error("invalid attribute modifier");
+					}
+					break;
+				  default:
+					Error("invalid attribute modifier");
+					break;
+				}
+				GetSymbol;
+			}	while	(  ComToken  !=  ';'  );
 		}
 		if		(  ComToken  ==  ';'  ) {
 			GetName;
@@ -492,9 +510,12 @@ ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
 		ret = RecParseMain(in);
-		if		(	(  in->ValueName  !=  NULL  )
-				&&	(  ValueName      !=  NULL  ) ) {
-			*ValueName = StrDup(in->ValueName);
+		if		(  ValueName  !=  NULL  ) {
+			if		(  in->ValueName  !=  NULL  ) {
+				*ValueName = StrDup(in->ValueName);
+			} else {
+				*ValueName = NULL;
+			}
 		}
 		DropLexInfo(&in);
 	} else {

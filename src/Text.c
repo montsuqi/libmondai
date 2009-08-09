@@ -237,7 +237,11 @@ __CSV_PackValue(
 		  case	GL_TYPE_BINARY:
 		  case	GL_TYPE_BOOL:
 		  case	GL_TYPE_OBJECT:
-			CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
+			if		(  IS_VALUE_NIL(value)  )	{
+				*buff = 0;
+			} else {
+				CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
+			}
 			if		(  fSsep  ) {
 				p += sprintf(p,"\"%s\",",buff);
 			} else {
@@ -254,10 +258,15 @@ __CSV_PackValue(
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_TIME:
 		  case	GL_TYPE_DATE:
-			if		(  fNsep  ) {
-				p += sprintf(p,"\"%s\",",ValueToString(value,ConvCodeset(opt)));
+			if		(  IS_VALUE_NIL(value)  )	{
+				*buff = 0;
 			} else {
-				p += sprintf(p,"%s,",ValueToString(value,ConvCodeset(opt)));
+				CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep,buff);
+			}
+			if		(  fNsep  ) {
+				p += sprintf(p,"\"%s\",",buff);
+			} else {
+				p += sprintf(p,"%s,",buff);
 			}
 			break;
 		  case	GL_TYPE_ARRAY:

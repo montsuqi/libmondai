@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2008 Ogochan.
+ * Copyright (C) 1989-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ extern	int		strnicmp(char *s1, char *s2, size_t l);
 #endif
 
 extern	char	*StrDup(char *s);
+extern	char	*StrnDup(char *s, size_t len);
 extern	char	*IntStrDup(int val);
 extern	char	*StringChop(char *str);
 extern	long	StrToInt(char *str, size_t len);

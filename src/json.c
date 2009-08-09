@@ -154,6 +154,7 @@ ENTER_FUNC;
 					dbgprintf("name = [%s]",name);
 					e = GetRecordItem(value,name);
 					p ++;
+
 					dbgprintf("[%c]",*p);
 					SKIP_SPACE(p);
 					if		(  *p  !=  ':'  )	break;
@@ -192,7 +193,7 @@ ENTER_FUNC;
 			str = (byte *)xmalloc(size+1);
 			size = ParseString(str,&p);
 			dbgprintf("str = %d",(int)size);
-			SetValueBinary(value,str,size);
+			SetValueString(value,str,"utf-8");
 			xfree(str);
 			if		(  *p  !=  0  )	p ++;
 			break;
@@ -255,15 +256,18 @@ _JSON_PackValue(
 	byte		*p,
 	ValueStruct	*value)
 {
-	int		i;
+	int		i
+		,	real_size;
 	byte	*pp;
+	size_t	s;
 	char	*str;
+	ValueStruct	*e;
+	Bool	fFirst;
 
 ENTER_FUNC;
 	pp = p;
 	if		(	(  value  ==  NULL      )
 			||	(  IS_VALUE_NIL(value)  ) ) {
-		p += sprintf(p,"null");
 	} else {
 		switch	(value->type) {
 		  case	GL_TYPE_CHAR:
@@ -305,33 +309,53 @@ ENTER_FUNC;
 			p += sprintf(p,"%s",str);
 			break;
 		  case	GL_TYPE_ARRAY:
-			opt->nIndent ++;
-			p += sprintf(p,"[");
-			p += PutCR(opt,p);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += IndentLine(opt,p);
-				p += _JSON_PackValue(opt,p,ValueArrayItem(value,i));
-				if		(  i  <  ValueArraySize(value) - 1  ) {
-					p += sprintf(p,",");
+			real_size = 0;
+			for	( i = ValueArraySize(value) - 1 ; i >= 0 ; i -- )	{
+				if		(	(  ( e = ValueArrayItem(value,i) )  !=  NULL  )
+						&&	(  !IS_VALUE_NIL(e)                           ) )	{
+					real_size = i + 1;
+					break;
 				}
-				p += PutCR(opt,p);
 			}
-			opt->nIndent --;
-			p += IndentLine(opt,p);
-			p += sprintf(p,"]");
+			if		(  real_size  >  0  )	{
+				opt->nIndent ++;
+				p += sprintf(p,"[");
+				p += PutCR(opt,p);
+				for	( i = 0 ; i < real_size ; i ++ ) {
+					p += IndentLine(opt,p);
+					s = _JSON_PackValue(opt,p,ValueArrayItem(value,i));
+					if		(  s  ==  0  )	{
+						p += sprintf(p,"null");
+					} else {
+						p += s;
+					}
+					if		(  i  <  real_size - 1  ) {
+						p += sprintf(p,",");
+					}
+					p += PutCR(opt,p);
+				}
+				opt->nIndent --;
+				p += IndentLine(opt,p);
+				p += sprintf(p,"]");
+			}
 			break;
 		  case	GL_TYPE_RECORD:
 			opt->nIndent ++;
 			p += sprintf(p,"{");
 			p += PutCR(opt,p);
+			fFirst = TRUE;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p += IndentLine(opt,p);
-				p += sprintf(p,"\"%s\":",ValueRecordName(value,i));
-				p += _JSON_PackValue(opt,p,ValueRecordItem(value,i));
-				if		(  i  <  ValueRecordSize(value) - 1  ) {
-					p += sprintf(p,",");
+				s =  _JSON_PackValue(opt,p,ValueRecordItem(value,i));
+				if		(  s  >  0  )	{
+					p += IndentLine(opt,p);
+					if		(  !fFirst  )	{
+						p += sprintf(p,",");
+						p += PutCR(opt,p);
+					}
+					p += sprintf(p,"\"%s\":",ValueRecordName(value,i));
+					p += _JSON_PackValue(opt,p,ValueRecordItem(value,i));
+					fFirst = FALSE;
 				}
-				p += PutCR(opt,p);
 			}
 			opt->nIndent --;
 			p += IndentLine(opt,p);
@@ -354,6 +378,7 @@ JSON_PackValue(
 	size_t	ret;
 
 ENTER_FUNC;
+	NormalizeValue(value);
 	ret = _JSON_PackValue(opt,p,value);
 	if		(  ret  >  0  ) {
 		*(p+ret) = 0;
