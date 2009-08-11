@@ -66,7 +66,7 @@ _xmalloc(
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
 	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(1);
+		exit(12);
 	}
 	sizea = (size_t *)(area + size);
 	*sizea = size;
@@ -79,7 +79,7 @@ _xmalloc(
 #else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
 		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(1);
+		exit(12);
 	}
 #endif
 	return	(ret);
