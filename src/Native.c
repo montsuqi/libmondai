@@ -62,7 +62,9 @@ NativeUnPackValueNew(
 
 ENTER_FUNC;
 	q = p; 
-	if		(  ( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
+	*ret = NULL;
+	if (p != NULL &&
+		( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
 		value = *ret = NewValue(type);
 		p += sizeof(PacketDataType);
 		attr = *(ValueAttributeType *)p;
@@ -191,8 +193,6 @@ ENTER_FUNC;
 			ValueIsNil(value);
 			break;
 		}
-	} else {
-		*ret = NULL;
 	}
 LEAVE_FUNC;
 	return	(p-q);
