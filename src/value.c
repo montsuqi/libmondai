@@ -76,10 +76,7 @@ ENTER_FUNC;
 		ValueStringLength(ret) = 0;
 		ValueStringSize(ret) = 0;
 		ValueString(ret) = NULL;
-		if		(	(  type  ==  GL_TYPE_TEXT    )
-				||	(  type  ==  GL_TYPE_DBCODE  ) ) {
-			ValueIsExpandable(ret);
-		}
+		ValueIsExpandable(ret);
 		break;
 	  case	GL_TYPE_NUMBER:
 		ValueFixedLength(ret) = 0;

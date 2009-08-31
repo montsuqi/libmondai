@@ -275,7 +275,7 @@ ENTER_FUNC;
 				} else {
 					LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 										  ValueStringSize(val),
-										  0,codeset);
+										  ValueStringSize(val),codeset);
 				}
 			}
 			break;
@@ -507,14 +507,19 @@ ENTER_FUNC;
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
+			size = slen + 1;
+			len = slen;
+			if		(  size  >  ValueStringSize(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
+				}
+				ValueStringSize(val) = size;
+				ValueString(val) = (byte *)xmalloc(size);
+			}
+			memclear(ValueString(val),ValueStringSize(val));
+			strcpy(ValueString(val),str);
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
-				if		(  IS_VALUE_EXPANDABLE(val)  ) {
-					len = slen;
-				} else {
-					len = ValueStringLength(val) < slen ?
-						ValueStringLength(val) : slen;
-				}
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
 					istr = str;
@@ -522,12 +527,15 @@ ENTER_FUNC;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						memclear(ValueString(val),ValueStringSize(val));
-						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  ==  0  )	break;
+						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  == 0 ) {
+							break;
+						}
 						if		(  errno  ==  E2BIG ) {
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
-						} else
+						} else {
 							break;
+						}
 					} else {
 						ValueStringSize(val) = 1;
 					}
@@ -536,25 +544,8 @@ ENTER_FUNC;
 				iconv_close(cd);
 				*q = 0;
 				len = ValueStringSize(val) - sob;
-			} else {
-#endif
-				size = slen + 1;
-				len = slen;
-				if		(  size  >  ValueStringSize(val)  ) {
-					if		(  ValueString(val)  !=  NULL  ) {
-						xfree(ValueString(val));
-					}
-					ValueStringSize(val) = size;
-					ValueString(val) = (byte *)xmalloc(size);
-				}
-				memclear(ValueString(val),ValueStringSize(val));
-				strcpy(ValueString(val),str);
-#ifdef	WITH_I18N
 			}
 #endif
-			if		(  IS_VALUE_EXPANDABLE(val)  ) {
-				ValueStringLength(val) = len;
-			}
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_BYTE:

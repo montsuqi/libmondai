@@ -312,12 +312,15 @@ ENTER_FUNC;
 				obuff = (char *)xmalloc(obsize);
 				oc = obuff;
 				sob = obsize;
-				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	break;
+				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	{
+					break;
+				}
 				if		(  errno  ==  E2BIG  ) {
 					xfree(obuff);
 					obsize *= 2;
-				} else
+				} else {
 					break;
+				}
 			}
 			*oc = 0;
 			ssize = obsize - sob + sizeof(wchar_t);
