@@ -149,7 +149,8 @@ ParValueDefine(
 	,			ssize;
 	char		buff[SIZE_LONGNAME+1];
 	char		*p;
-	int			token;
+	int			token
+	,			i;
 	ValueStruct	*value
 	,			*array;
 	ArrayDimension	*next
@@ -363,6 +364,10 @@ ENTER_FUNC;
 		} else {
 			ValueIsNonExpandable(array);
 			ValueArrayItems(array) = MakeValueArray(value,curr->count,FALSE);
+			for(i = 0; i < ValueArraySize(array); i++) {
+				ValueParent(ValueArrayItem(array,i)) = array;
+				ValueIndex(ValueArrayItem(array,i)) = i;
+			}
 		}
 		next = curr->next;
 		xfree(curr);

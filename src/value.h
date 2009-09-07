@@ -64,6 +64,8 @@ typedef	struct _ValueStruct	{
 	PacketDataType		type;
 	ValueAttributeType	attr;
 	LargeByteString		*str;
+	struct _ValueStruct	*parent;
+	int					index;
 	union {
 		struct {
 			size_t					count;
@@ -178,6 +180,9 @@ typedef	struct _ValueStruct	{
 #define	ValueIsExpandable(v)	((v)->attr |= GL_ATTR_EXPANDABLE)
 #define	ValueIsNonExpandable(v)	((v)->attr &= ~GL_ATTR_EXPANDABLE)
 
+#define	ValueParent(v)			((v)->parent)
+#define	ValueIndex(v)			((v)->index)
+
 #ifdef	__VALUE_DIRECT
 #define	ValueString(v)			((v)->body.CharData.sval)
 #define	ValueStringSize(v)		((v)->body.CharData.asize)
@@ -234,6 +239,12 @@ typedef	struct _ValueStruct	{
 #define	ValueValuesItem(v,i)	((v)->body.ValuesData.item[(i)])
 
 extern	ValueStruct	*NewValue(PacketDataType type);
+extern	void		FreeValueStruct(ValueStruct *val);
+extern	void		DumpValueStruct(ValueStruct *val);
+
+extern	char		*GetValueName(ValueStruct *val);
+extern	char		*GetValueLongName(ValueStruct *val);
+
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,
 									   ValueStruct *value);
 extern	void		ValueAddArrayItem(ValueStruct *upper, int ix, ValueStruct *value);
@@ -253,8 +264,5 @@ extern	Bool		EqualValue(ValueStruct *vl, ValueStruct *vr);
 
 extern	void		AssignValue(ValueStruct *to, ValueStruct *from);
 extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
-
-extern	void		FreeValueStruct(ValueStruct *val);
-extern	void		DumpValueStruct(ValueStruct *val);
 
 #endif

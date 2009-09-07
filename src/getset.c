@@ -488,6 +488,7 @@ SetValueStringWithLength(
 	size_t	sob
 	,		sib;
 	char	*istr;
+	int		i;
 #endif
 
 ENTER_FUNC;
@@ -534,6 +535,12 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else {
+							fprintf(stderr, "[%s:%d] iconv failure %s\n", __FILE__, __LINE__, strerror(errno));
+							fprintf(stderr, "%s[",GetValueLongName(val));
+							for (i = 0;i < strlen(str); i++) {
+								fprintf(stderr, "%02X,", str[i]);
+							}
+							fprintf(stderr, "][%s]\n",str);
 							break;
 						}
 					} else {

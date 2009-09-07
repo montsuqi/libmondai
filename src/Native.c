@@ -164,6 +164,8 @@ ENTER_FUNC;
 			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				p += NativeUnPackValueNew(opt,p,&ValueArrayItem(value,i));
+				ValueParent(ValueArrayItem(value,i)) = value;
+				ValueIndex(ValueArrayItem(value,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_RECORD:
@@ -181,6 +183,8 @@ ENTER_FUNC;
 				g_hash_table_insert(ValueRecordMembers(value),
 									(gpointer)ValueRecordName(value,i),
 									(gpointer)((long)i+1));
+				ValueParent(ValueRecordItem(value,i)) = value;
+				ValueIndex(ValueRecordItem(value,i)) = i;
 				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
 			}
 			break;
@@ -359,6 +363,8 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				dbgprintf("child[%d]",i);
 				rc = NativeUnPackValue(opt,p,ValueArrayItem(value,i));
+				ValueParent(ValueArrayItem(value,i)) = value;
+				ValueIndex(ValueArrayItem(value,i)) = i;
 				if (rc > 0) {
 					p += rc;
 				} else {
@@ -378,6 +384,8 @@ ENTER_FUNC;
 				dbgprintf("child[%d][%s]",i, p);
 				p += strlen(p) + 1;
 				rc = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
+				ValueParent(ValueRecordItem(value,i)) = value;
+				ValueIndex(ValueRecordItem(value,i)) = i;
 				dbgprintf("rc[%d]",rc);
 				if (rc > 0 ) {
 					p += rc;

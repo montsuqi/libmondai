@@ -47,7 +47,7 @@
 #include	"hash_v.h"
 #include	"debug.h"
 
-#define	DUMP_LOCALE		"euc-jp"
+#define	DUMP_LOCALE		"euc-jisx0213"
 
 extern	ValueStruct	*
 NewValue(
@@ -61,6 +61,8 @@ ENTER_FUNC;
 	ValueAttribute(ret) = GL_ATTR_NIL;
 	ValueStr(ret) = NULL;
 	ValueType(ret) = type;
+	ValueParent(ret) = NULL;
+	ValueIndex(ret) = 0;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
@@ -201,6 +203,70 @@ FreeValueStruct(
 		}
 		xfree(val);
 	}
+}
+
+extern	char *
+GetValueName(
+	ValueStruct *value)
+{
+	char		*ret;
+	char		buff[16];
+	int 		index;
+	ValueStruct	*parent;
+ENTER_FUNC;
+	ret = NULL;
+	if (value != NULL) {
+		if ((parent = ValueParent(value)) != NULL) {
+			index = ValueIndex(value);
+			switch(ValueType(parent)) {
+				case GL_TYPE_RECORD:
+					ret = StrDup(ValueRecordName(parent,index));
+					break;
+				case GL_TYPE_ARRAY:
+					sprintf(buff, "[%d]",index);
+					ret = StrDup(buff);
+					break;
+				default:
+					fprintf(stderr,"invalid parent type\n");
+					break;
+			}
+		}
+	}
+	if (ret == NULL) {
+		ret = StrDup("");
+	}
+LEAVE_FUNC;
+	return ret;
+}
+
+extern	char *
+GetValueLongName(
+	ValueStruct *value)
+{
+	char		*lname;
+	char		*name;
+	char		*tmp;
+	ValueStruct	*parent;
+ENTER_FUNC;
+	lname = NULL;
+	if (value != NULL) {
+		parent = value;
+		while (ValueParent(parent) != NULL) {
+			name = GetValueName(parent);
+			if (lname == NULL) {
+				lname = name;
+			} else {
+				tmp = xmalloc(strlen(lname) + strlen(name) + 2);
+				snprintf(tmp, sizeof(tmp), "%s.%s", name , lname);
+				xfree(name);
+				xfree(lname);
+				lname = tmp;
+			}
+			parent = ValueParent(parent);
+		}
+	}
+LEAVE_FUNC;
+	return lname;
 }
 
 extern	ValueStruct	*
@@ -1110,6 +1176,8 @@ DuplicateValue(
 			ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
 			for	( i = 0 ; i < ValueArraySize(template) ; i ++ ) {
 				ret[i] = DuplicateValue(ValueArrayItem(template,i),fCopy);
+				ValueParent(ret[i]) = p;
+				ValueIndex(ret[i]) = i;
 			}
 			ValueArrayItems(p) = ret;
 			ValueArraySize(p) = ValueArraySize(template);
@@ -1129,6 +1197,8 @@ DuplicateValue(
 				g_hash_table_insert(ValueRecordMembers(p),
 									(gpointer)ValueRecordName(p,i),
 									(gpointer)((long)i+1));
+				ValueParent(ValueRecordItem(p,i)) = p;
+				ValueIndex(ValueRecordItem(p,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_VALUES:
@@ -1138,6 +1208,8 @@ DuplicateValue(
 			for	( i = 0 ; i < ValueValuesSize(template) ; i ++ ) {
 				ValueValuesItem(p,i) = 
 					DuplicateValue(ValueValuesItem(template,i),fCopy);
+				ValueParent(ValueValuesItem(p,i)) = p;
+				ValueIndex(ValueValuesItem(p,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -1181,6 +1253,8 @@ ENTER_FUNC;
 	items[ValueRecordSize(upper)] = value;
 	dname = StrDup(name);
 	names[ValueRecordSize(upper)] = dname;
+	ValueParent(value) = upper;
+	ValueIndex(value) = ValueRecordSize(upper);
 	if		(  name  !=  NULL  ) {
 		if		(  g_hash_table_lookup(ValueRecordMembers(upper),name)  ==  NULL  ) {
 			g_hash_table_insert(ValueRecordMembers(upper),
@@ -1223,6 +1297,8 @@ ENTER_FUNC;
 		ValueArraySize(upper) = nsize;
 	}
 	ValueArrayItem(upper,ix) = value;
+	ValueParent(value) = upper;
+	ValueIndex(value) = ix;
 LEAVE_FUNC;
 }
 

@@ -209,13 +209,17 @@ ENTER_FUNC;
 			mktime(&ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p += OpenCOBOL_UnPackValue(opt,p,value->body.ArrayData.item[i]);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += OpenCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
+				ValueParent(ValueArrayItem(value,i)) = value;
+				ValueIndex(ValueArrayItem(value,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p += OpenCOBOL_UnPackValue(opt,p,value->body.RecordData.item[i]);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += OpenCOBOL_UnPackValue(opt,p,ValueRecordItem(value,i));
+				ValueParent(ValueRecordItem(value,i)) = value;
+				ValueIndex(ValueRecordItem(value,i)) = i;
 			}
 			break;
 		  default:
@@ -314,13 +318,13 @@ ENTER_FUNC;
 						 ValueDateTimeSec(value));
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p += OpenCOBOL_PackValue(opt,p,value->body.ArrayData.item[i]);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += OpenCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p += OpenCOBOL_PackValue(opt,p,value->body.RecordData.item[i]);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += OpenCOBOL_PackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -336,8 +340,7 @@ OpenCOBOL_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	int		i
-	,		n;
+	int		i;
 	size_t	ret;
 
 	if		(  value  ==  NULL  )	return	(0);
@@ -379,17 +382,15 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = 6;
 		break;
 	  case	GL_TYPE_ARRAY:
-		if		(  value->body.ArrayData.count  >  0  ) {
-			n = value->body.ArrayData.count;
-		} else {
-			n = opt->arraysize;
+		ret = 0;
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			ret += OpenCOBOL_SizeValue(opt,ValueArrayItem(value,i));
 		}
-		ret = OpenCOBOL_SizeValue(opt,value->body.ArrayData.item[0]) * n;
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
-		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-			ret += OpenCOBOL_SizeValue(opt,value->body.RecordData.item[i]);
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			ret += OpenCOBOL_SizeValue(opt,ValueRecordItem(value,i));
 		}
 		break;
 	  default:

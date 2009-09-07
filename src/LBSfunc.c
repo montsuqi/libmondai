@@ -294,7 +294,8 @@ LBS_EmitStringCodeset(
 	size_t	sib
 		,	sob;
 	iconv_t	cd;
-	int		rc;
+	int		rc
+	,		i;
 	char	*obuff;
 	size_t	obsize
 		,	ssize;
@@ -319,6 +320,12 @@ ENTER_FUNC;
 					xfree(obuff);
 					obsize *= 2;
 				} else {
+					fprintf(stderr, "[%s:%d] iconv failure %s\n", __FILE__, __LINE__, strerror(errno));
+					fprintf(stderr, "[");
+					for (i = 0;i < strlen(str); i++) {
+						fprintf(stderr, "%02X,", str[i]);
+					}
+					fprintf(stderr, "][%s]\n",str);
 					break;
 				}
 			}
