@@ -112,13 +112,13 @@ __FILE__,__LINE__,__VA_ARGS__)
 fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));	\
 exit(1)
 #define	MonErrorPrintf(fmt,...)					\
-fprintf(stderr,"%s:%d:" (fmt), 					\
+fprintf(stderr,"%s:%d:" fmt, 					\
 __FILE__,__LINE__,__VA_ARGS__);					\
 exit(1)
 #define MonWarning(s) 							\
 fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s))
 #define	MonWarningPrintf(fmt,...)				\
-fprintf(stderr, "%s:%d:" (fmt),					\
+fprintf(stderr, "%s:%d:" fmt,					\
 __FILE__,__LINE__,__VA_ARGS__)
 #endif
 
