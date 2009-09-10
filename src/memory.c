@@ -65,8 +65,8 @@ _xmalloc(
 	total += size; 
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
 	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
-		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(12);
+		fprintf(stderr,"no memory space!! %s(%d)\n",fn,line);
+		exit(1);
 	}
 	sizea = (size_t *)(area + size);
 	*sizea = size;
@@ -78,8 +78,7 @@ _xmalloc(
 	g_int_hash_table_insert(PoolHash,ret,sizea);
 #else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
-		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(12);
+		MonErrorPrintf("no memory space!! %s(%d)",fn,line);
 	}
 #endif
 	return	(ret);
@@ -96,8 +95,7 @@ _xfree(
 
 	if		(  p  ==  NULL  )	return;
 	if		(  ( area = g_int_hash_table_lookup(PoolHash,p) )  ==  NULL  ) {
-		fprintf(stderr,"%p free duplicate in %s(%d)\n",p,fn,line);
-		exit(1);
+		fprintf(stderr, "%p free duplicate in %s(%d)\n",p,fn,line);
 	}
 	g_int_hash_table_remove(PoolHash,p);
 	total -= *area;

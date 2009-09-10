@@ -25,6 +25,12 @@
 #ifndef	_INC_DEBUG_H
 #define	_INC_DEBUG_H
 #include	<stdio.h>
+#include	<syslog.h>
+#include	<stdarg.h>
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
 
 #ifdef	TRACE
 #define	dbgmsg(s)			MessageDebug(s)
@@ -44,17 +50,6 @@
 
 #define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
 
-#ifdef	_INC_MESSAGE_H
-#define	Error(...)                                                      \
-do {                                                                    \
-    _MessageLevelPrintf(MESSAGE_ERROR,__FILE__,__LINE__,__VA_ARGS__);   \
-    exit(1);                                                            \
-} while (0)
-#define	Warning(...)                                                \
-_MessageLevelPrintf(MESSAGE_WARN,__FILE__,__LINE__,__VA_ARGS__);
-#define	Message(...)                                  \
-_MessageLevelPrintf(MESSAGE_PRINT,__FILE__,__LINE__,__VA_ARGS__);
-#else
 #define	Error(...)                              \
 do {                                            \
     printf("E:%s:%d:",__FILE__,__LINE__);       \
@@ -98,6 +93,35 @@ do {                                            \
     printf(__VA_ARGS__);                        \
     printf("\n");                               \
 } while (0)
+
+#ifdef USE_SYSLOG
+#define MonError(s) 							\
+syslog(LOG_ERR,"%s:%d:%s",__FILE__,__LINE__,(s));	\
+exit(1)
+#define MonErrorPrintf(fmt,...) 				\
+syslog(LOG_ERR,"%s:%d:" fmt,					\
+__FILE__,__LINE__,__VA_ARGS__);					\
+exit(1)
+#define MonWarning(s) 							\
+syslog(LOG_WARNING,"%s:%d:%s",__FILE__,__LINE__,(s))
+#define MonWarningPrintf(fmt,...) 				\
+syslog(LOG_WARNING,"%s:%d:" fmt,				\
+__FILE__,__LINE__,__VA_ARGS__)
+#else
+#define MonError(s)								\
+fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));	\
+exit(1)
+#define	MonErrorPrintf(fmt,...)					\
+fprintf(stderr,"%s:%d:" (fmt), 					\
+__FILE__,__LINE__,__VA_ARGS__);					\
+exit(1)
+#define MonWarning(s) 							\
+fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s))
+#define	MonWarningPrintf(fmt,...)				\
+fprintf(stderr, "%s:%d:" (fmt),					\
+__FILE__,__LINE__,__VA_ARGS__)
 #endif
 
+
 #endif
+

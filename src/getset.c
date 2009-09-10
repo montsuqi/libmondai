@@ -487,13 +487,14 @@ SetValueStringWithLength(
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
-	char	*istr;
+	char	*istr
+	,		*hexstr;
 	int		i;
 #endif
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else
 	if		(	(  str   ==  NULL      )
@@ -535,12 +536,13 @@ ENTER_FUNC;
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
 						} else {
-							fprintf(stderr, "[%s:%d] iconv failure %s\n", __FILE__, __LINE__, strerror(errno));
-							fprintf(stderr, "%s[",GetValueLongName(val));
-							for (i = 0;i < strlen(str); i++) {
-								fprintf(stderr, "%02X,", str[i]);
+							MonWarningPrintf("iconv failure %s", strerror(errno));
+							hexstr = xmalloc(sib * 3 + 1);
+							for (i = 0;i < sib; i++) {
+								sprintf(hexstr + i * 3, "%02X,", istr[i]);
 							}
-							fprintf(stderr, "][%s]\n",str);
+							MonWarningPrintf("%s:%s",GetValueLongName(val), hexstr);
+							xfree(hexstr);
 							break;
 						}
 					} else {
@@ -717,9 +719,10 @@ SetValueInteger(
 	Bool	rc;
 	char	str[SIZE_NUMBUF+1];
 	Bool	fMinus;
+	time_t	ltime;
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct\n");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -768,7 +771,8 @@ SetValueInteger(
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-			rc = (  localtime_r((time_t *)&ival,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
+			ltime = (time_t)ival;
+			rc = (  localtime_r(&ltime,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -787,7 +791,7 @@ SetValueChar(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -833,7 +837,7 @@ SetValueBool(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -881,7 +885,7 @@ SetValueFloat(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -934,7 +938,7 @@ SetValueFixed(
 	char	*str;
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -1014,7 +1018,7 @@ SetValueBinary(
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		if		(	(  str   ==  NULL      )
@@ -1220,7 +1224,7 @@ SetValueDateTime(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);

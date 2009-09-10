@@ -163,8 +163,7 @@ ConvSetLanguage(
 ENTER_FUNC;
 	if		(  name  !=  NULL  ) {
 		if		(  ( func = GetConvFunc(name) )  ==  NULL  ) {
-			fprintf(stderr,"can not found %s convert rule\n",name);
-			exit(1);
+			MonErrorPrintf("can not found %s convert rule",name);
 		}
 		PackValue = func->PackValue;
 		UnPackValue = func->UnPackValue;

@@ -226,7 +226,7 @@ ENTER_FUNC;
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		if		(  type  !=  ValueType(value)  ) {
-			fprintf(stdout,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
+			MonWarningPrintf("unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 			return -1;
 		}
 		ValueAttribute(value) = attr;
@@ -378,7 +378,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				if (strcmp(p,ValueRecordName(value,i))) {
-					fprintf(stderr, "unmatch record name src[%s] dst[%s]", p, ValueRecordName(value,i));
+					MonWarningPrintf("unmatch record name src[%s] dst[%s]", p, ValueRecordName(value,i));
 					return -1;
 				}
 				dbgprintf("child[%d][%s]",i, p);

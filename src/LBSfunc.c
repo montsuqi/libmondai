@@ -290,7 +290,8 @@ LBS_EmitStringCodeset(
 {
 #ifdef	WITH_I18N
 	char	*oc
-	,		*istr;
+	,		*istr
+	,		*buff;
 	size_t	sib
 		,	sob;
 	iconv_t	cd;
@@ -320,13 +321,21 @@ ENTER_FUNC;
 					xfree(obuff);
 					obsize *= 2;
 				} else {
-					fprintf(stderr, "[%s:%d] iconv failure %s\n", __FILE__, __LINE__, strerror(errno));
-					fprintf(stderr, "[");
-					for (i = 0;i < strlen(str); i++) {
-						fprintf(stderr, "%02X,", str[i]);
+					// efbc8d -> e28892
+					if (strstr(istr,"\357\274\215") == istr) {
+						*istr = 0xe2;
+						*(istr+1) = 0x88;
+						*(istr+2) = 0x92;
+					} else {
+						MonWarningPrintf("iconv failure %s", strerror(errno));
+						buff = xmalloc(sib * 3 + 1);
+						for (i = 0;i < sib; i++) {
+							sprintf(buff + i * 3, "%02X,", istr[i]);
+						}
+						MonWarningPrintf("str:%s", buff);
+						xfree(buff);
+						break;
 					}
-					fprintf(stderr, "][%s]\n",str);
-					break;
 				}
 			}
 			*oc = 0;
