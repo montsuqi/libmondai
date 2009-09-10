@@ -160,6 +160,16 @@ if test "x$USE_LIBXML2" != "xno"; then
 fi
 
 dnl ***************************************************************************
+dnl use syslog for message output
+dnl ***************************************************************************
+
+AC_ARG_ENABLE(syslog,
+  [  --enable-syslog           enable logging to syslog [[disable]]],,[enable_syslog="no"])
+if test "x$enable_syslog" = "xyes"; then
+    AC_DEFINE(USE_SYSLOG,1,"")
+fi
+
+dnl ***************************************************************************
 
 AC_CONFIG_FILES([
 Makefile
@@ -187,4 +197,5 @@ echo "  i18n Support:          $USE_I18N"
 echo "  libxml Support:        $USE_LIBXML"
 echo "  libxml2 Support:       $USE_LIBXML2"
 echo "  SOAP Support:          $USE_SOAP"
+echo "  use syslog:            $enable_syslog"
 echo ""

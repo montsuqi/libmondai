@@ -140,6 +140,9 @@
 #undef USE_SOAP
 
 /* "" */
+#undef USE_SYSLOG
+
+/* "" */
 #undef USE_XML
 
 /* "" */
