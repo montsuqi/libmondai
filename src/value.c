@@ -47,7 +47,7 @@
 #include	"hash_v.h"
 #include	"debug.h"
 
-#define	DUMP_LOCALE		"euc-jisx0213"
+#define	DUMP_LOCALE		NULL
 
 extern	ValueStruct	*
 NewValue(
