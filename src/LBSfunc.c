@@ -339,6 +339,11 @@ ENTER_FUNC;
 				}
 			}
 			*oc = 0;
+			// A2B1(jisx0213) -> A1DD(jisx0208) for ghostscript
+			while((oc = strstr(obuff, "\242\261")) != NULL) {
+				*oc     = 0xA1;
+				*(oc+1) = 0xDD;
+			}
 			ssize = obsize - sob + sizeof(wchar_t);
 			LBS_ReserveSize(lbs,ssize,FALSE);
 			memclear(LBS_Body(lbs),ssize);
