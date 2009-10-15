@@ -136,8 +136,8 @@ ENTER_FUNC;
 			len = *(size_t *)p;
 			p += sizeof(size_t);
 			if 		(  strlen(p) + 1   >  size  ) {
+				MonWarningPrintf("%s:ValueStringSize is wrong,size:%d strlen:%d",GetValueLongName(value),size,strlen(p));
 				size = strlen(p) + 1;
-				MonWarningPrintf("%s:ValueStringSize is wrong",GetValueLongName(value));
 			}
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
@@ -324,8 +324,8 @@ ENTER_FUNC;
 			len = *(size_t *)p;
 			p += sizeof(size_t);
 			if 		(  strlen(p) + 1   >  size  ) {
+				MonWarningPrintf("%s:ValueStringSize is wrong,size:%d strlen:%d",GetValueLongName(value),size,strlen(p));
 				size = strlen(p) + 1;
-				MonWarningPrintf("%s:ValueStringSize is wrong",GetValueLongName(value));
 			}
 			if		(  size  >  ValueStringSize(value)  ) {
 				if		(  ValueString(value)  !=  NULL  ) {
