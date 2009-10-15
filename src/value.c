@@ -256,8 +256,8 @@ ENTER_FUNC;
 			if (lname == NULL) {
 				lname = name;
 			} else {
-				tmp = xmalloc(strlen(lname) + strlen(name) + 2);
-				snprintf(tmp, sizeof(tmp), "%s.%s", name , lname);
+				tmp = xmalloc(1024);
+				snprintf(tmp, 1024, "%s.%s", name , lname);
 				xfree(name);
 				xfree(lname);
 				lname = tmp;

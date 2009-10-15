@@ -551,8 +551,17 @@ ENTER_FUNC;
 					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
 				};
 				iconv_close(cd);
-				*q = 0;
-				len = ValueStringSize(val) - sob;
+				if (sob == 0) {
+					/* need 1 byte expansion for null terminating  */
+					q = ValueString(val);
+					ValueStringSize(val) += 1;
+					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
+					memcpy(ValueString(val),q,ValueStringSize(val)-1);
+					*(ValueString(val) + ValueStringSize(val) - 1) = 0;
+					xfree(q);
+				} else {
+					*q = 0;
+				}
 			}
 #endif
 			rc = TRUE;

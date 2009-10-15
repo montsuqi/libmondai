@@ -135,6 +135,10 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			len = *(size_t *)p;
 			p += sizeof(size_t);
+			if 		(  strlen(p) + 1   >  size  ) {
+				size = strlen(p) + 1;
+				MonWarningPrintf("%s:ValueStringSize is wrong",GetValueLongName(value));
+			}
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
 				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
@@ -319,6 +323,10 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			len = *(size_t *)p;
 			p += sizeof(size_t);
+			if 		(  strlen(p) + 1   >  size  ) {
+				size = strlen(p) + 1;
+				MonWarningPrintf("%s:ValueStringSize is wrong",GetValueLongName(value));
+			}
 			if		(  size  >  ValueStringSize(value)  ) {
 				if		(  ValueString(value)  !=  NULL  ) {
 					xfree(ValueString(value));
