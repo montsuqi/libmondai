@@ -146,6 +146,9 @@ EncodeLength(
 	  case	STRING_ENCODING_BACKSLASH:
 		result = EncodeStringLengthBackslash(in);
 		break;
+	  case	STRING_ENCODING_BACKSLASH_CRLF:
+		result = EncodeStringLengthBackslashCRLF(in);
+		break;
 	  default:
 		result = 0;
 		break;

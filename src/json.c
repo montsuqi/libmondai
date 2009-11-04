@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2007-2008 Ogochan.
+ * Copyright (C) 2007-2009 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -231,7 +231,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_OBJECT:
 			str = ValueToString(value,"utf-8");
 			*p ++ = '"';
-			p += EncodeStringBackslash(p,str);
+			p += EncodeStringBackslashCRLF(p,str);
 			*p ++ = '"';
 			break;
 		  case	GL_TYPE_BYTE:
@@ -403,7 +403,7 @@ JSON_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	ConvSetEncoding(opt,STRING_ENCODING_BACKSLASH);
+	ConvSetEncoding(opt,STRING_ENCODING_BACKSLASH_CRLF);
 	return	(_JSON_SizeValue(opt,value));
 }
 

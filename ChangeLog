@@ -1,3 +1,11 @@
+2009-10-26  Kazuya Nagadomi  <nagadomi@nurs.or.jp>
+
+	* src/others.c (EncodeStringLengthBackslashCRLF, EncodeStringBackslashCRLF): json用に追加
+	
+	* src/valueconv.c (EncodeLength): STRING_ENCODING_BACKSLASH_CRLFをjson用に追加
+	
+	* src/json.c (_JSON_PackValue, JSON_SizeValue): rubyのjsonで解析できるように改行コードをエスケープするようにした
+
 2009-08-31  yusuke mihara  <mihara@netlab.jp>
 
 	* getset.c value.c: i18nでSetValueStringWithLengthが使えるよう修正

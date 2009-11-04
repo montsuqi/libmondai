@@ -28,6 +28,7 @@
 #define	STRING_ENCODING_URL			1
 #define	STRING_ENCODING_BASE64		2
 #define	STRING_ENCODING_BACKSLASH	3
+#define	STRING_ENCODING_BACKSLASH_CRLF	4
 
 typedef	struct {
 	char	*codeset;
