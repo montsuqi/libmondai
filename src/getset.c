@@ -467,34 +467,6 @@ DecodeStringToBinary(
 }
 
 
-static int
-ConvertForPostgres(
-	char *string)
-{
-	int i;
-	char *p, *q;
-	const char *table[][2] = {
-{"\xE3\x80\x9C","\xEF\xBD\x9E"},//〜,"～
-{"\xE2\x88\x92","\xEF\xBC\x8D"},//−,"－
-{"\xE2\x80\x94","\xEF\xBC\x8D"},//—,"－
-{"\xE2\x80\x96","\xE2\x88\xA5"},//‖,"∥
-#if 0 // 2byte to 3byte conversion
-{"\xC2\xA2","\xEF\xBF\xA0"},//¢,"￠
-{"\xC2\xA3","\xEF\xBF\xA1"},//£,"￡
-#endif
-{"",""},
-	};
-	for(i=0; strlen(table[i][0]) != 0;i++) {
-		q = string;
-		while ((p = strstr(q, table[i][0])) != NULL) {
-			MonWarningPrintf("convert %s -> %s", table[i][0], table[i][1]);
-			memcpy(p, table[i][1], strlen(table[i][1]));
-			q = p;
-		}
-	}
-	return 0;
-}
-
 extern	Bool
 SetValueStringWithLength(
 	ValueStruct	*val,
@@ -592,7 +564,6 @@ ENTER_FUNC;
 					*q = 0;
 				}
 			}
-			ConvertForPostgres(ValueString(val));
 #endif
 			rc = TRUE;
 			break;
