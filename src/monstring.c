@@ -201,7 +201,7 @@ CharLength(
 	if		(  ( c & 0xE0 )  ==  0xC0  ) {
 		len = 2;
 	} else
-	if		(  ( c & 0xE0 )  ==  0xE0  ) {
+	if		(  ( c & 0xF0 )  ==  0xE0  ) {
 		len = 3;
 	} else
 	if		(  ( c & 0xF8 )  ==  0xF0  ) {
