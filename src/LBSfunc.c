@@ -444,7 +444,7 @@ ENTER_FUNC;
 				*oc     = 0xA1;
 				*(oc+1) = 0xDD;
 			}
-			ssize = obsize - sob + sizeof(wchar_t);
+			ssize = obsize - sob + 1;
 			LBS_ReserveSize(lbs,ssize,FALSE);
 			memclear(LBS_Body(lbs),ssize);
 			memcpy(LBS_Body(lbs),obuff,ssize);
