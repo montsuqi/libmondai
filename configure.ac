@@ -89,48 +89,17 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 dnl ***************************************************************************
-dnl libxml
-dnl ***************************************************************************
-USE_LIBXML="no"
-AC_ARG_WITH(xml,
-    [  --with-xml=<encode>     Use libxml with encode [[no]]],
-    [USE_LIBXML=$withval], [USE_LIBXML="no"])
-if test "x$USE_LIBXML" != "xno"; then
-    if test "x$USE_LIBXML" = "xyes"; then
-        USE_LIBXML="euc-jp"
-    fi
-
-    XML_REQUIRED_VERSION=1.0.0
-    LIBXML_PACKAGES="libxml"
-    AC_MSG_CHECKING(for libxml libraries >= $XML_REQUIRED_VERSION) 
-      if $PKG_CONFIG --atleast-version $XML_REQUIRED_VERSION libxml ; then
-          XML_CFLAGS=`$PKG_CONFIG --cflags $LIBXML_PACKAGES`
-          XML_LIBS=`$PKG_CONFIG --libs $LIBXML_PACKAGES`
-
-          AC_MSG_RESULT(yes)
-      else
-          AC_MSG_ERROR([
-*** libxml $XML_REQUIRED_VERSION or better is required. The latest version of 
-*** libxml is always available from http://xmlsoft.org/.
-          ])
-      fi
-  AC_DEFINE(USE_XML,1,"")
-  AC_DEFINE_UNQUOTED(LIBXML_CODE,"$USE_LIBXML","")
-fi
-
-dnl ***************************************************************************
 dnl SOAP
 dnl ***************************************************************************
 USE_SOAP="yes"
-XML2_REQUIRED_VERSION=2.4.0
 AC_ARG_ENABLE(soap,
     [  --disable-soap          disable soap [[enable]]],
     [USE_SOAP=$enable_soap])
 if test "x$USE_SOAP" != "xno"; then
     AC_DEFINE(USE_SOAP,1,"")
-    XML2_REQUIRED_VERSION=2.6.0
 fi
 AM_CONDITIONAL(SOAP, test x$USE_SOAP != "xno")
+
 dnl ***************************************************************************
 dnl libxml2
 dnl ***************************************************************************
@@ -139,24 +108,10 @@ AC_ARG_ENABLE(xml2,
     [  --disable-xml2          disable xml with libxml2 [[enable]]],
     [USE_LIBXML2=$enable_xml2])
 if test "x$USE_LIBXML2" != "xno"; then
-    LIBXML_PACKAGES="libxml-2.0"
-    AC_MSG_CHECKING(for libxml2 libraries >= $XML2_REQUIRED_VERSION) 
-      if $PKG_CONFIG --atleast-version $XML2_REQUIRED_VERSION libxml-2.0 ; then
-          XML_CFLAGS=`$PKG_CONFIG --cflags $LIBXML_PACKAGES`
-          XML_LIBS=`$PKG_CONFIG --libs $LIBXML_PACKAGES`
-
-          AC_MSG_RESULT(yes)
-      else
-          AC_MSG_ERROR([
-*** libxml $XML2_REQUIRED_VERSION or newer is required. The latest version of libxml
-*** is always available from http://www.xmlsoft.org/.
-*** Please try --disable-soap option if you are installing an old version. 
-      ])
-     fi
-   AC_SUBST(XML_CFLAGS)
-   AC_SUBST(XML_LIBS)
-   AC_DEFINE(USE_XML,2,"")
-   AC_DEFINE(USE_XML2,1,"")
+	PKG_CHECK_MODULES(XML, libxml-2.0 >= 2.6.0)
+	AC_SUBST(XML_CFLAGS)
+	AC_SUBST(XML_LIBS)
+	AC_DEFINE(USE_XML,2,"")
 fi
 
 dnl ***************************************************************************
@@ -194,7 +149,6 @@ echo ""
 echo "  VERSION:               $VERSION"
 echo "  LTVERSION:             $LTVERSION"
 echo "  i18n Support:          $USE_I18N"
-echo "  libxml Support:        $USE_LIBXML"
 echo "  libxml2 Support:       $USE_LIBXML2"
 echo "  SOAP Support:          $USE_SOAP"
 echo "  use syslog:            $enable_syslog"

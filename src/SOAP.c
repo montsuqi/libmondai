@@ -33,11 +33,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include    <sys/types.h>
-#ifdef	USE_XML2
 #include	<libxml/parser.h>
-#else
-#include	<parser.h>
-#endif
 
 #include	"types.h"
 #include	"misc_v.h"

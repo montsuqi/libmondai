@@ -107,9 +107,6 @@
 #undef HAVE__BOOL
 
 /* "" */
-#undef LIBXML_CODE
-
-/* "" */
 #undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
@@ -144,9 +141,6 @@
 
 /* "" */
 #undef USE_XML
-
-/* "" */
-#undef USE_XML2
 
 /* "" */
 #undef VERSION
