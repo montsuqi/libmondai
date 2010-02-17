@@ -1,3 +1,7 @@
+2010-02-17  yusuke mihara  <mihara@netlab.jp>
+
+	* release 1.4.5
+
 2009-10-26  Kazuya Nagadomi  <nagadomi@nurs.or.jp>
 
 	* src/others.c (EncodeStringLengthBackslashCRLF, EncodeStringBackslashCRLF): json用に追加
