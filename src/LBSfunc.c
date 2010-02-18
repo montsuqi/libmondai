@@ -382,6 +382,7 @@ LBS_EmitStringCodeset(
 	char		*oc
 	,			*istr
 	,			*buff
+	,			*buff2
 	,			*obuff;
 	const char	*dummy;
 	size_t		sib
@@ -389,7 +390,8 @@ LBS_EmitStringCodeset(
 	iconv_t		cd;
 	int			rc
 	,			len
-	,			i;
+	,			i
+	,			j;
 	size_t	obsize
 		,	ssize;
 #endif
@@ -414,7 +416,15 @@ ENTER_FUNC;
 					if (!ConvertForIconv(istr)) {
 						len = CharLength(istr[0]);
 						if (len == 0) {
-							MonWarningPrintf("invalid UTF-8 char? first byte:%02X",istr[0]);
+							j = sib > 8 ? 8 : sib;
+							buff = buff2 = xmalloc(j * 3 + 1);
+							for (i = 0; i < j; i++) {
+								sprintf(buff2, "%02X,", istr[i]);
+								buff2 += 3;
+							}
+						fprintf(stderr, "iconv EILSEQ,invalid UTF8 char:%s\n",buff);
+							MonWarningPrintf("iconv EILSEQ,invalid UTF8 char:%s",buff);
+							xfree(buff);
 							break;
 						}
 						buff = StrnDup(istr, len);
