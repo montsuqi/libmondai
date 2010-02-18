@@ -422,7 +422,6 @@ ENTER_FUNC;
 								sprintf(buff2, "%02X,", istr[i]);
 								buff2 += 3;
 							}
-						fprintf(stderr, "iconv EILSEQ,invalid UTF8 char:%s\n",buff);
 							MonWarningPrintf("iconv EILSEQ,invalid UTF8 char:%s",buff);
 							xfree(buff);
 							break;
