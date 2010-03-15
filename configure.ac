@@ -132,11 +132,8 @@ src/Makefile
 tools/Makefile
 src/libmondai.h
 docs/Makefile
-libmondai-config
-libmondai-config.1
 libmondai.pc
 ])
-AC_CONFIG_COMMANDS([default],[chmod +x libmondai-config],[])
 AC_OUTPUT
 
 dnl ***************************************************************************
