@@ -76,11 +76,11 @@ LBS_ReserveSize(
 	size_t			size,
 	Bool			fKeep)
 {
-	byte	*body;
+	unsigned char	*body;
 
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->asize  <  size  ) {
-			body = (byte *)xmalloc(size);
+			body = (unsigned char *)xmalloc(size);
 			if		(  fKeep  ) {
 				memcpy(body,lbs->body,lbs->size);
 			}
@@ -229,14 +229,14 @@ LBS_EmitStart(
 extern	void
 LBS_Emit(
 	LargeByteString	*lbs,
-	byte			code)
+	unsigned char			code)
 {
-	byte	*body;
+	unsigned char	*body;
 
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->ptr  ==  lbs->asize  ) {
 			lbs->asize += SIZE_GLOWN;
-			body = (byte *)xmalloc(lbs->asize);
+			body = (unsigned char *)xmalloc(lbs->asize);
 			if		(  lbs->body  !=  NULL  ) {
 				memcpy(body,lbs->body,lbs->ptr);
 				xfree(lbs->body);
@@ -528,11 +528,11 @@ extern	void
 LBS_EmitFix(
 	LargeByteString	*lbs)
 {
-	byte	*body;
+	unsigned char	*body;
 
  	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->size  >  0  ) {
-			body = (byte *)xmalloc(lbs->size);
+			body = (unsigned char *)xmalloc(lbs->size);
 			memcpy(body,lbs->body,lbs->size);
 			xfree(lbs->body);
 			lbs->body = body;
@@ -545,14 +545,14 @@ LBS_EmitFix(
 	}
 }
 
-extern	byte	*
+extern	unsigned char	*
 LBS_ToByte(
 	LargeByteString	*lbs)
 {
-	byte	*ret;
+	unsigned char	*ret;
 
  	if		(  lbs  !=  NULL  ) {
-		ret = (byte *)xmalloc(LBS_Size(lbs));
+		ret = (unsigned char *)xmalloc(LBS_Size(lbs));
 		RewindLBS(lbs);
 		memcpy(ret,LBS_Body(lbs),LBS_Size(lbs));
 	} else {

@@ -124,7 +124,7 @@ DumpByXML(
 	char		*name)
 {
 	CONVOPT	*opt;
-	byte	buff[SIZE_BUFF];
+	unsigned char	buff[SIZE_BUFF];
 
 	if		(  val  !=  NULL  ) {
 		opt = NewConvOpt();
@@ -149,11 +149,11 @@ main(
 #define	SIZE_DATA		128
 
 	char	name[SIZE_DATA];
-	byte	*p;
+	unsigned char	*p;
 	int		i;
 	ValueStruct	*val
 		,		*val2;
-	byte	*buff;
+	unsigned char	*buff;
 	char	method[SIZE_LONGNAME+1];
 	FILE	*fp;
 
@@ -205,7 +205,7 @@ main(
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 	for	( p = buff, i = 0 ; i < 256 ; i ++ , p ++) {
-		*p = (byte)i;
+		*p = (unsigned char)i;
 	}
 	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
 

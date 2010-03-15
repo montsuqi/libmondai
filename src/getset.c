@@ -235,9 +235,9 @@ ValueToLBS(
 	ValueStruct	*val,
 	char		*codeset)
 {
-	byte	work[SIZE_NUMBUF+1];
-	byte	work2[SIZE_NUMBUF+2];
-	byte	*p
+	unsigned char	work[SIZE_NUMBUF+1];
+	unsigned char	work2[SIZE_NUMBUF+2];
+	unsigned char	*p
 		,	*q;
 	int		i;
 	int		size;
@@ -419,7 +419,7 @@ ValueToString(
 
 static	void
 DecodeStringToBinary(
-	byte	*p,
+	unsigned char	*p,
 	size_t	size,
 	char	*str)
 {
@@ -478,13 +478,13 @@ SetValueStringWithLength(
 	,		fMinus
 	,		fPoint;
 	size_t	len;
-	byte	*p;
-	byte	buff[SIZE_NUMBUF+1]
+	unsigned char	*p;
+	unsigned char	buff[SIZE_NUMBUF+1]
 		,	sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
 #ifdef	WITH_I18N
-	byte	*q;
+	unsigned char	*q;
 	iconv_t	cd;
 	size_t	sob
 	,		sib;
@@ -517,7 +517,7 @@ ENTER_FUNC;
 					xfree(ValueString(val));
 				}
 				ValueStringSize(val) = size;
-				ValueString(val) = (byte *)xmalloc(size);
+				ValueString(val) = (unsigned char *)xmalloc(size);
 			}
 			memclear(ValueString(val),ValueStringSize(val));
 			strcpy(ValueString(val),str);
@@ -549,14 +549,14 @@ ENTER_FUNC;
 					} else {
 						ValueStringSize(val) = 1;
 					}
-					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
+					ValueString(val) = (unsigned char *)xmalloc(ValueStringSize(val));
 				};
 				iconv_close(cd);
 				if (sob == 0) {
-					/* need 1 byte expansion for null terminating  */
+					/* need 1 unsigned char expansion for null terminating  */
 					q = ValueString(val);
 					ValueStringSize(val) += 1;
-					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
+					ValueString(val) = (unsigned char *)xmalloc(ValueStringSize(val));
 					memcpy(ValueString(val),q,ValueStringSize(val)-1);
 					*(ValueString(val) + ValueStringSize(val) - 1) = 0;
 					xfree(q);
@@ -591,7 +591,7 @@ ENTER_FUNC;
 						xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = size;
-				ValueByte(val) = (byte *)xmalloc(size);
+				ValueByte(val) = (unsigned char *)xmalloc(size);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			DecodeStringToBinary(ValueByte(val),size,str);
@@ -1020,7 +1020,7 @@ SetValueFixed(
 extern	Bool
 SetValueBinary(
 	ValueStruct	*val,
-	byte		*str,
+	unsigned char		*str,
 	size_t		slen)
 {
 	Bool	rc;
@@ -1053,7 +1053,7 @@ ENTER_FUNC;
 						xfree(ValueString(val));
 					}
 					ValueStringSize(val) = size;
-					ValueString(val) = (byte *)xmalloc(size);
+					ValueString(val) = (unsigned char *)xmalloc(size);
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				if		(  str  !=  NULL  ) {
@@ -1079,7 +1079,7 @@ ENTER_FUNC;
 					xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = slen;
-				ValueByte(val) = (byte *)xmalloc(slen);
+				ValueByte(val) = (unsigned char *)xmalloc(slen);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			if		(  str  !=  NULL  ) {
@@ -1153,11 +1153,11 @@ LEAVE_FUNC;
 	return	(rc);
 }
 
-extern	byte	*
+extern	unsigned char	*
 ValueToBinary(
 	ValueStruct	*val)
 {
-	byte	*ret;
+	unsigned char	*ret;
 ENTER_FUNC;
 
 	if		(  val  ==  NULL  ) {

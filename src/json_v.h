@@ -22,8 +22,8 @@
 #define	_INC_JSON_VALUE_H
 #include	"valueconv.h"
 
-extern	size_t	JSON_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	JSON_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	JSON_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	JSON_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	JSON_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 extern	size_t	JSON_Parse(char *str, ValueStruct **ret);

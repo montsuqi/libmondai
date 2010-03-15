@@ -47,7 +47,7 @@
 extern	size_t 
 NativeUnPackValueNew(
 	CONVOPT	*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	**ret)
 {
 	ValueStruct	*value
@@ -57,7 +57,7 @@ NativeUnPackValueNew(
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
-	byte	*q;
+	unsigned char	*q;
 	char	*name;
 
 ENTER_FUNC;
@@ -117,7 +117,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueByte(value),size);
@@ -141,7 +141,7 @@ ENTER_FUNC;
 			}
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
 				strcpy(ValueString(value),p);
 				p += strlen(p) + 1;
@@ -210,7 +210,7 @@ LEAVE_FUNC;
 extern	size_t
 NativeUnPackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		rc
@@ -219,7 +219,7 @@ NativeUnPackValue(
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
-	byte	*q;
+	unsigned char	*q;
 	char	*name;
 
 ENTER_FUNC;
@@ -304,7 +304,7 @@ ENTER_FUNC;
 					xfree(ValueByte(value));
 				}
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueByte(value),size);
@@ -332,7 +332,7 @@ ENTER_FUNC;
 					xfree(ValueString(value));
 				}
 				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
@@ -503,12 +503,12 @@ LEAVE_FUNC;
 extern	size_t
 NativePackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	size_t	size;
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -717,13 +717,13 @@ LEAVE_FUNC;
 
 extern	size_t
 NativeSaveValue(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	Bool		fData)
 {
 	size_t	size;
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -850,7 +850,7 @@ LEAVE_FUNC;
 
 extern	size_t
 _NativeRestoreValue(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	**ret,
 	Bool		fData)
 {
@@ -861,7 +861,7 @@ _NativeRestoreValue(
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
-	byte	*q;
+	unsigned char	*q;
 	char	*name;
 
 ENTER_FUNC;
@@ -952,7 +952,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				if		(  fData  ) {
@@ -976,7 +976,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
 				if		(  fData  ) {
 					strcpy(ValueString(value),p);
@@ -1048,7 +1048,7 @@ LEAVE_FUNC;
 
 extern	ValueStruct	*
 NativeRestoreValue(
-	byte		*p,
+	unsigned char		*p,
 	Bool		fData)
 {
 	ValueStruct	*val;

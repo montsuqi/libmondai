@@ -28,8 +28,9 @@
 #include	<sys/types.h>
 #include	<stdint.h>
 
-#ifndef	byte
-#define	byte		unsigned char
+#if 0
+#ifndef	unsigned char
+#define	unsigned char		unsigned char
 #endif
 
 #ifndef	word
@@ -42,6 +43,7 @@
 
 #ifndef	ulong
 #define	ulong		unsigned long
+#endif
 #endif
 
 #ifndef	Bool

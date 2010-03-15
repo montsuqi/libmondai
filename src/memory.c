@@ -59,12 +59,12 @@ _xmalloc(
 {
 	void	*ret;
 #ifdef	TRACE
-	byte	*area;
+	unsigned char	*area;
 	size_t	*sizea;
 
 	total += size; 
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
-	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
+	if		(  ( area = (unsigned char *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
 		fprintf(stderr,"no memory space!! %s(%d)\n",fn,line);
 		exit(1);
 	}

@@ -272,7 +272,7 @@ ENTER_FUNC;
 			  case	GL_TYPE_BYTE:
 				ValueByteLength(value) = size;
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 				memclear(ValueByte(value),ValueByteSize(value));
 				break;
 			  default:
@@ -282,7 +282,7 @@ ENTER_FUNC;
 					ValueIsNonExpandable(value);
 					ValueStringLength(value) = size;
 					ValueStringSize(value) = size+1;
-					ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+					ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 					memclear(ValueString(value),ValueStringSize(value));
 				}
 				break;

@@ -191,7 +191,7 @@ StringChop(
  */
 extern	size_t
 CharLength(
-	byte	c)
+	unsigned char	c)
 {
 	size_t	len;
 

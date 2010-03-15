@@ -210,7 +210,7 @@ PutCR(
 extern	size_t
 IndentLine(
 	CONVOPT		*opt,
-	byte		*p)
+	unsigned char		*p)
 {
 	int		i;
 	size_t	size;

@@ -86,7 +86,7 @@ ConvSetXmlType(
 extern	void
 ConvSetOutput(
 	CONVOPT	*opt,
-	byte	v)
+	unsigned char	v)
 {
 ENTER_FUNC;
 	if		(  opt->appendix  ==  NULL  ) {
@@ -165,13 +165,13 @@ XML_EncodeSize(
 static	size_t
 _XML_PackValue1(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	char		*name,
 	ValueStruct	*value)
 {
 	char	num[SIZE_NAME+1];
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -296,13 +296,13 @@ LEAVE_FUNC;
 static	size_t
 _XML_PackValue2(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	char		*name,
 	ValueStruct	*value)
 {
 	char	num[SIZE_NAME+1];
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
@@ -440,10 +440,10 @@ LEAVE_FUNC;
 extern	size_t
 XML_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -506,10 +506,10 @@ LEAVE_FUNC;
 extern	size_t
 XML1_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -543,10 +543,10 @@ LEAVE_FUNC;
 extern	size_t
 XML2_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -1184,11 +1184,11 @@ SetNil(
 extern	size_t
 XML_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1220,11 +1220,11 @@ LEAVE_FUNC;
 extern	size_t
 XML1_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1249,11 +1249,11 @@ LEAVE_FUNC;
 extern	size_t
 XML2_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);

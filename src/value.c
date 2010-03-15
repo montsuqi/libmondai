@@ -669,7 +669,7 @@ ENTER_FUNC;
 				xfree(ValueString(to));
 			}
 			ValueStringSize(to) = ValueStringSize(from);
-			ValueString(to) = (byte *)xmalloc(ValueStringSize(to));
+			ValueString(to) = (unsigned char *)xmalloc(ValueStringSize(to));
 		}
 		memclear(ValueString(to),ValueStringSize(to));
 		memcpy(ValueString(to),ValueString(from),ValueStringSize(from));
@@ -684,7 +684,7 @@ ENTER_FUNC;
 				xfree(ValueByte(to));
 			}
 			ValueByteSize(to) = ValueByteSize(from);
-			ValueByte(to) = (byte *)xmalloc(ValueByteSize(to));
+			ValueByte(to) = (unsigned char *)xmalloc(ValueByteSize(to));
 		}
 		memclear(ValueByte(to),ValueByteSize(to));
 		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(from));
@@ -1133,7 +1133,7 @@ DuplicateValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			if		(  ValueStringSize(template)  >  0  ) {
-				ValueString(p) = (byte *)xmalloc(ValueStringSize(template));
+				ValueString(p) = (unsigned char *)xmalloc(ValueStringSize(template));
 				if		(  fCopy  ) {
 					memcpy(ValueString(p),ValueString(template),ValueStringSize(template));
 				} else {
@@ -1148,7 +1148,7 @@ DuplicateValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 			if		(  ValueByteSize(template)  >  0  ) {
-				ValueByte(p) = (byte *)xmalloc(ValueByteSize(template));
+				ValueByte(p) = (unsigned char *)xmalloc(ValueByteSize(template));
 				if		(  fCopy  ) {
 					memcpy(ValueString(p),ValueString(template),ValueStringSize(template));
 				} else {

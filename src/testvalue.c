@@ -151,13 +151,13 @@ main(
 #define	SIZE_DATA		128
 
 	char	name[SIZE_DATA];
-	byte	*p;
+	unsigned char	*p;
 	int		i;
 	ValueStruct	*val
 		,		*val2
 		,		*val3;
 	CONVOPT	*opt;
-	byte	*buff;
+	unsigned char	*buff;
 	size_t	size;
 
 	printf("***** libmondai test start *****\n");
@@ -208,7 +208,7 @@ printf("** variable size (end)**\n");fflush(stdout);
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 	for	( p = buff, i = 0 ; i < 256 ; i ++ , p ++) {
-		*p = (byte)i;
+		*p = (unsigned char)i;
 	}
 	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
 	printf("***** Value setting (end)*****\n");

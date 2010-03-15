@@ -85,13 +85,13 @@ ParseStringSize(
 static	size_t
 _JSON_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	name[SIZE_LONGNAME+1]
 		,	buff[SIZE_BUFF];
 	char	*str;
-	byte	*pp;
+	unsigned char	*pp;
 	size_t	size;
 	ValueStruct	*e;
 	int		i;
@@ -192,10 +192,10 @@ LEAVE_FUNC;
 extern	size_t
 JSON_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -208,11 +208,11 @@ LEAVE_FUNC;
 static	size_t
 _JSON_PackValue(
 	CONVOPT	*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 	char	*str;
 
 ENTER_FUNC;
@@ -300,7 +300,7 @@ LEAVE_FUNC;
 extern	size_t
 JSON_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	size_t	ret;
@@ -409,7 +409,7 @@ JSON_SizeValue(
 
 static	size_t
 _JSON_Parse(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	**ret)
 {
 	ValueStruct	*value
@@ -420,7 +420,7 @@ _JSON_Parse(
 	char	name[SIZE_LONGNAME+1]
 		,	buff[SIZE_BUFF];
 	char	*str;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;

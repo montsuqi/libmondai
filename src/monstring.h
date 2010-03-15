@@ -40,6 +40,6 @@ extern	char	*StringChop(char *str);
 extern	long	StrToInt(char *str, size_t len);
 extern	long	HexToInt(char *str, size_t len);
 extern	char	*IntToStr(char *str, long val, size_t len);
-extern	size_t	CharLength(byte c);
+extern	size_t	CharLength(unsigned char c);
 
 #endif

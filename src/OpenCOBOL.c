@@ -110,13 +110,13 @@ FixedC2Cobol(
 extern	size_t
 OpenCOBOL_UnPackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	char	buff[SIZE_NUMBUF+1];
-	byte	*str;
-	byte	*q;
+	unsigned char	*str;
+	unsigned char	*q;
 
 ENTER_FUNC;
 	q = p; 
@@ -149,7 +149,7 @@ ENTER_FUNC;
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_BINARY:
-			str = (byte *)xmalloc((opt->textsize)*sizeof(byte));
+			str = (unsigned char *)xmalloc((opt->textsize)*sizeof(unsigned char));
 			memcpy(str,p,opt->textsize);
 			p += opt->textsize;
 			SetValueBinary(value,str,opt->textsize);
@@ -157,7 +157,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			str = (byte *)xmalloc((opt->textsize+1)*sizeof(char));
+			str = (unsigned char *)xmalloc((opt->textsize+1)*sizeof(char));
 			memcpy(str,p,opt->textsize);
 			str[opt->textsize] = 0;
 			p += opt->textsize;
@@ -168,7 +168,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(byte));
+			str = (unsigned char *)xmalloc((ValueStringLength(value)+1)*sizeof(unsigned char));
 			memcpy(str,p,ValueStringLength(value));
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
@@ -234,12 +234,12 @@ LEAVE_FUNC;
 extern	size_t
 OpenCOBOL_PackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p; 

@@ -31,7 +31,7 @@
 #define	XML_OUT_ALL			0x07
 
 typedef	struct {
-	byte	fOutput;
+	unsigned char	fOutput;
 	int		type;
 }	XMLOPT;
 
@@ -45,18 +45,18 @@ typedef	struct {
 		(((opt)->appendix == NULL) ? XML_TYPE1 : (((XMLOPT *)(opt)->appendix)->type))
 
 extern	void	ConvSetXmlType(CONVOPT *opt, int type);
-extern	void	ConvSetOutput(CONVOPT *opt, byte v);
+extern	void	ConvSetOutput(CONVOPT *opt, unsigned char v);
 
-extern	size_t	XML_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	XML_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	XML_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	XML_SizeValue(CONVOPT *opt, ValueStruct *value);
 
-extern	size_t	XML1_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	XML1_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML1_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	XML1_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	XML1_SizeValue(CONVOPT *opt, ValueStruct *value);
 
-extern	size_t	XML2_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	XML2_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	XML2_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	XML2_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	XML2_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 extern	void	DestroyXMLOPT(XMLOPT *opt);

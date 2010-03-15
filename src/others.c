@@ -178,10 +178,10 @@ LEAVE_FUNC;
 
 extern	size_t
 DecodeStringURL(
-	byte	*q,
+	unsigned char	*q,
 	char	*p)
 {
-	byte	*qq = q;
+	unsigned char	*qq = q;
 
 	while	(	(  *p  !=  0    )
 			&&	(  isspace(*p)  ) )	p ++;
@@ -190,7 +190,7 @@ DecodeStringURL(
 			*q ++ = ' ';
 		} else
 		if		(  *p  ==  '%'  ) {
-			*q ++ = (byte)HexToInt(p+1,2);
+			*q ++ = (unsigned char)HexToInt(p+1,2);
 			p += 2;
 		} else {
 			*q ++ = *p;
@@ -270,10 +270,10 @@ extern	size_t
 EncodeBase64(
 	char	*out,
 	int		size,
-	byte	*in,
+	unsigned char	*in,
 	size_t	len)
 {
-	byte	*inp = in;
+	unsigned char	*inp = in;
 	char	*outp = out;
 
 	while	(  len  >=  3  )	{
@@ -320,13 +320,13 @@ EncodeLengthBase64(
 
 extern	size_t
 DecodeBase64(
-	byte	*out,
+	unsigned char	*out,
 	int		size,
 	char	*in,
 	size_t	len)
 {
 	char	*inp = in;
-	byte	*outp = out;
+	unsigned char	*outp = out;
 	char	buf[4];
 
 	if		(  len  <  0  ) {

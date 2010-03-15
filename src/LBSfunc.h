@@ -30,7 +30,7 @@ typedef	struct {
 	size_t	ptr
 	,		size
 	,		asize;
-	byte	*body;
+	unsigned char	*body;
 }	LargeByteString;
 
 extern	LargeByteString	*NewLBS(void);
@@ -38,7 +38,7 @@ extern	void			FreeLBS(LargeByteString *lbs);
 extern	void			LBS_ReserveSize(LargeByteString *lbs, size_t size, Bool fKeep);
 extern	void			LBS_Seek(LargeByteString *lbs,size_t off, int whence);
 extern	void			LBS_EmitStart(LargeByteString *lbs);
-extern	void			LBS_Emit(LargeByteString *lbs, byte code);
+extern	void			LBS_Emit(LargeByteString *lbs, unsigned char code);
 extern	void			LBS_EmitString(LargeByteString *lbs, char *str);
 extern	void			LBS_EmitStringCodeset(LargeByteString *lbs, char *str,
 											  size_t isize, size_t osize, char *codeset);
@@ -55,7 +55,7 @@ extern	uint64_t		LBS_Fetch64(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	wchar_t			*LBS_ToWcs(LargeByteString *lbs);
-extern	byte			*LBS_ToByte(LargeByteString *lbs);
+extern	unsigned char			*LBS_ToByte(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			(((LargeByteString *)(lbs))->ptr = 0)

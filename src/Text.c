@@ -48,13 +48,13 @@
 static	size_t
 _CSV_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	char		*buff)
 {
 	int		i;
 	char	*q;
-	byte	*pp;
+	unsigned char	*pp;
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -154,7 +154,7 @@ _CSV_UnPackValue(
 extern	size_t
 CSV_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF];
@@ -215,7 +215,7 @@ IsComma(
 static	size_t
 __CSV_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
@@ -223,7 +223,7 @@ __CSV_PackValue(
 	char		*buff)
 {
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
@@ -281,7 +281,7 @@ __CSV_PackValue(
 static	size_t
 _CSV_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	Bool		fNsep,
 	Bool		fSsep,
@@ -300,7 +300,7 @@ _CSV_PackValue(
 extern	size_t
 CSV1_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
@@ -310,7 +310,7 @@ CSV1_PackValue(
 extern	size_t
 CSV2_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
@@ -320,7 +320,7 @@ CSV2_PackValue(
 extern	size_t
 CSV3_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
@@ -330,7 +330,7 @@ CSV3_PackValue(
 extern	size_t
 CSVE_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF+1];
@@ -456,11 +456,11 @@ CSVE_SizeValue(
 extern	size_t
 SQL_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 	LargeByteString	*lbs;
 
 	pp = p;
@@ -569,12 +569,12 @@ SQL_Encode(
 static	size_t
 _SQL_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	Bool		*fFirst)
 {
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 	LargeByteString	*lbs;
 
 	pp = p;
@@ -647,7 +647,7 @@ _SQL_PackValue(
 extern	size_t
 SQL_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	Bool	fFirst;
@@ -774,10 +774,10 @@ SQL_SizeValue(
  *	RFC822 type conversion
  */
 
-static	byte	*
+static	unsigned char	*
 RFC822_SkipNext(
 	CONVOPT	*opt,
-	byte	*p)
+	unsigned char	*p)
 {
 	switch	(opt->encode) {
 	  case	STRING_ENCODING_NULL:
@@ -816,7 +816,7 @@ static	size_t
 EncodeString(
 	CONVOPT		*opt,
 	char		*out,
-	byte		*in)
+	unsigned char		*in)
 {
 	size_t	result;
 
@@ -841,7 +841,7 @@ EncodeString(
 static	size_t
 DecodeString(
 	CONVOPT		*opt,
-	byte		*out,
+	unsigned char		*out,
 	char		*in)
 {
 	size_t	result;
@@ -867,12 +867,12 @@ DecodeString(
 static	size_t
 _RFC822_UnPackValueNoNamed(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
-	byte		*buff)
+	unsigned char		*buff)
 {
 	int		i;
-	byte	*q
+	unsigned char	*q
 	,		*pp
 	,		ch;
 	size_t	len;
@@ -936,14 +936,14 @@ _RFC822_UnPackValueNoNamed(
 static	size_t
 _RFC822_UnPackValueNamed(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
-	byte		*buff)
+	unsigned char		*buff)
 {
-	byte	str[SIZE_LONGNAME+1];
+	unsigned char	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
-	byte	*q
+	unsigned char	*q
 		,	*pp;
 	ValueStruct	*e;
 	size_t	len;
@@ -1011,11 +1011,11 @@ LEAVE_FUNC;
 extern	size_t
 RFC822_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	size_t	ret;
-	byte	buff[SIZE_BUFF];
+	unsigned char	buff[SIZE_BUFF];
 
 ENTER_FUNC;
 	p = StrDup(p);
@@ -1032,15 +1032,15 @@ LEAVE_FUNC;
 static	size_t
 _RFC822_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	char		*name,
 	char		*longname,
 	char		*buff)
 {
 	int		i;
-	byte	*str;
-	byte	*pp;
+	unsigned char	*str;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -1103,7 +1103,7 @@ LEAVE_FUNC;
 extern	size_t
 RFC822_PackValue(
 	CONVOPT	*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	buff[SIZE_BUFF]
@@ -1208,10 +1208,10 @@ RFC822_SizeValue(
  *	CGI format
  */
 
-static	byte	*
+static	unsigned char	*
 CGI_SkipNext(
 	CONVOPT	*opt,
-	byte	*p)
+	unsigned char	*p)
 {
 	while	(	(  *p  !=  0     )
 			&&	(  *p  !=  '&'   )
@@ -1223,16 +1223,16 @@ CGI_SkipNext(
 static	size_t
 _CGI_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	buff[SIZE_BUFF+1];
-	byte	str[SIZE_LONGNAME+1];
+	unsigned char	buff[SIZE_BUFF+1];
+	unsigned char	str[SIZE_LONGNAME+1];
 	char	*vname
 	,		*rname;
-	byte	*q
+	unsigned char	*q
 		,	ch;
-	byte	*pp;
+	unsigned char	*pp;
 	ValueStruct	*e;
 
 	pp = p;
@@ -1272,7 +1272,7 @@ _CGI_UnPackValue(
 extern	size_t
 CGI_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	size_t	ret;
@@ -1285,13 +1285,13 @@ CGI_UnPackValue(
 static	size_t
 _CGI_PackValue(
 	CONVOPT	*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	char		*name,
 	char		*longname)
 {
 	int		i;
-	byte	*q
+	unsigned char	*q
 	,		*pp;
 
 	pp = p;
@@ -1342,7 +1342,7 @@ _CGI_PackValue(
 extern	size_t
 CGI_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	longname[SIZE_LONGNAME+1];

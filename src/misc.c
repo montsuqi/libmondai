@@ -109,11 +109,11 @@ AdjustByteOrder(
 	memcpy(to,from,size);
 }
 #else
-{	byte	*p
+{	unsigned char	*p
 	,		*q;
 
-	p = (byte *)to + size - 1;
-	for	( q = from ; p >= (byte *)to ; p -- , q ++ )	{
+	p = (unsigned char *)to + size - 1;
+	for	( q = from ; p >= (unsigned char *)to ; p -- , q ++ )	{
 		*p = *q;
 	}
 }

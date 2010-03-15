@@ -31,7 +31,7 @@ extern	Bool		SetValueChar(ValueStruct *val, char cval);
 extern	Bool		SetValueBool(ValueStruct *val, Bool bval);
 extern	Bool		SetValueFloat(ValueStruct *val, double bval);
 extern	Bool		SetValueFixed(ValueStruct *val, Fixed *fval);
-extern	Bool		SetValueBinary(ValueStruct *val, byte *str, size_t slen);
+extern	Bool		SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen);
 extern	Bool		SetValueDateTime(ValueStruct *val, struct tm tval);
 
 extern	int			ValueToInteger(ValueStruct *val);
@@ -40,7 +40,7 @@ extern	Fixed		*ValueToFixed(ValueStruct *val);
 extern	Bool		ValueToBool(ValueStruct *val);
 extern	LargeByteString	*ValueToLBS(ValueStruct *val, char *codeset);
 extern	char		*ValueToString(ValueStruct *value, char *locale);
-extern	byte		*ValueToBinary(ValueStruct *val);
+extern	unsigned char		*ValueToBinary(ValueStruct *val);
 extern	struct	tm	ValueToDateTime(ValueStruct *val);
 extern	struct	tm	ValueToDate(ValueStruct *val);
 extern	struct	tm	ValueToTime(ValueStruct *val);

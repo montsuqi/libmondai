@@ -52,8 +52,8 @@ typedef	struct {
 	Bool	fBinary;
 	char	*fsep;
 	char	*bsep;
-	size_t	(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
-	size_t	(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+	size_t	(*PackValue)(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+	size_t	(*UnPackValue)(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 }	ConvFuncs;
 
@@ -64,8 +64,8 @@ typedef	struct {
 #define	GLOBAL		extern
 #endif
 
-GLOBAL	size_t	(*PackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
-GLOBAL	size_t	(*UnPackValue)(CONVOPT *opt, byte *p, ValueStruct *value);
+GLOBAL	size_t	(*PackValue)(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+GLOBAL	size_t	(*UnPackValue)(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 GLOBAL	size_t	(*SizeValue)(CONVOPT *opt, ValueStruct *value);
 
 #undef	GLOBAL
@@ -78,7 +78,7 @@ extern	void		DestroyConvOpt(CONVOPT *opt);
 extern	size_t		EncodeLength(CONVOPT *opt, char *in);
 extern	void		ConvSetIndent(CONVOPT *opt, Bool v);
 extern	size_t		PutCR(CONVOPT *opt, char *p);
-extern	size_t		IndentLine(CONVOPT *opt, byte *p);
+extern	size_t		IndentLine(CONVOPT *opt, unsigned char *p);
 
 #define	ConvSetSize(opt,ts,rs)		(opt)->textsize = (ts), (opt)->arraysize = (rs)
 #define	ConvSetCodeset(opt,cod)		(opt)->codeset = (cod)
