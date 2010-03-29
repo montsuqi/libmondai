@@ -214,7 +214,7 @@ ENTER_FUNC;
 		  default:
 			ValueIsNil(value);
 			MonWarningPrintf("invalid type:%#X",ValueType(value));
-			return -1;
+			return 0;
 			break;
 		}
 	}
