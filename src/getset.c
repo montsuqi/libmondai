@@ -520,7 +520,7 @@ ENTER_FUNC;
 				ValueString(val) = (unsigned char *)xmalloc(size);
 			}
 			memclear(ValueString(val),ValueStringSize(val));
-			strcpy(ValueString(val),str);
+			strncpy(ValueString(val),str,size - 1);
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
