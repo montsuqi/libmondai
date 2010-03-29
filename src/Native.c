@@ -54,6 +54,7 @@ NativeUnPackValueNew(
 		,		*lower;
 	int		i;
 	size_t	size
+	,		count
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
@@ -66,6 +67,9 @@ ENTER_FUNC;
 	if (p != NULL &&
 		( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
 		value = *ret = NewValue(type);
+		if (value == NULL) {
+			return 0;
+		}
 		p += sizeof(PacketDataType);
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
@@ -167,7 +171,12 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativeUnPackValueNew(opt,p,&ValueArrayItem(value,i));
+				count = NativeUnPackValueNew(opt,p,&ValueArrayItem(value,i));
+				if (count == 0) {
+					ValueType(value) = GL_TYPE_NULL;
+					return 0;
+				}
+				p += count;
 				ValueParent(ValueArrayItem(value,i)) = value;
 				ValueIndex(ValueArrayItem(value,i)) = i;
 			}
@@ -181,7 +190,12 @@ ENTER_FUNC;
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				name = StrDup(p);
 				p += strlen(name)+1;
-				p += NativeUnPackValueNew(opt,p,&lower);
+				count = NativeUnPackValueNew(opt,p,&lower);
+				if (count == 0) {
+					ValueType(value) = GL_TYPE_NULL;
+					return 0;
+				}
+				p += count;
 				ValueRecordItem(value,i) = lower;
 				ValueRecordName(value,i) = name;
 				g_hash_table_insert(ValueRecordMembers(value),
@@ -199,6 +213,8 @@ ENTER_FUNC;
 			break;
 		  default:
 			ValueIsNil(value);
+			MonWarningPrintf("invalid type:%#X",ValueType(value));
+			return -1;
 			break;
 		}
 	}

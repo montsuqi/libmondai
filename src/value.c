@@ -137,6 +137,7 @@ ENTER_FUNC;
 		ValuePointer(ret) = NULL;
 		break;
 	  default:
+		MonWarningPrintf("invalid type:%#X", type);
 		xfree(ret);
 		ret = NULL;
 		break;

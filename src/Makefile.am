@@ -23,7 +23,7 @@ TESTSOAP  =  testsoap
 else
 TESTSOAP  =
 endif
-noinst_PROGRAMS = testfixed testconv testvalue testmem $(TESTSOAP)
+noinst_PROGRAMS = testfixed testconv testvalue testmem testNativePack $(TESTSOAP)
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -113,6 +113,9 @@ testconv_SOURCES	=		\
 
 testvalue_SOURCES	=		\
 	testvalue.c
+
+testNativePack_SOURCES	=		\
+	testNativePack.c
 
 if SOAP
 testsoap_SOURCES	=		\
