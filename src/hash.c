@@ -62,6 +62,12 @@ NameCompare(
 	gconstpointer	s1,
 	gconstpointer	s2)
 {
+	if (s1 == NULL) {
+		return -1;
+	}
+	if (s2 == NULL) {
+		return 1;
+	}
 	return	(!strcmp(s1,s2));
 }
 
