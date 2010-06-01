@@ -542,8 +542,7 @@ ENTER_FUNC;
 			do {
 				*p ++ = c;
 				c = GetChar(in);
-			}	while	(	(  isalpha(c)  )
-						||	(  isdigit(c)  )
+			}	while	(	(  isalnum(c)  )
 						||	(  c  ==  '_'  ) );
 			UnGetChar(in,c);
 			*p = 0;
@@ -562,8 +561,7 @@ ENTER_FUNC;
 				c = GetChar(in);
 				if		(  c  ==  '.'  )
 					fDot = TRUE;
-			}	while	(	(  isalpha(c)  )
-						||	(  isdigit(c)  )
+			}	while	(	(  isalnum(c)  )
 						||	(  c  ==  '.'  ) );
 			UnGetChar(in,c);
 			*p = 0;
