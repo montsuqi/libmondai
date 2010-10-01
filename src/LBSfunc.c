@@ -83,6 +83,8 @@ LBS_ReserveSize(
 			body = (unsigned char *)xmalloc(size);
 			if		(  fKeep  ) {
 				memcpy(body,lbs->body,lbs->size);
+			} else {
+				memclear(body,lbs->size);
 			}
 			if		(  lbs->body  !=  NULL  ) {
 				xfree(lbs->body);
