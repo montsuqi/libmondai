@@ -84,7 +84,7 @@ LBS_ReserveSize(
 			if		(  fKeep  ) {
 				memcpy(body,lbs->body,lbs->size);
 			} else {
-				memclear(body,lbs->size);
+				memclear(body,size);
 			}
 			if		(  lbs->body  !=  NULL  ) {
 				xfree(lbs->body);
