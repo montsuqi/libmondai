@@ -230,13 +230,13 @@ ENTER_FUNC;
 		if		(  ( in->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
+	in->fn = StrDup(name);
 	if		(  in->fp  !=  NULL  ) {
 		fstat(fileno(in->fp),&sb);
 		in->size = sb.st_size;
 		in->cLine = 1;
 		in->pos = 0;
 		in->body = NULL;
-		in->fn = StrDup(name);
 	} else {
 		fprintf(stderr,"include file %s not found.\n",fn);
 		ExitInclude(in);
