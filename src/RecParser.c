@@ -497,7 +497,7 @@ ENTER_FUNC;
 		ret = RecParseMain(in);
 		if		(	(  in->ValueName  !=  NULL  )
 				&&	(  ValueName      !=  NULL  ) ) {
-			*ValueName = StrDup(in->ValueName);
+			*ValueName = in->ValueName;
 		}
 		DropLexInfo(&in);
 	} else {
