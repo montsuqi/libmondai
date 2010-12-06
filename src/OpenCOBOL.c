@@ -77,12 +77,38 @@ IntegerCobol2C(
 #endif
 }
 
+#define COBOL_1_0
+#ifdef COBOL_1_0
+static	void
+FixedCobol2C(
+	char	*buff,
+	size_t	size)
+{
+	buff[size] = 0;
+	if (buff[size - 1] & 0x40) {
+		buff[0] |= 0x40;
+		buff[size - 1] ^= 0x40;
+	}
+}
+
+static	void
+FixedC2Cobol(
+	char	*buff,
+	size_t	size)
+{
+	if (buff[0] & 0x40) {
+		buff[0] ^= 0x40;
+		buff[size - 1] |= 0x40;
+	}
+}
+
+#else
+
 /*
   unsigned	0123456789
   plus		0123456789
   minus		@ABCDEFGHI
 */
-
 static	void
 FixedCobol2C(
 	char	*buff,
@@ -106,6 +132,7 @@ FixedC2Cobol(
 		buff[size - 1]  -= '0' - '@';
 	}
 }
+#endif
 
 extern	size_t
 OpenCOBOL_UnPackValue(

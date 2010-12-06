@@ -280,8 +280,60 @@ LBS_EmitString(
 	}
 }
 
+static GRegex *reg = NULL;
+
+static gboolean
+eval_cb1(
+	const GMatchInfo *info,
+	GString *res,
+	gpointer data)
+{
+	gchar *match;
+
+	match = g_match_info_fetch(info, 1);
+	if (!strcmp(match,"\xEF\xBC\x8D")) {
+		g_string_append (res, "\xE2\x88\x92");
+	} else if (!strcmp(match,"\xEF\xBD\x9E")) {
+		g_string_append (res, "\xE3\x80\x9C");
+	} else if (!strcmp(match,"\xE2\x88\xA5")) {
+		g_string_append (res, "\xE2\x80\x96");
+	} else if (!strcmp(match,"\xEF\xBF\xA0")) {
+		g_string_append (res, "\xC2\xA2");
+	} else if (!strcmp(match,"\xEF\xBF\xA1")) {
+		g_string_append (res, "\xC2\xA3");
+	} else if (!strcmp(match,"\xEF\xBF\xA2")) {
+		g_string_append (res, "\xC2\xAC");
+	}
+	g_free(match);
+	return FALSE;
+}
+
+static gchar*
+UTF8Normalize(
+	gchar *str)
+{
+	gchar *ret;
+
+	if (reg == NULL) {
+		reg = g_regex_new("([" 
+			"\xEF\xBC\x8D"
+			"\xEF\xBD\x9E"
+			"\xE2\x88\xA5"
+			"\xEF\xBF\xA0"
+			"\xEF\xBF\xA1"
+			"\xEF\xBF\xA2"
+			"])",0,0,NULL);
+	}
+
+	ret = g_regex_replace_eval(reg,str,-1,0,0,eval_cb1,NULL,NULL);
+	if (ret == NULL) {
+		ret = g_strdup(str);
+	}
+	return ret;
+}
+
 static int
-ConvertForIconv(
+ConvertForJISX0213(
     char *string)
 {
     int i;
@@ -385,7 +437,8 @@ LBS_EmitStringCodeset(
 	,			*istr
 	,			*buff
 	,			*buff2
-	,			*obuff;
+	,			*obuff
+	,			*nstr;
 	const char	*dummy;
 	size_t		sib
 		,		sob;
@@ -394,8 +447,8 @@ LBS_EmitStringCodeset(
 	,			len
 	,			i
 	,			j;
-	size_t	obsize
-		,	ssize;
+	size_t		obsize
+	,			ssize;
 #endif
 
 ENTER_FUNC;
@@ -404,9 +457,9 @@ ENTER_FUNC;
 		dummy = "\xE2\x96\xA0"; //■
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
+			istr =nstr =  UTF8Normalize(str);
+			sib = strlen(istr);
 			obsize = isize * 2 + 1;
-			istr = str;
-			sib = isize;
 			obuff = (char *)xmalloc(obsize);
 			oc = obuff;
 			sob = obsize;
@@ -415,7 +468,7 @@ ENTER_FUNC;
 					break;
 				}
 				if (errno == EILSEQ) {
-					if (!ConvertForIconv(istr)) {
+					if (!ConvertForJISX0213(istr)) {
 						len = CharLength(istr[0]);
 						if (len == 0) {
 							j = sib > 8 ? 8 : sib;
@@ -455,6 +508,7 @@ ENTER_FUNC;
 			memclear(LBS_Body(lbs),ssize);
 			memcpy(LBS_Body(lbs),obuff,ssize);
 			xfree(obuff);
+			g_free(nstr);
 			iconv_close(cd);
 		} else {
 #endif
