@@ -447,8 +447,7 @@ ENTER_FUNC;
 				LBS_EmitChar(lbs,c);
 			}
 			LBS_EmitEnd(lbs);
-			in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-			strcpy(in->Symbol,LBS_Body(lbs));
+			in->Symbol = StrDup(LBS_Body(lbs));
 			FreeLBS(lbs);
 			in->Token = T_RCONST;
 		} else {
@@ -546,8 +545,7 @@ ENTER_FUNC;
 						||	(  c  ==  '_'  ) );
 			UnGetChar(in,c);
 			*p = 0;
-			in->Symbol = (char *)xmalloc(strlen(buff)+1);
-			strcpy(in->Symbol,buff);
+			in->Symbol = StrDup(buff);
 			if		(  type  ==  LEX_GET_SYMBOL  ) {
 				in->Token = CheckReserved(in,in->Symbol);
 			} else {
@@ -565,8 +563,7 @@ ENTER_FUNC;
 						||	(  c  ==  '.'  ) );
 			UnGetChar(in,c);
 			*p = 0;
-			in->Symbol = (char *)xmalloc(strlen(buff)+1);
-			strcpy(in->Symbol,buff);
+			in->Symbol = StrDup(buff);
 			if		(  fDot  ) {
 				in->Token = T_NCONST;
 			} else {
