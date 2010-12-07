@@ -70,10 +70,12 @@ StrDup(
 	char	*s)
 {
 	char	*str;
-
+	size_t	length;
+	
 	if		(  s  !=  NULL  ) {
-		str = xmalloc(strlen(s)+1);
-		strcpy(str,s);
+		length = strlen(s)+1;
+		str = xmalloc(length);
+		memcpy(str, s, length);
 	} else {
 		str = NULL;
 	}
