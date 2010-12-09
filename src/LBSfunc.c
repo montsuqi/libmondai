@@ -458,7 +458,7 @@ ENTER_FUNC;
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
 			istr =nstr =  UTF8Normalize(str);
-			sib = strlen(istr);
+			sib = strlen(istr) + 1;
 			obsize = isize * 2 + 1;
 			obuff = (char *)xmalloc(obsize);
 			oc = obuff;
