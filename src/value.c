@@ -1195,6 +1195,9 @@ DuplicateValue(
 				ValueRecordItem(p,i) = 
 					DuplicateValue(ValueRecordItem(template,i),fCopy);
 				ValueRecordName(p,i) = StrDup(ValueRecordName(template,i));
+				if (g_hash_table_lookup(ValueRecordMembers(p),ValueRecordName(p,i)) != NULL) {
+					MonWarningPrintf("duplicate value:%s", ValueRecordName(p,i));
+				}
 				g_hash_table_insert(ValueRecordMembers(p),
 									(gpointer)ValueRecordName(p,i),
 									(gpointer)((long)i+1));
@@ -1237,7 +1240,7 @@ ValueAddRecordItem(
 	size_t		nsize;
 
 ENTER_FUNC;
-	dbgprintf("name = [%s]\n",name); 
+	dbgprintf("name = [%s]\n",name);
 	nsize = ValueRecordSize(upper) + 1;
 	items = (ValueStruct **)
 		xmalloc(sizeof(ValueStruct *) * nsize);
@@ -1262,8 +1265,7 @@ ENTER_FUNC;
 								(gpointer)dname,
 								(gpointer)(ValueRecordSize(upper)+1));
 		} else {
-			printf("name = [%s]\t",name);
-			Error("name duplicate");
+			Error("name duplicate [%s]",name);
 		}
 	}
 	ValueRecordItems(upper) = items;

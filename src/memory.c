@@ -77,6 +77,9 @@ _xmalloc(
 	}
 	g_int_hash_table_insert(PoolHash,ret,sizea);
 #else
+	if		(  size <= 0  ) {
+		MonErrorPrintf("malloc size 0 %s(%d)",fn,line);
+	}
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
 		MonErrorPrintf("no memory space!! %s(%d)",fn,line);
 	}
