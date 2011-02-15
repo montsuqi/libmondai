@@ -99,6 +99,7 @@ static	TokenTable	tokentable[] = {
 };
 
 static	GHashTable	*Reserved;
+static	GHashTable	*ParsedRec;
 
 extern	void
 SetValueAttribute(
@@ -440,6 +441,7 @@ RecParserInit(void)
 {
 	LexInit();
 	Reserved = MakeReservedTable(tokentable);
+	ParsedRec = NewNameHash();
 }
 
 extern	ValueStruct	*
@@ -469,6 +471,8 @@ ENTER_FUNC;
 			GetName;
 			ParValueDefines(in,ret);
 			if		(  in->fError  ) {
+				Error("syntax error");
+				FreeValueStruct(ret);
 				ret = NULL;
 			}
 		} else {
@@ -490,19 +494,27 @@ RecParseValue(
 	ValueStruct	*ret;
 	CURFILE		*in
 		,		root;
-
+	
 ENTER_FUNC;
 	root.next = NULL;
-	if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = RecParseMain(in);
-		if		(	(  in->ValueName  !=  NULL  )
-				&&	(  ValueName      !=  NULL  ) ) {
-			*ValueName = StrDup(in->ValueName);
+	if ( (ret  = g_hash_table_lookup(ParsedRec, name)) ==  NULL  ){
+		if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
+			ret = RecParseMain(in);
+			if		(	(  in->ValueName  !=  NULL  )
+							&&	(  ValueName      !=  NULL  ) ) {
+				*ValueName = StrDup(in->ValueName);
+			}
+			DropLexInfo(&in);
+			g_hash_table_insert(ParsedRec, StrDup(name), ret);
+		} else {
+			ret = NULL;
 		}
-		DropLexInfo(&in);
 	} else {
-		ret = NULL;
+		if		(	ValueName !=  NULL ) {
+			*ValueName = GetValueName(ret);
+		}
 	}
+	
 LEAVE_FUNC;
 	return	(ret);
 }
