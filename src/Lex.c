@@ -68,7 +68,6 @@ NewCURFILE(
 	info->ftop = NULL;
 	info->Reserved = res;
 	info->fError = FALSE;
-	info->ValueName = NULL;
 	info->path = path;
 	info->Symbol = NULL;
 	info->ValueName = NULL;
@@ -256,7 +255,7 @@ MakeReservedTable(
 {
 	int		i;
 	GHashTable	*res;
-	
+
 ENTER_FUNC;
 	res = NewNameiHash();
 	for	( i = 0 ; table[i].token  !=  0 ; i ++ ) {
@@ -420,12 +419,14 @@ Lex(
 	int		type)
 {
 	int		c;
+	int		i;
 	char	*p;
-	char	buff[SIZE_BUFF];
+	char	buff[SIZE_SYMBOL];
 	Bool	fDot;
 	LargeByteString	*lbs;
 
 ENTER_FUNC;
+	lbs = NewLBS();
   retry:
 	if		(  in->Symbol  !=  NULL  ) {
 		xfree(in->Symbol);
@@ -439,7 +440,7 @@ ENTER_FUNC;
 		break;
 	  case	'/':
 		if		(  type  ==  LEX_GET_STRING  ) {
-			lbs = NewLBS();
+			RewindLBS(lbs);
 			while	(  ( c = GetChar(in) )  !=  '/'  ) {
 				if		(  c  ==  '\\'  ) {
 					c = GetChar(in);
@@ -448,7 +449,6 @@ ENTER_FUNC;
 			}
 			LBS_EmitEnd(lbs);
 			in->Symbol = StrDup(LBS_Body(lbs));
-			FreeLBS(lbs);
 			in->Token = T_RCONST;
 		} else {
 			if		(  ( c = GetChar(in) )  !=  '*'  ) {
@@ -465,7 +465,7 @@ ENTER_FUNC;
 		}
 		break;
 	  case	'"':
-		lbs = NewLBS();
+		RewindLBS(lbs);
 		while	(  ( c = GetChar(in) )  !=  '"'  ) {
 			if		(  c  ==  '\\'  ) {
 				c = GetChar(in);
@@ -473,9 +473,7 @@ ENTER_FUNC;
 			LBS_EmitChar(lbs,c);
 		}
 		LBS_EmitEnd(lbs);
-		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-		strcpy(in->Symbol,LBS_Body(lbs));
-		FreeLBS(lbs);
+		in->Symbol = StrDup(LBS_Body(lbs));
 		in->Token = T_SCONST;
 		break;
 	  case	'\'':
@@ -487,9 +485,7 @@ ENTER_FUNC;
 			LBS_EmitChar(lbs,c);
 		}
 		LBS_EmitEnd(lbs);
-		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-		strcpy(in->Symbol,LBS_Body(lbs));
-		FreeLBS(lbs);
+		in->Symbol = StrDup(LBS_Body(lbs));
 		in->Token = T_SCONST;
 		break;
 	  case	'<':
@@ -538,11 +534,13 @@ ENTER_FUNC;
 		p = buff;
 		if		(	(  isalpha(c)  )
 				||	(  c  ==  '_'  ) ) {
+			i = 0;
 			do {
 				*p ++ = c;
 				c = GetChar(in);
-			}	while	(	(  isalnum(c)  )
-						||	(  c  ==  '_'  ) );
+				i ++;
+			}	while	( (  (  isalnum(c)  ) || (  c  ==  '_'  )  )
+								&&  ( i  < sizeof(buff) ) );
 			UnGetChar(in,c);
 			*p = 0;
 			in->Symbol = StrDup(buff);
@@ -554,13 +552,15 @@ ENTER_FUNC;
 		} else
 		if		(  isdigit(c) )	{
 			fDot = FALSE;
+			i = 0;
 			do {
 				*p ++ = c;
 				c = GetChar(in);
+				i ++;
 				if		(  c  ==  '.'  )
 					fDot = TRUE;
-			}	while	(	(  isalnum(c)  )
-						||	(  c  ==  '.'  ) );
+			}	while	(  ( (  isalnum(c)  ) || (  c  ==  '.'  ) )
+								 &&  (  i < sizeof(buff) ) );
 			UnGetChar(in,c);
 			*p = 0;
 			in->Symbol = StrDup(buff);
@@ -587,6 +587,7 @@ ENTER_FUNC;
 		}
 		break;
 	}
+	FreeLBS(lbs);
 dbgmsg("*");
 #ifdef	DEBUG
 	DumpCURFILE(in);
