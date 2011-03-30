@@ -160,6 +160,7 @@ typedef	struct _ValueStruct	{
 #define	GL_OBJ_NULL				0
 
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
+#define	IS_VALUE_ARRAY(v)		((v)->type == GL_TYPE_ARRAY)
 #define	IS_VALUE_NUMERIC(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
 #define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
 #define	IS_VALUE_BITS(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_BITS)
