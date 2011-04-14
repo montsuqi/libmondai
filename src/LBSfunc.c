@@ -509,7 +509,6 @@ ENTER_FUNC;
 			*oc = 0;
 			ssize = obsize - sob + 1;
 			LBS_ReserveSize(lbs,ssize,FALSE);
-			memclear(LBS_Body(lbs),ssize);
 			memcpy(LBS_Body(lbs),obuff,ssize);
 			xfree(obuff);
 			g_free(nstr);
