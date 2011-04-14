@@ -453,6 +453,10 @@ LBS_EmitStringCodeset(
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
+		if		(	str == NULL	) {
+			LBS_ReserveSize(lbs,1,FALSE);
+			return;
+		}
 #ifdef	WITH_I18N
 		dummy = "\xE2\x96\xA0"; //■
 		if		(  codeset  !=  NULL  ) {
