@@ -436,7 +436,6 @@ LBS_EmitStringCodeset(
 	char		*oc
 	,			*istr
 	,			*buff
-	,			*buff2
 	,			*obuff
 	,			*nstr;
 	const char	*dummy;
@@ -444,9 +443,7 @@ LBS_EmitStringCodeset(
 		,		sob;
 	iconv_t		cd;
 	int			rc
-	,			len
-	,			i
-	,			j;
+	,			i;
 	size_t		obsize
 	,			ssize;
 #endif
@@ -473,33 +470,24 @@ ENTER_FUNC;
 				}
 				if (errno == EILSEQ) {
 					if (!ConvertForJISX0213(istr)) {
-						len = CharLength(istr[0]);
-						if (len == 0) {
-							j = sib > 8 ? 8 : sib;
-							buff = buff2 = xmalloc(j * 3 + 1);
-							for (i = 0; i < j; i++) {
-								sprintf(buff2, "%02X,", istr[i]);
-								buff2 += 3;
-							}
-							MonWarningPrintf("iconv EILSEQ,invalid UTF8 char:%s",buff);
-							xfree(buff);
-							break;
+						buff = xmalloc(sib * 4 + 1);
+						for (i = 0;i < sib; i++) {
+							sprintf(buff + i * 4, "\\x%02X", istr[i]);
 						}
-						buff = StrnDup(istr, len);
 						MonWarningPrintf("iconv EILSEQ:%s", buff);
 						xfree(buff);
-						istr += len - strlen(dummy);
-						sib += sib + len - strlen(dummy);
-						memcpy(istr,dummy,strlen(dummy));
+
+						*istr = 0;
+						sib = 1;
 					}
 				} else if (errno == E2BIG){
 					xfree(obuff);
 					MonWarningPrintf("iconv failure %s", strerror(errno));
 					break;
 				} else {
-					buff = xmalloc(sib * 3 + 1);
+					buff = xmalloc(sib * 4 + 1);
 					for (i = 0;i < sib; i++) {
-						sprintf(buff + i * 3, "%02X,", istr[i]);
+						sprintf(buff + i * 4, "\\x%02X", istr[i]);
 					}
 					MonWarningPrintf("iconv failure %d str:%s", errno, buff);
 					xfree(buff);
