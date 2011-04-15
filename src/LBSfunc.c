@@ -338,6 +338,7 @@ ConvertForJISX0213(
 {
     int i;
     const char *table[][2] = {
+{"\xE2\x80\x95","\xE2\x80\x94"},//―、—
 {"\xEF\xBC\x8D","\xE2\x88\x92"},//－,−
 {"\xE4\xBB\xBC","\xE2\x96\xA0"},//仼
 {"\xE5\x9D\x99","\xE2\x96\xA0"},//坙,■
