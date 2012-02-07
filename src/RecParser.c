@@ -276,6 +276,8 @@ ENTER_FUNC;
 				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 				memclear(ValueByte(value),ValueByteSize(value));
 				break;
+			  case GL_TYPE_OBJECT:
+				break;
 			  default:
 				if		(  fExpandable  ) {
 					ValueIsExpandable(value);

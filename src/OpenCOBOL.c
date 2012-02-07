@@ -142,11 +142,10 @@ OpenCOBOL_UnPackValue(
 {
 	int		i;
 	char	buff[SIZE_NUMBUF+1];
-	unsigned char	*str;
 	unsigned char	*q;
 
 ENTER_FUNC;
-	q = p; 
+	q = p;
 	if		(  value  !=  NULL  ) {
 		ValueIsNonNil(value);
 		switch	(ValueType(value)) {
@@ -176,32 +175,21 @@ ENTER_FUNC;
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_BINARY:
-			str = (unsigned char *)xmalloc((opt->textsize)*sizeof(unsigned char));
-			memcpy(str,p,opt->textsize);
+			SetValueBinary(value,p,opt->textsize);
 			p += opt->textsize;
-			SetValueBinary(value,str,opt->textsize);
-			xfree(str);
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			str = (unsigned char *)xmalloc((opt->textsize+1)*sizeof(char));
-			memcpy(str,p,opt->textsize);
-			str[opt->textsize] = 0;
+			SetValueStringWithLength(value,p,opt->textsize,ConvCodeset(opt));
+			StringCobol2C(ValueStringPointer(value),opt->textsize);
 			p += opt->textsize;
-			StringCobol2C(str,opt->textsize);
-			SetValueString(value,str,ConvCodeset(opt));
-			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (unsigned char *)xmalloc((ValueStringLength(value)+1)*sizeof(unsigned char));
-			memcpy(str,p,ValueStringLength(value));
-			str[ValueStringLength(value)] = 0;
+			SetValueStringWithLength(value,p,ValueStringLength(value),ConvCodeset(opt));
+			StringCobol2C(ValueStringPointer(value),ValueStringLength(value));
 			p += ValueStringLength(value);
-			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,ConvCodeset(opt));
-			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
 			memcpy(buff,p,ValueFixedLength(value));
@@ -297,7 +285,6 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			memclear(p,opt->textsize);
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
 			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
 			StringC2Cobol(p,opt->textsize);
