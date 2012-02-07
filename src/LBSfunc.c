@@ -280,6 +280,16 @@ LBS_EmitString(
 	}
 }
 
+extern	void
+LBS_String(
+	LargeByteString	*lbs,
+	char			*str)
+{
+	LBS_EmitStart(lbs);
+	LBS_EmitString(lbs, str);
+	LBS_EmitEnd(lbs);
+}
+
 static GRegex *reg = NULL;
 
 static gboolean
@@ -656,4 +666,5 @@ LBS_Duplicate(
 	}
 	return	(ret);
 }
+
 

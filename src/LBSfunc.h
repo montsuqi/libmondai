@@ -40,6 +40,7 @@ extern	void			LBS_Seek(LargeByteString *lbs,size_t off, int whence);
 extern	void			LBS_EmitStart(LargeByteString *lbs);
 extern	void			LBS_Emit(LargeByteString *lbs, unsigned char code);
 extern	void			LBS_EmitString(LargeByteString *lbs, char *str);
+extern	void			LBS_String(LargeByteString *lbs, char *str);
 extern	void			LBS_EmitStringCodeset(LargeByteString *lbs, char *str,
 											  size_t isize, size_t osize, char *codeset);
 extern	void			LBS_EmitPointer(LargeByteString *lbs, void *p);
