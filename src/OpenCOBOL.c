@@ -163,7 +163,11 @@ ENTER_FUNC;
 			p ++;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectId(value) = *(MonObjectType *)p;
+			if (IsCobolSpace(p, sizeof(ValueObjectId(value)))){
+				ValueObjectId(value) = NULL;
+			} else {
+				ValueObjectId(value) = *(MonObjectType *)p;
+			}
 			p += sizeof(ValueObjectId(value));
 			if		(  ValueObjectFile(value)  !=  NULL  ) {
 				xfree(ValueObjectFile(value));

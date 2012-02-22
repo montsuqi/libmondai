@@ -67,7 +67,6 @@ StringC2Cobol(
 	char	*p,
 	size_t	size)
 {
-	int		i;
 	size_t		left;
 
 	left = size;
@@ -77,5 +76,20 @@ StringC2Cobol(
 	}
 	memset(p, ' ', left);
 	p += left;
+}
+
+extern	Bool
+IsCobolSpace(
+	char	*str,
+	size_t	size)
+{
+	char	*p;
+	
+	for	( p = str + size - 1 ; p >= str ; p -- ) {
+		if		(  *p  !=  ' '  ) {
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
