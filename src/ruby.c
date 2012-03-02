@@ -473,7 +473,7 @@ recval_get_field(VALUE self)
     VALUE obj;
     value_struct_data *data;
     ValueStruct *val;
-    char *name = rb_id2name(ruby_frame->last_func);
+    char *name = (char*)rb_id2name(ruby_frame->last_func);
 
     Data_Get_Struct(self, value_struct_data, data);
 
@@ -492,7 +492,7 @@ recval_set_field(VALUE self, VALUE obj)
 {
     value_struct_data *data;
     ValueStruct *val;
-    char *s = rb_id2name(ruby_frame->last_func);
+    char *s = (char*)rb_id2name(ruby_frame->last_func);
     VALUE name;
 
     name = rb_str_new(s, strlen(s) - 1);
@@ -503,6 +503,55 @@ recval_set_field(VALUE self, VALUE obj)
         rb_raise(rb_eArgError, "no such field: %s", StringValuePtr(name));
     set_value(val, obj);
     return obj;
+}
+
+static VALUE
+recval_native_pack(VALUE self)
+{
+    value_struct_data *data;
+    LargeByteString *lbs;
+    size_t size;
+    VALUE packed;
+
+    Data_Get_Struct(self, value_struct_data, data);
+
+    lbs = NewLBS();
+    size = NativeSizeValue(NULL,data->value);
+	LBS_ReserveSize(lbs,size,FALSE);
+    NativePackValue(NULL,LBS_Body(lbs),data->value);
+    packed = rb_str_new(LBS_Body(lbs),size);
+    FreeLBS(lbs);
+
+    return packed;
+}
+
+static VALUE
+recval_native_unpack(VALUE self,VALUE packed)
+{
+    value_struct_data *data;
+
+    Data_Get_Struct(self, value_struct_data, data);
+	NativeUnPackValue(NULL,RSTRING(packed)->ptr,data->value);
+    return self;
+}
+
+static VALUE
+recval_children_longnames(VALUE self)
+{
+    value_struct_data *data;
+    GList *list;
+    VALUE ret;
+    VALUE str;
+
+    ret = rb_ary_new();
+
+    Data_Get_Struct(self, value_struct_data, data);
+	list = GetChildrenLongNames(NULL,data->value);
+    for(;list != NULL;list=list->next) {
+       str = rb_str_new2((char*)list->data);
+       rb_ary_push(ret,str);
+    }
+    return ret;
 }
 
 extern	void
@@ -524,6 +573,9 @@ ENTER_FUNC;
     rb_define_method(cRecordValue, "clear", recval_clear, 0);
     rb_define_method(cRecordValue, "[]", recval_aref, 1);
     rb_define_method(cRecordValue, "[]=", recval_aset, 2);
+    rb_define_method(cRecordValue, "native_pack",recval_native_pack,0);
+    rb_define_method(cRecordValue, "native_unpack",recval_native_unpack,1);
+	rb_define_method(cRecordValue, "children_longnames", recval_children_longnames,0);
 
 	RecParserInit();
     codeset = "utf-8";

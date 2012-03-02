@@ -265,5 +265,6 @@ extern	Bool		EqualValue(ValueStruct *vl, ValueStruct *vr);
 
 extern	void		AssignValue(ValueStruct *to, ValueStruct *from);
 extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
+extern	GList*		GetChildrenLongNames(GList *,ValueStruct *);
 
 #endif

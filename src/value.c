@@ -257,8 +257,8 @@ ENTER_FUNC;
 			if (lname == NULL) {
 				lname = name;
 			} else {
-				tmp = xmalloc(1024);
-				snprintf(tmp, 1024, "%s.%s", name , lname);
+				tmp = xmalloc(SIZE_LONGNAME+1);
+				snprintf(tmp, SIZE_LONGNAME, "%s.%s", name , lname);
 				xfree(name);
 				xfree(lname);
 				lname = tmp;
@@ -1305,3 +1305,27 @@ ENTER_FUNC;
 LEAVE_FUNC;
 }
 
+extern	GList*
+GetChildrenLongNames(
+	GList *list,
+	ValueStruct *val)
+{
+	int i;
+
+	switch	(ValueType(val)) {
+	case GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+			list = GetChildrenLongNames(list,ValueArrayItem(val,i));
+		}
+		break;
+	case GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+			list = GetChildrenLongNames(list,ValueRecordItem(val,i));
+		}
+		break;
+	default:
+		list = g_list_append(list,GetValueLongName(val));
+		break;
+	}
+	return list;
+}
