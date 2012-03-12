@@ -460,7 +460,7 @@ recval_aset(VALUE self, VALUE name, VALUE obj)
     ValueStruct *val;
 
     Data_Get_Struct(self, value_struct_data, data);
-    val = GetRecordItem(data->value, StringValuePtr(name));
+    val = GetItemLongName(data->value, StringValuePtr(name));
     if (val == NULL)
         rb_raise(rb_eArgError, "no such field: %s", StringValuePtr(name));
     set_value(val, obj);
