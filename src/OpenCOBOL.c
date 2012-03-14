@@ -164,7 +164,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_OBJECT:
 			if (IsCobolSpace(p, sizeof(ValueObjectId(value)))){
-				ValueObjectId(value) = NULL;
+				ValueObjectId(value) = 0;
 			} else {
 				ValueObjectId(value) = *(MonObjectType *)p;
 			}
