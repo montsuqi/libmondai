@@ -184,15 +184,15 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
+			StringCobol2C(p,opt->textsize);
 			SetValueStringWithLength(value,p,opt->textsize,ConvCodeset(opt));
-			StringCobol2C(ValueStringPointer(value),ValueStringLength(value));
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
+			StringCobol2C(p,ValueStringLength(value));
 			SetValueStringWithLength(value,p,ValueStringLength(value),ConvCodeset(opt));
-			StringCobol2C(ValueStringPointer(value),ValueStringLength(value));
 			p += ValueStringLength(value);
 			break;
 		  case	GL_TYPE_NUMBER:
