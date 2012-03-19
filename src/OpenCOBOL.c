@@ -185,7 +185,7 @@ ENTER_FUNC;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			SetValueStringWithLength(value,p,opt->textsize,ConvCodeset(opt));
-			StringCobol2C(ValueStringPointer(value),opt->textsize);
+			StringCobol2C(ValueStringPointer(value),ValueStringLength(value));
 			p += opt->textsize;
 			break;
 		  case	GL_TYPE_CHAR:

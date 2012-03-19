@@ -449,7 +449,6 @@ LBS_EmitStringCodeset(
 	,			*buff
 	,			*obuff
 	,			*nstr;
-	const char	*dummy;
 	size_t		sib
 		,		sob;
 	iconv_t		cd;
@@ -466,7 +465,6 @@ ENTER_FUNC;
 			return;
 		}
 #ifdef	WITH_I18N
-		dummy = "\xE2\x96\xA0"; //■
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
 			istr =nstr =  UTF8Normalize(str);
