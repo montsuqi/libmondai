@@ -70,28 +70,37 @@ FreeLBS(
 	}
 }
 
+extern void
+LBS_Glown(
+	LargeByteString *lbs,
+	size_t			size,
+	Bool			fKeep)
+{
+	unsigned char   *body;
+	
+	if ( lbs->asize < size ) {
+		body = (unsigned char *)xmalloc(size);
+		if (  fKeep  ) {
+			memcpy(body,lbs->body,lbs->size);
+		} else {
+			memclear(body,size);
+		}
+		if		(  lbs->body  !=  NULL  ) {
+			xfree(lbs->body);
+		}
+		lbs->body = body;
+		lbs->asize = size;
+	}
+}
+
 extern	void
 LBS_ReserveSize(
 	LargeByteString	*lbs,
 	size_t			size,
 	Bool			fKeep)
 {
-	unsigned char	*body;
-
 	if		(  lbs  !=  NULL  ) {
-		if		(  lbs->asize  <  size  ) {
-			body = (unsigned char *)xmalloc(size);
-			if		(  fKeep  ) {
-				memcpy(body,lbs->body,lbs->size);
-			} else {
-				memclear(body,size);
-			}
-			if		(  lbs->body  !=  NULL  ) {
-				xfree(lbs->body);
-			}
-			lbs->body = body;
-			lbs->asize = size;
-		}
+		LBS_Glown(lbs, size, fKeep);
 		lbs->size = size;
 		lbs->ptr = size;
 	}
@@ -229,34 +238,13 @@ LBS_EmitStart(
 }
 
 extern	void
-LBS_Glown(
-	LargeByteString	*lbs,
-	size_t		size)
-{
-	unsigned char	*body;
-	
-	if ( lbs->asize < size ) {
-		body = (unsigned char *)xmalloc(size);
-		if		(  lbs->body  !=  NULL  ) {
-			memcpy(body,lbs->body,lbs->ptr);
-			xfree(lbs->body);
-		} else {
-			memclear(body,size);
-		}
-		lbs->asize = size;
-		lbs->body = body;
-	}
-	
-}
-
-extern	void
 LBS_Emit(
 	LargeByteString	*lbs,
 	unsigned char			code)
 {
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->ptr  ==  lbs->asize  ) {
-			LBS_Glown(lbs, lbs->asize + SIZE_GLOWN);
+			LBS_Glown(lbs, lbs->asize + SIZE_GLOWN, TRUE);
 		}
 		lbs->body[lbs->ptr] = code;
 		lbs->ptr ++;
@@ -270,7 +258,7 @@ extern	void
 LBS_EmitEnd(
 	LargeByteString	*lbs)
 {
-	LBS_Glown(lbs, lbs->size + 1);
+	LBS_Glown(lbs, lbs->size + 1, TRUE);
 	LBS_Emit(lbs,0);
 }
 
@@ -468,7 +456,6 @@ LBS_EmitStringCodeset(
 	char		*oc
 	,			*istr
 	,			*buff
-	,			*obuff
 	,			*nstr;
 	size_t		sib
 		,		sob;
@@ -481,8 +468,7 @@ LBS_EmitStringCodeset(
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
-		if		(	str == NULL	) {
-			LBS_ReserveSize(lbs,1,FALSE);
+		if		( (str == NULL) || (strlen(str) == 0 ) ){
 			return;
 		}
 #ifdef	WITH_I18N
@@ -491,8 +477,8 @@ ENTER_FUNC;
 			istr =nstr =  UTF8Normalize(str);
 			sib = strlen(istr) + 1;
 			obsize = isize * 2 + 1;
-			obuff = (char *)xmalloc(obsize);
-			oc = obuff;
+			LBS_ReserveSize(lbs, obsize, TRUE);
+			oc = (char *)LBS_Body(lbs);
 			sob = obsize;
 			while	(TRUE) {
 				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	{
@@ -511,7 +497,6 @@ ENTER_FUNC;
 						sib = 1;
 					}
 				} else if (errno == E2BIG){
-					xfree(obuff);
 					MonWarningPrintf("iconv failure %s", strerror(errno));
 					break;
 				} else {
@@ -526,20 +511,15 @@ ENTER_FUNC;
 			}
 			*oc = 0;
 			ssize = obsize - sob + 1;
-			LBS_ReserveSize(lbs,ssize,FALSE);
-			memcpy(LBS_Body(lbs),obuff,ssize);
-			xfree(obuff);
+			lbs->size = ssize;
+			lbs->ptr = lbs->size;
 			g_free(nstr);
 			iconv_close(cd);
 		} else {
 #endif
-			while	(  isize  >  0  )	{
-				LBS_Emit(lbs,*str);
-				str ++;
-				isize --;
-				osize --;
-				if		(  osize  ==  0  )	break;
-			}
+			printf("lbs %d:%s\n", isize, str);
+			LBS_ReserveSize(lbs, isize, FALSE);
+			memcpy(lbs->body, str, isize);
 #ifdef	WITH_I18N
 		}
 #endif
