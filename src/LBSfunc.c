@@ -229,21 +229,34 @@ LBS_EmitStart(
 }
 
 extern	void
+LBS_Glown(
+	LargeByteString	*lbs,
+	size_t		size)
+{
+	unsigned char	*body;
+	
+	if ( lbs->asize < size ) {
+		body = (unsigned char *)xmalloc(size);
+		if		(  lbs->body  !=  NULL  ) {
+			memcpy(body,lbs->body,lbs->ptr);
+			xfree(lbs->body);
+		} else {
+			memclear(body,size);
+		}
+		lbs->asize = size;
+		lbs->body = body;
+	}
+	
+}
+
+extern	void
 LBS_Emit(
 	LargeByteString	*lbs,
 	unsigned char			code)
 {
-	unsigned char	*body;
-
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->ptr  ==  lbs->asize  ) {
-			lbs->asize += SIZE_GLOWN;
-			body = (unsigned char *)xmalloc(lbs->asize);
-			if		(  lbs->body  !=  NULL  ) {
-				memcpy(body,lbs->body,lbs->ptr);
-				xfree(lbs->body);
-			}
-			lbs->body = body;
+			LBS_Glown(lbs, lbs->asize + SIZE_GLOWN);
 		}
 		lbs->body[lbs->ptr] = code;
 		lbs->ptr ++;
@@ -251,6 +264,14 @@ LBS_Emit(
 			lbs->size = lbs->ptr;
 		}
 	}
+}
+
+extern	void
+LBS_EmitEnd(
+	LargeByteString	*lbs)
+{
+	LBS_Glown(lbs, lbs->size + 1);
+	LBS_Emit(lbs,0);
 }
 
 extern	void
@@ -587,16 +608,18 @@ LBS_EmitFix(
 	unsigned char	*body;
 
  	if		(  lbs  !=  NULL  ) {
-		if		(  lbs->size  >  0  ) {
-			body = (unsigned char *)xmalloc(lbs->size);
-			memcpy(body,lbs->body,lbs->size);
-			xfree(lbs->body);
-			lbs->body = body;
-		} else {
-			xfree(lbs->body);
-			lbs->body = NULL;
+		if ( lbs->asize != lbs->size ) {
+			if		(  lbs->size  >  0  ) {
+				body = (unsigned char *)xmalloc(lbs->size);
+				memcpy(body,lbs->body,lbs->size);
+				xfree(lbs->body);
+				lbs->body = body;
+			} else {
+				xfree(lbs->body);
+				lbs->body = NULL;
+			}
+			lbs->asize = lbs->size;
 		}
-		lbs->asize = lbs->size;
 		lbs->ptr = 0;
 	}
 }

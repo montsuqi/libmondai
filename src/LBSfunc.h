@@ -38,7 +38,9 @@ extern	void			FreeLBS(LargeByteString *lbs);
 extern	void			LBS_ReserveSize(LargeByteString *lbs, size_t size, Bool fKeep);
 extern	void			LBS_Seek(LargeByteString *lbs,size_t off, int whence);
 extern	void			LBS_EmitStart(LargeByteString *lbs);
+extern	void			LBS_Glown(LargeByteString *lbs, size_t size);
 extern	void			LBS_Emit(LargeByteString *lbs, unsigned char code);
+extern	void			LBS_EmitEnd(LargeByteString *lbs);
 extern	void			LBS_EmitString(LargeByteString *lbs, char *str);
 extern	void			LBS_String(LargeByteString *lbs, char *str);
 extern	void			LBS_EmitStringCodeset(LargeByteString *lbs, char *str,
@@ -65,7 +67,6 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitChar(lbs,c)		LBS_Emit((lbs),(c))
-#define	LBS_EmitEnd(lbs)		LBS_Emit((lbs),0);
 #define	LBS_Clear(lbs)			LBS_EmitStart(lbs)
 #define	LBS_Size(lbs)			(((LargeByteString *)(lbs))->size)
 #define	LBS_StringLength(lbs)	LBS_Size(lbs)
