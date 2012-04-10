@@ -517,7 +517,6 @@ ENTER_FUNC;
 			iconv_close(cd);
 		} else {
 #endif
-			printf("lbs %d:%s\n", isize, str);
 			LBS_ReserveSize(lbs, isize, FALSE);
 			memcpy(lbs->body, str, isize);
 #ifdef	WITH_I18N
