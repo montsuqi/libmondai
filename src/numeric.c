@@ -1853,7 +1853,7 @@ ApplyPrecision(
 
 		if (tweight >= maxweight && i < var->ndigits)
 			fprintf(stderr, "overflow on numeric "
-			  "ABS(value) >= 10^%d for field with precision %d scale %d",
+			  "ABS(value) >= 10^%d for field with precision %d scale %d\n",
 				 tweight, precision, scale);
 	}
 
