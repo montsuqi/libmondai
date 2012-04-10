@@ -258,8 +258,10 @@ extern	void
 LBS_EmitEnd(
 	LargeByteString	*lbs)
 {
-	LBS_Glown(lbs, lbs->size + 1, TRUE);
-	LBS_Emit(lbs,0);
+	if ( (lbs->ptr == 0) || (lbs->body[lbs->ptr - 1] != '\0') ) {
+		LBS_Glown(lbs, lbs->size + 1, TRUE);
+		LBS_Emit(lbs,0);
+	}
 }
 
 extern	void
@@ -517,8 +519,10 @@ ENTER_FUNC;
 			iconv_close(cd);
 		} else {
 #endif
-			LBS_ReserveSize(lbs, isize, FALSE);
+			LBS_Glown(lbs, isize + 1, FALSE);
 			memcpy(lbs->body, str, isize);
+			lbs->size = isize;
+			lbs->ptr = lbs->size;
 #ifdef	WITH_I18N
 		}
 #endif
