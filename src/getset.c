@@ -395,7 +395,9 @@ ENTER_FUNC;
 		  default:
 			break;
 		}
-		LBS_EmitEnd(ValueStr(val));
+		if (ValueStr(val)->size != 0) {
+			LBS_EmitEnd(ValueStr(val));
+		}
 		ret = ValueStr(val);
 	}
 LEAVE_FUNC;
@@ -412,7 +414,11 @@ ValueToString(
 	if		(  ValueToLBS(val,codeset)  ==  NULL  ) {
 		ret = NULL;
 	} else {
-		ret = ValueStrBody(val);
+		if (ValueStrBody(val) != NULL) {
+			ret = ValueStrBody(val);
+		} else {
+			ret = "";
+		}
 	}
 	return	(ret);
 }

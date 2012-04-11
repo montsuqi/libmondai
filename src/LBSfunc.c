@@ -260,7 +260,7 @@ LBS_EmitEnd(
 {
 	if ( (lbs->ptr == 0) || (lbs->body[lbs->ptr - 1] != '\0') ) {
 		LBS_Glown(lbs, lbs->size + 1, TRUE);
-		LBS_Emit(lbs,0);
+		LBS_Emit(lbs,'\0');
 	}
 }
 
