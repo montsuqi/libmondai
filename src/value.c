@@ -1304,28 +1304,3 @@ ENTER_FUNC;
 	ValueIndex(value) = ix;
 LEAVE_FUNC;
 }
-
-extern	GList*
-GetChildrenLongNames(
-	GList *list,
-	ValueStruct *val)
-{
-	int i;
-
-	switch	(ValueType(val)) {
-	case GL_TYPE_ARRAY:
-		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-			list = GetChildrenLongNames(list,ValueArrayItem(val,i));
-		}
-		break;
-	case GL_TYPE_RECORD:
-		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-			list = GetChildrenLongNames(list,ValueRecordItem(val,i));
-		}
-		break;
-	default:
-		list = g_list_append(list,GetValueLongName(val));
-		break;
-	}
-	return list;
-}

@@ -536,21 +536,21 @@ recval_native_unpack(VALUE self,VALUE packed)
 }
 
 static VALUE
-recval_children_longnames(VALUE self)
+recval_keys(VALUE self)
 {
     value_struct_data *data;
     GList *list;
     VALUE ret;
     VALUE str;
+	int i;
 
     ret = rb_ary_new();
 
     Data_Get_Struct(self, value_struct_data, data);
-	list = GetChildrenLongNames(NULL,data->value);
-    for(;list != NULL;list=list->next) {
-       str = rb_str_new2((char*)list->data);
+	for(i=0;i<ValueRecordSize(data->value);i++) {
+       str = rb_str_new2((char*)ValueRecordName(data->value,i));
        rb_ary_push(ret,str);
-    }
+	}
     return ret;
 }
 
@@ -575,7 +575,7 @@ ENTER_FUNC;
     rb_define_method(cRecordValue, "[]=", recval_aset, 2);
     rb_define_method(cRecordValue, "native_pack",recval_native_pack,0);
     rb_define_method(cRecordValue, "native_unpack",recval_native_unpack,1);
-	rb_define_method(cRecordValue, "children_longnames", recval_children_longnames,0);
+	rb_define_method(cRecordValue, "keys", recval_keys,0);
 
 	RecParserInit();
     codeset = "utf-8";
