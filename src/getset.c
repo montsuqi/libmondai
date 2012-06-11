@@ -734,7 +734,6 @@ SetValueInteger(
 {
 	Bool	rc;
 	char	str[SIZE_NUMBUF+1];
-	Bool	fMinus;
 	time_t	ltime;
 
 	if		(  val  ==  NULL  ) {
@@ -752,16 +751,7 @@ SetValueInteger(
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_NUMBER:
-			if		(  ival  <  0  ) {
-				ival = - ival;
-				fMinus = TRUE;
-			} else {
-				fMinus = FALSE;
-			}
 			sprintf(str,"%0*d",(int)ValueFixedLength(val),ival);
-			if		(  fMinus  ) {
-				*str |= 0x40;
-			}
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_INT:
