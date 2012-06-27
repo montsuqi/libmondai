@@ -505,6 +505,7 @@ ENTER_FUNC;
 			if		(	(  in->ValueName  !=  NULL  )
 							&&	(  ValueName      !=  NULL  ) ) {
 				*ValueName = StrDup(in->ValueName);
+				ValueName(ret) = StrDup(in->ValueName);
 			}
 			DropLexInfo(&in);
 			g_hash_table_insert(ParsedRec, StrDup(name), ret);

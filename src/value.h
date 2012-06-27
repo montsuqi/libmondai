@@ -61,6 +61,7 @@ typedef	uint64_t		MonObjectType;
 #define	IS_OBJECT_NULL(obj)	((obj) ==  0)
 
 typedef	struct _ValueStruct	{
+	char				*name;
 	PacketDataType		type;
 	ValueAttributeType	attr;
 	LargeByteString		*str;
@@ -166,6 +167,7 @@ typedef	struct _ValueStruct	{
 #define	IS_VALUE_BITS(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_BITS)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
+#define	ValueName(v)			((v)->name)
 #define	ValueType(v)			((v)->type)
 #define	ValueSize(v)			LBS_StringLength((v)->str)
 #define	ValueStr(v)				((v)->str)

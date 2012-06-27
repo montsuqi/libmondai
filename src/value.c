@@ -63,6 +63,7 @@ ENTER_FUNC;
 	ValueType(ret) = type;
 	ValueParent(ret) = NULL;
 	ValueIndex(ret) = 0;
+    ValueName(ret) = NULL;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
@@ -154,6 +155,9 @@ FreeValueStruct(
 
 	if		(  val  !=  NULL  ) {
 		dbgprintf("type = %02X\n",val->type);
+		if (ValueName(val) != NULL) {
+			xfree(ValueName(val));
+		}
 		switch	(val->type) {
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
@@ -1077,6 +1081,9 @@ DuplicateValue(
 		p = NewValue(ValueType(template));
 		ValueAttribute(p) = ValueAttribute(template);
 		ValueStr(p) = NULL;
+		if (ValueName(template) != NULL) {
+			ValueName(p) = StrDup(ValueName(template));
+		}
 		switch	(ValueType(template)) {
 		  case	GL_TYPE_INT:
 			if		(  fCopy  ) {

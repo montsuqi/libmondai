@@ -217,8 +217,7 @@ _JSON_PackValue(
 
 ENTER_FUNC;
 	pp = p;
-	if		(	(  value  ==  NULL      )
-			||	(  IS_VALUE_NIL(value)  ) ) {
+	if		(	(  value  ==  NULL      ) ) {
 		p += sprintf(p,"null");
 	} else {
 		switch	(value->type) {
@@ -324,8 +323,7 @@ _JSON_SizeValue(
 	char	*str;
 
 ENTER_FUNC;
-	if		(	(  value  ==  NULL  )
-			||	(  IS_VALUE_NIL(value)  ) ) {
+	if		(	(  value  ==  NULL  )) {
 		ret = 4;	//	null
 	} else {
 		ret = 0;
@@ -405,6 +403,367 @@ JSON_SizeValue(
 {
 	ConvSetEncoding(opt,STRING_ENCODING_BACKSLASH_CRLF);
 	return	(_JSON_SizeValue(opt,value));
+}
+
+static	size_t
+_JSON2_UnPackValue(
+	CONVOPT		*opt,
+	unsigned char		*p,
+	ValueStruct	*value)
+{
+	char	name[SIZE_LONGNAME+1];
+	unsigned char	*pp;
+
+ENTER_FUNC;
+	pp = p;
+	if		(  value  !=  NULL  ) {
+		SKIP_SPACE(p);
+		dbgprintf("(%c)",*p);
+		switch	(*p) {
+		  case	'{':
+			p ++;
+			SKIP_SPACE(p);
+			while	(	(  *p  !=  0    )
+					&&	(  *p  !=  '}'  ) ) {
+				if		(  *p  ==  '"'  ) {
+					p ++;
+					p = ParseString(name,p);
+					dbgprintf("name = [%s]",name);
+					if (ValueName(value)!=NULL&&strcmp(ValueName(value),name)) {
+						MonWarningPrintf("invalid top record name: expected[%s] given[%s]",ValueName(value),name);
+						return (p-pp);
+					}
+					p ++;
+					SKIP_SPACE(p);
+					if		(  *p  !=  ':'  )	break;
+					p ++;
+					SKIP_SPACE(p);
+					p += _JSON_UnPackValue(opt,p,value);
+					SKIP_SPACE(p);
+					if		(  *p  ==  ','  ) {
+						p ++;
+						SKIP_SPACE(p);
+					}
+				} else
+					break;
+			}
+			if		(  *p  !=  0  )	p ++;
+			break;
+		  default:
+			MonWarning("invalid format");
+			break;
+		}
+	}					
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+JSON2_UnPackValue(
+	CONVOPT		*opt,
+	unsigned char		*p,
+	ValueStruct	*value)
+{
+	unsigned char	*pp;
+
+ENTER_FUNC;
+	pp = p;
+	SKIP_SPACE(p);
+	p += _JSON2_UnPackValue(opt,p,value);
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+
+static	size_t
+_JSON2_PackValue(
+	CONVOPT	*opt,
+	unsigned char		*p,
+	ValueStruct	*value)
+{
+	int		i;
+	int		j;
+	unsigned char	*pp;
+	char	*str;
+
+ENTER_FUNC;
+	pp = p;
+	if		(	(  value  ==  NULL      ) ) {
+		p += sprintf(p,"null");
+	} else {
+		switch	(value->type) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
+		  case	GL_TYPE_ALIAS:
+		  case	GL_TYPE_OBJECT:
+			str = ValueToString(value,"utf-8");
+			*p ++ = '"';
+			p += EncodeStringBackslashCRLF(p,str);
+			*p ++ = '"';
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			str = ValueToString(value,"utf-8");
+			p += sprintf(p,"\"%s\"",str);
+			break;
+		  case	GL_TYPE_BOOL:
+			if		(  ValueBool(value)  ) {
+				p += sprintf(p,"true");
+			} else {
+				p += sprintf(p,"false");
+			}
+			break;
+		  case	GL_TYPE_INT:
+			p += sprintf(p,"%d",ValueInteger(value));
+			break;
+		  case	GL_TYPE_NUMBER:
+		  case	GL_TYPE_FLOAT:
+			str = ValueToString(value,"utf-8");
+			while	(  *str  ==  '0'  )	str ++;
+			if		(  *str  ==  0  )	str --;
+			p += sprintf(p,"%s",str);
+			break;
+		  case	GL_TYPE_ARRAY:
+			opt->nIndent ++;
+			p += sprintf(p,"[");
+			p += PutCR(opt,p);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += IndentLine(opt,p);
+				p += _JSON2_PackValue(opt,p,ValueArrayItem(value,i));
+				if		(  i  <  ValueArraySize(value) - 1  ) {
+					p += sprintf(p,",");
+				}
+				p += PutCR(opt,p);
+			}
+			opt->nIndent --;
+			p += IndentLine(opt,p);
+			p += sprintf(p,"]");
+			break;
+		  case	GL_TYPE_RECORD:
+			opt->nIndent ++;
+			p += sprintf(p,"{");
+			p += PutCR(opt,p);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += IndentLine(opt,p);
+				p += sprintf(p,"\"%s\":",ValueRecordName(value,i));
+				p += _JSON2_PackValue(opt,p,ValueRecordItem(value,i));
+				p += sprintf(p,",");
+				p += PutCR(opt,p);
+				if		(  i  ==  (ValueRecordSize(value) - 1)  ) {
+					p += sprintf(p,"\"__order\":");
+					p += PutCR(opt,p);
+					opt->nIndent ++;
+					p += IndentLine(opt,p);
+					p += sprintf(p,"[");
+					opt->nIndent ++;
+					for	( j = 0 ; j < ValueRecordSize(value) ; j ++ ) {
+						p += IndentLine(opt,p);
+						if (j < (ValueRecordSize(value)-1)){
+							p += sprintf(p,"\"%s\",",ValueRecordName(value,j));
+						} else {
+							p += sprintf(p,"\"%s\"",ValueRecordName(value,j));
+						}
+						p += PutCR(opt,p);
+					}
+					opt->nIndent --;
+					p += IndentLine(opt,p);
+					p += sprintf(p,"]");
+					p += PutCR(opt,p);
+					opt->nIndent --;
+				}
+			}
+			opt->nIndent --;
+			p += IndentLine(opt,p);
+			p += sprintf(p,"}");
+			break;
+		  default:
+			break;
+		}
+	}
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+extern	size_t
+JSON2_PackValue(
+	CONVOPT	*opt,
+	unsigned char		*p,
+	ValueStruct	*value)
+{
+	unsigned char	*pp;
+
+ENTER_FUNC;
+	pp = p;
+	if		(	(  value  ==  NULL      ) ) {
+		p += sprintf(p,"null");
+	} else {
+		switch	(value->type) {
+		  case	GL_TYPE_RECORD:
+			opt->nIndent ++;
+			p += sprintf(p,"{");
+			p += PutCR(opt,p);
+
+			p += IndentLine(opt,p);
+			p += sprintf(p,"\"%s\":",ValueName(value));
+			p += _JSON2_PackValue(opt,p,value);
+			p += PutCR(opt,p);
+
+			opt->nIndent --;
+			p += IndentLine(opt,p);
+			p += sprintf(p,"}");
+			break;
+		  default:
+			MonWarning("invalid input:top level must be record type");
+			break;
+		}
+	}
+    *p = 0;
+LEAVE_FUNC;
+	return	(p-pp);
+}
+
+static	size_t
+_JSON2_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	int		i;
+	int		j;
+	size_t	ret;
+	char	*str;
+
+ENTER_FUNC;
+	if		(	(  value  ==  NULL  )) {
+		ret = 4;	//	null
+	} else {
+		ret = 0;
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_DBCODE:
+		  case	GL_TYPE_TEXT:
+		  case	GL_TYPE_SYMBOL:
+			ret += EncodeLength(opt,ValueToString(value,"utf-8")) + 2;
+			break;
+		  case	GL_TYPE_BYTE:
+		  case	GL_TYPE_BINARY:
+			ret += strlen(ValueToString(value,"utf-8")) + 2;
+			break;
+		  case	GL_TYPE_BOOL:
+			if		(  ValueBool(value)  ) {
+				ret += 4;	//	true
+			} else {
+				ret += 5;	//	false
+			}
+			break;
+		  case	GL_TYPE_INT:
+		  case	GL_TYPE_FLOAT:
+		  case	GL_TYPE_OBJECT:
+		  case	GL_TYPE_NUMBER:
+			str = ValueToString(value,"utf-8");
+			while	(  *str  ==  '0'  )	str ++;
+			if		(  *str  ==  0  )	str --;
+			ret += EncodeLength(opt,str);
+			break;
+		  case	GL_TYPE_ARRAY:
+			ret += 2;
+			ret += PutCR(opt,NULL);
+			opt->nIndent ++;
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				ret += IndentLine(opt,NULL);
+				ret += _JSON2_SizeValue(opt,ValueArrayItem(value,i));
+				if		(  i  <  ValueArraySize(value) - 1  ) {
+					ret ++;
+				}
+				ret += PutCR(opt,NULL);
+			}
+			opt->nIndent --;
+			ret += IndentLine(opt,NULL);
+			break;
+		  case	GL_TYPE_RECORD:
+			ret += 2;
+			ret += PutCR(opt,NULL);
+			opt->nIndent ++;
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				ret += IndentLine(opt,NULL);
+				ret += EncodeLength(opt,ValueRecordName(value,i)) + 3;	//	"...":
+				ret += _JSON2_SizeValue(opt,ValueRecordItem(value,i));
+				ret ++;
+				ret += PutCR(opt,NULL);
+				if		(  i  ==  (ValueRecordSize(value) - 1)  ) {
+					ret += strlen("\"__order\":");
+					ret ++; // CR
+					opt->nIndent ++;
+					ret += IndentLine(opt,NULL);
+					ret ++; // [
+					opt->nIndent ++;
+					for	( j = 0 ; j < ValueRecordSize(value) ; j ++ ) {
+						ret += IndentLine(opt,NULL);
+						if (j < (ValueRecordSize(value)-1)){
+							ret += EncodeLength(opt,ValueRecordName(value,j)) + 3; // "<name>",
+						} else {
+							ret += EncodeLength(opt,ValueRecordName(value,j)) + 2; // "<name>"
+						}
+						ret ++;
+					}
+					opt->nIndent --;
+					ret += IndentLine(opt,NULL);
+					ret ++; // ]
+					ret ++; // CR
+					opt->nIndent --;
+				}
+			}
+			opt->nIndent --;
+			ret += IndentLine(opt,NULL);
+			break;
+		  case	GL_TYPE_ALIAS:
+		  default:
+			ret = 0;
+			break;
+		}
+	}
+LEAVE_FUNC;
+	return	(ret);
+}
+
+extern	size_t
+JSON2_SizeValue(
+	CONVOPT		*opt,
+	ValueStruct	*value)
+{
+	size_t	ret;
+
+ENTER_FUNC;
+	ConvSetEncoding(opt,STRING_ENCODING_BACKSLASH_CRLF);
+	if		(	(  value  ==  NULL  )) {
+		ret = 4;	//	null
+	} else {
+		ret = 0;
+		switch	(ValueType(value)) {
+		  case	GL_TYPE_RECORD:
+			ret += 2;
+			ret += PutCR(opt,NULL);
+			opt->nIndent ++;
+
+			ret += IndentLine(opt,NULL);
+			ret += EncodeLength(opt,ValueName(value)) + 3;	//	"...":
+			ret += _JSON2_SizeValue(opt,value);
+			ret += PutCR(opt,NULL);
+
+			opt->nIndent --;
+			ret += IndentLine(opt,NULL);
+			break;
+		  default:
+			MonWarning("invalid input:top level must be record type");
+			ret = 0;
+			break;
+		}
+	}
+LEAVE_FUNC;
+	return	(ret);
 }
 
 static	size_t
