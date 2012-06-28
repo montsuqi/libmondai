@@ -502,9 +502,10 @@ ENTER_FUNC;
 	if ( (ret  = g_hash_table_lookup(ParsedRec, name)) ==  NULL  ){
 		if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
 			ret = RecParseMain(in);
-			if		(	(  in->ValueName  !=  NULL  )
-							&&	(  ValueName      !=  NULL  ) ) {
-				*ValueName = StrDup(in->ValueName);
+			if (in->ValueName != NULL) {
+				if (ValueName != NULL) {
+					*ValueName = StrDup(in->ValueName);
+				}
 				ValueName(ret) = StrDup(in->ValueName);
 			}
 			DropLexInfo(&in);

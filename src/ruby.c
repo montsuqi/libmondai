@@ -561,7 +561,11 @@ recval_name(VALUE self)
 	int i;
 
     Data_Get_Struct(self, value_struct_data, data);
-    ret = rb_str_new2((char*)ValueName(data->value));
+    if (ValueName(data->value) != NULL) {
+      ret = rb_str_new2((char*)ValueName(data->value));
+    } else {
+      ret = rb_str_new2("");
+    }
     return ret;
 }
 
