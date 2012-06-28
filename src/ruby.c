@@ -536,41 +536,6 @@ recval_native_unpack(VALUE self,VALUE packed)
 }
 
 static VALUE
-recval_json_pack(VALUE self)
-{
-    value_struct_data *data;
-    size_t size;
-    char *buf;
-    CONVOPT *conv;
-    VALUE packed;
-
-    Data_Get_Struct(self, value_struct_data, data);
-
-    conv = NewConvOpt();
-    size = JSON2_SizeValue(conv,data->value);
-    buf = malloc(size);
-    JSON2_PackValue(conv,buf,data->value);
-    packed = rb_str_new(buf,size);
-    free(buf);
-    DestroyConvOpt(conv);
-
-    return packed;
-}
-
-static VALUE
-recval_json_unpack(VALUE self,VALUE packed)
-{
-    CONVOPT *conv;
-    value_struct_data *data;
-
-    conv = NewConvOpt();
-    Data_Get_Struct(self, value_struct_data, data);
-	JSON2_UnPackValue(conv,RSTRING(packed)->ptr,data->value);
-    DestroyConvOpt(conv);
-    return self;
-}
-
-static VALUE
 recval_keys(VALUE self)
 {
     value_struct_data *data;
@@ -585,6 +550,18 @@ recval_keys(VALUE self)
        str = rb_str_new2((char*)ValueRecordName(data->value,i));
        rb_ary_push(ret,str);
 	}
+    return ret;
+}
+
+static VALUE
+recval_name(VALUE self)
+{
+    value_struct_data *data;
+    VALUE ret;
+	int i;
+
+    Data_Get_Struct(self, value_struct_data, data);
+    ret = rb_str_new2((char*)ValueName(data->value));
     return ret;
 }
 
@@ -609,9 +586,8 @@ ENTER_FUNC;
     rb_define_method(cRecordValue, "[]=", recval_aset, 2);
     rb_define_method(cRecordValue, "native_pack",recval_native_pack,0);
     rb_define_method(cRecordValue, "native_unpack",recval_native_unpack,1);
-    rb_define_method(cRecordValue, "json_pack",recval_json_pack,0);
-    rb_define_method(cRecordValue, "json_unpack",recval_json_unpack,1);
 	rb_define_method(cRecordValue, "keys", recval_keys,0);
+	rb_define_method(cRecordValue, "name", recval_name,0);
 
 	RecParserInit();
     codeset = "utf-8";

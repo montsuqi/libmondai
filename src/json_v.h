@@ -28,10 +28,4 @@ extern	size_t	JSON_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 extern	size_t	JSON_Parse(char *str, ValueStruct **ret);
 
-extern	size_t	JSON2_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
-extern	size_t	JSON2_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
-extern	size_t	JSON2_SizeValue(CONVOPT *opt, ValueStruct *value);
-
-
-
 #endif
