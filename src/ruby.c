@@ -326,7 +326,7 @@ aryval_aset(VALUE self, VALUE index, VALUE obj)
     Data_Get_Struct(self, value_struct_data, data);
     val = GetArrayItem(data->value, i);
     if (val == NULL)
-        rb_raise(rb_eIndexError, "index out of range: %d", i);
+      return Qnil;
     set_value(val, obj);
     return obj;
 }
@@ -446,7 +446,7 @@ recval_aref(VALUE self, VALUE name)
 
     val = GetItemLongName(data->value, StringValuePtr(name));
     if (val == NULL)
-        rb_raise(rb_eArgError, "no such field: %s", StringValuePtr(name));
+      return Qnil;
     obj = get_value(val);
     if (CACHEABLE(val))
         rb_hash_aset(data->cache, name, obj);
@@ -462,7 +462,7 @@ recval_aset(VALUE self, VALUE name, VALUE obj)
     Data_Get_Struct(self, value_struct_data, data);
     val = GetItemLongName(data->value, StringValuePtr(name));
     if (val == NULL)
-        rb_raise(rb_eArgError, "no such field: %s", StringValuePtr(name));
+      return Qnil;
     set_value(val, obj);
     return obj;
 }
@@ -500,7 +500,7 @@ recval_set_field(VALUE self, VALUE obj)
     Data_Get_Struct(self, value_struct_data, data);
     val = GetRecordItem(data->value, StringValuePtr(name));
     if (val == NULL)
-        rb_raise(rb_eArgError, "no such field: %s", StringValuePtr(name));
+      return Qnil;
     set_value(val, obj);
     return obj;
 }
@@ -561,6 +561,7 @@ recval_record_name(VALUE self)
 	int i;
 
     Data_Get_Struct(self, value_struct_data, data);
+fprintf(stderr,"ValueName[%s]\n",ValueName(data->value));
     if (ValueName(data->value) != NULL) {
       ret = rb_str_new2((char*)ValueName(data->value));
     } else {
