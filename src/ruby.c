@@ -554,7 +554,7 @@ recval_keys(VALUE self)
 }
 
 static VALUE
-recval_name(VALUE self)
+recval_record_name(VALUE self)
 {
     value_struct_data *data;
     VALUE ret;
@@ -591,7 +591,7 @@ ENTER_FUNC;
     rb_define_method(cRecordValue, "native_pack",recval_native_pack,0);
     rb_define_method(cRecordValue, "native_unpack",recval_native_unpack,1);
 	rb_define_method(cRecordValue, "keys", recval_keys,0);
-	rb_define_method(cRecordValue, "name", recval_name,0);
+	rb_define_method(cRecordValue, "record_name", recval_record_name,0);
 
 	RecParserInit();
     codeset = "utf-8";
