@@ -536,13 +536,15 @@ ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfoMem(&root,mem,RecordDir,Reserved) )  !=  NULL  ) {
 		ret = RecParseMain(in);
-		if (in->ValueName != NULL) {
-			if (ValueName != NULL) {
-				*ValueName = StrDup(in->ValueName);
+		if (ret != NULL) {
+			if (in->ValueName != NULL) {
+				if (ValueName != NULL) {
+					*ValueName = StrDup(in->ValueName);
+				}
+				ValueName(ret) = StrDup(in->ValueName);
 			}
-			ValueName(ret) = StrDup(in->ValueName);
+			DropLexInfo(&in);
 		}
-		DropLexInfo(&in);
 	} else {
 		ret = NULL;
 	}
