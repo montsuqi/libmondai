@@ -444,6 +444,10 @@ EncodeStringBackslashCRLF(
 {
   char	*qq;
 
+  if (*p == 0) {
+    return 0;
+  }
+
   qq = q;
   while	(*p != 0 ) {
     switch (*p) {
