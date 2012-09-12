@@ -488,6 +488,25 @@ LEAVE_FUNC;
 	return	(ret);
 }
 
+static	ValueStruct *
+_RecParseValue(
+	CURFILE		*in,
+	char	**ValueName)
+{
+
+	ValueStruct	*ret;
+	ret = RecParseMain(in);
+	if (ret != NULL) {
+		if (in->ValueName != NULL) {
+			if (ValueName != NULL) {
+				*ValueName = StrDup(in->ValueName);
+			}
+			ValueName(ret) = StrDup(in->ValueName);
+		}
+	}
+	return ret;
+}
+
 extern	ValueStruct	*
 RecParseValue(
 	char	*name,
@@ -496,18 +515,12 @@ RecParseValue(
 	ValueStruct	*ret;
 	CURFILE		*in
 		,		root;
-	
+
 ENTER_FUNC;
 	root.next = NULL;
 	if ( (ret  = g_hash_table_lookup(ParsedRec, name)) ==  NULL  ){
 		if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
-			ret = RecParseMain(in);
-			if (in->ValueName != NULL) {
-				if (ValueName != NULL) {
-					*ValueName = StrDup(in->ValueName);
-				}
-				ValueName(ret) = StrDup(in->ValueName);
-			}
+			ret = _RecParseValue(in, ValueName);
 			DropLexInfo(&in);
 			g_hash_table_insert(ParsedRec, StrDup(name), ret);
 		} else {
@@ -518,7 +531,7 @@ ENTER_FUNC;
 			*ValueName = GetValueName(ret);
 		}
 	}
-	
+
 LEAVE_FUNC;
 	return	(ret);
 }
@@ -535,16 +548,8 @@ RecParseValueMem(
 ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfoMem(&root,mem,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = RecParseMain(in);
-		if (ret != NULL) {
-			if (in->ValueName != NULL) {
-				if (ValueName != NULL) {
-					*ValueName = StrDup(in->ValueName);
-				}
-				ValueName(ret) = StrDup(in->ValueName);
-			}
-			DropLexInfo(&in);
-		}
+		ret = _RecParseValue(in, ValueName);
+		DropLexInfo(&in);
 	} else {
 		ret = NULL;
 	}
