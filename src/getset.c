@@ -252,9 +252,6 @@ ENTER_FUNC;
 			ValueStr(val) = NewLBS();
 		}
 		LBS_EmitStart(ValueStr(val));
-		if		(  IS_VALUE_NIL(val)  ) {
-			LBS_EmitChar(ValueStr(val),CHAR_NIL);
-		} else
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
