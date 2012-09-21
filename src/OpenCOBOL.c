@@ -300,7 +300,7 @@ ENTER_FUNC;
 			if		(  IS_VALUE_NIL(value)  ) {
 				memclear(p,ValueStringLength(value));	/*	LOW-VALUE	*/
 			} else {
-				memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
+				strncpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
 				StringC2Cobol(p,ValueStringLength(value));
 			}
 			p += ValueStringLength(value);
