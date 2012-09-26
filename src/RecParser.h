@@ -28,8 +28,8 @@
 extern	ValueStruct	*ParValueDefine(CURFILE *in);
 extern	void		SetValueAttribute(ValueStruct *val, ValueAttributeType attr);
 extern	void		RecParserInit(void);
-extern	ValueStruct	*RecParseValue(char *name, char **ValueName);
-extern	ValueStruct	*RecParseValueMem(char *mem, char **ValueName);
+extern	ValueStruct	*RecParseValue(const char *name, char **ValueName);
+extern	ValueStruct	*RecParseValueMem(const char *mem, char **ValueName);
 extern	ValueStruct	*RecParseMain(CURFILE *in);
 
 #undef	GLOBAL

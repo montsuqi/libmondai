@@ -39,8 +39,8 @@
 #ifdef	__GNUC__
 extern	int
 stricmp(
-	char	*s1,
-	char	*s2)
+	const char	*s1,
+	const char	*s2)
 {
 	for	( ; *s1  !=  0 ; s1 ++ , s2 ++ )	{
 		if		(  toupper(*s1)  !=  toupper(*s2)  )
@@ -51,8 +51,8 @@ stricmp(
 
 extern	int
 strnicmp(
-	char	*s1,
-	char	*s2,
+	const char	*s1,
+	const char	*s2,
 	size_t	l)
 {	int		ret;
 
@@ -67,7 +67,7 @@ strnicmp(
 
 extern	char	*
 StrDup(
-	char	*s)
+	const char	*s)
 {
 	char	*str;
 	size_t	length;
@@ -84,7 +84,7 @@ StrDup(
 
 extern	char	*
 StrnDup(
-	char	*s,
+	const char	*s,
 	size_t	len)
 {
 	char	*str;
@@ -101,7 +101,7 @@ StrnDup(
 
 extern	long
 StrToInt(
-	char	*str,
+	const char	*str,
 	size_t	len)
 {
 	long	ret
@@ -126,7 +126,7 @@ StrToInt(
 
 extern	long
 HexToInt(
-	char	*str,
+	const char	*str,
 	size_t	len)
 {
 	long	ret;

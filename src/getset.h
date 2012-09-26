@@ -24,7 +24,7 @@
 
 #include	<time.h>
 
-extern	Bool		SetValueStringWithLength(ValueStruct *val, char *str, size_t slen,
+extern	Bool		SetValueStringWithLength(ValueStruct *val,const char *str, size_t slen,
 											 char *locale);
 extern	Bool		SetValueInteger(ValueStruct *val, int ival);
 extern	Bool		SetValueChar(ValueStruct *val, char cval);

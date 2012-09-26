@@ -70,6 +70,7 @@ libmondaiinclude_HEADERS =	\
 INCLUDES 			= 		\
 	$(GLIB_CFLAGS) 			\
 	$(XML_CFLAGS)			\
+	$(JSON_CFLAGS) 			\
 	$(RUBY_CFLAGS)			\
 	-I$(top_srcdir)
 
@@ -109,16 +110,19 @@ rubymondai_la_SOURCES	=	\
 rubymondai_la_LIBADD 	=	\
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
+	$(JSON_LIBS)			\
 	$(RUBY_LIBS)			\
 	$(top_builddir)/src/libmondai.la
 
 libmondai_la_LIBADD	=		\
 	$(GLIB_LIBS)			\
-	$(XML_LIBS)				
+	$(XML_LIBS)				\
+	$(JSON_LIBS)
 
 LDADD 				=		\
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
+	$(JSON_LIBS)			\
 	$(top_builddir)/src/libmondai.la
 
 testconv_SOURCES	=		\

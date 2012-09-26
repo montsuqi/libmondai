@@ -509,7 +509,7 @@ _RecParseValue(
 
 extern	ValueStruct	*
 RecParseValue(
-	char	*name,
+	const char	*name,
 	char	**ValueName)
 {
 	ValueStruct	*ret;
@@ -538,7 +538,7 @@ LEAVE_FUNC;
 
 extern	ValueStruct	*
 RecParseValueMem(
-	char	*mem,
+	const char	*mem,
 	char	**ValueName)
 {
 	ValueStruct	*ret;

@@ -52,7 +52,7 @@
 static	CURFILE	*
 NewCURFILE(
 	CURFILE		*in,
-	char		*path,
+	const char	*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -79,8 +79,8 @@ NewCURFILE(
 extern	CURFILE	*
 PushLexInfo(
 	CURFILE		*in,
-	char		*name,
-	char		*path,
+	const char		*name,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -107,8 +107,8 @@ LEAVE_FUNC;
 extern	CURFILE	*
 PushLexInfoMem(
 	CURFILE		*in,
-	char		*mem,
-	char		*path,
+	const char		*mem,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -125,7 +125,7 @@ extern	CURFILE	*
 PushLexInfoStream(
 	CURFILE		*in,
 	FILE		*fp,
-	char		*path,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;

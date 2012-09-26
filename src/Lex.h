@@ -83,9 +83,9 @@ typedef	struct	{
 GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
-extern	CURFILE		*PushLexInfo(CURFILE *in, char *name, char *path, GHashTable *res);
-extern	CURFILE		*PushLexInfoMem(CURFILE *in, char *mem, char *path, GHashTable *res);
-extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp, char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfo(CURFILE *in,const char *name,const char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoMem(CURFILE *in,const char *mem,const char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp,const char *path, GHashTable *res);
 
 extern	void			DropLexInfo(CURFILE **in);
 extern	void			LexInit(void);

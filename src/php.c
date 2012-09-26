@@ -199,7 +199,7 @@ _PHP_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			str = ValueToString(value,ConvCodeset(opt));
-			p += sprintf(p,"s:%ld:\"%s\"",strlen(str),str);
+			p += sprintf(p,"s:%zd:\"%s\"",strlen(str),str);
 			break;
 		  case	GL_TYPE_BOOL:
 			if		(  ValueBool(value)  ) {

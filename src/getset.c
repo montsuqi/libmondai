@@ -423,8 +423,8 @@ ValueToString(
 static	void
 DecodeStringToBinary(
 	unsigned char	*p,
-	size_t	size,
-	char	*str)
+	size_t			size,
+	const char		*str)
 {
 	int		i;
 
@@ -473,7 +473,7 @@ DecodeStringToBinary(
 extern	Bool
 SetValueStringWithLength(
 	ValueStruct	*val,
-	char		*str,
+	const char	*str,
 	size_t		slen,
 	char		*codeset)
 {
@@ -488,12 +488,12 @@ SetValueStringWithLength(
 	size_t	size;
 #ifdef	WITH_I18N
 	unsigned char	*q;
-	iconv_t	cd;
-	size_t	sob
-	,		sib;
-	char	*istr
-	,		*hexstr;
-	int		i;
+	iconv_t			cd;
+	size_t			sob
+	,				sib;
+	char			*istr
+	,				*hexstr;
+	int				i;
 #endif
 
 ENTER_FUNC;
@@ -528,7 +528,7 @@ ENTER_FUNC;
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
-					istr = str;
+					istr = (char*)str;
 					sib = len;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
@@ -576,7 +576,7 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_BINARY:
 			size = 0;
-			for	( p = str ; *p != 0 ; ) {
+			for	( p = (char*)str ; *p != 0 ; ) {
 				if		(  *p  ==  '\\'  ) {
 					p ++;
 					if		(  *p  ==  'u'  ) {
@@ -625,7 +625,7 @@ ENTER_FUNC;
 #ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
-				istr = str;
+				istr = (char*)str;
 				sib = slen;
 				sob = SIZE_NUMBUF;
 				p = sbuff;
