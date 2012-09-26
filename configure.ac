@@ -102,26 +102,6 @@ if test "x$USE_LIBXML2" != "xno"; then
 	AC_DEFINE(USE_XML,2,"")
 fi
 
-dnl *************************************************************************** 
-dnl for Ruby
-dnl *************************************************************************** 
-
-enable_ruby="no"
-AC_ARG_WITH(ruby, 
-[  --with-ruby=PATH        path to ruby],[
-    if test "x$withval" = "xyes"; then
-      AC_PATH_PROG(RUBY, ruby, no)
-    else
-      AC_MSG_CHECKING(for ruby)
-      RUBY="$withval"
-      AC_MSG_RESULT($RUBY)
-    fi
-    AC_SUBST(RUBY) 
-],[
-    AC_MSG_CHECKING(for ruby)
-    AC_MSG_RESULT(no)
-])
-
 dnl ***************************************************************************
 
 AC_CONFIG_FILES([

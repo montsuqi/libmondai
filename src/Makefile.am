@@ -16,7 +16,7 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-lib_LTLIBRARIES = libmondai.la rubymondai.la
+lib_LTLIBRARIES = libmondai.la 
 
 if SOAP
 TESTSOAP  =  testsoap
@@ -66,7 +66,6 @@ INCLUDES 			= 		\
 	$(GLIB_CFLAGS) 			\
 	$(XML_CFLAGS)			\
 	$(JSON_CFLAGS) 			\
-	$(RUBY_CFLAGS)			\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=	\
@@ -96,19 +95,6 @@ libmondai_la_SOURCES	=	\
 	monstring.c		monstring.h		\
 	numeric.c		numeric.h		\
 	debug.h
-
-rubymondai_la_LDFLAGS	=	\
-	-version-info $(LTVERSION)	\
-	-module						\
-	-export-dynamic
-rubymondai_la_SOURCES	=	\
-	ruby.c
-rubymondai_la_LIBADD 	=	\
-	$(GLIB_LIBS)			\
-	$(XML_LIBS)				\
-	$(JSON_LIBS)			\
-	$(RUBY_LIBS)			\
-	$(top_builddir)/src/libmondai.la
 
 libmondai_la_LIBADD	=		\
 	$(GLIB_LIBS)			\
