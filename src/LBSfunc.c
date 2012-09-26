@@ -33,10 +33,8 @@
 #include	<string.h>
 #include	<ctype.h>
 #include	<errno.h>
-#ifdef	WITH_I18N
 #include	<iconv.h>
 #include	<wchar.h>
-#endif
 #include	<math.h>
 
 #include	"types.h"
@@ -454,26 +452,23 @@ LBS_EmitStringCodeset(
 	size_t			osize,
 	char			*codeset)
 {
-#ifdef	WITH_I18N
 	char		*oc
 	,			*istr
 	,			*buff
 	,			*nstr;
 	size_t		sib
-		,		sob;
+	,			sob;
 	iconv_t		cd;
 	int			rc
 	,			i;
 	size_t		obsize
 	,			ssize;
-#endif
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
 		if		( (str == NULL) || (strlen(str) == 0 ) ){
 			return;
 		}
-#ifdef	WITH_I18N
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
 			istr =nstr =  UTF8Normalize(str);
@@ -518,14 +513,11 @@ ENTER_FUNC;
 			g_free(nstr);
 			iconv_close(cd);
 		} else {
-#endif
 			LBS_Glown(lbs, isize + 1, FALSE);
 			memcpy(lbs->body, str, isize);
 			lbs->size = isize;
 			lbs->ptr = lbs->size;
-#ifdef	WITH_I18N
 		}
-#endif
 	}
 LEAVE_FUNC;
 }

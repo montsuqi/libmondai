@@ -67,21 +67,6 @@ if test x$PKG_CONFIG = xno ; then
 fi
 
 dnl ***************************************************************************
-dnl i18n feture
-dnl ***************************************************************************
-
-USE_I18N="yes"
-LIBMONDAI_I18N=0
-AC_ARG_ENABLE(i18n,
-    [  --disable-i18n          disable link with iconv [[enable]]],
-    [USE_I18N=$enable_i18n])
-if test "x$USE_I18N" = "xyes"; then
-    AC_DEFINE(WITH_I18N,1,"")
-    LIBMONDAI_I18N=1  
-fi
-AC_SUBST(LIBMONDAI_I18N)
-
-dnl ***************************************************************************
 dnl GLib
 dnl ***************************************************************************
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.0)
@@ -117,16 +102,6 @@ if test "x$USE_LIBXML2" != "xno"; then
 	AC_DEFINE(USE_XML,2,"")
 fi
 
-dnl ***************************************************************************
-dnl use syslog for message output
-dnl ***************************************************************************
-
-AC_ARG_ENABLE(syslog,
-  [  --enable-syslog           enable logging to syslog [[disable]]],,[enable_syslog="no"])
-if test "x$enable_syslog" = "xyes"; then
-    AC_DEFINE(USE_SYSLOG,1,"")
-fi
-
 dnl *************************************************************************** 
 dnl for Ruby
 dnl *************************************************************************** 
@@ -153,7 +128,6 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 tools/Makefile
-src/libmondai.h
 docs/Makefile
 libmondai.pc
 ])
@@ -168,8 +142,6 @@ echo "libmondai Configuration:"
 echo ""
 echo "  VERSION:               $VERSION"
 echo "  LTVERSION:             $LTVERSION"
-echo "  i18n Support:          $USE_I18N"
 echo "  libxml2 Support:       $USE_LIBXML2"
 echo "  SOAP Support:          $USE_SOAP"
-echo "  use syslog:            $enable_syslog"
 echo ""

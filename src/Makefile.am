@@ -32,11 +32,6 @@ libmondai_la_LDFLAGS	=	\
 AM_CFLAGS	=	-Wall -Wunused -Wredundant-decls -funsigned-char \
 	-Wno-pointer-sign
 
-EXTRA_DIST = libmondai.h.in
-
-BUILT_SOURCES = libmondai.h
-libmondai.h: libmondai.h.in
-
 libmondaiincludedir = $(includedir)/libmondai
 
 libmondaiinclude_HEADERS =	\
@@ -75,6 +70,7 @@ INCLUDES 			= 		\
 	-I$(top_srcdir)
 
 libmondai_la_SOURCES	=	\
+	libmondai.h						\
 	misc.c							\
 	lock.c			lock.h			\
 	LBSfunc.c		LBSfunc.h		\

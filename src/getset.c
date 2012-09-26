@@ -33,9 +33,7 @@
 #include	<string.h>
 #include	<ctype.h>
 #include	<errno.h>
-#ifdef	WITH_I18N
 #include	<iconv.h>
-#endif
 #include	<glib.h>
 #include	<math.h>
 
@@ -486,7 +484,6 @@ SetValueStringWithLength(
 		,	sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
-#ifdef	WITH_I18N
 	unsigned char	*q;
 	iconv_t			cd;
 	size_t			sob
@@ -494,7 +491,6 @@ SetValueStringWithLength(
 	char			*istr
 	,				*hexstr;
 	int				i;
-#endif
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
@@ -524,7 +520,6 @@ ENTER_FUNC;
 			}
 			memclear(ValueString(val),ValueStringSize(val));
 			memcpy(ValueString(val),str,size - 1);
-#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
@@ -567,7 +562,6 @@ ENTER_FUNC;
 					*q = 0;
 				}
 			}
-#endif
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_BYTE:
@@ -622,7 +616,6 @@ ENTER_FUNC;
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				istr = (char*)str;
@@ -634,12 +627,9 @@ ENTER_FUNC;
 				*p = 0;
 				str = sbuff;
 			} else {
-#endif
 				strncpy(sbuff,str,SIZE_NUMBUF);
 				str = sbuff;
-#ifdef	WITH_I18N
 			}
-#endif
 			switch	(ValueType(val)) {
 			  case	GL_TYPE_NUMBER:
 				p = buff;

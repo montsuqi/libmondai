@@ -1272,7 +1272,7 @@ ENTER_FUNC;
 								(gpointer)dname,
 								(gpointer)(ValueRecordSize(upper)+1));
 		} else {
-			Error("name duplicate [%s]",name);
+			MonWarningPrintf("name duplicate [%s]",name);
 		}
 	}
 	ValueRecordItems(upper) = items;

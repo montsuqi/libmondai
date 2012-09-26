@@ -31,7 +31,6 @@
 #	include <config.h>
 #endif
 
-
 #ifdef	TRACE
 #define	dbgmsg(s)			MessageDebug(s)
 #define	dbgprintf(fmt,...)	MessageDebugPrintf((fmt), __VA_ARGS__)
@@ -48,44 +47,6 @@
 #define	RETURN(v)			return(v)
 #endif
 
-#define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
-
-#define	Error(...)                              \
-do {                                            \
-    printf("E:%s:%d:",__FILE__,__LINE__);       \
-    printf(__VA_ARGS__);                        \
-    printf("\n");                               \
-    fflush(stdout);                             \
-    exit(1);                                    \
-} while (0)
-#define	Warning(...)                            \
-do {                                            \
-    printf("W:%s:%d:",__FILE__,__LINE__);       \
-    printf(__VA_ARGS__);                        \
-    printf("\n");                               \
-    fflush(stdout);                             \
-} while (0)
-#define	Message(l, ...)                         \
-do {                                            \
-    printf("M:%s:%d:",__FILE__,__LINE__);       \
-    printf(__VA_ARGS__);                        \
-    printf("\n");                               \
-    fflush(stdout);                             \
-} while (0)
-#define	_MessageLevelPrintf(m,f,l,...)			\
-do {                                            \
-    printf("M:%s:%d:",(f),(l));					\
-    printf(__VA_ARGS__);                        \
-    printf("\n");                               \
-    fflush(stdout);                             \
-} while (0)
-#define	MessageLog(s) printf("L:%s:%d:%s\n",__FILE__,__LINE__,(s))
-#define MessageLogPrintf(...)                   \
-do {                                            \
-    printf("L:%s:%d:",__FILE__,__LINE__);       \
-    printf(__VA_ARGS__);                        \
-    printf("\n");                               \
-} while (0)
 #define	MessageDebug(s)	printf("D:%s:%d:%s\n",__FILE__,__LINE__,(s))
 #define MessageDebugPrintf(...)                 \
 do {                                            \
@@ -94,34 +55,29 @@ do {                                            \
     printf("\n");                               \
 } while (0)
 
-#ifdef USE_SYSLOG
-#define MonError(s) 							\
-syslog(LOG_ERR,"%s:%d:%s",__FILE__,__LINE__,(s));	\
-exit(1)
-#define MonErrorPrintf(fmt,...) 				\
-syslog(LOG_ERR,"%s:%d:" fmt,					\
-__FILE__,__LINE__,__VA_ARGS__);					\
-exit(1)
-#define MonWarning(s) 							\
-syslog(LOG_WARNING,"%s:%d:%s",__FILE__,__LINE__,(s))
-#define MonWarningPrintf(fmt,...) 				\
-syslog(LOG_WARNING,"%s:%d:" fmt,				\
-__FILE__,__LINE__,__VA_ARGS__)
-#else
-#define MonError(s)								\
-fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));	\
-exit(1)
-#define	MonErrorPrintf(fmt,...)					\
-fprintf(stderr,"%s:%d:" fmt, 					\
-__FILE__,__LINE__,__VA_ARGS__);					\
-exit(1)
-#define MonWarning(s) 							\
-fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s))
-#define	MonWarningPrintf(fmt,...)				\
-fprintf(stderr, "%s:%d:" fmt,					\
-__FILE__,__LINE__,__VA_ARGS__)
-#endif
+#define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
 
+#define MonError(s) 									\
+fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+syslog(LOG_ERR,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+exit(1)
+
+#define MonErrorPrintf(fmt,...) 						\
+fprintf(stderr,"%s:%d:" fmt,							\
+__FILE__,__LINE__,__VA_ARGS__);							\
+syslog(LOG_ERR,"%s:%d:" fmt,							\
+__FILE__,__LINE__,__VA_ARGS__);							\
+exit(1)
+
+#define MonWarning(s) 									\
+fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+syslog(LOG_WARNING,"%s:%d:%s",__FILE__,__LINE__,(s))
+
+#define MonWarningPrintf(fmt,...) 						\
+fprintf(stderr,"%s:%d:" fmt,							\
+__FILE__,__LINE__,__VA_ARGS__);							\
+syslog(LOG_WARNING,"%s:%d:" fmt,						\
+__FILE__,__LINE__,__VA_ARGS__)
 
 #endif
 

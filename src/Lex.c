@@ -68,7 +68,7 @@ NewCURFILE(
 	info->ftop = NULL;
 	info->Reserved = res;
 	info->fError = FALSE;
-	info->path = path;
+	info->path = (char*)path;
 	info->Symbol = NULL;
 	info->ValueName = NULL;
 	info->next = in;
@@ -115,7 +115,7 @@ PushLexInfoMem(
 
 ENTER_FUNC;
 	info = NewCURFILE(in,path,res);
-	info->body = mem;
+	info->body = (char*)mem;
 	info->size = strlen(mem)+1;
 LEAVE_FUNC;
 	return	(info);

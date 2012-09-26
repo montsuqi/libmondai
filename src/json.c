@@ -81,7 +81,7 @@ check_json_object_type(
 	if (json_object_is_type(obj,json_type_string)) {
 		return TRUE;
 	}
-	Warning("Invalid json object type [%s] for value [%s];expected type [%s]",
+	MonWarningPrintf("Invalid json type [%s] for [%s];expected type [%s]",
 		str_json_object_type(json_object_get_type(obj)),
 		str_json_object_type(type),
 		GetValueLongName(value)
