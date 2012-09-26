@@ -58,23 +58,23 @@ do {                                            \
 #define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
 
 #define MonError(s) 									\
-fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+fprintf(stderr,"%s:%d:%s\n",__FILE__,__LINE__,(s));		\
 syslog(LOG_ERR,"%s:%d:%s",__FILE__,__LINE__,(s));		\
 exit(1)
 
 #define MonErrorPrintf(fmt,...) 						\
-fprintf(stderr,"%s:%d:" fmt,							\
+fprintf(stderr,"%s:%d:" fmt "\n",						\
 __FILE__,__LINE__,__VA_ARGS__);							\
 syslog(LOG_ERR,"%s:%d:" fmt,							\
 __FILE__,__LINE__,__VA_ARGS__);							\
 exit(1)
 
 #define MonWarning(s) 									\
-fprintf(stderr,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+fprintf(stderr,"%s:%d:%s\n",__FILE__,__LINE__,(s));		\
 syslog(LOG_WARNING,"%s:%d:%s",__FILE__,__LINE__,(s))
 
 #define MonWarningPrintf(fmt,...) 						\
-fprintf(stderr,"%s:%d:" fmt,							\
+fprintf(stderr,"%s:%d:" fmt "\n",						\
 __FILE__,__LINE__,__VA_ARGS__);							\
 syslog(LOG_WARNING,"%s:%d:" fmt,						\
 __FILE__,__LINE__,__VA_ARGS__)
