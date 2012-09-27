@@ -78,7 +78,7 @@ check_json_object_type(
 	json_object *obj,
 	json_type type)
 {
-	if (json_object_is_type(obj,json_type_string)) {
+	if (json_object_is_type(obj,type)) {
 		return TRUE;
 	}
 	MonWarningPrintf("Invalid json type [%s] for [%s];expected type [%s]",
@@ -100,6 +100,7 @@ _JSON_UnPackValue(
 
 ENTER_FUNC;
 	if (value == NULL || obj == NULL) {
+		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
 		return;
 	}
 	ValueIsNonNil(value);
