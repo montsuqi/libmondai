@@ -72,21 +72,14 @@ str_json_object_type(
 	}
 }
 
-static Bool
-check_json_object_type(
-	ValueStruct *value,
-	json_object *obj,
-	json_type type)
+static void
+print_type_error(
+	json_type type,
+	json_type expected)
 {
-	if (json_object_is_type(obj,type)) {
-		return TRUE;
-	}
-	MonWarningPrintf("Invalid json type [%s] for [%s];expected type [%s]",
-		str_json_object_type(json_object_get_type(obj)),
+	MonWarningPrintf("Invalid json type [%s];expected type [%s]",
 		str_json_object_type(type),
-		GetValueLongName(value)
-		);
-	return FALSE;
+		str_json_object_type(expected));
 }
 
 static	void
@@ -95,15 +88,21 @@ _JSON_UnPackValue(
 	json_object *obj,
 	ValueStruct *value)
 {
+	const char *str;
+	char buf[256];
 	int i,length;
 	json_object *child;
+	json_type type;
 
 ENTER_FUNC;
 	if (value == NULL || obj == NULL) {
+#if 0
 		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
+#endif
 		return;
 	}
 	ValueIsNonNil(value);
+	type = json_object_get_type(obj);
 	switch	(value->type) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
@@ -114,44 +113,143 @@ ENTER_FUNC;
 	case GL_TYPE_OBJECT:
 	case GL_TYPE_BYTE:
 	case GL_TYPE_BINARY:
-		if (check_json_object_type(value,obj,json_type_string)) {
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				SetValueString(value,"True",NULL);
+			} else {
+				SetValueString(value,"False",NULL);
+			}
+			break;
+		case json_type_double:
+			snprintf(buf,sizeof(buf),"%lf",json_object_get_double(obj));
+			SetValueString(value,buf,NULL);
+			break;
+		case json_type_int:
+			snprintf(buf,sizeof(buf),"%d",json_object_get_int(obj));
+			SetValueString(value,buf,NULL);
+			break;
+		case json_type_object:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_array:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_string:
 			SetValueString(value,json_object_get_string(obj),NULL);
+			break;
+		case json_type_null:
+			print_type_error(type,json_type_string);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
 		}
 		break;
 	case GL_TYPE_BOOL:
-		if (check_json_object_type(value,obj,json_type_boolean)) {
+		switch (json_object_get_type(obj)) {
+		case json_type_string:
+			str = json_object_get_string(obj);
+			if (str != NULL && (str[0] == 'T' || str[0] == 't')) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_boolean:
 			ValueBool(value) = json_object_get_boolean(obj);
+			break;
+		case json_type_int:
+			if (json_object_get_int(obj) != 0) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_double:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_boolean);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
 		}
 		break;
 	case GL_TYPE_INT:
-		if (check_json_object_type(value,obj,json_type_int)) {
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				ValueInteger(value) = 1;
+			} else {
+				ValueInteger(value) = 0;
+			}
+			break;
+		case json_type_double:
+			ValueInteger(value) = (int)(json_object_get_double(obj));
+			break;
+		case json_type_int:
 			ValueInteger(value) = json_object_get_int(obj);
+			break;
+		case json_type_string:
+			ValueInteger(value) = atoi(json_object_get_string(obj));
+			break;
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_int);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
 		}
 		break;
 	case GL_TYPE_NUMBER:
 	case GL_TYPE_FLOAT:
-		if (check_json_object_type(value,obj,json_type_double)) {
+		switch (type) {
+		case json_type_double:
 			SetValueFloat(value,json_object_get_double(obj));
+			break;
+		case json_type_int:
+			SetValueFloat(value,(double)(json_object_get_int(obj)));
+			break;
+		case json_type_string:
+			SetValueFloat(value,atof(json_object_get_string(obj)));
+			break;
+		case json_type_boolean:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_double);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
 		}
 		break;
 	case GL_TYPE_ARRAY:
-		if (check_json_object_type(value,obj,json_type_array)) {
+		if (type == json_type_array) {
 			length = json_object_array_length(obj);
 			for	(i = 0 ; i < ValueArraySize(value) && i < length ; i ++ ) {
 				_JSON_UnPackValue(opt,
 					json_object_array_get_idx(obj,i),
 					ValueArrayItem(value,i));
 			}
+		} else {
+			print_type_error(type,json_type_array);
 		}
 		break;
 	case GL_TYPE_RECORD:
-		if (check_json_object_type(value,obj,json_type_object)) {
+		if (type == json_type_object) {
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				child = json_object_object_get(obj,ValueRecordName(value,i));
 				if (child != NULL) {
 					_JSON_UnPackValue(opt,child,ValueRecordItem(value,i));
 				}
 			}
+		} else {
+			print_type_error(type,json_type_array);
 		}
 		break;
 	}
