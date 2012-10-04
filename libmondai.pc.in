@@ -7,7 +7,7 @@ target=libmondai
 Name: libmondai
 Description: MON Data Access Interface library
 Version: @VERSION@
-Requires: glib-2.0 json
+Requires: glib-2.0
 Libs: -L@libdir@ -lmondai -lm
 Cflags: -I@includedir@/libmondai
 
