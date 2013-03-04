@@ -98,8 +98,8 @@ static	TokenTable	tokentable[] = {
 	{	""			,0			}
 };
 
-static	GHashTable	*Reserved;
-static	GHashTable	*ParsedRec;
+static	GHashTable	*Reserved = NULL;
+static	GHashTable	*ParsedRec = NULL;
 
 extern	void
 SetValueAttribute(
@@ -441,9 +441,11 @@ LEAVE_FUNC;
 extern	void
 RecParserInit(void)
 {
-	LexInit();
-	Reserved = MakeReservedTable(tokentable);
-	ParsedRec = NewNameHash();
+	if (Reserved == NULL) {
+		LexInit();
+		Reserved = MakeReservedTable(tokentable);
+		ParsedRec = NewNameHash();
+	}
 }
 
 extern	ValueStruct	*
