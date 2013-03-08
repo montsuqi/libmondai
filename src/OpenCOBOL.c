@@ -151,7 +151,7 @@ ENTER_FUNC;
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
-			IntegerCobol2C(opt,&value->body.IntegerData);
+			IntegerCobol2C(opt,&ValueInteger(value));
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
@@ -265,16 +265,16 @@ ENTER_FUNC;
 	if		(  value  !=  NULL  ) {
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			*(int *)p = value->body.IntegerData;
+			*(int *)p = ValueInteger(value);
 			IntegerC2Cobol(opt,(int *)p);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			*(double *)p = value->body.FloatData;
+			*(double *)p = ValueFloat(value);
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
-			*(char *)p = value->body.BoolData ? 'T' : 'F';
+			*(char *)p = ValueBool(value) ? 'T' : 'F';
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:

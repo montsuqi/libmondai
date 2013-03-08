@@ -106,7 +106,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			value->body.FloatData = *(double *)p;
+			ValueFloat(value) = *(double *)p;
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
@@ -224,7 +224,7 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			*(double *)p = value->body.FloatData;
+			*(double *)p = 	ValueFloat(value);
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
