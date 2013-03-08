@@ -285,7 +285,6 @@ extern	void
 DestroyConvOpt(
 	CONVOPT	*opt)
 {
-	xfree(opt->codeset);
 	xfree(opt->recname);
 	xfree(opt);
 }
