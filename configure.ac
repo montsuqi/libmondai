@@ -101,6 +101,16 @@ if test "x$USE_LIBXML2" != "xno"; then
 	AC_SUBST(XML_LIBS)
 	AC_DEFINE(USE_XML,2,"")
 fi
+dnl ***************************************************************************
+dnl jemalloc
+dnl ***************************************************************************
+USE_LIBJEMALLOC="yes"
+AC_ARG_ENABLE(jemalloc,
+    [  --disable-jemalloc      disable jemalloc [[enable]]],
+    [USE_LIBJEMALLOC=$enable_jemalloc])
+if test "x$USE_LIBJEMALLOC" != "xno"; then
+   AC_CHECK_LIB([jemalloc], [malloc])
+fi
 
 dnl ***************************************************************************
 
