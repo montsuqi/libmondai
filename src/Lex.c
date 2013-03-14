@@ -37,6 +37,8 @@
 #include	<sys/mman.h>
 #include	<sys/stat.h>
 #include	<fcntl.h>
+#include	<assert.h>
+
 #include	"types.h"
 #include	"misc_v.h"
 #include	"memory_v.h"
@@ -270,6 +272,8 @@ SetReserved(
 	CURFILE		*in,
 	GHashTable	*res)
 {
+	assert(res);
+
 	in->Reserved = res;
 }
 

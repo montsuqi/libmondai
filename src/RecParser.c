@@ -28,12 +28,12 @@
 #  include <config.h>
 #endif
 
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
 #include	<glib.h>
+#include	<assert.h>
 
 #define	_REC_PARSER
 #define	__VALUE_DIRECT
@@ -159,7 +159,7 @@ ParValueDefine(
 	Bool		fExpandable;
 
 ENTER_FUNC;
-	SetReserved(in,Reserved); 
+	SetReserved(in,Reserved);
 	value = NULL;
 	switch	(GetSymbol) {
 	  case	T_ALIAS:
@@ -456,7 +456,8 @@ RecParseMain(
 	ValueAttributeType	attr;
 
 ENTER_FUNC;
-	SetReserved(in,Reserved); 
+
+	SetReserved(in,Reserved);
 	ret = NULL;
 	if		(  GetSymbol  ==  T_VIRTUAL  ) {
 		attr = GL_ATTR_VIRTUAL;
@@ -519,6 +520,7 @@ RecParseValue(
 		,		root;
 
 ENTER_FUNC;
+	assert(ParsedRec);
 	root.next = NULL;
 	if ( (ret  = g_hash_table_lookup(ParsedRec, name)) ==  NULL  ){
 		if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
