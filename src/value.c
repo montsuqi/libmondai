@@ -124,6 +124,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
+		ValueDateTime(ret) = (struct tm *)xmalloc(sizeof(struct tm));
 		ValueDateTimeSec(ret) = 0;
 		ValueDateTimeMin(ret) = 0;
 		ValueDateTimeHour(ret) = 0;
@@ -188,6 +189,11 @@ FreeValueStruct(
 			if		(  ValueString(val)  !=  NULL  ) {
 				xfree(ValueString(val));
 			}
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			  xfree(ValueDateTime(val));
 			break;
 		  case	GL_TYPE_NUMBER:
 			if		(  ValueFixedBody(val)  !=  NULL  ) {
@@ -278,7 +284,7 @@ extern	ValueStruct	*
 GetRecordItem(
 	ValueStruct	*value,
 	char		*name)
-{	
+{
 	gpointer	p;
 	ValueStruct	*item;
 

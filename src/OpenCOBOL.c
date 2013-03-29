@@ -208,7 +208,7 @@ ENTER_FUNC;
 			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_TIME:
 			ValueDateTimeYear(value) = 0;
@@ -225,7 +225,7 @@ ENTER_FUNC;
 			ValueDateTimeHour(value) = 0;
 			ValueDateTimeMin(value) = 0;
 			ValueDateTimeSec(value) = 0;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {

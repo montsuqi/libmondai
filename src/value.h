@@ -27,7 +27,7 @@
 
 #define	SIZE_OID		4
 
-#define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
+#define	SIZE_GLOWN		 256	/*	LBS glown unit	*/
 #define	SIZE_BUFF		65536
 
 #define	SIZE_SYMBOL			255
@@ -92,7 +92,7 @@ typedef	struct _ValueStruct	{
 			MonObjectType	oid;
 			char			*file;
 		}	Object;
-		struct	tm	DateTime;
+		struct	tm	*DateTime;
 		char	*AliasName;
 		Fixed	FixedData;
 		int		IntegerData;
@@ -202,15 +202,15 @@ typedef	struct _ValueStruct	{
 #define	ValueFloat(v)			((v)->body.FloatData)
 
 #define	ValueDateTime(v)		((v)->body.DateTime)
-#define	ValueDateTimeSec(v)		((v)->body.DateTime.tm_sec)
-#define	ValueDateTimeMin(v)		((v)->body.DateTime.tm_min)
-#define	ValueDateTimeHour(v)	((v)->body.DateTime.tm_hour)
-#define	ValueDateTimeMDay(v)	((v)->body.DateTime.tm_mday)
-#define	ValueDateTimeMon(v)		((v)->body.DateTime.tm_mon)
-#define	ValueDateTimeYear(v)	((v)->body.DateTime.tm_year)
-#define	ValueDateTimeWDay(v)	((v)->body.DateTime.tm_wday)
-#define	ValueDateTimeYDay(v)	((v)->body.DateTime.tm_yday)
-#define	ValueDateTimeIsdst(v)	((v)->body.DateTime.tm_isdst)
+#define	ValueDateTimeSec(v)		((v)->body.DateTime->tm_sec)
+#define	ValueDateTimeMin(v)		((v)->body.DateTime->tm_min)
+#define	ValueDateTimeHour(v)	((v)->body.DateTime->tm_hour)
+#define	ValueDateTimeMDay(v)	((v)->body.DateTime->tm_mday)
+#define	ValueDateTimeMon(v)		((v)->body.DateTime->tm_mon)
+#define	ValueDateTimeYear(v)	((v)->body.DateTime->tm_year)
+#define	ValueDateTimeWDay(v)	((v)->body.DateTime->tm_wday)
+#define	ValueDateTimeYDay(v)	((v)->body.DateTime->tm_yday)
+#define	ValueDateTimeIsdst(v)	((v)->body.DateTime->tm_isdst)
 
 #define	ValueFixed(v)			((v)->body.FixedData)
 #define	ValueFixedLength(v)		((v)->body.FixedData.flen)

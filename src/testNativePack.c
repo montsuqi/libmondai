@@ -73,7 +73,7 @@ fprintf(stderr, "\n\n---- normal\n");
 fprintf(stderr, "#dump before\n");
 	DumpValueStruct(val);
 fprintf(stderr, "#pack\n");
-	size = NativeSizeValue(lbs,val);
+	size = NativeSizeValue(NULL,val);
 fprintf(stderr, "#size = %ld\n",(long)size);
 	LBS_ReserveSize(lbs, size, FALSE);
 	NativePackValue(NULL, LBS_Body(lbs), val);

@@ -81,7 +81,7 @@ ValueToInteger(
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
-		ret = (int)mktime(&ValueDateTime(val));
+		ret = (int)mktime(ValueDateTime(val));
 		break;
 	  default:
 		ret = 0;
@@ -120,7 +120,7 @@ ValueToFloat(
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
-		ret = (double)mktime(&ValueDateTime(val));
+		ret = (double)mktime(ValueDateTime(val));
 		break;
 	  default:
 		ret = 0;
@@ -680,7 +680,7 @@ ENTER_FUNC;
 				ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
 				ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
 				ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 				break;
 			  case	GL_TYPE_DATE:
 				ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
@@ -689,7 +689,7 @@ ENTER_FUNC;
 				ValueDateTimeHour(val) = 0;
 				ValueDateTimeMin(val) = 0;
 				ValueDateTimeSec(val) = 0;
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 				break;
 			  case	GL_TYPE_TIME:
 				ValueDateTimeYear(val) = 0;
@@ -765,7 +765,7 @@ SetValueInteger(
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
 			ltime = (time_t)ival;
-			rc = (  localtime_r(&ltime,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
+			rc = (  localtime_r(&ltime,ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -911,7 +911,7 @@ SetValueFloat(
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
 			wt = (time_t)fval;
-			rc = (  localtime_r(&wt,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
+			rc = (  localtime_r(&wt,ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -963,7 +963,7 @@ SetValueFixed(
 			ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
 			ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
 			ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
-			rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+			rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			break;
 		  case	GL_TYPE_DATE:
 			str = fval->sval;
@@ -973,7 +973,7 @@ SetValueFixed(
 			ValueDateTimeHour(val) = 0;
 			ValueDateTimeMin(val) = 0;
 			ValueDateTimeSec(val) = 0;
-			rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+			rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			break;
 		  case	GL_TYPE_TIME:
 			str = fval->sval;
@@ -1119,10 +1119,10 @@ ENTER_FUNC;
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
 			if		(  str  !=  NULL  ) {
-				memcpy(&ValueDateTime(val),str,sizeof(struct tm));
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				memcpy(ValueDateTime(val),str,sizeof(struct tm));
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			} else {
-				memclear(&ValueDateTime(val),sizeof(struct tm));
+				memclear(ValueDateTime(val),sizeof(struct tm));
 				rc = TRUE;
 			}
 			break;
@@ -1196,7 +1196,7 @@ ENTER_FUNC;
 			  case	GL_TYPE_DATE:
 			  case	GL_TYPE_TIME:
 				LBS_ReserveSize(ValueStr(val),sizeof(int)*9,FALSE);
-				memcpy(ValueStrBody(val),&ValueDateTime(val),sizeof(int)*9);
+				memcpy(ValueStrBody(val),ValueDateTime(val),sizeof(int)*9);
 				break;
 			  default:
 				break;
@@ -1249,8 +1249,8 @@ SetValueDateTime(
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-			memcpy(&ValueDateTime(val),&tval,sizeof(struct tm));
-			rc = (  mktime(&ValueDateTime(val))  < 0 ) ? FALSE : TRUE;
+			memcpy(ValueDateTime(val),&tval,sizeof(struct tm));
+			rc = (  mktime(ValueDateTime(val))  < 0 ) ? FALSE : TRUE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -1306,18 +1306,18 @@ ValueToDateTime(
 		localtime_r(&wt,&ret);
 		break;
 	  case	GL_TYPE_TIMESTAMP:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_DATE:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_TIME:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		mktime(&ret);
 		ret.tm_year = 0;
 		ret.tm_mon = 0;
@@ -1368,7 +1368,7 @@ ValueToDate(
 		break;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;
@@ -1431,7 +1431,7 @@ ValueToTime(
 		break;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_TIME:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_year = 0;
 		ret.tm_mon = 0;
 		ret.tm_mday = 0;

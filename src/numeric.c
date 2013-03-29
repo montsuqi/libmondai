@@ -157,7 +157,7 @@ static	char	*GetStrFromVar(NumericVar *var, int dscale);
 
 static	Numeric	MakeResult(NumericVar *var);
 
-static	void	ApplyPrecision(NumericVar *var, int precision, int scale);
+static	Bool	ApplyPrecision(NumericVar *var, int precision, int scale);
 static	int		CmpVar(NumericVar *var1, NumericVar *var2);
 static	void	AddVar(NumericVar *var1, NumericVar *var2, NumericVar *result);
 static	void	SubVar(NumericVar *var1, NumericVar *var2, NumericVar *result);
@@ -196,7 +196,9 @@ NumericInput(
 	InitVar(&value);
 	SetVarFromStr(str, &value);
 
-	ApplyPrecision(&value, precision, scale);
+	if (!ApplyPrecision(&value, precision, scale)){
+		fprintf(stderr, "NumericInput string=%s, precision=%d, scale=%d\n", str, precision, scale);
+	}
 
 	res = MakeResult(&value);
 	FreeVar(&value);
@@ -216,7 +218,9 @@ NumericInputChar(
 	InitVar(&value);
 	SetVarFromChar(c, &value);
 
-	ApplyPrecision(&value, precision, scale);
+	if (!ApplyPrecision(&value, precision, scale)){
+		fprintf(stderr, "NumericInputChar char=%c, precision=%d, scale=%d\n", c, precision, scale);
+	}
 
 	res = MakeResult(&value);
 	FreeVar(&value);
@@ -336,7 +340,9 @@ NumericRescale(
 	InitVar(&var);
 
 	SetVarFromNum(num, &var);
-	ApplyPrecision(&var, precision, scale);
+	if (!ApplyPrecision(&var, precision, scale)){
+		fprintf(stderr, "NumericRescale precision=%d, scale=%d\n", precision, scale);
+	}
 	new = MakeResult(&var);
 
 	FreeVar(&var);
@@ -1808,7 +1814,7 @@ MakeResult(
 	return result;
 }
 
-static void
+static Bool
 ApplyPrecision(
 	NumericVar *var,
 	int			precision,
@@ -1816,6 +1822,7 @@ ApplyPrecision(
 {
 	int			maxweight;
 	int			i;
+	Bool		rc = TRUE;
 
 	maxweight = precision - scale;
 
@@ -1851,14 +1858,18 @@ ApplyPrecision(
 			tweight--;
 		}
 
-		if (tweight >= maxweight && i < var->ndigits)
+		if (tweight >= maxweight && i < var->ndigits){
 			fprintf(stderr, "overflow on numeric "
 			  "ABS(value) >= 10^%d for field with precision %d scale %d\n",
 				 tweight, precision, scale);
+			fprintf(stderr, "maxweight = %d, i=%d, var->ndigits=%d\n", maxweight, i, var->ndigits);
+			rc = FALSE;
+		}
 	}
 
 	var->rscale = scale;
 	var->dscale = scale;
+	return rc;
 }
 
 static int
