@@ -91,16 +91,9 @@ AM_CONDITIONAL(SOAP, test x$USE_SOAP != "xno")
 dnl ***************************************************************************
 dnl libxml2
 dnl ***************************************************************************
-USE_LIBXML2="yes"
-AC_ARG_ENABLE(xml2,
-    [  --disable-xml2          disable xml with libxml2 [[enable]]],
-    [USE_LIBXML2=$enable_xml2])
-if test "x$USE_LIBXML2" != "xno"; then
-	PKG_CHECK_MODULES(XML, libxml-2.0 >= 2.6.0)
-	AC_SUBST(XML_CFLAGS)
-	AC_SUBST(XML_LIBS)
-	AC_DEFINE(USE_XML,2,"")
-fi
+PKG_CHECK_MODULES(XML, libxml-2.0 >= 2.6.0)
+AC_DEFINE(USE_XML,2,"")
+
 dnl ***************************************************************************
 dnl jemalloc
 dnl ***************************************************************************
@@ -132,6 +125,5 @@ echo "libmondai Configuration:"
 echo ""
 echo "  VERSION:               $VERSION"
 echo "  LTVERSION:             $LTVERSION"
-echo "  libxml2 Support:       $USE_LIBXML2"
 echo "  SOAP Support:          $USE_SOAP"
 echo ""
