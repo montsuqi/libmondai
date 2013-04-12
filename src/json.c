@@ -264,9 +264,13 @@ JSON_UnPackValue(
 {
 	json_object *obj;
 ENTER_FUNC;
-	InitializeValue(value);
 	obj = json_tokener_parse(p);
-	_JSON_UnPackValue(opt,obj,value);
+	if (is_error(obj)) {
+		MonWarning("invalid json");
+	} else {
+		InitializeValue(value);
+		_JSON_UnPackValue(opt,obj,value);
+	}
 	json_object_put(obj);
 LEAVE_FUNC;
 	return	0;
