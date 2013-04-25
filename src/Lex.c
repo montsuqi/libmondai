@@ -90,14 +90,14 @@ PushLexInfo(
 	FILE	*fp;
 
 ENTER_FUNC;
-	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
+	if ((fp = fopen(name,"r")) != NULL) {
 		fstat(fileno(fp),&sb);
 		info = NewCURFILE(in,path,res);
 		info->fn = StrDup(name);
 		info->size = sb.st_size;
 		info->fp = fp;
 	} else {
-		if		(  fLexVerbose  ) {
+		if (fLexVerbose) {
 			fprintf(stderr,"file not found [%s]\n",name);
 		}
 		info = NULL;

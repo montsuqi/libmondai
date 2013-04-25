@@ -20,6 +20,8 @@
 
 #ifndef	_INC_JSON_VALUE_H
 #define	_INC_JSON_VALUE_H
+
+#include	<json.h>
 #include	"valueconv.h"
 
 extern	size_t	JSON_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);

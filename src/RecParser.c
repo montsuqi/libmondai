@@ -459,23 +459,23 @@ ENTER_FUNC;
 
 	SetReserved(in,Reserved);
 	ret = NULL;
-	if		(  GetSymbol  ==  T_VIRTUAL  ) {
+	if (GetSymbol == T_VIRTUAL) {
 		attr = GL_ATTR_VIRTUAL;
 		GetSymbol;
 	} else {
 		attr = GL_ATTR_NULL;
 	}
-	if		(  ComToken  ==  T_SYMBOL  ) {
-		if		(  in->ValueName  !=  NULL  ) {
+	if (ComToken == T_SYMBOL) {
+		if (in->ValueName != NULL) {
 			xfree(in->ValueName);
 		}
 		in->ValueName = StrDup(ComSymbol);
-		if		(  GetSymbol  == '{'  ) {
+		if (GetSymbol == '{' ) {
 			ret = NewValue(GL_TYPE_RECORD);
 			ValueAttribute(ret) = attr;
 			GetName;
 			ParValueDefines(in,ret);
-			if		(  in->fError  ) {
+			if (in->fError) {
 				Error("syntax error");
 				FreeValueStruct(ret);
 				ret = NULL;
@@ -494,15 +494,15 @@ LEAVE_FUNC;
 static	ValueStruct *
 _RecParseValue(
 	CURFILE		*in,
-	char	**ValueName)
+	char	**topname)
 {
 
 	ValueStruct	*ret;
 	ret = RecParseMain(in);
 	if (ret != NULL) {
 		if (in->ValueName != NULL) {
-			if (ValueName != NULL) {
-				*ValueName = StrDup(in->ValueName);
+			if (topname != NULL) {
+				*topname = StrDup(in->ValueName);
 			}
 			ValueName(ret) = StrDup(in->ValueName);
 		}
@@ -522,8 +522,8 @@ RecParseValue(
 ENTER_FUNC;
 	assert(ParsedRec);
 	root.next = NULL;
-	if ( (ret  = g_hash_table_lookup(ParsedRec, name)) ==  NULL  ){
-		if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
+	if ((ret = g_hash_table_lookup(ParsedRec, name)) ==  NULL){
+		if ((in = PushLexInfo(&root,name,RecordDir,Reserved)) != NULL) {
 			ret = _RecParseValue(in, ValueName);
 			DropLexInfo(&in);
 			g_hash_table_insert(ParsedRec, StrDup(name), ret);
@@ -531,7 +531,7 @@ ENTER_FUNC;
 			ret = NULL;
 		}
 	} else {
-		if		(	ValueName !=  NULL ) {
+		if (ValueName != NULL) {
 			*ValueName = GetValueName(ret);
 		}
 	}

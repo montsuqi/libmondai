@@ -52,11 +52,7 @@
 
 typedef	PacketClass		PacketDataType;
 typedef	uint16_t		ValueAttributeType;
-#ifdef	__LP64__
-typedef	long			MonObjectType;
-#else
 typedef	uint64_t		MonObjectType;
-#endif
 
 #define	IS_OBJECT_NULL(obj)	((obj) ==  0)
 
