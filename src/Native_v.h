@@ -24,7 +24,6 @@
 #include	"valueconv.h"
 
 extern	size_t	NativeUnPackValue(CONVOPT *opt,unsigned char *p, ValueStruct *value);
-extern	size_t	NativeUnPackValueNew(CONVOPT *opt,unsigned char *p, ValueStruct **ret);
 extern	size_t	NativePackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 

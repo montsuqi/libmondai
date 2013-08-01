@@ -44,185 +44,6 @@
 #include	"Native_v.h"
 #include	"debug.h"
 
-extern	size_t 
-NativeUnPackValueNew(
-	CONVOPT	*opt,
-	unsigned char		*p,
-	ValueStruct	**ret)
-{
-	ValueStruct	*value
-		,		*lower;
-	int		i;
-	size_t	size
-	,		count
-	,		len;
-	PacketDataType	type;
-	ValueAttributeType	attr;
-	unsigned char	*q;
-	char	*name;
-
-ENTER_FUNC;
-	q = p; 
-	*ret = NULL;
-	if (p != NULL &&
-		( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
-		value = *ret = NewValue(type);
-		if (value == NULL) {
-			return 0;
-		}
-		p += sizeof(PacketDataType);
-		attr = *(ValueAttributeType *)p;
-		p += sizeof(ValueAttributeType);
-		ValueAttribute(value) = attr;
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_INT:
-			ValueInteger(value) = *(int *)p;
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_TIMESTAMP:
-		  case	GL_TYPE_DATE:
-		  case	GL_TYPE_TIME:
-			ValueDateTimeSec(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMin(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeHour(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMon(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeYear(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeWDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeYDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeIsdst(value) = *(int *)p;	p += sizeof(int);
-			break;
-		  case	GL_TYPE_BOOL:
-			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
-			p ++;
-			break;
-		  case	GL_TYPE_FLOAT:
-			ValueFloat(value) = *(double *)p;
-			p += sizeof(double);
-			break;
-		  case	GL_TYPE_NUMBER:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			if		(  size  >  0  ) {
-				ValueFixedBody(value) = (char *)xmalloc(size+1);
-				ValueFixedLength(value) = size;
-				ValueFixedSlen(value) = *(size_t *)p;
-				p += sizeof(size_t);
-				memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
-				ValueFixedBody(value)[ValueFixedLength(value)] = 0;
-				p += ValueFixedLength(value);
-			} else {
-				p += sizeof(size_t);
-			}
-			break;
-		  case	GL_TYPE_BYTE:
-		  case	GL_TYPE_BINARY:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			if		(  size  >  0  )	{
-				ValueByteSize(value) = size;
-				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
-			}
-			if		(  size  >  0  ) {
-				memclear(ValueByte(value),size);
-				memcpy(ValueByte(value),p,size);
-				p += size;
-			}
-			ValueByteLength(value) = size;
-			break;
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_SYMBOL:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			len = *(size_t *)p;
-			p += sizeof(size_t);
-			if 		(  strlen(p) + 1   >  size  ) {
-				MonWarningPrintf("%s:ValueStringSize is wrong,size:%zd strlen:%zd",GetValueLongName(value),size,strlen(p));
-				size = strlen(p) + 1;
-			}
-			if		(  size  >  0  )	{
-				ValueStringSize(value) = size;
-				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
-				memclear(ValueString(value),size);
-				strcpy(ValueString(value),p);
-				p += strlen(p) + 1;
-			}
-			ValueStringLength(value) = len;
-			break;
-		  case	GL_TYPE_OBJECT:
-			ValueObjectId(value) = *(MonObjectType *)p;
-			p += sizeof(MonObjectType);
-			if		(  ( size = *(size_t *)p )  >  0  ) {
-				p += sizeof(size_t);
-				ValueObjectFile(value) = (char *)xmalloc(size);
-				strcpy(ValueObjectFile(value),p);
-				p += size;
-			} else {
-				p += sizeof(size_t);
-				ValueObjectFile(value) = NULL;
-			}
-			break;
-		  case	GL_TYPE_ARRAY:
-			size = *(size_t *)p;
-			ValueArraySize(value) = size;
-			p += sizeof(size_t);
-			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				count = NativeUnPackValueNew(opt,p,&ValueArrayItem(value,i));
-				if (count == 0) {
-					ValueType(value) = GL_TYPE_NULL;
-					return 0;
-				}
-				p += count;
-				ValueParent(ValueArrayItem(value,i)) = value;
-				ValueIndex(ValueArrayItem(value,i)) = i;
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			size = *(size_t *)p;
-			ValueRecordSize(value) = size;
-			p += sizeof(size_t);
-			ValueRecordItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
-			ValueRecordNames(value) = (char **)xmalloc(sizeof(char *) * size);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				name = StrDup(p);
-				p += strlen(name)+1;
-				count = NativeUnPackValueNew(opt,p,&lower);
-				if (count == 0) {
-					ValueType(value) = GL_TYPE_NULL;
-					return 0;
-				}
-				p += count;
-				ValueRecordItem(value,i) = lower;
-				ValueRecordName(value,i) = name;
-				g_hash_table_insert(ValueRecordMembers(value),
-									(gpointer)ValueRecordName(value,i),
-									(gpointer)((long)i+1));
-				ValueParent(ValueRecordItem(value,i)) = value;
-				ValueIndex(ValueRecordItem(value,i)) = i;
-				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
-			}
-			break;
-		  case	GL_TYPE_ALIAS:
-			name = StrDup(p);
-			p += strlen(name)+1;
-			ValueAliasName(value) = name;
-			break;
-		  default:
-			ValueIsNil(value);
-			MonWarningPrintf("invalid type:%#X",ValueType(value));
-			return 0;
-			break;
-		}
-	}
-LEAVE_FUNC;
-	return	(p-q);
-}
-
-
 extern	size_t
 NativeUnPackValue(
 	CONVOPT	*opt,
@@ -382,7 +203,6 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_ARRAY:
 			dbgmsg("GL_TYPE_ARRAY");
-			ValueArraySize(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				dbgprintf("child[%d]",i);
@@ -398,7 +218,6 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_RECORD:
 			dbgmsg("GL_TYPE_RECORD");
-			ValueRecordSize(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				if (strcmp(p,ValueRecordName(value,i))) {
