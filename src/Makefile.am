@@ -23,7 +23,14 @@ TESTSOAP  =  testsoap
 else
 TESTSOAP  =
 endif
-noinst_PROGRAMS = testfixed testconv testvalue testmem testNativePack $(TESTSOAP)
+noinst_PROGRAMS =	\
+	testfileutils \
+	testfixed \
+	testconv \
+	testvalue \
+	testmem \
+	testNativePack \
+	$(TESTSOAP)
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -60,7 +67,8 @@ libmondaiinclude_HEADERS =	\
 	types.h					\
 	monstring.h				\
 	memory_v.h				\
-	numeric.h
+	numeric.h				\
+	fileutils.h
 
 INCLUDES 			= 		\
 	$(GLIB_CFLAGS) 			\
@@ -94,6 +102,7 @@ libmondai_la_SOURCES	=	\
 	memory.c		memory_v.h		\
 	monstring.c		monstring.h		\
 	numeric.c		numeric.h		\
+	fileutils.c		fileutils.h		\
 	debug.h
 
 libmondai_la_LIBADD	=		\
@@ -126,3 +135,6 @@ testmem_SOURCES		=		\
 
 testfixed_SOURCES		=		\
 	testfixed.c
+
+testfileutils_SOURCES		=		\
+	testfileutils.c
