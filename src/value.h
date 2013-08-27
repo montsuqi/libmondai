@@ -27,7 +27,7 @@
 
 #define	SIZE_OID		4
 
-#define	SIZE_GLOWN		 256	/*	LBS glown unit	*/
+#define	SIZE_GROWN		 256	/*	LBS grown unit	*/
 #define	SIZE_BUFF		65536
 
 #define	SIZE_SYMBOL			255

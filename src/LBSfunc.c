@@ -69,7 +69,7 @@ FreeLBS(
 }
 
 extern void
-LBS_Glown(
+LBS_Grown(
 	LargeByteString *lbs,
 	size_t			size,
 	Bool			fKeep)
@@ -98,7 +98,7 @@ LBS_ReserveSize(
 	Bool			fKeep)
 {
 	if		(  lbs  !=  NULL  ) {
-		LBS_Glown(lbs, size, fKeep);
+		LBS_Grown(lbs, size, fKeep);
 		lbs->size = size;
 		lbs->ptr = size;
 	}
@@ -242,7 +242,7 @@ LBS_Emit(
 {
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->ptr  ==  lbs->asize  ) {
-			LBS_Glown(lbs, lbs->asize + SIZE_GLOWN, TRUE);
+			LBS_Grown(lbs, lbs->asize + SIZE_GROWN, TRUE);
 		}
 		lbs->body[lbs->ptr] = code;
 		lbs->ptr ++;
@@ -257,7 +257,7 @@ LBS_EmitEnd(
 	LargeByteString	*lbs)
 {
 	if ( (lbs->ptr == 0) || (lbs->body[lbs->ptr - 1] != '\0') ) {
-		LBS_Glown(lbs, lbs->size + 1, TRUE);
+		LBS_Grown(lbs, lbs->size + 1, TRUE);
 		LBS_Emit(lbs,'\0');
 	}
 }
@@ -513,7 +513,7 @@ ENTER_FUNC;
 			g_free(nstr);
 			iconv_close(cd);
 		} else {
-			LBS_Glown(lbs, isize + 1, FALSE);
+			LBS_Grown(lbs, isize + 1, FALSE);
 			memcpy(lbs->body, str, isize);
 			lbs->size = isize;
 			lbs->ptr = lbs->size;
