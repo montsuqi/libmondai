@@ -23,8 +23,8 @@
 
 #include	"valueconv.h"
 
-extern	size_t	PHP_UnPackValue(CONVOPT *opt, byte *p, ValueStruct *value);
-extern	size_t	PHP_PackValue(CONVOPT *opt, byte *p, ValueStruct *value);
+extern	size_t	PHP_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	PHP_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	PHP_SizeValue(CONVOPT *opt, ValueStruct *value);
 
 #endif

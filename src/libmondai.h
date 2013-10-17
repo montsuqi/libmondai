@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2008 Ogochan.
+ * Copyright (C) 2004-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,21 +40,7 @@
 #include	"memory_v.h"
 #include	"misc_v.h"
 #include	"others.h"
+#include	"fileutils.h"
 
-static	const	unsigned int	libmondai_i18n = @LIBMONDAI_I18N@;
-
-/* version infomation */
-
-static	const	unsigned int	libmondai_major_version = @MAJOR_VERSION@;
-static	const	unsigned int	libmondai_minor_version = @MINOR_VERSION@;
-static	const	unsigned int	libmondai_micro_version = @MICRO_VERSION@;
-
-#define LIBMONDAI_CHECK_VERSION(major,minor,micro)	\
-  (libmondai_major_version > (major)			\
-   || (libmondai_major_version == (major)		\
-       && libmondai_minor_version > (minor))		\
-   || (libmondai_major_version == (major)		\
-       && libmondai_minor_version == (minor)		\
-       && libmondai_micro_version >= (micro)))
-
+static	const	unsigned int	libmondai_i18n = 1;
 #endif

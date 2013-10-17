@@ -146,6 +146,9 @@ EncodeLength(
 	  case	STRING_ENCODING_BACKSLASH:
 		result = EncodeStringLengthBackslash(in);
 		break;
+	  case	STRING_ENCODING_BACKSLASH_CRLF:
+		result = EncodeStringLengthBackslashCRLF(in);
+		break;
 	  default:
 		result = 0;
 		break;
@@ -163,8 +166,7 @@ ConvSetLanguage(
 ENTER_FUNC;
 	if		(  name  !=  NULL  ) {
 		if		(  ( func = GetConvFunc(name) )  ==  NULL  ) {
-			fprintf(stderr,"can not found %s convert rule\n",name);
-			exit(1);
+			MonErrorPrintf("can not found %s convert rule",name);
 		}
 		PackValue = func->PackValue;
 		UnPackValue = func->UnPackValue;
@@ -208,7 +210,7 @@ PutCR(
 extern	size_t
 IndentLine(
 	CONVOPT		*opt,
-	byte		*p)
+	unsigned char		*p)
 {
 	int		i;
 	size_t	size;
@@ -283,7 +285,6 @@ extern	void
 DestroyConvOpt(
 	CONVOPT	*opt)
 {
-	xfree(opt->codeset);
 	xfree(opt->recname);
 	xfree(opt);
 }

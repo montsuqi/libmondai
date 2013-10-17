@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2009 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,23 +55,18 @@ extern	void	*
 _xmalloc(
 	size_t	size,
 	char	*fn,
-	int		line,
-	Bool	fClear)
+	int		line)
 {
 	void	*ret;
 #ifdef	TRACE
-	byte	*area;
+	unsigned char	*area;
 	size_t	*sizea;
 
 	total += size; 
 	printf("xmalloc %s(%d),size = %d,",fn,line,size);fflush(stdout);
-	if		(  ( area = (byte *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
-		printf("no memory space!! %s(%d)\n",fn,line);
+	if		(  ( area = (unsigned char *)malloc(size+sizeof(size_t)) )  ==  NULL  )	{
+		fprintf(stderr,"no memory space!! %s(%d)\n",fn,line);
 		exit(1);
-	} else {
-		if		(  fClear  ) {
-			memclear(ret,size);
-		}
 	}
 	sizea = (size_t *)(area + size);
 	*sizea = size;
@@ -83,27 +78,9 @@ _xmalloc(
 	g_int_hash_table_insert(PoolHash,ret,sizea);
 #else
 	if		(  ( ret = malloc(size) )  ==  NULL  )	{
-		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(1);
+		MonErrorPrintf("no memory space!! %s(%d), request size (%zd)",fn,line,size);
 	}
 #endif
-	return	(ret);
-}
-
-extern	void	*
-_xrealloc(
-	void	*p,
-	size_t	size,
-	char	*fn,
-	int		line)
-{
-	void	*ret;
-
-	dbgprintf("xrealloc %s(%d),size = %d,",fn,line,size);
-	if		(  ( ret = realloc(p,size) )  ==  NULL  )	{
-		printf("no memory space!! %s(%d)\n",fn,line);
-		exit(1);
-	}
 	return	(ret);
 }
 
@@ -118,8 +95,7 @@ _xfree(
 
 	if		(  p  ==  NULL  )	return;
 	if		(  ( area = g_int_hash_table_lookup(PoolHash,p) )  ==  NULL  ) {
-		fprintf(stderr,"%p free duplicate in %s(%d)\n",p,fn,line);
-		exit(1);
+		fprintf(stderr, "%p free duplicate in %s(%d)\n",p,fn,line);
 	}
 	g_int_hash_table_remove(PoolHash,p);
 	total -= *area;

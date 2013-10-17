@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2009 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,11 @@
 #ifndef	_INC_DEBUG_H
 #define	_INC_DEBUG_H
 #include	<stdio.h>
+#include	<syslog.h>
 #include	<stdarg.h>
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
 
 #ifdef	TRACE
 #define	dbgmsg(s)			MessageDebug(s)
@@ -43,88 +47,37 @@
 #define	RETURN(v)			return(v)
 #endif
 
+#define	MessageDebug(s)	printf("D:%s:%d:%s\n",__FILE__,__LINE__,(s))
+#define MessageDebugPrintf(...)                 \
+do {                                            \
+    printf("D:%s:%d:",__FILE__,__LINE__);       \
+    printf(__VA_ARGS__);                        \
+    printf("\n");                               \
+} while (0)
+
 #define	EXIT(c)	{ printf("exit at %s(%d) %s\n",__FILE__,__LINE__, __func__);exit(c);}
 
-#ifdef	_INC_MESSAGE_H
-#define	Error(...)                                                      \
-do {                                                                    \
-    _MessageLevelPrintf(MESSAGE_ERROR,__FILE__,__LINE__,__VA_ARGS__);   \
-    exit(1);                                                            \
-} while (0)
-#define	Warning(...)                                                \
-_MessageLevelPrintf(MESSAGE_WARN,__FILE__,__LINE__,__VA_ARGS__);
-#define	Message(...)                                  \
-_MessageLevelPrintf(MESSAGE_PRINT,__FILE__,__LINE__,__VA_ARGS__);
-#else
+#define MonError(s) 									\
+fprintf(stderr,"%s:%d:%s\n",__FILE__,__LINE__,(s));		\
+syslog(LOG_ERR,"%s:%d:%s",__FILE__,__LINE__,(s));		\
+exit(1)
 
-#if	( defined(_WIN32) || defined(_WIN64) ) && !defined(CONSOLE_DEBUG)
-extern	void	debug_printf(const _TCHAR *fmt, ...);
-extern	void	debug_line_start(void);
-extern	void	debug_line_flush(void);
+#define MonErrorPrintf(fmt,...) 						\
+fprintf(stderr,"%s:%d:" fmt "\n",						\
+__FILE__,__LINE__,__VA_ARGS__);							\
+syslog(LOG_ERR,"%s:%d:" fmt,							\
+__FILE__,__LINE__,__VA_ARGS__);							\
+exit(1)
 
-#define	LINE_START		debug_line_start()
-#define	LINE_FEED_OUT	debug_line_flush()
-#else
-#define	LINE_START		/*	*/
-#define	debug_printf	printf
-#define	LINE_FEED_OUT	printf("\n");fflush(stdout)
-#endif
+#define MonWarning(s) 									\
+fprintf(stderr,"%s:%d:%s\n",__FILE__,__LINE__,(s));		\
+syslog(LOG_WARNING,"%s:%d:%s",__FILE__,__LINE__,(s))
 
-#define	Error(...)								\
-do {											\
-	LINE_START;									\
-	debug_printf("E:%s:%d:",__FILE__,__LINE__);	\
-	debug_printf(__VA_ARGS__);					\
-	debug_printf("\n");							\
-	LINE_FEED_OUT;								\
-} while (0)
-#define	Warning(...)							\
-do {											\
-	LINE_START;									\
-	debug_printf("W:%s:%d:",__FILE__,__LINE__);	\
-	debug_printf(__VA_ARGS__);					\
-	LINE_FEED_OUT;								\
-} while (0)
-#define	Message(l, ...)							\
-do {											\
-	LINE_START;									\
-	debug_printf("M:%s:%d:",__FILE__,__LINE__);	\
-	debug_printf(__VA_ARGS__);					\
-	LINE_FEED_OUT;								\
-} while (0)
-#define	_MessageLevelPrintf(m,f,l,...)			\
-do {											\
-	LINE_START;									\
-	debug_printf("M:%s:%d:",(f),(l));			\
-	debug_printf(__VA_ARGS__);					\
-	LINE_FEED_OUT;								\
-} while (0)
-#define	MessageLog(s)							\
-do {											\
-	LINE_START;									\
-	debug_printf("L:%s:%d:%s",__FILE__,__LINE__,(s))	\
-	LINE_FEED_OUT;								\
-}	while(0)
-#define MessageLogPrintf(...)					\
-do {											\
-	LINE_START;									\
-	debug_printf("L:%s:%d:",__FILE__,__LINE__);	\
-	debug_printf(__VA_ARGS__);					\
-	LINE_FEED_OUT;								\
-}	while (0)
-#define	MessageDebug(s)							\
-do {											\
-	LINE_START;									\
-	debug_printf("D:%s:%d:%s",__FILE__,__LINE__,(s));	\
-	LINE_FEED_OUT;								\
-}	while (0)
-#define MessageDebugPrintf(...)					\
-do {											\
-	LINE_START;									\
-	debug_printf("D:%s:%d:",__FILE__,__LINE__);	\
-	debug_printf(__VA_ARGS__);					\
-	LINE_FEED_OUT;								\
-} while (0)
-#endif
+#define MonWarningPrintf(fmt,...) 						\
+fprintf(stderr,"%s:%d:" fmt "\n",						\
+__FILE__,__LINE__,__VA_ARGS__);							\
+syslog(LOG_WARNING,"%s:%d:" fmt,						\
+__FILE__,__LINE__,__VA_ARGS__)
 
 #endif
+

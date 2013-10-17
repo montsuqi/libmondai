@@ -1,6 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2000-2009 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +37,8 @@
 #include	<sys/mman.h>
 #include	<sys/stat.h>
 #include	<fcntl.h>
+#include	<assert.h>
+
 #include	"types.h"
 #include	"misc_v.h"
 #include	"memory_v.h"
@@ -51,7 +54,7 @@
 static	CURFILE	*
 NewCURFILE(
 	CURFILE		*in,
-	char		*path,
+	const char	*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -67,8 +70,7 @@ NewCURFILE(
 	info->ftop = NULL;
 	info->Reserved = res;
 	info->fError = FALSE;
-	info->ValueName = NULL;
-	info->path = path;
+	info->path = (char*)path;
 	info->Symbol = NULL;
 	info->ValueName = NULL;
 	info->next = in;
@@ -79,8 +81,8 @@ NewCURFILE(
 extern	CURFILE	*
 PushLexInfo(
 	CURFILE		*in,
-	char		*name,
-	char		*path,
+	const char		*name,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -88,15 +90,14 @@ PushLexInfo(
 	FILE	*fp;
 
 ENTER_FUNC;
-	dbgprintf("fname = [%s]",name);
-	if		(  ( fp = fopen(name,"r") )  !=  NULL  ) {
+	if ((fp = fopen(name,"r")) != NULL) {
 		fstat(fileno(fp),&sb);
 		info = NewCURFILE(in,path,res);
 		info->fn = StrDup(name);
 		info->size = sb.st_size;
 		info->fp = fp;
 	} else {
-		if		(  fLexVerbose  ) {
+		if (fLexVerbose) {
 			fprintf(stderr,"file not found [%s]\n",name);
 		}
 		info = NULL;
@@ -108,15 +109,15 @@ LEAVE_FUNC;
 extern	CURFILE	*
 PushLexInfoMem(
 	CURFILE		*in,
-	char		*mem,
-	char		*path,
+	const char		*mem,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
 
 ENTER_FUNC;
 	info = NewCURFILE(in,path,res);
-	info->body = mem;
+	info->body = (char*)mem;
 	info->size = strlen(mem)+1;
 LEAVE_FUNC;
 	return	(info);
@@ -126,7 +127,7 @@ extern	CURFILE	*
 PushLexInfoStream(
 	CURFILE		*in,
 	FILE		*fp,
-	char		*path,
+	const char		*path,
 	GHashTable	*res)
 {
 	CURFILE	*info;
@@ -197,8 +198,7 @@ LEAVE_FUNC;
 static	void
 DoInclude(
 	CURFILE	*in,
-	char	*fn,
-	Bool	fFull)
+	char	*fn)
 {
 	INCFILE	*back;
 	char	name[SIZE_LONGNAME+1];
@@ -218,11 +218,7 @@ ENTER_FUNC;
 	in->ftop = back;
 	back->fp = in->fp;
 	if		(  in->path  !=  NULL  ) {
-		if		(  fFull  ) {
-			strcpy(buff,in->path);
-		} else {
-			strcpy(buff,ExpandPath(in->path,NULL));
-		}
+		strcpy(buff,in->path);
 	} else {
 		strcpy(buff,".");
 	}
@@ -231,22 +227,17 @@ ENTER_FUNC;
 		if		(  ( q = strchr(p,':') )  !=  NULL  ) {
 			*q = 0;
 		}
-		if		(  fFull  ) {
-			sprintf(name,"%s/%s",p,fn);
-		} else {
-			sprintf(name,"%s/%s",p,ExpandPath(fn,NULL));
-		}
-		dbgprintf("fname = [%s]",name);
+		sprintf(name,"%s/%s",p,fn);
 		if		(  ( in->fp = fopen(name,"r") )  !=  NULL  )	break;
 		p = q + 1;
 	}	while	(  q  !=  NULL  );
+	in->fn = StrDup(name);
 	if		(  in->fp  !=  NULL  ) {
 		fstat(fileno(in->fp),&sb);
 		in->size = sb.st_size;
 		in->cLine = 1;
 		in->pos = 0;
 		in->body = NULL;
-		in->fn = StrDup(name);
 	} else {
 		fprintf(stderr,"include file %s not found.\n",fn);
 		ExitInclude(in);
@@ -266,7 +257,7 @@ MakeReservedTable(
 {
 	int		i;
 	GHashTable	*res;
-	
+
 ENTER_FUNC;
 	res = NewNameiHash();
 	for	( i = 0 ; table[i].token  !=  0 ; i ++ ) {
@@ -281,6 +272,8 @@ SetReserved(
 	CURFILE		*in,
 	GHashTable	*res)
 {
+	assert(res);
+
 	in->Reserved = res;
 }
 
@@ -356,13 +349,9 @@ ReadyDirective(
 	char	*p;
 	char	buff[SIZE_LONGNAME+1];
 	int		c;
-	Bool	fFull;
 
 ENTER_FUNC;
-	while	(	(  ( c = GetChar(in) )  !=  0  )
-			&&	(  c  !=  '\n'  )
-			&&	(  isspace(c)   ) );
-	if		(  c  ==  '\n'  )	return;
+	SKIP_SPACE(in);
 	p = buff;
 	*p ++ = c;
 	while	(	( ( c = GetChar(in) )  !=  0  )
@@ -370,7 +359,6 @@ ENTER_FUNC;
 		*p ++ = c;
 	}
 	*p = 0;
-	fFull = FALSE;
 	if		(  !strlicmp(buff,"include")  ) {
 		SKIP_SPACE(in);
 		p = buff;
@@ -379,20 +367,18 @@ ENTER_FUNC;
 			while	(  ( c = GetChar(in) )  !=  '"'  ) {
 				*p ++ = c;
 			}
-			fFull = TRUE;
 			break;
 		  case	'<':
 			while	(  ( c = GetChar(in) )  !=  '>'  ) {
 				*p ++ = c;
 			}
-			fFull = FALSE;
 			break;
 		  default:
 			break;
 		}
 		*p = 0;
 		if		(  *buff  !=  0  ) {
-			DoInclude(in,buff,fFull);
+			DoInclude(in,buff);
 		}
 	} else {
 		UnGetChar(in,c);
@@ -437,12 +423,14 @@ Lex(
 	int		type)
 {
 	int		c;
+	int		i;
 	char	*p;
-	char	buff[SIZE_BUFF];
+	char	buff[SIZE_SYMBOL];
 	Bool	fDot;
 	LargeByteString	*lbs;
 
 ENTER_FUNC;
+	lbs = NewLBS();
   retry:
 	if		(  in->Symbol  !=  NULL  ) {
 		xfree(in->Symbol);
@@ -456,7 +444,7 @@ ENTER_FUNC;
 		break;
 	  case	'/':
 		if		(  type  ==  LEX_GET_STRING  ) {
-			lbs = NewLBS();
+			RewindLBS(lbs);
 			while	(  ( c = GetChar(in) )  !=  '/'  ) {
 				if		(  c  ==  '\\'  ) {
 					c = GetChar(in);
@@ -464,9 +452,7 @@ ENTER_FUNC;
 				LBS_EmitChar(lbs,c);
 			}
 			LBS_EmitEnd(lbs);
-			in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-			strcpy(in->Symbol,LBS_Body(lbs));
-			FreeLBS(lbs);
+			in->Symbol = StrDup(LBS_Body(lbs));
 			in->Token = T_RCONST;
 		} else {
 			if		(  ( c = GetChar(in) )  !=  '*'  ) {
@@ -483,7 +469,7 @@ ENTER_FUNC;
 		}
 		break;
 	  case	'"':
-		lbs = NewLBS();
+		RewindLBS(lbs);
 		while	(  ( c = GetChar(in) )  !=  '"'  ) {
 			if		(  c  ==  '\\'  ) {
 				c = GetChar(in);
@@ -491,9 +477,7 @@ ENTER_FUNC;
 			LBS_EmitChar(lbs,c);
 		}
 		LBS_EmitEnd(lbs);
-		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-		strcpy(in->Symbol,LBS_Body(lbs));
-		FreeLBS(lbs);
+		in->Symbol = StrDup(LBS_Body(lbs));
 		in->Token = T_SCONST;
 		break;
 	  case	'\'':
@@ -505,9 +489,7 @@ ENTER_FUNC;
 			LBS_EmitChar(lbs,c);
 		}
 		LBS_EmitEnd(lbs);
-		in->Symbol = (char *)xmalloc(LBS_Size(lbs));
-		strcpy(in->Symbol,LBS_Body(lbs));
-		FreeLBS(lbs);
+		in->Symbol = StrDup(LBS_Body(lbs));
 		in->Token = T_SCONST;
 		break;
 	  case	'<':
@@ -556,16 +538,16 @@ ENTER_FUNC;
 		p = buff;
 		if		(	(  isalpha(c)  )
 				||	(  c  ==  '_'  ) ) {
+			i = 0;
 			do {
 				*p ++ = c;
 				c = GetChar(in);
-			}	while	(	(  isalpha(c)  )
-						||	(  isdigit(c)  )
-						||	(  c  ==  '_'  ) );
+				i ++;
+			}	while	( (  (  isalnum(c)  ) || (  c  ==  '_'  )  )
+								&&  ( i  < sizeof(buff) ) );
 			UnGetChar(in,c);
 			*p = 0;
-			in->Symbol = (char *)xmalloc(strlen(buff)+1);
-			strcpy(in->Symbol,buff);
+			in->Symbol = StrDup(buff);
 			if		(  type  ==  LEX_GET_SYMBOL  ) {
 				in->Token = CheckReserved(in,in->Symbol);
 			} else {
@@ -574,18 +556,18 @@ ENTER_FUNC;
 		} else
 		if		(  isdigit(c) )	{
 			fDot = FALSE;
+			i = 0;
 			do {
 				*p ++ = c;
 				c = GetChar(in);
+				i ++;
 				if		(  c  ==  '.'  )
 					fDot = TRUE;
-			}	while	(	(  isalpha(c)  )
-						||	(  isdigit(c)  )
-						||	(  c  ==  '.'  ) );
+			}	while	(  ( (  isalnum(c)  ) || (  c  ==  '.'  ) )
+								 &&  (  i < sizeof(buff) ) );
 			UnGetChar(in,c);
 			*p = 0;
-			in->Symbol = (char *)xmalloc(strlen(buff)+1);
-			strcpy(in->Symbol,buff);
+			in->Symbol = StrDup(buff);
 			if		(  fDot  ) {
 				in->Token = T_NCONST;
 			} else {
@@ -609,6 +591,7 @@ ENTER_FUNC;
 		}
 		break;
 	}
+	FreeLBS(lbs);
 dbgmsg("*");
 #ifdef	DEBUG
 	DumpCURFILE(in);

@@ -1,6 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2000-2009 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
+ * Copyright (C) 2005-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +28,12 @@
 #  include <config.h>
 #endif
 
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include	<ctype.h>
 #include	<glib.h>
+#include	<assert.h>
 
 #define	_REC_PARSER
 #define	__VALUE_DIRECT
@@ -62,16 +63,13 @@
 #define	T_TIMESTAMP		(T_YYBASE +13)
 #define	T_DATE			(T_YYBASE +14)
 #define	T_TIME			(T_YYBASE +15)
-#define	T_ENUM			(T_YYBASE +16)
 
-#define	T_VIRTUAL		(T_YYBASE +17)
-#define	T_ALIAS			(T_YYBASE +18)
-#define	T_BINARY		(T_YYBASE +19)
-#define	T_UNIQ			(T_YYBASE +20)
-#define	T_PRIMARY		(T_YYBASE +21)
-#define	T_KEY			(T_YYBASE +22)
-#define	T_NOT			(T_YYBASE +23)
-#define	T_NULL			(T_YYBASE +24)
+#define	T_VIRTUAL		(T_YYBASE +16)
+#define	T_ALIAS			(T_YYBASE +17)
+#define	T_BINARY		(T_YYBASE +18)
+#define	T_UNIQ			(T_YYBASE +19)
+#define	T_PRIMARY		(T_YYBASE +20)
+#define	T_KEY			(T_YYBASE +21)
 
 static	void	ParValueDefines(CURFILE *in, ValueStruct *upper);
 
@@ -85,7 +83,6 @@ static	TokenTable	tokentable[] = {
 	{	"timestamp"	,T_TIMESTAMP},
 	{	"date"		,T_DATE		},
 	{	"time"		,T_TIME		},
-	{	"enum"		,T_ENUM		},
 	{	"input"		,T_INPUT	},
 	{	"int"		,T_INT		},
 	{	"integer"	,T_INT		},
@@ -98,14 +95,11 @@ static	TokenTable	tokentable[] = {
 	{	"alias"		,T_ALIAS	},
 	{	"primary"	,T_PRIMARY	},
 	{	"key"		,T_KEY		},
-	{	"uniq"		,T_UNIQ 	},
-	{	"unique"	,T_UNIQ 	},
-	{	"not"		,T_NOT		},
-	{	"null"		,T_NULL		},
 	{	""			,0			}
 };
 
 static	GHashTable	*Reserved = NULL;
+static	GHashTable	*ParsedRec = NULL;
 
 extern	void
 SetValueAttribute(
@@ -156,7 +150,8 @@ ParValueDefine(
 	,			ssize;
 	char		buff[SIZE_LONGNAME+1];
 	char		*p;
-	int			token;
+	int			token
+	,			i;
 	ValueStruct	*value
 	,			*array;
 	ArrayDimension	*next
@@ -164,7 +159,7 @@ ParValueDefine(
 	Bool		fExpandable;
 
 ENTER_FUNC;
-	SetReserved(in,Reserved); 
+	SetReserved(in,Reserved);
 	value = NULL;
 	switch	(GetSymbol) {
 	  case	T_ALIAS:
@@ -278,8 +273,10 @@ ENTER_FUNC;
 			  case	GL_TYPE_BYTE:
 				ValueByteLength(value) = size;
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 				memclear(ValueByte(value),ValueByteSize(value));
+				break;
+			  case GL_TYPE_OBJECT:
 				break;
 			  default:
 				if		(  fExpandable  ) {
@@ -288,7 +285,7 @@ ENTER_FUNC;
 					ValueIsNonExpandable(value);
 					ValueStringLength(value) = size;
 					ValueStringSize(value) = size+1;
-					ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+					ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 					memclear(ValueString(value),ValueStringSize(value));
 				}
 				break;
@@ -370,6 +367,10 @@ ENTER_FUNC;
 		} else {
 			ValueIsNonExpandable(array);
 			ValueArrayItems(array) = MakeValueArray(value,curr->count,FALSE);
+			for(i = 0; i < ValueArraySize(array); i++) {
+				ValueParent(ValueArrayItem(array,i)) = array;
+				ValueIndex(ValueArrayItem(array,i)) = i;
+			}
 		}
 		next = curr->next;
 		xfree(curr);
@@ -394,37 +395,25 @@ ENTER_FUNC;
 		strcpy(name,ComSymbol);
 		value = ParValueDefine(in);
 		attr = ValueAttribute(upper);
-		if		(  ComToken  != ';'  ) {
-			do {
-				if		(  ComToken  ==  ','  ) {
-					GetSymbol;
-				}
-				switch	(ComToken) {
-				  case	T_INPUT:
-					attr |= GL_ATTR_INPUT;
-					break;
-				  case	T_OUTPUT:
-					attr |= GL_ATTR_OUTPUT;
-					break;
-				  case	T_VIRTUAL:
-					attr |= GL_ATTR_VIRTUAL;
-					break;
-				  case	T_UNIQ:
-					attr |= GL_ATTR_UNIQ;
-					break;
-				  case	T_NOT:
-					if		(  GetSymbol  ==  T_NULL  ) {
-						attr |= GL_ATTR_NON_NULL;
-					} else {
-						Error("invalid attribute modifier");
-					}
-					break;
-				  default:
-					Error("invalid attribute modifier");
-					break;
-				}
-				GetSymbol;
-			}	while	(  ComToken  !=  ';'  );
+		while	(  ComToken  ==  ','  ) {
+			switch	(GetSymbol) {
+			  case	T_INPUT:
+				attr |= GL_ATTR_INPUT;
+				break;
+			  case	T_OUTPUT:
+				attr |= GL_ATTR_OUTPUT;
+				break;
+			  case	T_VIRTUAL:
+				attr |= GL_ATTR_VIRTUAL;
+				break;
+			  case	T_UNIQ:
+				attr |= GL_ATTR_UNIQ;
+				break;
+			  default:
+				Error("invalid attribute modifier");
+				break;
+			}
+			GetSymbol;
 		}
 		if		(  ComToken  ==  ';'  ) {
 			GetName;
@@ -452,9 +441,10 @@ LEAVE_FUNC;
 extern	void
 RecParserInit(void)
 {
-	if		(  Reserved  ==  NULL  ) {
+	if (Reserved == NULL) {
 		LexInit();
 		Reserved = MakeReservedTable(tokentable);
+		ParsedRec = NewNameHash();
 	}
 }
 
@@ -466,40 +456,63 @@ RecParseMain(
 	ValueAttributeType	attr;
 
 ENTER_FUNC;
-	SetReserved(in,Reserved); 
+
+	SetReserved(in,Reserved);
 	ret = NULL;
-	if		(  GetSymbol  ==  T_VIRTUAL  ) {
+	if (GetSymbol == T_VIRTUAL) {
 		attr = GL_ATTR_VIRTUAL;
 		GetSymbol;
 	} else {
 		attr = GL_ATTR_NULL;
 	}
-	if		(  ComToken  ==  T_SYMBOL  ) {
-		if		(  in->ValueName  !=  NULL  ) {
+	if (ComToken == T_SYMBOL) {
+		if (in->ValueName != NULL) {
 			xfree(in->ValueName);
 		}
 		in->ValueName = StrDup(ComSymbol);
-		GetSymbol;
-	}
-	if		(  ComToken  ==  '{'  ) {
-		ret = NewValue(GL_TYPE_RECORD);
-		ValueAttribute(ret) = attr;
-		GetName;
-		ParValueDefines(in,ret);
-		if		(  in->fError  ) {
+		if (GetSymbol == '{' ) {
+			ret = NewValue(GL_TYPE_RECORD);
+			ValueAttribute(ret) = attr;
+			GetName;
+			ParValueDefines(in,ret);
+			if (in->fError) {
+				Error("syntax error");
+				FreeValueStruct(ret);
+				ret = NULL;
+			}
+		} else {
 			ret = NULL;
+			Error("syntax error");
 		}
 	} else {
 		ret = NULL;
-		Error("syntax error");
 	}
 LEAVE_FUNC;
 	return	(ret);
 }
 
+static	ValueStruct *
+_RecParseValue(
+	CURFILE		*in,
+	char	**topname)
+{
+
+	ValueStruct	*ret;
+	ret = RecParseMain(in);
+	if (ret != NULL) {
+		if (in->ValueName != NULL) {
+			if (topname != NULL) {
+				*topname = StrDup(in->ValueName);
+			}
+			ValueName(ret) = StrDup(in->ValueName);
+		}
+	}
+	return ret;
+}
+
 extern	ValueStruct	*
 RecParseValue(
-	char	*name,
+	const char	*name,
 	char	**ValueName)
 {
 	ValueStruct	*ret;
@@ -507,27 +520,29 @@ RecParseValue(
 		,		root;
 
 ENTER_FUNC;
+	assert(ParsedRec);
 	root.next = NULL;
-	if		(  ( in = PushLexInfo(&root,name,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = RecParseMain(in);
-		if		(  ValueName  !=  NULL  ) {
-			if		(  in->ValueName  !=  NULL  ) {
-				*ValueName = StrDup(in->ValueName);
-			} else {
-				*ValueName = NULL;
-			}
+	if ((ret = g_hash_table_lookup(ParsedRec, name)) ==  NULL){
+		if ((in = PushLexInfo(&root,name,RecordDir,Reserved)) != NULL) {
+			ret = _RecParseValue(in, ValueName);
+			DropLexInfo(&in);
+			g_hash_table_insert(ParsedRec, StrDup(name), ret);
+		} else {
+			ret = NULL;
 		}
-		DropLexInfo(&in);
 	} else {
-		ret = NULL;
+		if (ValueName != NULL) {
+			*ValueName = GetValueName(ret);
+		}
 	}
+
 LEAVE_FUNC;
 	return	(ret);
 }
 
 extern	ValueStruct	*
 RecParseValueMem(
-	char	*mem,
+	const char	*mem,
 	char	**ValueName)
 {
 	ValueStruct	*ret;
@@ -537,11 +552,7 @@ RecParseValueMem(
 ENTER_FUNC;
 	root.next = NULL;
 	if		(  ( in = PushLexInfoMem(&root,mem,RecordDir,Reserved) )  !=  NULL  ) {
-		ret = RecParseMain(in);
-		if		(	(  in->ValueName  !=  NULL  )
-				&&	(  ValueName      !=  NULL  ) ) {
-			*ValueName = StrDup(in->ValueName);
-		}
+		ret = _RecParseValue(in, ValueName);
 		DropLexInfo(&in);
 	} else {
 		ret = NULL;

@@ -37,8 +37,7 @@ typedef	struct {
 	MEMAREA	*head;
 }	POOL;
 
-extern	void	*_xmalloc(size_t size, char *fn, int line, Bool fClear);
-extern	void	*_xrealloc(void *p, size_t size, char *fn, int line);
+extern	void	*_xmalloc(size_t size, char *fn, int line);
 extern	void	_xfree(void *p, char *fn, int line);
 
 extern	POOL	*GetPool(char *name);
@@ -55,18 +54,11 @@ extern	void	SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
 #define	ReleaseAreaByName(n,a)		_ReleaseArea(GetPool(n),(a))
 #define	ReleasePoolByPool(p)		_ReleasePool(p)
 #define	ReleasePoolByName(n)		_ReleasePool(GetPool(n))
-#define New(type)					(type *)(xmalloc(sizeof(type)))
-#define New2(type, count)			(type *)(xmalloc(sizeof(type) * (count)))
+#define	New(s)						(s *)xmalloc(sizeof(s))
 #define	NewArea(pool,s)				(s *)GetAreaByPool((pool),sizeof(s))
 
 #ifndef	xmalloc
-#define	xmalloc(s)					_xmalloc((s),__FILE__,__LINE__,FALSE)
-#endif
-#ifndef	xrealloc
-#define	xrealloc(p,s)				_xrealloc((p),(s),__FILE__,__LINE__)
-#endif
-#ifndef	xcalloc
-#define	xcalloc(s)					_xmalloc((s),__FILE__,__LINE__,TRUE)
+#define	xmalloc(s)					_xmalloc((s),__FILE__,__LINE__)
 #endif
 #ifndef	xfree
 #define	xfree(p)					_xfree((p),__FILE__,__LINE__),(p) = NULL

@@ -24,5 +24,6 @@
 extern	void	DumpCobol(char *name, char *p, size_t size);
 extern	void	StringCobol2C(char *str, size_t size);
 extern	void	StringC2Cobol(char *p, size_t size);
+extern	Bool	IsCobolSpace(char *str, size_t size);
 
 #endif

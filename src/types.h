@@ -28,22 +28,6 @@
 #include	<sys/types.h>
 #include	<stdint.h>
 
-#ifndef	byte
-#define	byte		unsigned char
-#endif
-
-#ifndef	word
-#define	word		unsigned short
-#endif
-
-#ifndef	dword
-#define	dword		unsigned long
-#endif
-
-#ifndef	ulong
-#define	ulong		unsigned long
-#endif
-
 #ifndef	Bool
 #define	Bool		int
 #endif

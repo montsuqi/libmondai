@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2009 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,8 +39,8 @@
 #ifdef	__GNUC__
 extern	int
 stricmp(
-	char	*s1,
-	char	*s2)
+	const char	*s1,
+	const char	*s2)
 {
 	for	( ; *s1  !=  0 ; s1 ++ , s2 ++ )	{
 		if		(  toupper(*s1)  !=  toupper(*s2)  )
@@ -51,8 +51,8 @@ stricmp(
 
 extern	int
 strnicmp(
-	char	*s1,
-	char	*s2,
+	const char	*s1,
+	const char	*s2,
 	size_t	l)
 {	int		ret;
 
@@ -67,13 +67,15 @@ strnicmp(
 
 extern	char	*
 StrDup(
-	char	*s)
+	const char	*s)
 {
 	char	*str;
-
+	size_t	length;
+	
 	if		(  s  !=  NULL  ) {
-		str = xmalloc(strlen(s)+1);
-		strcpy(str,s);
+		length = strlen(s)+1;
+		str = xmalloc(length);
+		memcpy(str, s, length);
 	} else {
 		str = NULL;
 	}
@@ -82,7 +84,7 @@ StrDup(
 
 extern	char	*
 StrnDup(
-	char	*s,
+	const char	*s,
 	size_t	len)
 {
 	char	*str;
@@ -99,7 +101,7 @@ StrnDup(
 
 extern	long
 StrToInt(
-	char	*str,
+	const char	*str,
 	size_t	len)
 {
 	long	ret
@@ -124,7 +126,7 @@ StrToInt(
 
 extern	long
 HexToInt(
-	char	*str,
+	const char	*str,
 	size_t	len)
 {
 	long	ret;
@@ -191,7 +193,7 @@ StringChop(
  */
 extern	size_t
 CharLength(
-	byte	c)
+	unsigned char	c)
 {
 	size_t	len;
 
@@ -201,7 +203,7 @@ CharLength(
 	if		(  ( c & 0xE0 )  ==  0xC0  ) {
 		len = 2;
 	} else
-	if		(  ( c & 0xE0 )  ==  0xE0  ) {
+	if		(  ( c & 0xF0 )  ==  0xE0  ) {
 		len = 3;
 	} else
 	if		(  ( c & 0xF8 )  ==  0xF0  ) {

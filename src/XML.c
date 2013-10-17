@@ -34,11 +34,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include    <sys/types.h>
-#ifdef	USE_XML2
 #include	<libxml/parser.h>
-#else
-#include	<parser.h>
-#endif
 
 #include	"types.h"
 #include	"misc_v.h"
@@ -90,7 +86,7 @@ ConvSetXmlType(
 extern	void
 ConvSetOutput(
 	CONVOPT	*opt,
-	byte	v)
+	unsigned char	v)
 {
 ENTER_FUNC;
 	if		(  opt->appendix  ==  NULL  ) {
@@ -169,13 +165,13 @@ XML_EncodeSize(
 static	size_t
 _XML_PackValue1(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	char		*name,
 	ValueStruct	*value)
 {
 	char	num[SIZE_NAME+1];
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -285,11 +281,7 @@ ENTER_FUNC;
 			}
 			p += sprintf(p,">");
 			if		(  !IS_VALUE_NIL(value)  ) {
-#ifdef	USE_XML2
 				p += XML_Encode(ValueToString(value,ConvCodeset(opt)),p);
-#else
-				p += XML_Encode(ValueToString(value,LIBXML_CODE),p);
-#endif
 			}
 			p += sprintf(p,"</lm:item>");
 			break;
@@ -304,13 +296,13 @@ LEAVE_FUNC;
 static	size_t
 _XML_PackValue2(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	char		*name,
 	ValueStruct	*value)
 {
 	char	num[SIZE_NAME+1];
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	if		(  IS_VALUE_NIL(value)  )	return	(0);
@@ -428,11 +420,7 @@ ENTER_FUNC;
 			}
 			p += sprintf(p,">");
 			if		(  !IS_VALUE_NIL(value)  ) {
-#ifdef	USE_XML2
 				p += XML_Encode(ValueToString(value,ConvCodeset(opt)),p);
-#else
-				p += XML_Encode(ValueToString(value,LIBXML_CODE),p);
-#endif
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				p += sprintf((char *)p,"</%s:%s>",opt->recname,name);
@@ -452,22 +440,18 @@ LEAVE_FUNC;
 extern	size_t
 XML_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
-#else
-		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
-#endif
 		p += sprintf((char *)p,"?>");
 		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
@@ -522,22 +506,18 @@ LEAVE_FUNC;
 extern	size_t
 XML1_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
-#else
-		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
-#endif
 		p += sprintf((char *)p,"?>");
 		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
@@ -563,22 +543,18 @@ LEAVE_FUNC;
 extern	size_t
 XML2_PackValue(
 	CONVOPT		*opt,
-	 byte		*p,
+	 unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
 		}
-#else
-		p += sprintf((char *)p," encoding=\"%s\"",LIBXML_CODE);
-#endif
 		p += sprintf((char *)p,"?>");
 		p += PutCR(opt,(char *)p);
 		opt->nIndent = 0;
@@ -656,7 +632,6 @@ internalSubset_(
 		fprintf(stderr, " %s)\n", SystemID);
 }
 
-#ifdef	USE_XML2
 static	void
 externalSubset_(
 	ValueContext	*value,
@@ -674,7 +649,6 @@ externalSubset_(
 	else
 		fprintf(stderr, " %s)\n", SystemID);
 }
-#endif
 
 static	xmlParserInputPtr
 resolveEntity_(
@@ -996,11 +970,7 @@ characters_(
 		ctx->buff[len] = 0;
 		dbgprintf("characters_[%s]\n",(char *)ctx->buff);
 		if		(  ctx->value  !=  NULL  ) {
-#ifdef	USE_XML2
 			SetValueString(ctx->value,(char *)ctx->buff,NULL);
-#else
-			SetValueString(ctx->value,(char *)ctx->buff,LIBXML_CODE);
-#endif
 			ValueIsNonNil(ctx->value);
 		}
 	}
@@ -1033,10 +1003,8 @@ static	xmlSAXHandler mondaiSAXHandlerStruct1 = {
 	(fatalErrorSAXFunc)fatalError_,
 	(getParameterEntitySAXFunc)getParameterEntity_,
 	(cdataBlockSAXFunc)cdataBlock_,
-#ifdef	USE_XML2
 	(externalSubsetSAXFunc)externalSubset_,
     1
-#endif
 };
 
 static	void
@@ -1183,10 +1151,8 @@ static	xmlSAXHandler mondaiSAXHandlerStruct2 = {
 	(fatalErrorSAXFunc)fatalError_,
 	(getParameterEntitySAXFunc)getParameterEntity_,
 	(cdataBlockSAXFunc)cdataBlock_,
-#ifdef	USE_XML2
 	(externalSubsetSAXFunc)externalSubset_,
     1
-#endif
 };
 
 static	xmlSAXHandlerPtr	mondaiSAXHandler1		= &mondaiSAXHandlerStruct1;
@@ -1218,11 +1184,11 @@ SetNil(
 extern	size_t
 XML_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1254,11 +1220,11 @@ LEAVE_FUNC;
 extern	size_t
 XML1_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1283,11 +1249,11 @@ LEAVE_FUNC;
 extern	size_t
 XML2_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	ValueContext	*ctx;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	ctx = New(ValueContext);
@@ -1426,11 +1392,7 @@ _XML_SizeValue1(
 			}
 			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
-#ifdef	USE_XML2
 				size += XML_EncodeSize(ValueToString(value,ConvCodeset(opt)));
-#else
-				size += XML_EncodeSize(ValueToString(value,LIBXML_CODE));
-#endif
 			}
 			size += 10;		//	"</lm:item>"
 			break;
@@ -1564,11 +1526,7 @@ _XML_SizeValue2(
 			}
 			size += 1;		//	">"
 			if		(  !IS_VALUE_NIL(value)  ) {
-#ifdef	USE_XML2
 				size += XML_EncodeSize(ValueToString(value,ConvCodeset(opt)));
-#else
-				size += XML_EncodeSize(ValueToString(value,LIBXML_CODE));
-#endif
 			}
 			if		(  opt->recname  !=  NULL  ) {
 				size += sprintf(buff,"</%s:%s>",opt->recname,name);
@@ -1594,14 +1552,10 @@ XML_SizeValue(
 ENTER_FUNC;
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size = 19;			//	<?xml version="1.0"
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			size += 12 + strlen(ConvCodeset(opt));	
 			//	" encoding=\"%s\"",ConvCodeset(opt)
 		}
-#else
-		size += 12 + strlen(LIBXML_CODE);
-#endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
 		opt->nIndent = 0;
@@ -1663,14 +1617,10 @@ XML1_SizeValue(
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size = 19;			//	<?xml version="1.0"
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			size += 12 + strlen(ConvCodeset(opt));	
 			//	" encoding=\"%s\"",ConvCodeset(opt)
 		}
-#else
-		size += 12 + strlen(LIBXML_CODE);
-#endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
 		opt->nIndent = 0;
@@ -1705,14 +1655,10 @@ XML2_SizeValue(
 
 	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
 		size = 19;			//	<?xml version="1.0"
-#ifdef	USE_XML2
 		if		(  ConvCodeset(opt)  !=  NULL  ) {
 			size += 12 + strlen(ConvCodeset(opt));	
 			//	" encoding=\"%s\"",ConvCodeset(opt)
 		}
-#else
-		size += 12 + strlen(LIBXML_CODE);
-#endif
 		size += 2;			//	?>
 		size += PutCR(opt,buff);
 		opt->nIndent = 0;

@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2009 Ogochan.
+ * Copyright (C) 2005-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,7 @@
 #include	"hash_v.h"
 #include	"debug.h"
 
-//#define	DUMP_LOCALE		"euc-jp"
-#define	DUMP_LOCALE		"utf-8"
+#define	DUMP_LOCALE		NULL
 
 extern	ValueStruct	*
 NewValue(
@@ -62,6 +61,9 @@ ENTER_FUNC;
 	ValueAttribute(ret) = GL_ATTR_NIL;
 	ValueStr(ret) = NULL;
 	ValueType(ret) = type;
+	ValueParent(ret) = NULL;
+	ValueIndex(ret) = 0;
+    ValueName(ret) = NULL;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
@@ -77,10 +79,7 @@ ENTER_FUNC;
 		ValueStringLength(ret) = 0;
 		ValueStringSize(ret) = 0;
 		ValueString(ret) = NULL;
-		if		(	(  type  ==  GL_TYPE_TEXT    )
-				||	(  type  ==  GL_TYPE_DBCODE  ) ) {
-			ValueIsExpandable(ret);
-		}
+		ValueIsExpandable(ret);
 		break;
 	  case	GL_TYPE_NUMBER:
 		ValueFixedLength(ret) = 0;
@@ -125,6 +124,7 @@ ENTER_FUNC;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
+		ValueDateTime(ret) = (struct tm *)xmalloc(sizeof(struct tm));
 		ValueDateTimeSec(ret) = 0;
 		ValueDateTimeMin(ret) = 0;
 		ValueDateTimeHour(ret) = 0;
@@ -139,6 +139,7 @@ ENTER_FUNC;
 		ValuePointer(ret) = NULL;
 		break;
 	  default:
+		MonWarningPrintf("invalid type:%#X", type);
 		xfree(ret);
 		ret = NULL;
 		break;
@@ -154,8 +155,11 @@ FreeValueStruct(
 	int		i;
 
 	if		(  val  !=  NULL  ) {
-		dbgprintf("type = %02X\n",(int)ValueType(val));
-		switch	(ValueType(val)) {
+		dbgprintf("type = %02X\n",val->type);
+		if (ValueName(val) != NULL) {
+			xfree(ValueName(val));
+		}
+		switch	(val->type) {
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 				FreeValueStruct(ValueArrayItem(val,i));
@@ -186,6 +190,11 @@ FreeValueStruct(
 				xfree(ValueString(val));
 			}
 			break;
+		  case	GL_TYPE_TIMESTAMP:
+		  case	GL_TYPE_DATE:
+		  case	GL_TYPE_TIME:
+			  xfree(ValueDateTime(val));
+			break;
 		  case	GL_TYPE_NUMBER:
 			if		(  ValueFixedBody(val)  !=  NULL  ) {
 				xfree(ValueFixedBody(val));
@@ -207,11 +216,75 @@ FreeValueStruct(
 	}
 }
 
+extern	char *
+GetValueName(
+	ValueStruct *value)
+{
+	char		*ret;
+	char		buff[16];
+	int 		index;
+	ValueStruct	*parent;
+ENTER_FUNC;
+	ret = NULL;
+	if (value != NULL) {
+		if ((parent = ValueParent(value)) != NULL) {
+			index = ValueIndex(value);
+			switch(ValueType(parent)) {
+				case GL_TYPE_RECORD:
+					ret = StrDup(ValueRecordName(parent,index));
+					break;
+				case GL_TYPE_ARRAY:
+					sprintf(buff, "[%d]",index);
+					ret = StrDup(buff);
+					break;
+				default:
+					fprintf(stderr,"invalid parent type\n");
+					break;
+			}
+		}
+	}
+	if (ret == NULL) {
+		ret = StrDup("");
+	}
+LEAVE_FUNC;
+	return ret;
+}
+
+extern	char *
+GetValueLongName(
+	ValueStruct *value)
+{
+	char		*lname;
+	char		*name;
+	char		*tmp;
+	ValueStruct	*parent;
+ENTER_FUNC;
+	lname = NULL;
+	if (value != NULL) {
+		parent = value;
+		while (ValueParent(parent) != NULL) {
+			name = GetValueName(parent);
+			if (lname == NULL) {
+				lname = name;
+			} else {
+				tmp = xmalloc(SIZE_LONGNAME+1);
+				snprintf(tmp, SIZE_LONGNAME, "%s.%s", name , lname);
+				xfree(name);
+				xfree(lname);
+				lname = tmp;
+			}
+			parent = ValueParent(parent);
+		}
+	}
+LEAVE_FUNC;
+	return lname;
+}
+
 extern	ValueStruct	*
 GetRecordItem(
 	ValueStruct	*value,
 	char		*name)
-{	
+{
 	gpointer	p;
 	ValueStruct	*item;
 
@@ -464,12 +537,12 @@ DumpValueStruct(
 			}
 			break;
 		  case	GL_TYPE_RECORD:
- 			printf("<-- record members = %d\n",(int)ValueRecordSize(val));
+			printf("<-- record members = %d\n",(int)ValueRecordSize(val));
 			fflush(stdout);
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
 				DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
 			}
-! 			printf("-->\n");
+			printf("-->\n");
 			break;
 		  case	GL_TYPE_ALIAS:
 			printf("alias name = [%s]\n",ValueAliasName(val));
@@ -607,7 +680,7 @@ ENTER_FUNC;
 				xfree(ValueString(to));
 			}
 			ValueStringSize(to) = ValueStringSize(from);
-			ValueString(to) = (byte *)xmalloc(ValueStringSize(to));
+			ValueString(to) = (unsigned char *)xmalloc(ValueStringSize(to));
 		}
 		memclear(ValueString(to),ValueStringSize(to));
 		memcpy(ValueString(to),ValueString(from),ValueStringSize(from));
@@ -622,7 +695,7 @@ ENTER_FUNC;
 				xfree(ValueByte(to));
 			}
 			ValueByteSize(to) = ValueByteSize(from);
-			ValueByte(to) = (byte *)xmalloc(ValueByteSize(to));
+			ValueByte(to) = (unsigned char *)xmalloc(ValueByteSize(to));
 		}
 		memclear(ValueByte(to),ValueByteSize(to));
 		memcpy(ValueByte(to),ValueByte(from),ValueByteSize(from));
@@ -669,10 +742,7 @@ CopyValue(
 ENTER_FUNC;
 	if		(  vd  ==  NULL  )	return;
 	if		(  vs  ==  NULL  )	return;
-	if		(  IS_VALUE_NIL(vs)  )	{
-        ValueIsNil(vd);
-		return;
-	}
+	if		(  IS_VALUE_NIL(vs)  )	return;
 	ValueAttribute(vd) = ValueAttribute(vs);
 	switch	(vs->type) {
 	  case	GL_TYPE_INT:
@@ -1017,6 +1087,9 @@ DuplicateValue(
 		p = NewValue(ValueType(template));
 		ValueAttribute(p) = ValueAttribute(template);
 		ValueStr(p) = NULL;
+		if (ValueName(template) != NULL) {
+			ValueName(p) = StrDup(ValueName(template));
+		}
 		switch	(ValueType(template)) {
 		  case	GL_TYPE_INT:
 			if		(  fCopy  ) {
@@ -1074,7 +1147,7 @@ DuplicateValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			if		(  ValueStringSize(template)  >  0  ) {
-				ValueString(p) = (byte *)xmalloc(ValueStringSize(template));
+				ValueString(p) = (unsigned char *)xmalloc(ValueStringSize(template));
 				if		(  fCopy  ) {
 					memcpy(ValueString(p),ValueString(template),ValueStringSize(template));
 				} else {
@@ -1089,7 +1162,7 @@ DuplicateValue(
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
 			if		(  ValueByteSize(template)  >  0  ) {
-				ValueByte(p) = (byte *)xmalloc(ValueByteSize(template));
+				ValueByte(p) = (unsigned char *)xmalloc(ValueByteSize(template));
 				if		(  fCopy  ) {
 					memcpy(ValueString(p),ValueString(template),ValueStringSize(template));
 				} else {
@@ -1116,14 +1189,15 @@ DuplicateValue(
 		  case	GL_TYPE_ARRAY:
 			ret = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueArraySize(template));
 			for	( i = 0 ; i < ValueArraySize(template) ; i ++ ) {
- 				ret[i] = DuplicateValue(ValueArrayItem(template,i),fCopy);
+				ret[i] = DuplicateValue(ValueArrayItem(template,i),fCopy);
+				ValueParent(ret[i]) = p;
+				ValueIndex(ret[i]) = i;
 			}
- 			ValueArrayItems(p) = ret;
+			ValueArrayItems(p) = ret;
 			ValueArraySize(p) = ValueArraySize(template);
 			break;
 		  case	GL_TYPE_RECORD:
 			/*	share name table		*/
-			ValueRecordMembers(p) = NewNameHash();
 			ValueRecordNames(p) =
 				(char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
 			/*	duplicate data space	*/
@@ -1134,9 +1208,14 @@ DuplicateValue(
 				ValueRecordItem(p,i) = 
 					DuplicateValue(ValueRecordItem(template,i),fCopy);
 				ValueRecordName(p,i) = StrDup(ValueRecordName(template,i));
+				if (g_hash_table_lookup(ValueRecordMembers(p),ValueRecordName(p,i)) != NULL) {
+					MonWarningPrintf("duplicate value:%s", ValueRecordName(p,i));
+				}
 				g_hash_table_insert(ValueRecordMembers(p),
 									(gpointer)ValueRecordName(p,i),
 									(gpointer)((long)i+1));
+				ValueParent(ValueRecordItem(p,i)) = p;
+				ValueIndex(ValueRecordItem(p,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_VALUES:
@@ -1146,6 +1225,8 @@ DuplicateValue(
 			for	( i = 0 ; i < ValueValuesSize(template) ; i ++ ) {
 				ValueValuesItem(p,i) = 
 					DuplicateValue(ValueValuesItem(template,i),fCopy);
+				ValueParent(ValueValuesItem(p,i)) = p;
+				ValueIndex(ValueValuesItem(p,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -1172,7 +1253,7 @@ ValueAddRecordItem(
 	size_t		nsize;
 
 ENTER_FUNC;
-	dbgprintf("name = [%s]\n",name); 
+	dbgprintf("name = [%s]\n",name);
 	nsize = ValueRecordSize(upper) + 1;
 	items = (ValueStruct **)
 		xmalloc(sizeof(ValueStruct *) * nsize);
@@ -1189,15 +1270,15 @@ ENTER_FUNC;
 	items[ValueRecordSize(upper)] = value;
 	dname = StrDup(name);
 	names[ValueRecordSize(upper)] = dname;
-	if		(	(  name   !=  NULL  )
-			&&	(  *name  !=  0     ) ) {
+	ValueParent(value) = upper;
+	ValueIndex(value) = ValueRecordSize(upper);
+	if		(  name  !=  NULL  ) {
 		if		(  g_hash_table_lookup(ValueRecordMembers(upper),name)  ==  NULL  ) {
 			g_hash_table_insert(ValueRecordMembers(upper),
 								(gpointer)dname,
 								(gpointer)(ValueRecordSize(upper)+1));
 		} else {
-			printf("name = [%s]\t",name);
-			Error("name duplicate");
+			MonWarningPrintf("name duplicate [%s]",name);
 		}
 	}
 	ValueRecordItems(upper) = items;
@@ -1232,44 +1313,7 @@ ENTER_FUNC;
 		ValueArraySize(upper) = nsize;
 	}
 	ValueArrayItem(upper,ix) = value;
+	ValueParent(value) = upper;
+	ValueIndex(value) = ix;
 LEAVE_FUNC;
-}
-
-extern	Bool
-NormalizeValue(
-	ValueStruct	*value)
-{
-	int		i;
-	Bool	fNil;
-
-	fNil = TRUE;
-	if		(  value  !=  NULL  )	{
-		switch	(ValueType(value))	{
-		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				if		(  NormalizeValue(ValueArrayItem(value,i)) )	{
-					fNil = FALSE;
-				}
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				if		(  NormalizeValue(ValueRecordItem(value,i)) )	{
-					fNil = FALSE;
-				}
-			}
-			break;
-		  default:
-			if		(  !IS_VALUE_NIL(value)  )	{
-				fNil = FALSE;
-			}
-			break;
-		}
-		if		(  fNil  )	{
-			ValueIsNil(value);
-		} else {
-			ValueIsNonNil(value);
-		}
-	}
-	return	(!fNil);
 }

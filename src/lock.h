@@ -1,6 +1,6 @@
 /*
  * PANDA -- a simple transaction monitor
- * Copyright (C) 2007-2009 Ogochan.
+ * Copyright (C) 2007-2008 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,6 @@ typedef	struct	{
 #define	LockWrite(obj)		_Lock(&((obj)->lock),FALSE)
 #define	UnLock(obj)			_UnLock(&((obj)->lock))
 
-extern	void	LockDebug(Bool debug);
 extern	void	_Lock(_LOCKOBJECT *lock, Bool fRead);
 extern	void	_UnLock(_LOCKOBJECT *lock);
 extern	void	_WaitLock(pthread_cond_t *cond, _LOCKOBJECT *lock);

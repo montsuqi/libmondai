@@ -33,11 +33,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include    <sys/types.h>
-#ifdef	USE_XML2
 #include	<libxml/parser.h>
-#else
-#include	<parser.h>
-#endif
 
 #include	"types.h"
 #include	"misc_v.h"
@@ -218,7 +214,7 @@ _SOAP_UnPackValue(
 	int		i;
 	xmlChar	*href
 		,	*xsi_null;
-	byte	*buff;
+	unsigned char	*buff;
 	xmlChar	*text;
 	xmlNode		*child
 		,		*rnode;
@@ -265,7 +261,7 @@ ENTER_FUNC;
 						&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
 						&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
 						&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
-					buff = (byte *)xmalloc(strlen(text));
+					buff = (unsigned char *)xmalloc(strlen(text));
 					size = DecodeBase64(buff,strlen(text),text,
 										strlen(text));
 					if		(  size  >  ValueByteSize(value)  ) {
@@ -273,7 +269,7 @@ ENTER_FUNC;
 							xfree(ValueByte(value));
 						}
 						ValueByteSize(value) = size;
-						ValueByte(value) = (byte *)xmalloc(size);
+						ValueByte(value) = (unsigned char *)xmalloc(size);
 					}
 					memclear(ValueByte(value),ValueByteSize(value));
 					memcpy(ValueByte(value),buff,size);
@@ -399,7 +395,7 @@ _SOAP_LoadValue(
 	ValueStruct	*value
 		,		*elem;
 	Bool		fBin;
-	byte		*buff;
+	unsigned char		*buff;
 	size_t		size;
 
 ENTER_FUNC;
@@ -443,12 +439,12 @@ ENTER_FUNC;
 							&&	(  ( child = XMLNodeChildren(node) )  !=  NULL  )
 							&&	(  XMLNodeType(child)  ==     XML_TEXT_NODE     )
 							&&	(  ( text = XMLNodeContent(child) )   !=  NULL  ) ) {
-						buff = (byte *)xmalloc(strlen(text));
+						buff = (unsigned char *)xmalloc(strlen(text));
 						size = DecodeBase64(buff,strlen(text),text,
 											strlen(text));
 						ValueByteSize(value) = size;
 						ValueByteLength(value) = size;
-						ValueByte(value) = (byte *)xmalloc(size);
+						ValueByte(value) = (unsigned char *)xmalloc(size);
 						memclear(ValueByte(value),ValueByteSize(value));
 						memcpy(ValueByte(value),buff,size);
 						xfree(buff);
@@ -548,7 +544,7 @@ LEAVE_FUNC;
 static	size_t
 _SOAP_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	char		*ns,
 	char		*name,
 	char		*id,
@@ -557,7 +553,7 @@ _SOAP_PackValue(
 {
 	ValueStruct	*ival;
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 	Bool	fOut;
 	char	ibuff[SIZE_LONGNAME+1];
 
@@ -749,7 +745,7 @@ LEAVE_FUNC;
 
 extern	size_t
 SOAP_PackValue(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	char		*method,
 	char		*prefix,
@@ -758,7 +754,7 @@ SOAP_PackValue(
 	Bool		fBodyOnly)
 {
 	char	buff[SIZE_BUFF+1];
-	byte	*pp;
+	unsigned char	*pp;
 	CONVOPT		*opt;
 
 ENTER_FUNC;

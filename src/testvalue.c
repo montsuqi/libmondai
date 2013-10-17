@@ -30,7 +30,7 @@
 #endif
 
 #define	TEST_CODE		"euc-jp"
-#define	SRC_CODE		"euc-jp"
+#define	SRC_CODE		"utf-8"
 
 #define	TEST_VALUE
 
@@ -151,13 +151,13 @@ main(
 #define	SIZE_DATA		128
 
 	char	name[SIZE_DATA];
-	byte	*p;
+	unsigned char	*p;
 	int		i;
 	ValueStruct	*val
 		,		*val2
 		,		*val3;
 	CONVOPT	*opt;
-	byte	*buff;
+	unsigned char	*buff;
 	size_t	size;
 
 	printf("***** libmondai test start *****\n");
@@ -172,10 +172,9 @@ main(
 	printf("***** Value setting *****\n");
 	SetValueString(GetItemLongName(val,"func"),"aaa",SRC_CODE);
 	SetValueString(GetItemLongName(val,"rc"),"0",SRC_CODE);
-
-	SetValueString(GetItemLongName(val,"dc.window"),"1 Ë",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.window"),"1 男",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.widget"),"widget",SRC_CODE);
-	SetValueString(GetItemLongName(val,"dc.event"),"1002 ",SRC_CODE);
+	SetValueString(GetItemLongName(val,"dc.event"),"1002 医療機関情報ー所在地、連絡先",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.fromwin"),"fromwin",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.status"),"status",SRC_CODE);
 	SetValueString(GetItemLongName(val,"dc.puttype"),"puttype",SRC_CODE);
@@ -208,11 +207,10 @@ printf("** variable size (end)**\n");fflush(stdout);
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);
 	for	( p = buff, i = 0 ; i < 256 ; i ++ , p ++) {
-		*p = (byte)i;
+		*p = (unsigned char)i;
 	}
 	SetValueBinary(GetItemLongName(val,"bin"),buff,256);
 	printf("***** Value setting (end)*****\n");
-		
 
 	buff = xmalloc(SIZE_BUFF);
 	memset(buff,0,SIZE_BUFF);

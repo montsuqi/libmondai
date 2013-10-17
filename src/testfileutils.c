@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2002 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2003-2008 Ogochan.
+ * Copyright (C) 2003-2007 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,51 +19,47 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/*
-#define	DEBUG
-#define	TRACE
-*/
-
-#define	MAIN
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#define	TEST_MEM
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
-#include	<ctype.h>
-#include	<unistd.h>
-#include	<glib.h>
-#include	"types.h"
+#include	"fileutils.h"
 
-#include	"others.h"
-#include	"debug.h"
-
-static	void
-TEST(
-	char	*orig,
-	char	*base)
-{
-	printf("[%s] = [%s]\n",orig,ExpandPath(orig,base));
-}
-		   
 extern	int
 main(
 	int		argc,
 	char	**argv)
 {
-	TEST("=","BASE");
-	TEST("=:~","BASE");
-	TEST("=:$PATH","BASE");
-	TEST("=:$PATH/$HOME","BASE");
-	TEST("=:`date`$HOME","BASE");
-	TEST("=:\\$PATH/$HOME","BASE");
-	TEST("=:`echo $PATH`/$HOME","BASE");
-	TEST("=:`date +%Y%m%d`/$HOME","BASE");
-	TEST("`pwd`/$HOME","");
+	int i,mode;
 
-	return	(0);
+	mode = 0;
+	if (argc < 3) {
+		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...");
+		exit(1);
+	}
+	if (!strcmp(argv[1],"MakeDir")) {
+		mode = 1;
+	} else if (!strcmp(argv[1],"mkdir_p")) {
+		mode = 2;
+	} else if (!strcmp(argv[1],"rm_r")) {
+		mode = 3;
+	} else {
+		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...");
+		exit(1);
+	}
+
+	for (i = 2; i < argc; i++) {
+		switch(mode){
+		case 1:
+			fprintf(stderr,"MakeDir[%s] [%d]\n",argv[i],MakeDir(argv[i],0700));
+			break;
+		case 2:
+			fprintf(stderr,"mkdir_p[%s] [%d]\n",argv[i],mkdir_p(argv[i],0700));
+			break;
+		case 3:
+			fprintf(stderr,"rm_r[%s] [%d]\n",argv[i],rm_r(argv[i]));
+			break;
+		}
+	}
+	return	0;
 }
+

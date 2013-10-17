@@ -172,17 +172,16 @@ ENTER_FUNC;
 		}
 	}
 	*p = 0;
-	dbgprintf("path = [%s]",path);
 LEAVE_FUNC;
 	return	(path);
 }
 
 extern	size_t
 DecodeStringURL(
-	byte	*q,
+	unsigned char	*q,
 	char	*p)
 {
-	byte	*qq = q;
+	unsigned char	*qq = q;
 
 	while	(	(  *p  !=  0    )
 			&&	(  isspace(*p)  ) )	p ++;
@@ -191,7 +190,7 @@ DecodeStringURL(
 			*q ++ = ' ';
 		} else
 		if		(  *p  ==  '%'  ) {
-			*q ++ = (byte)HexToInt(p+1,2);
+			*q ++ = (unsigned char)HexToInt(p+1,2);
 			p += 2;
 		} else {
 			*q ++ = *p;
@@ -271,10 +270,10 @@ extern	size_t
 EncodeBase64(
 	char	*out,
 	int		size,
-	byte	*in,
+	unsigned char	*in,
 	size_t	len)
 {
-	byte	*inp = in;
+	unsigned char	*inp = in;
 	char	*outp = out;
 
 	while	(  len  >=  3  )	{
@@ -321,13 +320,13 @@ EncodeLengthBase64(
 
 extern	size_t
 DecodeBase64(
-	byte	*out,
+	unsigned char	*out,
 	int		size,
 	char	*in,
 	size_t	len)
 {
 	char	*inp = in;
-	byte	*outp = out;
+	unsigned char	*outp = out;
 	char	buf[4];
 
 	if		(  len  <  0  ) {
@@ -411,3 +410,63 @@ EncodeStringBackslash(
 	*q = 0;
 	return	(q-qq);
 }
+
+/*
+ *	backslash and CR,LF encoding
+ */
+
+extern	size_t
+EncodeStringLengthBackslashCRLF(
+	char	*p)
+{
+  size_t	ret;
+
+  ret = 0;
+  while	(  *p  !=  0  ) {
+    if ((*p == '"')
+	|| (*p == '\\')
+	|| (*p == '\n')
+	|| (*p == '\r'))
+    {
+      ret += 2;
+    } else {
+      ret++;
+    }
+    p++;
+  }
+  return	(ret);
+}
+
+extern	size_t
+EncodeStringBackslashCRLF(
+	char	*q,
+	char	*p)
+{
+  char	*qq;
+
+  qq = q;
+  while	(*p != 0 ) {
+    switch (*p) {
+    case '\n':
+      *q++ = '\\';
+      *q++ = 'n';
+      break;
+    case '\r':
+      *q++ = '\\';
+      *q++ = 'r';
+      break;
+    case '"':
+    case '\\':
+      *q++ = '\\';
+      *q++ = *p;
+      break;      
+    default:
+      *q++ = *p;
+      break;
+    }
+    p++;
+  }
+  *q = 0;
+  return (q - qq);
+}
+

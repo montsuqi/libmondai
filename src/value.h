@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2009 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 
 #define	SIZE_OID		4
 
-#define	SIZE_GLOWN		1024	/*	LBS glown unit	*/
+#define	SIZE_GROWN		 256	/*	LBS grown unit	*/
 #define	SIZE_BUFF		65536
 
 #define	SIZE_SYMBOL			255
@@ -52,18 +52,17 @@
 
 typedef	PacketClass		PacketDataType;
 typedef	uint16_t		ValueAttributeType;
-#ifdef	__LP64__
-typedef	long			MonObjectType;
-#else
 typedef	uint64_t		MonObjectType;
-#endif
 
 #define	IS_OBJECT_NULL(obj)	((obj) ==  0)
 
 typedef	struct _ValueStruct	{
+	char				*name;
 	PacketDataType		type;
 	ValueAttributeType	attr;
 	LargeByteString		*str;
+	struct _ValueStruct	*parent;
+	int					index;
 	union {
 		struct {
 			size_t					count;
@@ -89,7 +88,7 @@ typedef	struct _ValueStruct	{
 			MonObjectType	oid;
 			char			*file;
 		}	Object;
-		struct	tm	DateTime;
+		struct	tm	*DateTime;
 		char	*AliasName;
 		Fixed	FixedData;
 		int		IntegerData;
@@ -134,7 +133,6 @@ typedef	struct _ValueStruct	{
 #define	GL_TYPE_VALUES			(PacketDataType)0x84
 
 #define	GL_ATTR_NIL				(ValueAttributeType)0x8000
-#define	GL_ATTR_NON_NULL		(ValueAttributeType)0x0100
 #define	GL_ATTR_EXPANDABLE		(ValueAttributeType)0x0080
 #define	GL_ATTR_UNIQ			(ValueAttributeType)0x0040
 #define	GL_ATTR_DESC			(ValueAttributeType)0x0020
@@ -149,7 +147,6 @@ typedef	struct _ValueStruct	{
 #define	CHAR_NIL				0x01
 
 #define	IS_VALUE_NIL(v)			(((v)->attr & GL_ATTR_NIL) == GL_ATTR_NIL)
-#define	IS_VALUE_NON_NULL(v)	(((v)->attr & GL_ATTR_NON_NULL) == GL_ATTR_NON_NULL)
 #define	IS_VALUE_VIRTUAL(v)		(((v)->attr & GL_ATTR_VIRTUAL) == GL_ATTR_VIRTUAL)
 #define	IS_VALUE_ALIAS(v)		(((v)->attr & GL_ATTR_ALIAS) == GL_ATTR_ALIAS)
 #define	IS_VALUE_UPDATE(v)		(((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
@@ -160,11 +157,13 @@ typedef	struct _ValueStruct	{
 #define	GL_OBJ_NULL				0
 
 #define	IS_VALUE_RECORD(v)		((v)->type == GL_TYPE_RECORD)
+#define	IS_VALUE_ARRAY(v)		((v)->type == GL_TYPE_ARRAY)
 #define	IS_VALUE_NUMERIC(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
 #define	IS_VALUE_STRING(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
 #define	IS_VALUE_BITS(v)		(((v)->type & GL_TYPE_CLASS) == GL_TYPE_BITS)
 #define	IS_VALUE_STRUCTURE(v)	(((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
+#define	ValueName(v)			((v)->name)
 #define	ValueType(v)			((v)->type)
 #define	ValueSize(v)			LBS_StringLength((v)->str)
 #define	ValueStr(v)				((v)->str)
@@ -179,6 +178,9 @@ typedef	struct _ValueStruct	{
 #define	ValueOrderIsAsc(v)		((v)->attr &= ~GL_ATTR_DESC)
 #define	ValueIsExpandable(v)	((v)->attr |= GL_ATTR_EXPANDABLE)
 #define	ValueIsNonExpandable(v)	((v)->attr &= ~GL_ATTR_EXPANDABLE)
+
+#define	ValueParent(v)			((v)->parent)
+#define	ValueIndex(v)			((v)->index)
 
 #ifdef	__VALUE_DIRECT
 #define	ValueString(v)			((v)->body.CharData.sval)
@@ -196,15 +198,15 @@ typedef	struct _ValueStruct	{
 #define	ValueFloat(v)			((v)->body.FloatData)
 
 #define	ValueDateTime(v)		((v)->body.DateTime)
-#define	ValueDateTimeSec(v)		((v)->body.DateTime.tm_sec)
-#define	ValueDateTimeMin(v)		((v)->body.DateTime.tm_min)
-#define	ValueDateTimeHour(v)	((v)->body.DateTime.tm_hour)
-#define	ValueDateTimeMDay(v)	((v)->body.DateTime.tm_mday)
-#define	ValueDateTimeMon(v)		((v)->body.DateTime.tm_mon)
-#define	ValueDateTimeYear(v)	((v)->body.DateTime.tm_year)
-#define	ValueDateTimeWDay(v)	((v)->body.DateTime.tm_wday)
-#define	ValueDateTimeYDay(v)	((v)->body.DateTime.tm_yday)
-#define	ValueDateTimeIsdst(v)	((v)->body.DateTime.tm_isdst)
+#define	ValueDateTimeSec(v)		((v)->body.DateTime->tm_sec)
+#define	ValueDateTimeMin(v)		((v)->body.DateTime->tm_min)
+#define	ValueDateTimeHour(v)	((v)->body.DateTime->tm_hour)
+#define	ValueDateTimeMDay(v)	((v)->body.DateTime->tm_mday)
+#define	ValueDateTimeMon(v)		((v)->body.DateTime->tm_mon)
+#define	ValueDateTimeYear(v)	((v)->body.DateTime->tm_year)
+#define	ValueDateTimeWDay(v)	((v)->body.DateTime->tm_wday)
+#define	ValueDateTimeYDay(v)	((v)->body.DateTime->tm_yday)
+#define	ValueDateTimeIsdst(v)	((v)->body.DateTime->tm_isdst)
 
 #define	ValueFixed(v)			((v)->body.FixedData)
 #define	ValueFixedLength(v)		((v)->body.FixedData.flen)
@@ -236,6 +238,12 @@ typedef	struct _ValueStruct	{
 #define	ValueValuesItem(v,i)	((v)->body.ValuesData.item[(i)])
 
 extern	ValueStruct	*NewValue(PacketDataType type);
+extern	void		FreeValueStruct(ValueStruct *val);
+extern	void		DumpValueStruct(ValueStruct *val);
+
+extern	char		*GetValueName(ValueStruct *val);
+extern	char		*GetValueLongName(ValueStruct *val);
+
 extern	void		ValueAddRecordItem(ValueStruct *upper, char *name,
 									   ValueStruct *value);
 extern	void		ValueAddArrayItem(ValueStruct *upper, int ix, ValueStruct *value);
@@ -255,9 +263,5 @@ extern	Bool		EqualValue(ValueStruct *vl, ValueStruct *vr);
 
 extern	void		AssignValue(ValueStruct *to, ValueStruct *from);
 extern	void		MoveValue(ValueStruct *to, ValueStruct *from);
-
-extern	void		FreeValueStruct(ValueStruct *val);
-extern	void		DumpValueStruct(ValueStruct *val);
-extern	Bool		NormalizeValue(ValueStruct *value);
 
 #endif

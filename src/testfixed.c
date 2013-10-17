@@ -42,7 +42,10 @@ main(
 {
 	Numeric	v1, v2, v22, v3, v4;
 	char	buff[128];
-
+	if (argc != 5){
+		printf("Error: testfixed num num num format\n");
+		exit(1);
+	}
 	v1 = NumericInput(argv[1],10,5);
 	v2 = NumericInput(argv[2],10,4);
 	dump(v1);

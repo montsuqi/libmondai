@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 1989-2009 Ogochan.
+ * Copyright (C) 1989-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,17 +29,17 @@
 #define	strlicmp(s1,s2)	strnicmp((s1),(s2),strlen(s2))
 
 #ifdef	__GNUC__
-extern	int		stricmp(char *s1, char *s2);
-extern	int		strnicmp(char *s1, char *s2, size_t l);
+extern	int		stricmp(const char *s1, const char *s2);
+extern	int		strnicmp(const char *s1, const char *s2, size_t l);
 #endif
 
-extern	char	*StrDup(char *s);
-extern	char	*StrnDup(char *s, size_t len);
+extern	char	*StrDup(const char *s);
+extern	char	*StrnDup(const char *s, size_t len);
 extern	char	*IntStrDup(int val);
 extern	char	*StringChop(char *str);
-extern	long	StrToInt(char *str, size_t len);
-extern	long	HexToInt(char *str, size_t len);
+extern	long	StrToInt(const char *str, size_t len);
+extern	long	HexToInt(const char *str, size_t len);
 extern	char	*IntToStr(char *str, long val, size_t len);
-extern	size_t	CharLength(byte c);
+extern	size_t	CharLength(unsigned char c);
 
 #endif

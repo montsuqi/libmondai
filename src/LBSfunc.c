@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2009 Ogochan
+ * Copyright (C) 2004-2008 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,10 +33,8 @@
 #include	<string.h>
 #include	<ctype.h>
 #include	<errno.h>
-#ifdef	WITH_I18N
 #include	<iconv.h>
 #include	<wchar.h>
-#endif
 #include	<math.h>
 
 #include	"types.h"
@@ -70,26 +68,37 @@ FreeLBS(
 	}
 }
 
+extern void
+LBS_Grown(
+	LargeByteString *lbs,
+	size_t			size,
+	Bool			fKeep)
+{
+	unsigned char   *body;
+	
+	if ( lbs->asize < size ) {
+		body = (unsigned char *)xmalloc(size);
+		if (  fKeep  ) {
+			memcpy(body,lbs->body,lbs->size);
+		} else {
+			memclear(body,size);
+		}
+		if		(  lbs->body  !=  NULL  ) {
+			xfree(lbs->body);
+		}
+		lbs->body = body;
+		lbs->asize = size;
+	}
+}
+
 extern	void
 LBS_ReserveSize(
 	LargeByteString	*lbs,
 	size_t			size,
 	Bool			fKeep)
 {
-	byte	*body;
-
 	if		(  lbs  !=  NULL  ) {
-		if		(  lbs->asize  <  size  ) {
-			body = (byte *)xmalloc(size);
-			if		(  fKeep  ) {
-				memcpy(body,lbs->body,lbs->size);
-			}
-			if		(  lbs->body  !=  NULL  ) {
-				xfree(lbs->body);
-			}
-			lbs->body = body;
-			lbs->asize = size;
-		}
+		LBS_Grown(lbs, size, fKeep);
 		lbs->size = size;
 		lbs->ptr = size;
 	}
@@ -229,25 +238,27 @@ LBS_EmitStart(
 extern	void
 LBS_Emit(
 	LargeByteString	*lbs,
-	byte			code)
+	unsigned char			code)
 {
-	byte	*body;
-
 	if		(  lbs  !=  NULL  ) {
 		if		(  lbs->ptr  ==  lbs->asize  ) {
-			lbs->asize += SIZE_GLOWN;
-			body = (byte *)xmalloc(lbs->asize);
-			if		(  lbs->body  !=  NULL  ) {
-				memcpy(body,lbs->body,lbs->ptr);
-				xfree(lbs->body);
-			}
-			lbs->body = body;
+			LBS_Grown(lbs, lbs->asize + SIZE_GROWN, TRUE);
 		}
 		lbs->body[lbs->ptr] = code;
 		lbs->ptr ++;
 		if		(  lbs->ptr  >  lbs->size  ) {
 			lbs->size = lbs->ptr;
 		}
+	}
+}
+
+extern	void
+LBS_EmitEnd(
+	LargeByteString	*lbs)
+{
+	if ( (lbs->ptr == 0) || (lbs->body[lbs->ptr - 1] != '\0') ) {
+		LBS_Grown(lbs, lbs->size + 1, TRUE);
+		LBS_Emit(lbs,'\0');
 	}
 }
 
@@ -278,6 +289,159 @@ LBS_EmitString(
 	}
 }
 
+extern	void
+LBS_String(
+	LargeByteString	*lbs,
+	char			*str)
+{
+	LBS_EmitStart(lbs);
+	LBS_EmitString(lbs, str);
+	LBS_EmitEnd(lbs);
+}
+
+static GRegex *reg = NULL;
+
+static gboolean
+eval_cb1(
+	const GMatchInfo *info,
+	GString *res,
+	gpointer data)
+{
+	gchar *match;
+
+	match = g_match_info_fetch(info, 1);
+	if (!strcmp(match,"\xEF\xBC\x8D")) {
+		g_string_append (res, "\xE2\x88\x92");
+	} else if (!strcmp(match,"\xEF\xBD\x9E")) {
+		g_string_append (res, "\xE3\x80\x9C");
+	} else if (!strcmp(match,"\xE2\x88\xA5")) {
+		g_string_append (res, "\xE2\x80\x96");
+	} else if (!strcmp(match,"\xEF\xBF\xA0")) {
+		g_string_append (res, "\xC2\xA2");
+	} else if (!strcmp(match,"\xEF\xBF\xA1")) {
+		g_string_append (res, "\xC2\xA3");
+	} else if (!strcmp(match,"\xEF\xBF\xA2")) {
+		g_string_append (res, "\xC2\xAC");
+	}
+	g_free(match);
+	return FALSE;
+}
+
+static gchar*
+UTF8Normalize(
+	gchar *str)
+{
+	gchar *ret;
+
+	if (reg == NULL) {
+		reg = g_regex_new("([" 
+			"\xEF\xBC\x8D"
+			"\xEF\xBD\x9E"
+			"\xE2\x88\xA5"
+			"\xEF\xBF\xA0"
+			"\xEF\xBF\xA1"
+			"\xEF\xBF\xA2"
+			"])",0,0,NULL);
+	}
+
+	ret = g_regex_replace_eval(reg,str,-1,0,0,eval_cb1,NULL,NULL);
+	if (ret == NULL) {
+		ret = g_strdup(str);
+	}
+	return ret;
+}
+
+static int
+ConvertForJISX0213(
+    char *string)
+{
+    int i;
+    const char *table[][2] = {
+{"\xE2\x80\x95","\xE2\x80\x94"},//―、—
+{"\xEF\xBC\x8D","\xE2\x88\x92"},//－,−
+{"\xE4\xBB\xBC","\xE2\x96\xA0"},//仼
+{"\xE5\x9D\x99","\xE2\x96\xA0"},//坙,■
+{"\xE5\x9D\xA5","\xE2\x96\xA0"},//坥,■
+{"\xE5\xA2\xB2","\xE2\x96\xA0"},//墲,■
+{"\xE5\xA5\x93","\xE2\x96\xA0"},//奓,■
+{"\xE5\xA5\xA3","\xE2\x96\xA0"},//奣,■
+{"\xE5\xA6\xBA","\xE2\x96\xA0"},//妺,■
+{"\xE5\xB3\xB5","\xE2\x96\xA0"},//峵,■
+{"\xE5\xB7\x90","\xE2\x96\xA0"},//巐,■
+{"\xE5\xBC\xA1","\xE2\x96\xA0"},//弡,■
+{"\xE6\x81\x9D","\xE2\x96\xA0"},//恝,■
+{"\xE6\x82\x85","\xE2\x96\xA0"},//悅,■
+{"\xE6\x83\x9E","\xE2\x96\xA0"},//惞,■
+{"\xE6\x84\xA0","\xE2\x96\xA0"},//愠,■
+{"\xE6\x84\x91","\xE2\x96\xA0"},//愑,■
+{"\xE6\x88\x93","\xE2\x96\xA0"},//戓,■
+{"\xE6\x95\x8E","\xE2\x96\xA0"},//敎,■
+{"\xE6\x98\xBB","\xE2\x96\xA0"},//昻,■
+{"\xE6\x98\xAE","\xE2\x96\xA0"},//昮,■
+{"\xEF\xA8\x92","\xE2\x96\xA0"},//晴,■
+{"\xE6\x9C\x8E","\xE2\x96\xA0"},//朎,■
+{"\xE6\xAB\xA2","\xE2\x96\xA0"},//櫢,■
+{"\xE6\xB1\xAF","\xE2\x96\xA0"},//汯,■
+{"\xE6\xB5\xAF","\xE2\x96\xA0"},//浯,■
+{"\xE6\xB6\x96","\xE2\x96\xA0"},//涖,■
+{"\xE6\xB7\xB8","\xE2\x96\xA0"},//淸,■
+{"\xE6\xB7\xB2","\xE2\x96\xA0"},//淲,■
+{"\xE6\xB8\xB9","\xE2\x96\xA0"},//渹,■
+{"\xE7\x8C\xA4","\xE2\x96\xA0"},//猤,■
+{"\xE7\x8E\xBD","\xE2\x96\xA0"},//玽,■
+{"\xE7\x8F\x92","\xE2\x96\xA0"},//珒,■
+{"\xE7\x8F\xB5","\xE2\x96\xA0"},//珵,■
+{"\xE7\x90\xA9","\xE2\x96\xA0"},//琩,■
+{"\xE7\x9A\x82","\xE2\x96\xA0"},//皂,■
+{"\xEF\xA8\x97","\xE2\x96\xA0"},//益,■
+{"\xE7\xA1\xBA","\xE2\x96\xA0"},//硺,■
+{"\xEF\xA8\x98","\xE2\x96\xA0"},//礼,■
+{"\xEF\xA8\x9C","\xE2\x96\xA0"},//靖,■
+{"\xEF\xA8\x9D","\xE2\x96\xA0"},//精,■
+{"\xE7\xBE\xA1","\xE2\x96\xA0"},//羡,■
+{"\xEF\xA8\x9E","\xE2\x96\xA0"},//羽,■
+{"\xE8\x8F\xB6","\xE2\x96\xA0"},//菶,■
+{"\xE8\x95\xAB","\xE2\x96\xA0"},//蕫,■
+{"\xE8\xA0\x87","\xE2\x96\xA0"},//蠇,■
+{"\xE8\xAD\x93","\xE2\x96\xA0"},//譓,■
+{"\xE8\xB5\xB6","\xE2\x96\xA0"},//赶,■
+{"\xEF\xA8\xA3","\xE2\x96\xA0"},//﨣,■
+{"\xE8\xBB\x8F","\xE2\x96\xA0"},//軏,■
+{"\xEF\xA8\xA5","\xE2\x96\xA0"},//逸,■
+{"\xE9\x81\xA7","\xE2\x96\xA0"},//遧,■
+{"\xE9\x87\x9E","\xE2\x96\xA0"},//釞,■
+{"\xE9\x88\x86","\xE2\x96\xA0"},//鈆,■
+{"\xE9\x89\xB7","\xE2\x96\xA0"},//鉷,■
+{"\xEF\xA8\xA7","\xE2\x96\xA0"},//﨧,■
+{"\xE9\x8B\x95","\xE2\x96\xA0"},//鋕,■
+{"\xEF\xA8\xA8","\xE2\x96\xA0"},//﨨,■
+{"\xE9\x8E\xA4","\xE2\x96\xA0"},//鎤,■
+{"\xE9\x8F\xB8","\xE2\x96\xA0"},//鏸,■
+{"\xE9\x90\xB1","\xE2\x96\xA0"},//鐱,■
+{"\xE9\x91\x88","\xE2\x96\xA0"},//鑈,■
+{"\xE9\x96\x92","\xE2\x96\xA0"},//閒,■
+{"\xEF\xA8\xA9","\xE2\x96\xA0"},//﨩,■
+{"\xE9\x9D\x83","\xE2\x96\xA0"},//靃,■
+{"\xE9\x9D\x91","\xE2\x96\xA0"},//靑,■
+{"\xEF\xA8\xAA","\xE2\x96\xA0"},//飯,■
+{"\xEF\xA8\xAB","\xE2\x96\xA0"},//飼,■
+{"\xE9\xA4\xA7","\xE2\x96\xA0"},//餧,■
+{"\xEF\xA8\xAC","\xE2\x96\xA0"},//館,■
+{"\xE9\xAB\x99","\xE2\x96\xA0"},//髙,■
+{"\xE9\xAE\xBB","\xE2\x96\xA0"},//鮻,■
+{"\xEF\xA8\xAD","\xE2\x96\xA0"},//鶴,■
+{"",""},
+	};
+	for(i=0; strlen(table[i][0]) != 0;i++) {
+		if (strstr(string, table[i][0]) == string) {
+			MonWarningPrintf("convert %s -> %s", table[i][0], table[i][1]);
+			memcpy(string, table[i][1], strlen(table[i][1]));
+			return 1;
+		}
+	}
+	return 0;
+}
+
 #define	SIZE_CONV		10
 
 extern	void
@@ -288,61 +452,72 @@ LBS_EmitStringCodeset(
 	size_t			osize,
 	char			*codeset)
 {
-#ifdef	WITH_I18N
-	char	*oc
-	,		*istr;
-	size_t	sib
-		,	sob;
-	iconv_t	cd;
-	int		rc;
-	char	*obuff;
-	size_t	obsize
-		,	ssize;
-#endif
+	char		*oc
+	,			*istr
+	,			*buff
+	,			*nstr;
+	size_t		sib
+	,			sob;
+	iconv_t		cd;
+	int			rc
+	,			i;
+	size_t		obsize
+	,			ssize;
 
 ENTER_FUNC;
  	if		(  lbs  !=  NULL  ) {
-#ifdef	WITH_I18N
-		if		(	(  codeset  !=  NULL  )
-				&&	(	(  stricmp(codeset,"utf8")   ==  0  )
-					||	(  stricmp(codeset,"utf-8")  ==  0  ) ) )	{
-			codeset = NULL;
+		if		( (str == NULL) || (strlen(str) == 0 ) ){
+			return;
 		}
 		if		(  codeset  !=  NULL  ) {
 			cd = iconv_open(codeset,"utf8");
-			obsize = isize * 3 + 1;
+			istr =nstr =  UTF8Normalize(str);
+			sib = strlen(istr) + 1;
+			obsize = isize * 2 + 1;
+			LBS_ReserveSize(lbs, obsize, TRUE);
+			oc = (char *)LBS_Body(lbs);
+			sob = obsize;
 			while	(TRUE) {
-				istr = str;
-				sib = isize;
-				obuff = (char *)xmalloc(obsize);
-				oc = obuff;
-				sob = obsize;
-				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	break;
-				if		(  errno  ==  E2BIG  ) {
-					xfree(obuff);
-					obsize *= 2;
-				} else
+				if		(  ( rc = iconv(cd,&istr,&sib,&oc,&sob) )  ==  0  )	{
 					break;
+				}
+				if (errno == EILSEQ) {
+					if (!ConvertForJISX0213(istr)) {
+						buff = xmalloc(sib * 4 + 1);
+						for (i = 0;i < sib; i++) {
+							sprintf(buff + i * 4, "\\x%02X", istr[i]);
+						}
+						MonWarningPrintf("iconv EILSEQ:%s", buff);
+						xfree(buff);
+
+						*istr = 0;
+						sib = 1;
+					}
+				} else if (errno == E2BIG){
+					MonWarningPrintf("iconv failure %s", strerror(errno));
+					break;
+				} else {
+					buff = xmalloc(sib * 4 + 1);
+					for (i = 0;i < sib; i++) {
+						sprintf(buff + i * 4, "\\x%02X", istr[i]);
+					}
+					MonWarningPrintf("iconv failure %d str:%s", errno, buff);
+					xfree(buff);
+					break;
+				}
 			}
 			*oc = 0;
-			ssize = obsize - sob + sizeof(wchar_t);
-			LBS_ReserveSize(lbs,ssize,FALSE);
-			memclear(LBS_Body(lbs),ssize);
-			memcpy(LBS_Body(lbs),obuff,ssize);
-			xfree(obuff);
+			ssize = obsize - sob + 1;
+			lbs->size = ssize;
+			lbs->ptr = lbs->size;
+			g_free(nstr);
 			iconv_close(cd);
 		} else {
-#endif
-			while	(  isize  >  0  )	{
-				LBS_Emit(lbs,*str);
-				str ++;
-				isize --;
-				osize --;
-				if		(  osize  ==  0  )	break;
-			}
-#ifdef	WITH_I18N
+			LBS_Grown(lbs, isize + 1, FALSE);
+			memcpy(lbs->body, str, isize);
+			lbs->size = isize;
+			lbs->ptr = lbs->size;
 		}
-#endif
 	}
 LEAVE_FUNC;
 }
@@ -405,31 +580,33 @@ extern	void
 LBS_EmitFix(
 	LargeByteString	*lbs)
 {
-	byte	*body;
+	unsigned char	*body;
 
  	if		(  lbs  !=  NULL  ) {
-		if		(  lbs->size  >  0  ) {
-			body = (byte *)xmalloc(lbs->size);
-			memcpy(body,lbs->body,lbs->size);
-			xfree(lbs->body);
-			lbs->body = body;
-		} else {
-			xfree(lbs->body);
-			lbs->body = NULL;
+		if ( lbs->asize != lbs->size ) {
+			if		(  lbs->size  >  0  ) {
+				body = (unsigned char *)xmalloc(lbs->size);
+				memcpy(body,lbs->body,lbs->size);
+				xfree(lbs->body);
+				lbs->body = body;
+			} else {
+				xfree(lbs->body);
+				lbs->body = NULL;
+			}
+			lbs->asize = lbs->size;
 		}
-		lbs->asize = lbs->size;
 		lbs->ptr = 0;
 	}
 }
 
-extern	byte	*
+extern	unsigned char	*
 LBS_ToByte(
 	LargeByteString	*lbs)
 {
-	byte	*ret;
+	unsigned char	*ret;
 
  	if		(  lbs  !=  NULL  ) {
-		ret = (byte *)xmalloc(LBS_Size(lbs));
+		ret = (unsigned char *)xmalloc(LBS_Size(lbs));
 		RewindLBS(lbs);
 		memcpy(ret,LBS_Body(lbs),LBS_Size(lbs));
 	} else {
@@ -485,4 +662,5 @@ LBS_Duplicate(
 	}
 	return	(ret);
 }
+
 

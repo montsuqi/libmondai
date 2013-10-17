@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2009 Ogochan
+ * Copyright (C) 2004-2008 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,9 +83,9 @@ typedef	struct	{
 GLOBAL	Bool	fLexVerbose;
 #undef	GLOBAL
 
-extern	CURFILE		*PushLexInfo(CURFILE *in, char *name, char *path, GHashTable *res);
-extern	CURFILE		*PushLexInfoMem(CURFILE *in, char *mem, char *path, GHashTable *res);
-extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp, char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfo(CURFILE *in,const char *name,const char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoMem(CURFILE *in,const char *mem,const char *path, GHashTable *res);
+extern	CURFILE		*PushLexInfoStream(CURFILE *in, FILE *fp,const char *path, GHashTable *res);
 
 extern	void			DropLexInfo(CURFILE **in);
 extern	void			LexInit(void);
@@ -111,8 +111,8 @@ extern	int				Lex(CURFILE *in, int type);
 }
 #define	ParErrorPrintf(...)	{					\
 	in->fError=TRUE;							\
-	fprintf(stderr,"%s:%d:",in->fn,in->cLine);	\
-	fprintf(stderr,__VA_ARGS__);				\
+	fprintf(stderr,"%s:%d:",in->fn,in->cLine);			\
+	printf(__VA_ARGS__);						\
 	GetSymbol;									\
 }
 

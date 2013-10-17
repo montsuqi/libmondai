@@ -1,6 +1,6 @@
 /*
  * libmondai -- MONTSUQI data access library
- * Copyright (C) 2004-2009 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,6 @@ static	char	*OutEncode;
 static	size_t	SizeBuff;
 static	Bool	fInBigEndian;
 static	Bool	fOutBigEndian;
-static	Bool	fIndent;
 
 static	ARG_TABLE	option[] = {
 	{	"inlang",	STRING,		TRUE,	(void*)&InLang	,
@@ -84,13 +83,10 @@ static	ARG_TABLE	option[] = {
 	{	"outarraysize",INTEGER,	TRUE,	(void*)&OutArraySize,
 		"output max items of array(for COBOL)"			},
 
-	{	"inbigendian",	BOOLEAN,	TRUE,	(void*)&fInBigEndian,
+	{	"inbigendian",BOOLEAN,	TRUE,	(void*)&fInBigEndian,
 		"input integer is bigendian" 					},
 	{	"outbigendian",BOOLEAN,	TRUE,	(void*)&fOutBigEndian,
 		"output integer is bigendian" 					},
-
-	{	"indent",		BOOLEAN,	TRUE,	(void*)&fIndent,
-		"output data indent(if available)"				},
 
 	{	NULL,		0,			FALSE,	NULL,	NULL 	}
 };
@@ -103,8 +99,8 @@ SetDefault(void)
 	OutArraySize = 10;
 	OutTextSize = 100;
 
-	InLang = NULL;
-	OutLang = NULL;;
+	InLang = "CSVE";
+	OutLang = "CSV3";
 	InCode = "euc-jp";
 	OutCode = "euc-jp";
 
@@ -113,8 +109,6 @@ SetDefault(void)
 
 	fInBigEndian = FALSE;
 	fOutBigEndian = FALSE;
-
-	fIndent = FALSE;
 
 	SizeBuff = 1024 * 1024;
 }
@@ -165,19 +159,14 @@ main(
 		exit(1);
 	}
 	type = 0;
-	if		(  InLang  !=  NULL  ) {
-		if		(  !strlicmp(InLang,"xml")  ) {
-			if		(  !strlicmp(InLang,"xml2")  ) {
-				type = XML_TYPE2;
-			} else {
-				type = XML_TYPE1;
-			}
-			InLang = "XML";
+	if		(  !strlicmp(InLang,"xml")  ) {
+		if		(  !strlicmp(InLang,"xml2")  ) {
+			type = XML_TYPE2;
+		} else {
+			type = XML_TYPE1;
 		}
+		InLang = "XML";
 	}
-	if		(  InLang  ==  NULL  ) {
-		inopt = NULL;
-	} else
 	if		(  ( infunc = GetConvFunc(InLang) )  ==  NULL  ) {
 		fprintf(stderr,"can not found %s convert rule\n",InLang);
 		exit(1);
@@ -234,36 +223,25 @@ main(
 		ConvSetUseName(outopt,TRUE);
 		outopt->fBigEndian = fOutBigEndian;
 	}
-	ConvSetIndent(outopt,fIndent);
-	out = (char *)xmalloc(SizeBuff);
-	if		(  InLang  ==  NULL  ) {
-		InitializeValue(rec);
-		osize = outfunc->PackValue(outopt,out,rec);
-		if		(  strlen(outfunc->bsep)  >  0  ) {
-			fwrite(out,osize,1,stdout);
-			fwrite(outfunc->bsep,strlen(outfunc->bsep),1,stdout);
-		} else {
-			fwrite(out,osize,1,stdout);
-		}
-	} else {
-		fstat(fileno(stdin),&sb);
-		if		(  ( p = mmap(NULL,sb.st_size,PROT_READ,MAP_PRIVATE,fileno(stdin),0) )
-				   !=  NULL  ) {
-			left = sb.st_size;
-			while	(  left  >  0  ) {
-				isize = infunc->UnPackValue(inopt,p,rec);
-				left -= isize + strlen(infunc->bsep);
-				p += isize + strlen(infunc->bsep);
-				osize = outfunc->PackValue(outopt,out,rec);
-				if		(  strlen(outfunc->bsep)  >  0  ) {
-					fwrite(out,osize,1,stdout);
-					fwrite(outfunc->bsep,strlen(outfunc->bsep),1,stdout);
-				} else {
-					fwrite(out,osize,1,stdout);
-				}
+
+	fstat(fileno(stdin),&sb);
+	if		(  ( p = mmap(NULL,sb.st_size,PROT_READ,MAP_PRIVATE,fileno(stdin),0) )
+			   !=  NULL  ) {
+		left = sb.st_size;
+		out = (char *)xmalloc(SizeBuff);
+		while	(  left  >  0  ) {
+			isize = infunc->UnPackValue(inopt,p,rec);
+			left -= isize + strlen(infunc->bsep);
+			p += isize + strlen(infunc->bsep);
+			osize = outfunc->PackValue(outopt,out,rec);
+			if		(  strlen(outfunc->bsep)  >  0  ) {
+				fwrite(out,osize,1,stdout);
+				fwrite(outfunc->bsep,strlen(outfunc->bsep),1,stdout);
+			} else {
+				fwrite(out,osize,1,stdout);
 			}
-			munmap(p,sb.st_size);
 		}
+		munmap(p,sb.st_size);
 	}
 
 	return	(0);

@@ -66,7 +66,7 @@
  *
  * NOTE: by convention, values in the packed form have been stripped of
  * all leading and trailing zeroes (except there will be a trailing zero
- * in the last byte, if the number of digits is odd).  In particular,
+ * in the last unsigned char, if the number of digits is odd).  In particular,
  * if the value is zero, there will be no digits at all!  The weight is
  * arbitrary in this case, but we normally set it to zero.
  * ----------
@@ -76,7 +76,7 @@ typedef	struct	NumericData	{
 	int			n_weight;		/* Weight of 1st digit	*/
 	int			n_rscale;		/* Result scale			*/
 	int			n_sign_dscale;	/* Sign + display scale */
-	unsigned char n_data[1];	/* Digit data (2 decimal digits/byte) */
+	unsigned char n_data[1];	/* Digit data (2 decimal digits/unsigned char) */
 }	NumericData;
 typedef NumericData *Numeric;
 

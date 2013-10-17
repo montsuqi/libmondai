@@ -44,165 +44,10 @@
 #include	"Native_v.h"
 #include	"debug.h"
 
-extern	size_t 
-NativeUnPackValueNew(
-	CONVOPT	*opt,
-	byte		*p,
-	ValueStruct	**ret)
-{
-	ValueStruct	*value
-		,		*lower;
-	int		i;
-	size_t	size
-	,		len;
-	PacketDataType	type;
-	ValueAttributeType	attr;
-	byte	*q;
-	char	*name;
-
-ENTER_FUNC;
-	q = p; 
-	if		(  ( type = *(PacketDataType *)p )  !=  GL_TYPE_NULL  ) {
-		value = *ret = NewValue(type);
-		p += sizeof(PacketDataType);
-		attr = *(ValueAttributeType *)p;
-		p += sizeof(ValueAttributeType);
-		ValueAttribute(value) = attr;
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_INT:
-			ValueInteger(value) = *(int *)p;
-			p += sizeof(int);
-			break;
-		  case	GL_TYPE_TIMESTAMP:
-		  case	GL_TYPE_DATE:
-		  case	GL_TYPE_TIME:
-			ValueDateTimeSec(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMin(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeHour(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeMon(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeYear(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeWDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeYDay(value) = *(int *)p;	p += sizeof(int);
-			ValueDateTimeIsdst(value) = *(int *)p;	p += sizeof(int);
-			break;
-		  case	GL_TYPE_BOOL:
-			ValueBool(value) = ( *(char *)p == 'T' ) ? TRUE : FALSE;
-			p ++;
-			break;
-		  case	GL_TYPE_FLOAT:
-			ValueFloat(value) = *(double *)p;
-			p += sizeof(double);
-			break;
-		  case	GL_TYPE_NUMBER:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			if		(  size  >  0  ) {
-				ValueFixedBody(value) = (char *)xmalloc(size+1);
-				ValueFixedLength(value) = size;
-				ValueFixedSlen(value) = *(size_t *)p;
-				p += sizeof(size_t);
-				memcpy(ValueFixedBody(value),p,ValueFixedLength(value));
-				ValueFixedBody(value)[ValueFixedLength(value)] = 0;
-				p += ValueFixedLength(value);
-			} else {
-				p += sizeof(size_t);
-			}
-			break;
-		  case	GL_TYPE_BYTE:
-		  case	GL_TYPE_BINARY:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			if		(  size  >  0  )	{
-				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
-			}
-			if		(  size  >  0  ) {
-				memclear(ValueByte(value),size);
-				memcpy(ValueByte(value),p,size);
-				p += size;
-			}
-			ValueByteLength(value) = size;
-			break;
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_SYMBOL:
-			size = *(size_t *)p;
-			p += sizeof(size_t);
-			len = *(size_t *)p;
-			p += sizeof(size_t);
-			if		(  size  >  0  )	{
-				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
-				memclear(ValueString(value),size);
-				strcpy(ValueString(value),p);
-				p += strlen(p) + 1;
-			}
-			ValueStringLength(value) = len;
-			break;
-		  case	GL_TYPE_OBJECT:
-			ValueObjectId(value) = *(MonObjectType *)p;
-			p += sizeof(MonObjectType);
-			if		(  ( size = *(size_t *)p )  >  0  ) {
-				p += sizeof(size_t);
-				ValueObjectFile(value) = (char *)xmalloc(size);
-				strcpy(ValueObjectFile(value),p);
-				p += size;
-			} else {
-				p += sizeof(size_t);
-				ValueObjectFile(value) = NULL;
-			}
-			break;
-		  case	GL_TYPE_ARRAY:
-			size = *(size_t *)p;
-			ValueArraySize(value) = size;
-			p += sizeof(size_t);
-			ValueArrayItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += NativeUnPackValueNew(opt,p,&ValueArrayItem(value,i));
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			size = *(size_t *)p;
-			ValueRecordSize(value) = size;
-			p += sizeof(size_t);
-			ValueRecordItems(value) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * size);
-			ValueRecordNames(value) = (char **)xmalloc(sizeof(char *) * size);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				name = StrDup(p);
-				p += strlen(name)+1;
-				p += NativeUnPackValueNew(opt,p,&lower);
-				ValueRecordItem(value,i) = lower;
-				ValueRecordName(value,i) = name;
-				g_hash_table_insert(ValueRecordMembers(value),
-									(gpointer)ValueRecordName(value,i),
-									(gpointer)((long)i+1));
-				dbgprintf("name = [%s]\n",ValueRecordName(value,i));
-			}
-			break;
-		  case	GL_TYPE_ALIAS:
-			name = StrDup(p);
-			p += strlen(name)+1;
-			ValueAliasName(value) = name;
-			break;
-		  default:
-			ValueIsNil(value);
-			break;
-		}
-	} else {
-		*ret = NULL;
-	}
-LEAVE_FUNC;
-	return	(p-q);
-}
-
-
 extern	size_t
 NativeUnPackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		rc
@@ -211,7 +56,7 @@ NativeUnPackValue(
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
-	byte	*q;
+	unsigned char	*q;
 	char	*name;
 
 ENTER_FUNC;
@@ -222,7 +67,7 @@ ENTER_FUNC;
 		attr = *(ValueAttributeType *)p;
 		p += sizeof(ValueAttributeType);
 		if		(  type  !=  ValueType(value)  ) {
-			fprintf(stdout,"unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
+			MonWarningPrintf("unmatch type [%X:%X].\n",(int)type,(int)ValueType(value));
 			return -1;
 		}
 		ValueAttribute(value) = attr;
@@ -296,7 +141,7 @@ ENTER_FUNC;
 					xfree(ValueByte(value));
 				}
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueByte(value),size);
@@ -315,12 +160,16 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			len = *(size_t *)p;
 			p += sizeof(size_t);
+			if 		(  strlen(p) + 1   >  size  ) {
+				MonWarningPrintf("%s:ValueStringSize is wrong,size:%zd strlen:%zd [%s]",GetValueLongName(value),size,strlen(p),p);
+				size = strlen(p) + 1;
+			}
 			if		(  size  >  ValueStringSize(value)  ) {
 				if		(  ValueString(value)  !=  NULL  ) {
 					xfree(ValueString(value));
 				}
 				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 			}
 			if		(  size  >  0  ) {
 				memclear(ValueString(value),size);
@@ -354,11 +203,12 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_ARRAY:
 			dbgmsg("GL_TYPE_ARRAY");
-			ValueArraySize(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				dbgprintf("child[%d]",i);
 				rc = NativeUnPackValue(opt,p,ValueArrayItem(value,i));
+				ValueParent(ValueArrayItem(value,i)) = value;
+				ValueIndex(ValueArrayItem(value,i)) = i;
 				if (rc > 0) {
 					p += rc;
 				} else {
@@ -368,16 +218,17 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_RECORD:
 			dbgmsg("GL_TYPE_RECORD");
-			ValueRecordSize(value) = *(size_t *)p;
 			p += sizeof(size_t);
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 				if (strcmp(p,ValueRecordName(value,i))) {
-					fprintf(stderr, "unmatch record name src[%s] dst[%s]", p, ValueRecordName(value,i));
+					MonWarningPrintf("unmatch record name src[%s] dst[%s]", p, ValueRecordName(value,i));
 					return -1;
 				}
 				dbgprintf("child[%d][%s]",i, p);
 				p += strlen(p) + 1;
 				rc = NativeUnPackValue(opt,p,ValueRecordItem(value,i));
+				ValueParent(ValueRecordItem(value,i)) = value;
+				ValueIndex(ValueRecordItem(value,i)) = i;
 				dbgprintf("rc[%d]",rc);
 				if (rc > 0 ) {
 					p += rc;
@@ -487,12 +338,12 @@ LEAVE_FUNC;
 extern	size_t
 NativePackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	size_t	size;
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -701,13 +552,13 @@ LEAVE_FUNC;
 
 extern	size_t
 NativeSaveValue(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	Bool		fData)
 {
 	size_t	size;
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p;
@@ -834,7 +685,7 @@ LEAVE_FUNC;
 
 extern	size_t
 _NativeRestoreValue(
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	**ret,
 	Bool		fData)
 {
@@ -845,7 +696,7 @@ _NativeRestoreValue(
 	,		len;
 	PacketDataType	type;
 	ValueAttributeType	attr;
-	byte	*q;
+	unsigned char	*q;
 	char	*name;
 
 ENTER_FUNC;
@@ -936,7 +787,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueByteSize(value) = size;
-				ValueByte(value) = (byte *)xmalloc(ValueByteSize(value));
+				ValueByte(value) = (unsigned char *)xmalloc(ValueByteSize(value));
 			}
 			if		(  size  >  0  ) {
 				if		(  fData  ) {
@@ -960,7 +811,7 @@ ENTER_FUNC;
 			p += sizeof(size_t);
 			if		(  size  >  0  )	{
 				ValueStringSize(value) = size;
-				ValueString(value) = (byte *)xmalloc(ValueStringSize(value));
+				ValueString(value) = (unsigned char *)xmalloc(ValueStringSize(value));
 				memclear(ValueString(value),size);
 				if		(  fData  ) {
 					strcpy(ValueString(value),p);
@@ -1032,7 +883,7 @@ LEAVE_FUNC;
 
 extern	ValueStruct	*
 NativeRestoreValue(
-	byte		*p,
+	unsigned char		*p,
 	Bool		fData)
 {
 	ValueStruct	*val;

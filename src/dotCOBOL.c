@@ -87,13 +87,13 @@ FixedC2Cobol(
 extern	size_t
 dotCOBOL_UnPackValue(
 	CONVOPT *opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	char	buff[SIZE_BUFF];
-	byte	*str;
-	byte	*pp;
+	unsigned char	*str;
+	unsigned char	*pp;
 
 dbgmsg(">dotCOBOL_UnPackValue");
 	pp = p; 
@@ -106,7 +106,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			value->body.FloatData = *(double *)p;
+			ValueFloat(value) = *(double *)p;
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
@@ -118,7 +118,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_BINARY:
-			str = (byte *)xmalloc((opt->textsize)*sizeof(byte));
+			str = (unsigned char *)xmalloc((opt->textsize)*sizeof(unsigned char));
 			memcpy(str,p,opt->textsize);
 			p += opt->textsize;
 			SetValueBinary(value,str,opt->textsize);
@@ -126,7 +126,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			str = (byte *)xmalloc((opt->textsize+1)*sizeof(char));
+			str = (unsigned char *)xmalloc((opt->textsize+1)*sizeof(char));
 			memcpy(str,p,opt->textsize);
 			str[opt->textsize] = 0;
 			p += opt->textsize;
@@ -137,7 +137,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
+			str = (unsigned char *)xmalloc((ValueStringLength(value)+1)*sizeof(char));
 			memcpy(str,p,ValueStringLength(value));
 			str[ValueStringLength(value)] = 0;
 			p += ValueStringLength(value);
@@ -166,7 +166,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_TIME:
 			ValueDateTimeYear(value) = 0;
@@ -183,7 +183,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			ValueDateTimeHour(value) = 0;
 			ValueDateTimeMin(value) = 0;
 			ValueDateTimeSec(value) = 0;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
@@ -207,12 +207,12 @@ dbgmsg("<dotCOBOL_UnPackValue");
 extern	size_t
 dotCOBOL_PackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
-	byte	*pp;
+	unsigned char	*pp;
 
 dbgmsg(">dotCOBOL_PackValue");
 	pp = p;
@@ -224,7 +224,7 @@ dbgmsg(">dotCOBOL_PackValue");
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			*(double *)p = value->body.FloatData;
+			*(double *)p = 	ValueFloat(value);
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:

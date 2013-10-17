@@ -51,14 +51,14 @@
 static	size_t
 _PHP_UnPackItem(
 	ValueStruct	*e,
-	byte		*p)
+	unsigned char		*p)
 {
 	ValueStruct	*a;
 	Bool	bval;
 	size_t	slen
 		,	alen;
 	char	*q;
-	byte	*pp;
+	unsigned char	*pp;
 	char	buff[SIZE_BUFF+1];
 	int		i;
 
@@ -129,13 +129,13 @@ _PHP_UnPackItem(
 static	size_t
 _PHP_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	Bool	fNull;
 	char	name[SIZE_LONGNAME+1];
 	char	*q;
-	byte	*pp;
+	unsigned char	*pp;
 	ValueStruct	*e;
 
 	pp = p;
@@ -169,7 +169,7 @@ _PHP_UnPackValue(
 extern	size_t
 PHP_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	size_t	ret;
@@ -181,13 +181,13 @@ PHP_UnPackValue(
 static	size_t
 _PHP_PackValue(
 	CONVOPT	*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value,
 	char		*name,
 	char		*longname)
 {
 	int		i;
-	byte	*pp;
+	unsigned char	*pp;
 	char	*str;
 
 	pp = p;
@@ -199,7 +199,7 @@ _PHP_PackValue(
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
 			str = ValueToString(value,ConvCodeset(opt));
-			p += sprintf(p,"s:%ld:\"%s\"",strlen(str),str);
+			p += sprintf(p,"s:%zd:\"%s\"",strlen(str),str);
 			break;
 		  case	GL_TYPE_BOOL:
 			if		(  ValueBool(value)  ) {
@@ -249,7 +249,7 @@ _PHP_PackValue(
 extern	size_t
 PHP_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
 	char	longname[SIZE_LONGNAME+1];

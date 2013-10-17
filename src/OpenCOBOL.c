@@ -77,12 +77,38 @@ IntegerCobol2C(
 #endif
 }
 
+#define COBOL_1_0
+#ifdef COBOL_1_0
+static	void
+FixedCobol2C(
+	char	*buff,
+	size_t	size)
+{
+	buff[size] = 0;
+	if (buff[size - 1] & 0x40) {
+		buff[0] |= 0x40;
+		buff[size - 1] ^= 0x40;
+	}
+}
+
+static	void
+FixedC2Cobol(
+	char	*buff,
+	size_t	size)
+{
+	if (buff[0] & 0x40) {
+		buff[0] ^= 0x40;
+		buff[size - 1] |= 0x40;
+	}
+}
+
+#else
+
 /*
   unsigned	0123456789
   plus		0123456789
   minus		@ABCDEFGHI
 */
-
 static	void
 FixedCobol2C(
 	char	*buff,
@@ -106,26 +132,26 @@ FixedC2Cobol(
 		buff[size - 1]  -= '0' - '@';
 	}
 }
+#endif
 
 extern	size_t
 OpenCOBOL_UnPackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	char	buff[SIZE_NUMBUF+1];
-	byte	*str;
-	byte	*q;
+	unsigned char	*q;
 
 ENTER_FUNC;
-	q = p; 
+	q = p;
 	if		(  value  !=  NULL  ) {
 		ValueIsNonNil(value);
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			ValueInteger(value) = *(int *)p;
-			IntegerCobol2C(opt,&value->body.IntegerData);
+			IntegerCobol2C(opt,&ValueInteger(value));
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
@@ -137,7 +163,11 @@ ENTER_FUNC;
 			p ++;
 			break;
 		  case	GL_TYPE_OBJECT:
-			ValueObjectId(value) = *(MonObjectType *)p;
+			if (IsCobolSpace(p, sizeof(ValueObjectId(value)))){
+				ValueObjectId(value) = 0;
+			} else {
+				ValueObjectId(value) = *(MonObjectType *)p;
+			}
 			p += sizeof(ValueObjectId(value));
 			if		(  ValueObjectFile(value)  !=  NULL  ) {
 				xfree(ValueObjectFile(value));
@@ -149,32 +179,21 @@ ENTER_FUNC;
 			p += ValueByteLength(value);
 			break;
 		  case	GL_TYPE_BINARY:
-			str = (byte *)xmalloc((opt->textsize)*sizeof(byte));
-			memcpy(str,p,opt->textsize);
+			SetValueBinary(value,p,opt->textsize);
 			p += opt->textsize;
-			SetValueBinary(value,str,opt->textsize);
-			xfree(str);
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			str = (byte *)xmalloc((opt->textsize+1)*sizeof(char));
-			memcpy(str,p,opt->textsize);
-			str[opt->textsize] = 0;
+			StringCobol2C(p,opt->textsize);
+			SetValueStringWithLength(value,p,opt->textsize,ConvCodeset(opt));
 			p += opt->textsize;
-			StringCobol2C(str,opt->textsize);
-			SetValueString(value,str,ConvCodeset(opt));
-			xfree(str);
 			break;
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
-			str = (byte *)xmalloc((ValueStringLength(value)+1)*sizeof(byte));
-			memcpy(str,p,ValueStringLength(value));
-			str[ValueStringLength(value)] = 0;
+			StringCobol2C(p,ValueStringLength(value));
+			SetValueStringWithLength(value,p,ValueStringLength(value),ConvCodeset(opt));
 			p += ValueStringLength(value);
-			StringCobol2C(str,ValueStringLength(value));
-			SetValueString(value,str,ConvCodeset(opt));
-			xfree(str);
 			break;
 		  case	GL_TYPE_NUMBER:
 			memcpy(buff,p,ValueFixedLength(value));
@@ -189,7 +208,7 @@ ENTER_FUNC;
 			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_TIME:
 			ValueDateTimeYear(value) = 0;
@@ -206,16 +225,20 @@ ENTER_FUNC;
 			ValueDateTimeHour(value) = 0;
 			ValueDateTimeMin(value) = 0;
 			ValueDateTimeSec(value) = 0;
-			mktime(&ValueDateTime(value));
+			mktime(ValueDateTime(value));
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p += OpenCOBOL_UnPackValue(opt,p,value->body.ArrayData.item[i]);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += OpenCOBOL_UnPackValue(opt,p,ValueArrayItem(value,i));
+				ValueParent(ValueArrayItem(value,i)) = value;
+				ValueIndex(ValueArrayItem(value,i)) = i;
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p += OpenCOBOL_UnPackValue(opt,p,value->body.RecordData.item[i]);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += OpenCOBOL_UnPackValue(opt,p,ValueRecordItem(value,i));
+				ValueParent(ValueRecordItem(value,i)) = value;
+				ValueIndex(ValueRecordItem(value,i)) = i;
 			}
 			break;
 		  default:
@@ -230,28 +253,28 @@ LEAVE_FUNC;
 extern	size_t
 OpenCOBOL_PackValue(
 	CONVOPT	*opt,
-	byte	*p,
+	unsigned char	*p,
 	ValueStruct	*value)
 {
 	int		i;
 	size_t	size;
-	byte	*pp;
+	unsigned char	*pp;
 
 ENTER_FUNC;
 	pp = p; 
 	if		(  value  !=  NULL  ) {
 		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
-			*(int *)p = value->body.IntegerData;
+			*(int *)p = ValueInteger(value);
 			IntegerC2Cobol(opt,(int *)p);
 			p += sizeof(int);
 			break;
 		  case	GL_TYPE_FLOAT:
-			*(double *)p = value->body.FloatData;
+			*(double *)p = ValueFloat(value);
 			p += sizeof(double);
 			break;
 		  case	GL_TYPE_BOOL:
-			*(char *)p = value->body.BoolData ? 'T' : 'F';
+			*(char *)p = ValueBool(value) ? 'T' : 'F';
 			p ++;
 			break;
 		  case	GL_TYPE_BYTE:
@@ -266,7 +289,6 @@ ENTER_FUNC;
 			break;
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-			memclear(p,opt->textsize);
 			size = ( opt->textsize < ValueStringLength(value) ) ? opt->textsize : ValueStringLength(value);
 			memcpy(p,ValueToString(value,ConvCodeset(opt)),size);
 			StringC2Cobol(p,opt->textsize);
@@ -278,7 +300,7 @@ ENTER_FUNC;
 			if		(  IS_VALUE_NIL(value)  ) {
 				memclear(p,ValueStringLength(value));	/*	LOW-VALUE	*/
 			} else {
-				memcpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
+				strncpy(p,ValueToString(value,ConvCodeset(opt)),ValueStringLength(value));
 				StringC2Cobol(p,ValueStringLength(value));
 			}
 			p += ValueStringLength(value);
@@ -314,13 +336,13 @@ ENTER_FUNC;
 						 ValueDateTimeSec(value));
 			break;
 		  case	GL_TYPE_ARRAY:
-			for	( i = 0 ; i < value->body.ArrayData.count ; i ++ ) {
-				p += OpenCOBOL_PackValue(opt,p,value->body.ArrayData.item[i]);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				p += OpenCOBOL_PackValue(opt,p,ValueArrayItem(value,i));
 			}
 			break;
 		  case	GL_TYPE_RECORD:
-			for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-				p += OpenCOBOL_PackValue(opt,p,value->body.RecordData.item[i]);
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				p += OpenCOBOL_PackValue(opt,p,ValueRecordItem(value,i));
 			}
 			break;
 		  default:
@@ -336,8 +358,7 @@ OpenCOBOL_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	int		i
-	,		n;
+	int		i;
 	size_t	ret;
 
 	if		(  value  ==  NULL  )	return	(0);
@@ -379,17 +400,15 @@ dbgmsg(">OpenCOBOL_SizeValue");
 		ret = 6;
 		break;
 	  case	GL_TYPE_ARRAY:
-		if		(  value->body.ArrayData.count  >  0  ) {
-			n = value->body.ArrayData.count;
-		} else {
-			n = opt->arraysize;
+		ret = 0;
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			ret += OpenCOBOL_SizeValue(opt,ValueArrayItem(value,i));
 		}
-		ret = OpenCOBOL_SizeValue(opt,value->body.ArrayData.item[0]) * n;
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
-		for	( i = 0 ; i < value->body.RecordData.count ; i ++ ) {
-			ret += OpenCOBOL_SizeValue(opt,value->body.RecordData.item[i]);
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			ret += OpenCOBOL_SizeValue(opt,ValueRecordItem(value,i));
 		}
 		break;
 	  default:

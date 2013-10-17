@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2002-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2009 Ogochan
+ * Copyright (C) 2004-2008 Ogochan
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,16 +30,19 @@ typedef	struct {
 	size_t	ptr
 	,		size
 	,		asize;
-	byte	*body;
+	unsigned char	*body;
 }	LargeByteString;
 
 extern	LargeByteString	*NewLBS(void);
 extern	void			FreeLBS(LargeByteString *lbs);
+extern	void			LBS_Grown(LargeByteString *lbs, size_t size, Bool fKeep);
 extern	void			LBS_ReserveSize(LargeByteString *lbs, size_t size, Bool fKeep);
 extern	void			LBS_Seek(LargeByteString *lbs,size_t off, int whence);
 extern	void			LBS_EmitStart(LargeByteString *lbs);
-extern	void			LBS_Emit(LargeByteString *lbs, byte code);
+extern	void			LBS_Emit(LargeByteString *lbs, unsigned char code);
+extern	void			LBS_EmitEnd(LargeByteString *lbs);
 extern	void			LBS_EmitString(LargeByteString *lbs, char *str);
+extern	void			LBS_String(LargeByteString *lbs, char *str);
 extern	void			LBS_EmitStringCodeset(LargeByteString *lbs, char *str,
 											  size_t isize, size_t osize, char *codeset);
 extern	void			LBS_EmitPointer(LargeByteString *lbs, void *p);
@@ -55,7 +58,7 @@ extern	uint64_t		LBS_Fetch64(LargeByteString *lbs);
 extern	size_t			LBS_StringLength(LargeByteString *lbs);
 extern	char			*LBS_ToString(LargeByteString *lbs);
 extern	wchar_t			*LBS_ToWcs(LargeByteString *lbs);
-extern	byte			*LBS_ToByte(LargeByteString *lbs);
+extern	unsigned char			*LBS_ToByte(LargeByteString *lbs);
 extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 
 #define	RewindLBS(lbs)			(((LargeByteString *)(lbs))->ptr = 0)
@@ -64,7 +67,6 @@ extern	LargeByteString	*LBS_Duplicate(LargeByteString *lbs);
 #define	LBS_EmitSpace(lbs)		LBS_EmitChar((lbs),' ')
 #define	LBS_EmitByte(lbs,c)		LBS_Emit((lbs),(c))
 #define	LBS_EmitChar(lbs,c)		LBS_Emit((lbs),(c))
-#define	LBS_EmitEnd(lbs)		LBS_Emit((lbs),0);
 #define	LBS_Clear(lbs)			LBS_EmitStart(lbs)
 #define	LBS_Size(lbs)			(((LargeByteString *)(lbs))->size)
 #define	LBS_StringLength(lbs)	LBS_Size(lbs)

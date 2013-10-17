@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2004 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2005-2009 Ogochan.
+ * Copyright (C) 2005-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,9 +33,7 @@
 #include	<string.h>
 #include	<ctype.h>
 #include	<errno.h>
-#ifdef	WITH_I18N
 #include	<iconv.h>
-#endif
 #include	<glib.h>
 #include	<math.h>
 
@@ -48,8 +46,6 @@
 #include	"others.h"
 #include	"getset.h"
 #include	"debug.h"
-
-//#define	BINARY_IS_BASE64
 
 extern	int
 ValueToInteger(
@@ -85,7 +81,7 @@ ValueToInteger(
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
-		ret = (int)mktime(&ValueDateTime(val));
+		ret = (int)mktime(ValueDateTime(val));
 		break;
 	  default:
 		ret = 0;
@@ -124,7 +120,7 @@ ValueToFloat(
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
 	  case	GL_TYPE_TIME:
-		ret = (double)mktime(&ValueDateTime(val));
+		ret = (double)mktime(ValueDateTime(val));
 		break;
 	  default:
 		ret = 0;
@@ -237,9 +233,9 @@ ValueToLBS(
 	ValueStruct	*val,
 	char		*codeset)
 {
-	byte	work[SIZE_NUMBUF+1];
-	byte	work2[SIZE_NUMBUF+2];
-	byte	*p
+	unsigned char	work[SIZE_NUMBUF+1];
+	unsigned char	work2[SIZE_NUMBUF+2];
+	unsigned char	*p
 		,	*q;
 	int		i;
 	int		size;
@@ -254,9 +250,6 @@ ENTER_FUNC;
 			ValueStr(val) = NewLBS();
 		}
 		LBS_EmitStart(ValueStr(val));
-		if		(  IS_VALUE_NIL(val)  ) {
-			LBS_EmitChar(ValueStr(val),CHAR_NIL);
-		} else
 		switch	(ValueType(val)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
@@ -277,20 +270,12 @@ ENTER_FUNC;
 				} else {
 					LBS_EmitStringCodeset(ValueStr(val),ValueString(val),
 										  ValueStringSize(val),
-										  0,codeset);
+										  ValueStringSize(val),codeset);
 				}
 			}
 			break;
 		  case	GL_TYPE_BYTE:
 		  case	GL_TYPE_BINARY:
-#ifdef	BINARY_IS_BASE64
-			size = ( ( ValueByteLength(val) + 2 ) / 3 ) * 4;
-			p = (char *)xmalloc(size);
-			size = EncodeBase64(p,size,ValueByte(val),ValueByteLength(val));
-			LBS_ReserveSize(ValueStr(val),size+1);
-			strcpy(ValueStrBody(val),p);
-			xfree(p);
-#else
 			p = ValueByte(val);
 			for	( i = 0 ; i < ValueByteLength(val) ; i ++ , p ++ ) {
 				switch	(*p) {
@@ -341,7 +326,6 @@ ENTER_FUNC;
 					LBS_EmitByte(ValueStr(val),0);
 				}
 			}
-#endif
 			break;
 		  case	GL_TYPE_NUMBER:
 			strcpy(work,ValueFixedBody(val));
@@ -406,7 +390,9 @@ ENTER_FUNC;
 		  default:
 			break;
 		}
-		LBS_EmitEnd(ValueStr(val));
+		if (ValueStr(val)->size != 0) {
+			LBS_EmitEnd(ValueStr(val));
+		}
 		ret = ValueStr(val);
 	}
 LEAVE_FUNC;
@@ -423,20 +409,21 @@ ValueToString(
 	if		(  ValueToLBS(val,codeset)  ==  NULL  ) {
 		ret = NULL;
 	} else {
-		ret = ValueStrBody(val);
+		if (ValueStrBody(val) != NULL) {
+			ret = ValueStrBody(val);
+		} else {
+			ret = "";
+		}
 	}
 	return	(ret);
 }
 
 static	void
 DecodeStringToBinary(
-	byte	*p,
-	size_t	size,
-	char	*str)
+	unsigned char	*p,
+	size_t			size,
+	const char		*str)
 {
-#ifdef	BINARY_IS_BASE64
-	DecodeBase64(p,size,str,strlen(str));
-#else
 	int		i;
 
 	for	( i = 0 ; i < size ; i ++ , p ++ ) {
@@ -478,13 +465,13 @@ DecodeStringToBinary(
 			str ++;
 		}
 	}
-#endif
 }
+
 
 extern	Bool
 SetValueStringWithLength(
 	ValueStruct	*val,
-	char		*str,
+	const char	*str,
 	size_t		slen,
 	char		*codeset)
 {
@@ -492,22 +479,22 @@ SetValueStringWithLength(
 	,		fMinus
 	,		fPoint;
 	size_t	len;
-	byte	*p;
-	byte	buff[SIZE_NUMBUF+1]
+	unsigned char	*p;
+	unsigned char	buff[SIZE_NUMBUF+1]
 		,	sbuff[SIZE_LONGNAME+1];
 	Fixed	from;
 	size_t	size;
-#ifdef	WITH_I18N
-	byte	*q;
-	iconv_t	cd;
-	size_t	sob
-	,		sib;
-	char	*istr;
-#endif
+	unsigned char	*q;
+	iconv_t			cd;
+	size_t			sob
+	,				sib;
+	char			*istr
+	,				*hexstr;
+	int				i;
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else
 	if		(	(  str   ==  NULL      )
@@ -522,58 +509,58 @@ ENTER_FUNC;
 		  case	GL_TYPE_DBCODE:
 		  case	GL_TYPE_TEXT:
 		  case	GL_TYPE_SYMBOL:
-#ifdef	WITH_I18N
-			if		(	(  codeset  !=  NULL  )
-					&&	(	(  stricmp(codeset,"utf8")   ==  0  )
-						||	(  stricmp(codeset,"utf-8")  ==  0  ) ) )	{
-				codeset = NULL;
-			}
-			if		(  codeset  !=  NULL  ) {
-				if		(  IS_VALUE_EXPANDABLE(val)  ) {
-					len = slen;
-				} else {
-					len = ValueStringLength(val) < slen ?
-						ValueStringLength(val) : slen;
+			size = slen + 1;
+			len = slen;
+			if		(  size  >  ValueStringSize(val)  ) {
+				if		(  ValueString(val)  !=  NULL  ) {
+					xfree(ValueString(val));
 				}
+				ValueStringSize(val) = size;
+				ValueString(val) = (unsigned char *)xmalloc(size);
+			}
+			memclear(ValueString(val),ValueStringSize(val));
+			memcpy(ValueString(val),str,size - 1);
+			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
-					istr = str;
+					istr = (char*)str;
 					sib = len;
 					sob = ValueStringSize(val);
 					if		(  ( q = ValueString(val) )  !=  NULL  ) {
 						memclear(ValueString(val),ValueStringSize(val));
-						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  ==  0  )	break;
+						if		(  iconv(cd,&istr,&sib,(void*)&q,&sob)  == 0 ) {
+							break;
+						}
 						if		(  errno  ==  E2BIG ) {
 							xfree(ValueString(val));
 							ValueStringSize(val) *= 2;
-						} else
+						} else {
+							MonWarningPrintf("iconv failure %s", strerror(errno));
+							hexstr = xmalloc(sib * 3 + 1);
+							for (i = 0;i < sib; i++) {
+								sprintf(hexstr + i * 3, "%02X,", istr[i]);
+							}
+							MonWarningPrintf("%s:%s",GetValueLongName(val), hexstr);
+							xfree(hexstr);
 							break;
+						}
 					} else {
 						ValueStringSize(val) = 1;
 					}
-					ValueString(val) = (byte *)xmalloc(ValueStringSize(val));
+					ValueString(val) = (unsigned char *)xmalloc(ValueStringSize(val));
 				};
 				iconv_close(cd);
-				*q = 0;
-				len = ValueStringSize(val) - sob;
-			} else {
-#endif
-				size = slen + 1;
-				len = slen;
-				if		(  size  >  ValueStringSize(val)  ) {
-					if		(  ValueString(val)  !=  NULL  ) {
-						xfree(ValueString(val));
-					}
-					ValueStringSize(val) = size;
-					ValueString(val) = (byte *)xmalloc(size);
+				if (sob == 0) {
+					/* need 1 unsigned char expansion for null terminating  */
+					q = ValueString(val);
+					ValueStringSize(val) += 1;
+					ValueString(val) = (unsigned char *)xmalloc(ValueStringSize(val));
+					memcpy(ValueString(val),q,ValueStringSize(val)-1);
+					*(ValueString(val) + ValueStringSize(val) - 1) = 0;
+					xfree(q);
+				} else {
+					*q = 0;
 				}
-				memclear(ValueString(val),ValueStringSize(val));
-				strcpy(ValueString(val),str);
-#ifdef	WITH_I18N
-			}
-#endif
-			if		(  IS_VALUE_EXPANDABLE(val)  ) {
-				ValueStringLength(val) = len;
 			}
 			rc = TRUE;
 			break;
@@ -582,18 +569,8 @@ ENTER_FUNC;
 			rc = TRUE;
 			break;
 		  case	GL_TYPE_BINARY:
-#ifdef	BINARY_IS_BASE64
-			p = (byte *)xmalloc(strlen(str));
-			size = strlen(str);
-			size = DecodeBase64(p,size,str,size);
-			if		(  ValueByte(val)  !=  NULL  ) {
-				xfree(ValueByte(val));
-			}
-			ValueByteSize(val) = strlen(str);
-			ValueByte(val) = p;
-#else
 			size = 0;
-			for	( p = str ; *p != 0 ; ) {
+			for	( p = (char*)str ; *p != 0 ; ) {
 				if		(  *p  ==  '\\'  ) {
 					p ++;
 					if		(  *p  ==  'u'  ) {
@@ -611,11 +588,10 @@ ENTER_FUNC;
 						xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = size;
-				ValueByte(val) = (byte *)xmalloc(size);
+				ValueByte(val) = (unsigned char *)xmalloc(size);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			DecodeStringToBinary(ValueByte(val),size,str);
-#endif
 			ValueByteLength(val) = size;
 			rc = TRUE;
 			break;
@@ -640,10 +616,9 @@ ENTER_FUNC;
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-#ifdef	WITH_I18N
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
-				istr = str;
+				istr = (char*)str;
 				sib = slen;
 				sob = SIZE_NUMBUF;
 				p = sbuff;
@@ -652,12 +627,9 @@ ENTER_FUNC;
 				*p = 0;
 				str = sbuff;
 			} else {
-#endif
 				strncpy(sbuff,str,SIZE_NUMBUF);
 				str = sbuff;
-#ifdef	WITH_I18N
 			}
-#endif
 			switch	(ValueType(val)) {
 			  case	GL_TYPE_NUMBER:
 				p = buff;
@@ -708,7 +680,7 @@ ENTER_FUNC;
 				ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
 				ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
 				ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 				break;
 			  case	GL_TYPE_DATE:
 				ValueDateTimeYear(val) = StrToInt(str,4);		str += 4;
@@ -717,7 +689,7 @@ ENTER_FUNC;
 				ValueDateTimeHour(val) = 0;
 				ValueDateTimeMin(val) = 0;
 				ValueDateTimeSec(val) = 0;
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 				break;
 			  case	GL_TYPE_TIME:
 				ValueDateTimeYear(val) = 0;
@@ -749,10 +721,10 @@ SetValueInteger(
 {
 	Bool	rc;
 	char	str[SIZE_NUMBUF+1];
-	Bool	fMinus;
+	time_t	ltime;
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct\n");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -766,16 +738,7 @@ SetValueInteger(
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_NUMBER:
-			if		(  ival  <  0  ) {
-				ival = - ival;
-				fMinus = TRUE;
-			} else {
-				fMinus = FALSE;
-			}
 			sprintf(str,"%0*d",(int)ValueFixedLength(val),ival);
-			if		(  fMinus  ) {
-				*str |= 0x40;
-			}
 			rc = SetValueString(val,str,NULL);
 			break;
 		  case	GL_TYPE_INT:
@@ -801,7 +764,8 @@ SetValueInteger(
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-			rc = (  localtime_r((time_t *)&ival,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
+			ltime = (time_t)ival;
+			rc = (  localtime_r(&ltime,ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -820,7 +784,7 @@ SetValueChar(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -866,7 +830,7 @@ SetValueBool(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -914,7 +878,7 @@ SetValueFloat(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -947,7 +911,7 @@ SetValueFloat(
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
 			wt = (time_t)fval;
-			rc = (  localtime_r(&wt,&ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
+			rc = (  localtime_r(&wt,ValueDateTime(val))  !=  NULL  ) ? TRUE : FALSE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -967,7 +931,7 @@ SetValueFixed(
 	char	*str;
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -999,7 +963,7 @@ SetValueFixed(
 			ValueDateTimeHour(val) = StrToInt(str,2);		str += 2;
 			ValueDateTimeMin(val) = StrToInt(str,2);		str += 2;
 			ValueDateTimeSec(val) = StrToInt(str,2);		str += 2;
-			rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+			rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			break;
 		  case	GL_TYPE_DATE:
 			str = fval->sval;
@@ -1009,7 +973,7 @@ SetValueFixed(
 			ValueDateTimeHour(val) = 0;
 			ValueDateTimeMin(val) = 0;
 			ValueDateTimeSec(val) = 0;
-			rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+			rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			break;
 		  case	GL_TYPE_TIME:
 			str = fval->sval;
@@ -1039,7 +1003,7 @@ SetValueFixed(
 extern	Bool
 SetValueBinary(
 	ValueStruct	*val,
-	byte		*str,
+	unsigned char		*str,
 	size_t		slen)
 {
 	Bool	rc;
@@ -1047,7 +1011,7 @@ SetValueBinary(
 
 ENTER_FUNC;
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		if		(	(  str   ==  NULL      )
@@ -1072,7 +1036,7 @@ ENTER_FUNC;
 						xfree(ValueString(val));
 					}
 					ValueStringSize(val) = size;
-					ValueString(val) = (byte *)xmalloc(size);
+					ValueString(val) = (unsigned char *)xmalloc(size);
 				}
 				memclear(ValueString(val),ValueStringSize(val));
 				if		(  str  !=  NULL  ) {
@@ -1098,7 +1062,7 @@ ENTER_FUNC;
 					xfree(ValueByte(val));
 				}
 				ValueByteSize(val) = slen;
-				ValueByte(val) = (byte *)xmalloc(slen);
+				ValueByte(val) = (unsigned char *)xmalloc(slen);
 			}
 			memclear(ValueByte(val),ValueByteSize(val));
 			if		(  str  !=  NULL  ) {
@@ -1155,10 +1119,10 @@ ENTER_FUNC;
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
 			if		(  str  !=  NULL  ) {
-				memcpy(&ValueDateTime(val),str,sizeof(struct tm));
-				rc = mktime(&ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+				memcpy(ValueDateTime(val),str,sizeof(struct tm));
+				rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
 			} else {
-				memclear(&ValueDateTime(val),sizeof(struct tm));
+				memclear(ValueDateTime(val),sizeof(struct tm));
 				rc = TRUE;
 			}
 			break;
@@ -1172,11 +1136,11 @@ LEAVE_FUNC;
 	return	(rc);
 }
 
-extern	byte	*
+extern	unsigned char	*
 ValueToBinary(
 	ValueStruct	*val)
 {
-	byte	*ret;
+	unsigned char	*ret;
 ENTER_FUNC;
 
 	if		(  val  ==  NULL  ) {
@@ -1232,7 +1196,7 @@ ENTER_FUNC;
 			  case	GL_TYPE_DATE:
 			  case	GL_TYPE_TIME:
 				LBS_ReserveSize(ValueStr(val),sizeof(int)*9,FALSE);
-				memcpy(ValueStrBody(val),&ValueDateTime(val),sizeof(int)*9);
+				memcpy(ValueStrBody(val),ValueDateTime(val),sizeof(int)*9);
 				break;
 			  default:
 				break;
@@ -1253,7 +1217,7 @@ SetValueDateTime(
 	char	str[SIZE_NUMBUF+1];
 
 	if		(  val  ==  NULL  ) {
-		fprintf(stderr,"no ValueStruct\n");
+		MonWarning("no ValueStruct");
 		rc = FALSE;
 	} else {
 		ValueIsNonNil(val);
@@ -1285,8 +1249,8 @@ SetValueDateTime(
 		  case	GL_TYPE_TIMESTAMP:
 		  case	GL_TYPE_DATE:
 		  case	GL_TYPE_TIME:
-			memcpy(&ValueDateTime(val),&tval,sizeof(struct tm));
-			rc = (  mktime(&ValueDateTime(val))  < 0 ) ? FALSE : TRUE;
+			memcpy(ValueDateTime(val),&tval,sizeof(struct tm));
+			rc = (  mktime(ValueDateTime(val))  < 0 ) ? FALSE : TRUE;
 			break;
 		  default:
 			ValueIsNil(val);
@@ -1342,18 +1306,18 @@ ValueToDateTime(
 		localtime_r(&wt,&ret);
 		break;
 	  case	GL_TYPE_TIMESTAMP:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_DATE:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;
 		mktime(&ret);
 		break;
 	  case	GL_TYPE_TIME:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		mktime(&ret);
 		ret.tm_year = 0;
 		ret.tm_mon = 0;
@@ -1404,7 +1368,7 @@ ValueToDate(
 		break;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_DATE:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_hour = 0;
 		ret.tm_min = 0;
 		ret.tm_sec = 0;
@@ -1467,7 +1431,7 @@ ValueToTime(
 		break;
 	  case	GL_TYPE_TIMESTAMP:
 	  case	GL_TYPE_TIME:
-		memcpy(&ret,&ValueDateTime(val),sizeof(struct tm));
+		memcpy(&ret,ValueDateTime(val),sizeof(struct tm));
 		ret.tm_year = 0;
 		ret.tm_mon = 0;
 		ret.tm_mday = 0;

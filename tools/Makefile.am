@@ -24,12 +24,13 @@ AM_CFLAGS	=	-Wall -Wunused -Wredundant-decls -funsigned-char  \
 	-Wno-pointer-sign
 
 LDADD 		=	\
-	$(GLIB_LIBS)						\
+	$(GLIB_LIBS)					\
 	$(XML_LIBS)						\
 	$(top_builddir)/src/libmondai.la
 
 INCLUDES 			= 					\
 	-I$(top_srcdir)/src					\
+	$(JSON_CFLAGS)						\
 	$(GLIB_CFLAGS)
 
 DEPENDENCIES	=						\

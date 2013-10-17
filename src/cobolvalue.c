@@ -47,6 +47,10 @@ StringCobol2C(
 {
 	char	*p;
 
+	if (*str == 0){
+		return;
+	}
+	
 	for	( p = str + size - 1 ; p >= str ; p -- ) {
 		if		(  *p  ==  ' '  ) {
 			*p = 0;
@@ -63,17 +67,29 @@ StringC2Cobol(
 	char	*p,
 	size_t	size)
 {
-	int		i;
-	Bool	fEnd;
+	size_t		left;
 
-	fEnd = FALSE;
-	for	( i = 0 ; i < size ; i ++, p ++ ) {
-		if		(  *p  ==  0  )	{
-			fEnd = TRUE;
-		}
-		if		(  fEnd  ) {
-			*p = ' ';
+	left = size;
+	while ( (*p != 0) && (left > 0) ){
+		++p;
+		--left;
+	}
+	memset(p, ' ', left);
+	p += left;
+}
+
+extern	Bool
+IsCobolSpace(
+	char	*str,
+	size_t	size)
+{
+	char	*p;
+	
+	for	( p = str + size - 1 ; p >= str ; p -- ) {
+		if		(  *p  !=  ' '  ) {
+			return FALSE;
 		}
 	}
+	return TRUE;
 }
 

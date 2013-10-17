@@ -1,7 +1,7 @@
 /*
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
- * Copyright (C) 2004-2009 Ogochan.
+ * Copyright (C) 2004-2008 Ogochan.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -62,6 +62,12 @@ NameCompare(
 	gconstpointer	s1,
 	gconstpointer	s2)
 {
+	if (s1 == NULL) {
+		return -1;
+	}
+	if (s2 == NULL) {
+		return 1;
+	}
 	return	(!strcmp(s1,s2));
 }
 

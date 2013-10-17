@@ -33,6 +33,7 @@
 #include	<string.h>
 #include	<ctype.h>
 #include    <sys/types.h>
+#include	<json.h>
 
 #include	"types.h"
 #include	"misc_v.h"
@@ -44,587 +45,312 @@
 #include	"json_v.h"
 #include	"debug.h"
 
-#define	SKIP_SPACE(p)								\
-			while	(	( *(p)  !=  0     )			\
-					&&	(  isspace(*(p))  ) )	(p) ++
+static json_object *JSONOBJ = NULL;
+static size_t JSONSIZE = 0;
 
-static	size_t
-ParseString(
-	byte	*p,
-	byte	**str)
+static const char*
+str_json_object_type(
+	json_type type)
 {
-	size_t	size;
-	byte	*s;
-
-	size = 0;
-	s = *str;
-	while	(	(  *s  !=  0  )
-			&&	(  *s  !=  '"'  ) ) {
-		switch	(*s) {
-		  case	'\\':
-			s ++;
-			switch	(*s) {
-			  case	'u':
-				*p =  ( *(s+1) << 12 )
-					| ( *(s+2) << 8  )
-					| ( *(s+3) << 4  )
-					| ( *(s+4)       );
-				s += 4;
-			  case	'n':
-				*p = '\n';
-				break;
-			  case	'r':
-				*p = '\r';
-				break;
-			  case	't':
-				*p = '\t';
-				break;
-			  default:
-				*p = *s;
-				break;
-			}
-			break;
-		  default:
-			*p = *s;
-			break;
-		}
-		p ++;
-		s ++;
-		size ++;
+	switch(type) {
+	case json_type_null:
+		return "null";
+	case json_type_boolean:
+		return "boolean";
+	case json_type_double:
+		return "double";
+	case json_type_int:
+		return "int";
+	case json_type_object:
+		return "object";
+	case json_type_array:
+		return "array";
+	case json_type_string:
+		return "string";
+	default:
+		return "UNDEF";
 	}
-	*p = 0;
-	(*str) = s;
-
-	return	(size);
 }
 
-static	size_t
-ParseStringSize(
-	char	*p)
+static void
+print_type_error(
+	json_type type,
+	json_type expected)
 {
-	size_t	size;
-
-	size = 0;
-	while	(	(  *p  !=  0  )
-			&&	(  *p  !=  '"'  ) ) {
-		if		(  *p  ==  '\\'  ) {
-			p ++;
-			switch	(*p) {
-			  case	'u':
-				p+= 4;
-				break;
-			  default:
-				break;
-			}
-		}
-		p ++;
-		size ++;
-	}
-	return	(size);
+	MonWarningPrintf("Invalid json type [%s];expected type [%s]",
+		str_json_object_type(type),
+		str_json_object_type(expected));
 }
 
-static	size_t
+static	void
 _JSON_UnPackValue(
-	CONVOPT		*opt,
-	byte		*p,
-	ValueStruct	*value)
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
 {
-	char	name[SIZE_LONGNAME+1]
-		,	buff[SIZE_BUFF];
-	char	*str;
-	byte	*pp;
-	size_t	size;
-	ValueStruct	*e;
-	int		i;
+	const char *str;
+	char buf[256];
+	int i,length;
+	json_object *child;
+	json_type type;
 
 ENTER_FUNC;
-	pp = p;
-	if		(  value  !=  NULL  ) {
-		SKIP_SPACE(p);
-		dbgprintf("(%c)",*p);
-		switch	(*p) {
-		  case	'{':
-			p ++;
-			SKIP_SPACE(p);
-			while	(	(  *p  !=  0    )
-					&&	(  *p  !=  '}'  ) ) {
-				if		(  *p  ==  '"'  ) {
-					p ++;
-					(void)ParseString(name,&p);
-					dbgprintf("name = [%s]",name);
-					e = GetRecordItem(value,name);
-					p ++;
-
-					dbgprintf("[%c]",*p);
-					SKIP_SPACE(p);
-					if		(  *p  !=  ':'  )	break;
-					p ++;
-					SKIP_SPACE(p);
-					p += _JSON_UnPackValue(opt,p,e);
-					SKIP_SPACE(p);
-					if		(  *p  ==  ','  ) {
-						p ++;
-						SKIP_SPACE(p);
-					}
-				} else
-					break;
+	if (value == NULL || obj == NULL) {
+#if 0
+		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
+#endif
+		return;
+	}
+	ValueIsNonNil(value);
+	type = json_object_get_type(obj);
+	switch	(value->type) {
+	case GL_TYPE_CHAR:
+	case GL_TYPE_VARCHAR:
+	case GL_TYPE_DBCODE:
+	case GL_TYPE_TEXT:
+	case GL_TYPE_SYMBOL:
+	case GL_TYPE_ALIAS:
+	case GL_TYPE_OBJECT:
+	case GL_TYPE_BYTE:
+	case GL_TYPE_BINARY:
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				SetValueString(value,"True",NULL);
+			} else {
+				SetValueString(value,"False",NULL);
 			}
-			if		(  *p  !=  0  )	p ++;
 			break;
-		  case	'[':
-			p ++;
-			SKIP_SPACE(p);
-			i = 0;
-			while	(	(  *p  !=  0    )
-					&&	(  *p  !=  ']'  ) ) {
-				p += _JSON_UnPackValue(opt,p,GetArrayItem(value,i));
-				i ++;
-				SKIP_SPACE(p);
-				if		(  *p  ==  ','  ) {
-					p ++;
-					SKIP_SPACE(p);
-				}
-			}
-			if		(  *p  !=  0  )	p ++;
+		case json_type_double:
+			snprintf(buf,sizeof(buf),"%lf",json_object_get_double(obj));
+			SetValueString(value,buf,NULL);
 			break;
-		  case	'"':
-			p ++;
-			size = ParseStringSize(p);
-			str = (byte *)xmalloc(size+1);
-			size = ParseString(str,&p);
-			dbgprintf("str = %d",(int)size);
-			SetValueString(value,str,"utf-8");
-			xfree(str);
-			if		(  *p  !=  0  )	p ++;
+		case json_type_int:
+			snprintf(buf,sizeof(buf),"%d",json_object_get_int(obj));
+			SetValueString(value,buf,NULL);
 			break;
-		  default:
-			if		(  strlcmp(p,"true")  ==  0  ) {
-				SetValueBool(value,TRUE);
-				p += 4;
-			} else
-			if		(  strlcmp(p,"false")  ==  0  ) {
-				SetValueBool(value,FALSE);
-				p += 5;
-			} else
-			if		(  strlcmp(p,"null")  ==  0  ) {
-				ValueIsNil(value);
-				p += 4;
-			} else
-			if		(	(  *p  ==  '-'  )
-					||	(  isdigit(*p)  ) ) {
-				str = buff;
-				while	(	(  *p  ==  '-'  )
-						||	(  *p  ==  '+'  )
-						||	(  *p  ==  '.'  )
-						||	(  *p  ==  'e'  )
-						||	(  *p  ==  'E'  )
-						||	(  isdigit(*p)  ) ) {
-					*str ++ = *p ++;
-				}
-				*str = 0;
-				dbgprintf("buff = [%s]",buff);
-				SetValueString(value,buff,"utf-8");
-			}
+		case json_type_object:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_array:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_string:
+			SetValueString(value,json_object_get_string(obj),NULL);
+			break;
+		case json_type_null:
+			print_type_error(type,json_type_string);
+			break;
+		default:
+			MonWarning("does not reach here");
 			break;
 		}
-		if		(  *p  ==  0  )	goto	quit;
+		break;
+	case GL_TYPE_BOOL:
+		switch (json_object_get_type(obj)) {
+		case json_type_string:
+			str = json_object_get_string(obj);
+			if (str != NULL && (str[0] == 'T' || str[0] == 't')) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_boolean:
+			ValueBool(value) = json_object_get_boolean(obj);
+			break;
+		case json_type_int:
+			if (json_object_get_int(obj) != 0) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_double:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_boolean);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+		break;
+	case GL_TYPE_INT:
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				ValueInteger(value) = 1;
+			} else {
+				ValueInteger(value) = 0;
+			}
+			break;
+		case json_type_double:
+			ValueInteger(value) = (int)(json_object_get_double(obj));
+			break;
+		case json_type_int:
+			ValueInteger(value) = json_object_get_int(obj);
+			break;
+		case json_type_string:
+			ValueInteger(value) = atoi(json_object_get_string(obj));
+			break;
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_int);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+		break;
+	case GL_TYPE_NUMBER:
+	case GL_TYPE_FLOAT:
+		switch (type) {
+		case json_type_double:
+			SetValueFloat(value,json_object_get_double(obj));
+			break;
+		case json_type_int:
+			SetValueFloat(value,(double)(json_object_get_int(obj)));
+			break;
+		case json_type_string:
+			SetValueFloat(value,atof(json_object_get_string(obj)));
+			break;
+		case json_type_boolean:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_double);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+		break;
+	case GL_TYPE_ARRAY:
+		if (type == json_type_array) {
+			length = json_object_array_length(obj);
+			for	(i = 0 ; i < ValueArraySize(value) && i < length ; i ++ ) {
+				_JSON_UnPackValue(opt,
+					json_object_array_get_idx(obj,i),
+					ValueArrayItem(value,i));
+			}
+		} else {
+			print_type_error(type,json_type_array);
+		}
+		break;
+	case GL_TYPE_RECORD:
+		if (type == json_type_object) {
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				child = json_object_object_get(obj,ValueRecordName(value,i));
+				if (child != NULL) {
+					_JSON_UnPackValue(opt,child,ValueRecordItem(value,i));
+				}
+			}
+		} else {
+			print_type_error(type,json_type_array);
+		}
+		break;
 	}
-  quit:;
 LEAVE_FUNC;
-	return	(p-pp);
 }
 
 extern	size_t
 JSON_UnPackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
-	byte	*pp;
-
+	json_object *obj;
 ENTER_FUNC;
-	pp = p;
-	SKIP_SPACE(p);
-	p += _JSON_UnPackValue(opt,p,value);
+	obj = json_tokener_parse(p);
+	if (is_error(obj)) {
+		MonWarning("invalid json");
+	} else {
+		InitializeValue(value);
+		_JSON_UnPackValue(opt,obj,value);
+	}
+	json_object_put(obj);
 LEAVE_FUNC;
-	return	(p-pp);
+	return	0;
 }
 
-static	size_t
+static	json_object*
 _JSON_PackValue(
 	CONVOPT	*opt,
-	byte		*p,
 	ValueStruct	*value)
 {
-	int		i
-		,	real_size;
-	byte	*pp;
-	size_t	s;
-	char	*str;
-	ValueStruct	*e;
-	Bool	fFirst;
+	int i;
+	json_object *obj,*child;
 
 ENTER_FUNC;
-	pp = p;
-	if		(	(  value  ==  NULL      )
-			||	(  IS_VALUE_NIL(value)  ) ) {
-	} else {
-		switch	(value->type) {
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_SYMBOL:
-		  case	GL_TYPE_ALIAS:
-		  case	GL_TYPE_OBJECT:
-			str = ValueToString(value,"utf-8");
-			*p ++ = '"';
-			p += EncodeStringBackslash(p,str);
-			*p ++ = '"';
-			break;
-		  case	GL_TYPE_BYTE:
-		  case	GL_TYPE_BINARY:
-#if	0
-			str = ValueToString(value,"utf-8");
-			p += sprintf(p,"\"%s\"",str);
-#else
-			p += sprintf(p,"\"\"");
-#endif
-			break;
-		  case	GL_TYPE_BOOL:
-			if		(  ValueBool(value)  ) {
-				p += sprintf(p,"true");
-			} else {
-				p += sprintf(p,"false");
-			}
-			break;
-		  case	GL_TYPE_INT:
-			p += sprintf(p,"%d",ValueInteger(value));
-			break;
-		  case	GL_TYPE_NUMBER:
-		  case	GL_TYPE_FLOAT:
-			str = ValueToString(value,"utf-8");
-			while	(  *str  ==  '0'  )	str ++;
-			if		(  *str  ==  0  )	str --;
-			p += sprintf(p,"%s",str);
-			break;
-		  case	GL_TYPE_ARRAY:
-			real_size = 0;
-			for	( i = ValueArraySize(value) - 1 ; i >= 0 ; i -- )	{
-				if		(	(  ( e = ValueArrayItem(value,i) )  !=  NULL  )
-						&&	(  !IS_VALUE_NIL(e)                           ) )	{
-					real_size = i + 1;
-					break;
-				}
-			}
-			if		(  real_size  >  0  )	{
-				opt->nIndent ++;
-				p += sprintf(p,"[");
-				p += PutCR(opt,p);
-				for	( i = 0 ; i < real_size ; i ++ ) {
-					p += IndentLine(opt,p);
-					s = _JSON_PackValue(opt,p,ValueArrayItem(value,i));
-					if		(  s  ==  0  )	{
-						p += sprintf(p,"null");
-					} else {
-						p += s;
-					}
-					if		(  i  <  real_size - 1  ) {
-						p += sprintf(p,",");
-					}
-					p += PutCR(opt,p);
-				}
-				opt->nIndent --;
-				p += IndentLine(opt,p);
-				p += sprintf(p,"]");
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			opt->nIndent ++;
-			p += sprintf(p,"{");
-			p += PutCR(opt,p);
-			fFirst = TRUE;
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				s =  _JSON_PackValue(opt,p,ValueRecordItem(value,i));
-				if		(  s  >  0  )	{
-					p += IndentLine(opt,p);
-					if		(  !fFirst  )	{
-						p += sprintf(p,",");
-						p += PutCR(opt,p);
-					}
-					p += sprintf(p,"\"%s\":",ValueRecordName(value,i));
-					p += _JSON_PackValue(opt,p,ValueRecordItem(value,i));
-					fFirst = FALSE;
-				}
-			}
-			opt->nIndent --;
-			p += IndentLine(opt,p);
-			p += sprintf(p,"}");
-			break;
-		  default:
-			break;
+	if (value == NULL) {
+		return json_object_new_string("");
+	} 
+	switch	(value->type) {
+	case GL_TYPE_CHAR:
+	case GL_TYPE_VARCHAR:
+	case GL_TYPE_DBCODE:
+	case GL_TYPE_TEXT:
+	case GL_TYPE_SYMBOL:
+	case GL_TYPE_ALIAS:
+	case GL_TYPE_OBJECT:
+	case GL_TYPE_BYTE:
+	case GL_TYPE_BINARY:
+		return json_object_new_string(ValueToString(value,NULL));
+	case GL_TYPE_BOOL:
+		return json_object_new_boolean(ValueBool(value));
+	case GL_TYPE_INT:
+		return json_object_new_int(ValueInteger(value));
+	case GL_TYPE_NUMBER:
+	case GL_TYPE_FLOAT:
+		return json_object_new_double(ValueToFloat(value));
+	case GL_TYPE_ARRAY:
+		obj = json_object_new_array();
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			child = _JSON_PackValue(opt,ValueArrayItem(value,i));
+			json_object_array_add(obj,child);
 		}
+		return obj;
+	case GL_TYPE_RECORD:
+		obj = json_object_new_object();
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			child = _JSON_PackValue(opt,ValueRecordItem(value,i));
+			json_object_object_add(obj,ValueRecordName(value,i),child);
+		}
+		return obj;
 	}
 LEAVE_FUNC;
-	return	(p-pp);
+	return json_object_new_string("");
 }
 
+/* SizeValueでPackしたものを使い、実際にはPackしない  */
 extern	size_t
 JSON_PackValue(
 	CONVOPT		*opt,
-	byte		*p,
+	unsigned char		*p,
 	ValueStruct	*value)
 {
-	size_t	ret;
-
 ENTER_FUNC;
-	NormalizeValue(value);
-	ret = _JSON_PackValue(opt,p,value);
-	if		(  ret  >  0  ) {
-		*(p+ret) = 0;
+	if (JSONOBJ != NULL) {
+		memcpy(p,json_object_to_json_string(JSONOBJ),JSONSIZE);
+		json_object_put(JSONOBJ);
+		JSONOBJ = NULL;
 	}
 LEAVE_FUNC;
-	return	(ret);
+	return	JSONSIZE;
 }
 
-static	size_t
-_JSON_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
-{
-	int		i;
-	size_t	ret;
-	char	*str;
-
-ENTER_FUNC;
-	if		(	(  value  ==  NULL  )
-			||	(  IS_VALUE_NIL(value)  ) ) {
-		ret = 4;	//	null
-	} else {
-		ret = 0;
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_CHAR:
-		  case	GL_TYPE_VARCHAR:
-		  case	GL_TYPE_DBCODE:
-		  case	GL_TYPE_TEXT:
-		  case	GL_TYPE_SYMBOL:
-			ret += EncodeLength(opt,ValueToString(value,"utf-8")) + 2;
-			break;
-		  case	GL_TYPE_BYTE:
-		  case	GL_TYPE_BINARY:
-#if	0
-			ret += strlen(ValueToString(value,"utf-8")) + 2;
-#else
-			ret = 2;
-#endif
-			break;
-		  case	GL_TYPE_BOOL:
-			if		(  ValueBool(value)  ) {
-				ret += 4;	//	true
-			} else {
-				ret += 5;	//	false
-			}
-			break;
-		  case	GL_TYPE_INT:
-		  case	GL_TYPE_FLOAT:
-		  case	GL_TYPE_OBJECT:
-		  case	GL_TYPE_NUMBER:
-			str = ValueToString(value,"utf-8");
-			while	(  *str  ==  '0'  )	str ++;
-			if		(  *str  ==  0  )	str --;
-			ret += EncodeLength(opt,str);
-			break;
-		  case	GL_TYPE_ARRAY:
-			ret += 2;
-			ret += PutCR(opt,NULL);
-			opt->nIndent ++;
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				ret += IndentLine(opt,NULL);
-				ret += _JSON_SizeValue(opt,ValueArrayItem(value,i));
-				if		(  i  <  ValueArraySize(value) - 1  ) {
-					ret ++;
-				}
-				ret += PutCR(opt,NULL);
-			}
-			opt->nIndent --;
-			ret += IndentLine(opt,NULL);
-			break;
-		  case	GL_TYPE_RECORD:
-			ret += 2;
-			ret += PutCR(opt,NULL);
-			opt->nIndent ++;
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				ret += IndentLine(opt,NULL);
-				ret += EncodeLength(opt,ValueRecordName(value,i)) + 3;	//	"...":
-				ret += _JSON_SizeValue(opt,ValueRecordItem(value,i));
-				if		(  i  <  ValueRecordSize(value) - 1  ) {
-					ret ++;
-				}
-				ret += PutCR(opt,NULL);
-			}
-			opt->nIndent --;
-			ret += IndentLine(opt,NULL);
-			break;
-		  case	GL_TYPE_ALIAS:
-		  default:
-			ret = 0;
-			break;
-		}
-	}
-LEAVE_FUNC;
-	return	(ret);
-}
-
+/* SizeValueでPackし、その結果を保存してPackValueで使う  */
+/* SizeValueした後PackValueしないとリークする  */
 extern	size_t
 JSON_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	ConvSetEncoding(opt,STRING_ENCODING_BACKSLASH);
-	return	(_JSON_SizeValue(opt,value));
-}
-
-static	size_t
-_JSON_Parse(
-	byte		*p,
-	ValueStruct	**ret)
-{
-	ValueStruct	*value
-		,		*lower;
-	size_t	size;
-	Bool	fFloat;
-	int		i;
-	char	name[SIZE_LONGNAME+1]
-		,	buff[SIZE_BUFF];
-	char	*str;
-	byte	*pp;
-
-ENTER_FUNC;
-	pp = p;
-	SKIP_SPACE(p);
-	if		(  *p  !=  0  ) {
-		SKIP_SPACE(p);
-		dbgprintf("(%c)",*p);
-		switch	(*p) {
-		  case	'{':
-			p ++;
-			SKIP_SPACE(p);
-			value = NewValue(GL_TYPE_RECORD);
-			while	(	(  *p  !=  0    )
-					&&	(  *p  !=  '}'  ) ) {
-				if		(  *p  ==  '"'  ) {
-					p ++;
-					(void)ParseString(name,&p);
-					dbgprintf("name = [%s]",name);
-					p ++;
-					SKIP_SPACE(p);
-					if		(  *p  !=  ':'  )	break;
-					p ++;
-					SKIP_SPACE(p);
-					p += _JSON_Parse(p,&lower);
-					SKIP_SPACE(p);
-					if		(  *p  ==  ','  ) {
-						p ++;
-						SKIP_SPACE(p);
-					}
-					ValueAddRecordItem(value,name,lower);
-				} else
-					break;
-			}
-			if		(  *p  !=  0  )	p ++;
-			break;
-		  case	'[':
-			p ++;
-			SKIP_SPACE(p);
-			value = NewValue(GL_TYPE_ARRAY);
-			i = 0;
-			while	(	(  *p  !=  0    )
-					&&	(  *p  !=  ']'  ) ) {
-				p += _JSON_Parse(p,&lower);
-				ValueAddArrayItem(value,i,lower);
-				i ++;
-				SKIP_SPACE(p);
-				if		(  *p  ==  ','  ) {
-					p ++;
-					SKIP_SPACE(p);
-				}
-			}
-			if		(  *p  !=  0  )	p ++;
-			break;
-		  case	'"':
-			p ++;
-			size = ParseStringSize(p);
-			str = (char *)xmalloc(size+1);
-			(void)ParseString(str,&p);
-			dbgprintf("str = [%s]%d",str,(int)size);
-			value = NewValue(GL_TYPE_TEXT);
-			SetValueString(value,str,"utf8");
-			xfree(str);
-			if		(  *p  !=  0  )	p ++;
-			break;
-		  default:
-			if		(  strlcmp(p,"true")  ==  0  ) {
-				value = NewValue(GL_TYPE_BOOL);
-				SetValueBool(value,TRUE);
-				p += 4;
-			} else
-			if		(  strlcmp(p,"false")  ==  0  ) {
-				value = NewValue(GL_TYPE_BOOL);
-				SetValueBool(value,FALSE);
-				p += 5;
-			} else
-			if		(  strlcmp(p,"null")  ==  0  ) {
-				value = NewValue(GL_TYPE_BOOL);
-				ValueIsNil(value);
-				p += 4;
-			} else
-			if		(	(  *p  ==  '-'  )
-					||	(  isdigit(*p)  ) ) {
-				str = buff;
-				fFloat = FALSE;
-				while	(	(  *p  ==  '-'  )
-						||	(  *p  ==  '+'  )
-						||	(  *p  ==  '.'  )
-						||	(  *p  ==  'e'  )
-						||	(  *p  ==  'E'  )
-						||	(  isdigit(*p)  ) ) {
-					if		(	(  *p  ==  '.'  )
-							||	(  *p  ==  'e'  )
-							||	(  *p  ==  'E'  ) ) {
-						fFloat = TRUE;
-					}
-					*str ++ = *p ++;
-				}
-				*str = 0;
-				dbgprintf("buff = [%s]",buff);
-				if		(  fFloat  ) {
-					value = NewValue(GL_TYPE_FLOAT);
-				} else {
-					value = NewValue(GL_TYPE_INT);
-				}
-				SetValueString(value,buff,"utf-8");
-			} else {
-				value = NULL;
-			}
-			break;
-		}
-		*ret = value;
-	} else {
-		*ret = NULL;
-	}
-LEAVE_FUNC;
-	return	(p-pp);
-}
+	JSONOBJ = _JSON_PackValue(opt,value);
+	JSONSIZE = strlen(json_object_to_json_string(JSONOBJ)) + 1;
 	
-extern	size_t
-JSON_Parse(
-	char	*str,
-	ValueStruct	**ret)
-{
-	size_t	size;
-ENTER_FUNC;
-	SKIP_SPACE(str);
-	size = _JSON_Parse(str,ret);
-LEAVE_FUNC;
-	return	(size);
+	return	JSONSIZE;
 }
