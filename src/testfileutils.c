@@ -33,7 +33,7 @@ main(
 
 	mode = 0;
 	if (argc < 3) {
-		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...");
+		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...\n");
 		exit(1);
 	}
 	if (!strcmp(argv[1],"MakeDir")) {
@@ -43,7 +43,7 @@ main(
 	} else if (!strcmp(argv[1],"rm_r")) {
 		mode = 3;
 	} else {
-		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...");
+		fprintf(stderr,"%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...\n");
 		exit(1);
 	}
 
