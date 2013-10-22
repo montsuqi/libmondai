@@ -1,9 +1,11 @@
 stamp-h1
 libtool
+ltmain.sh
 libmondai-config.1
 libmondai-config
 config.status
 config.log
+config.h.in
 config.h
 aclocal.m4
 autom4te.cache
@@ -24,5 +26,6 @@ src/testfixed
 src/testmem
 src/testsoap
 src/testvalue
+src/testfileutils
 tools/monconv
 tools/rec2copy
