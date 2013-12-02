@@ -1,0 +1,39 @@
+testrec	{
+	a	char(3);
+	b	char(2);
+	g	varchar(3);
+	n	number(10,3);
+	l	text;
+	m	text;
+	q	varchar(40);
+	p	varchar(20);
+#include	"testinc.rec"
+	c	{
+		d	char;
+		e	int;
+		g	{
+			h	float;
+			i	char(10);
+			j	varchar(10);
+		}	[11];
+	};
+	f	{
+		d	char;
+		e	char(2);
+		g	{
+			h	char(4);
+			i	char(5);
+			j	bool;
+		}	[2];
+	}	[5];
+	i	object;
+	j	binary;
+#	h	{
+#		d	char;
+#		e	char(2);
+#	};
+#	i	{
+#		d	char;
+#		e	char(2);
+#	}	[];
+};
