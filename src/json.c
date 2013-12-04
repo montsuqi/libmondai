@@ -113,6 +113,9 @@ ENTER_FUNC;
 	case GL_TYPE_OBJECT:
 	case GL_TYPE_BYTE:
 	case GL_TYPE_BINARY:
+	case GL_TYPE_TIMESTAMP:
+	case GL_TYPE_DATE:
+	case GL_TYPE_TIME:
 		switch (type) {
 		case json_type_boolean:
 			if (json_object_get_boolean(obj)) {
@@ -298,6 +301,9 @@ ENTER_FUNC;
 	case GL_TYPE_OBJECT:
 	case GL_TYPE_BYTE:
 	case GL_TYPE_BINARY:
+	case GL_TYPE_TIMESTAMP:
+	case GL_TYPE_DATE:
+	case GL_TYPE_TIME:
 		return json_object_new_string(ValueToString(value,NULL));
 	case GL_TYPE_BOOL:
 		return json_object_new_boolean(ValueBool(value));
