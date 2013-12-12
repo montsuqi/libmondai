@@ -45,9 +45,6 @@
 #include	"json_v.h"
 #include	"debug.h"
 
-static json_object *JSONOBJ = NULL;
-static size_t JSONSIZE = 0;
-
 static const char*
 str_json_object_type(
 	json_type type)
@@ -343,13 +340,13 @@ JSON_PackValue(
 	ValueStruct	*value)
 {
 ENTER_FUNC;
-	if (JSONOBJ != NULL) {
-		memcpy(p,json_object_to_json_string(JSONOBJ),JSONSIZE);
-		json_object_put(JSONOBJ);
-		JSONOBJ = NULL;
+	if (ValueJSON(value) != NULL) {
+		memcpy(p,json_object_to_json_string(ValueJSON(value)),ValueJSONSize(value));
+		json_object_put(ValueJSON(value));
+		ValueJSON(value) = NULL;
 	}
 LEAVE_FUNC;
-	return	JSONSIZE;
+	return	ValueJSONSize(value);
 }
 
 /* SizeValueでPackし、その結果を保存してPackValueで使う  */
@@ -359,8 +356,8 @@ JSON_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	JSONOBJ = _JSON_PackValue(opt,value);
-	JSONSIZE = strlen(json_object_to_json_string(JSONOBJ)) + 1;
-	
-	return	JSONSIZE;
+	ValueJSON(value) = _JSON_PackValue(opt,value);
+	ValueJSONSize(value) = strlen(json_object_to_json_string(ValueJSON(value))) + 1;
+
+	return	ValueJSONSize(value);
 }

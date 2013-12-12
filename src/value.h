@@ -24,6 +24,7 @@
 
 #include	<stdint.h>
 #include	<time.h>
+#include	<json.h>
 
 #define	SIZE_OID		4
 
@@ -61,6 +62,8 @@ typedef	struct _ValueStruct	{
 	PacketDataType		type;
 	ValueAttributeType	attr;
 	LargeByteString		*str;
+	json_object			*jsonobj;
+	size_t				jsonsize;
 	struct _ValueStruct	*parent;
 	int					index;
 	union {
@@ -178,6 +181,8 @@ typedef	struct _ValueStruct	{
 #define	ValueOrderIsAsc(v)		((v)->attr &= ~GL_ATTR_DESC)
 #define	ValueIsExpandable(v)	((v)->attr |= GL_ATTR_EXPANDABLE)
 #define	ValueIsNonExpandable(v)	((v)->attr &= ~GL_ATTR_EXPANDABLE)
+#define	ValueJSON(v)			((v)->jsonobj)
+#define	ValueJSONSize(v)		((v)->jsonsize)
 
 #define	ValueParent(v)			((v)->parent)
 #define	ValueIndex(v)			((v)->index)
