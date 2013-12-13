@@ -64,8 +64,6 @@ ENTER_FUNC;
 	ValueParent(ret) = NULL;
 	ValueIndex(ret) = 0;
     ValueName(ret) = NULL;
-	ValueJSON(ret) = NULL;
-	ValueJSONSize(ret) = 0;
 	switch	(type) {
 	  case	GL_TYPE_BYTE:
 	  case	GL_TYPE_BINARY:
@@ -160,9 +158,6 @@ FreeValueStruct(
 		dbgprintf("type = %02X\n",val->type);
 		if (ValueName(val) != NULL) {
 			xfree(ValueName(val));
-		}
-		if		(  ValueJSON(val) != NULL  ) {
-			json_object_put(ValueJSON(val));
 		}
 		switch	(val->type) {
 		  case	GL_TYPE_ARRAY:
@@ -570,11 +565,6 @@ ENTER_FUNC;
 	if		(  ValueStr(value)  !=  NULL  ) {
 		FreeLBS(ValueStr(value));
 	}
-	if		(  ValueJSON(value) != NULL  ) {
-		json_object_put(ValueJSON(value));
-		ValueJSON(value) = NULL;
-	}
-	ValueJSONSize(value) = 0;
 	ValueStr(value) = NULL;
     switch (ValueType(value)) {
 	  case	GL_TYPE_ARRAY:

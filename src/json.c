@@ -287,7 +287,7 @@ _JSON_PackValue(
 ENTER_FUNC;
 	if (value == NULL) {
 		return json_object_new_string("");
-	} 
+	}
 	switch	(value->type) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
@@ -332,32 +332,32 @@ LEAVE_FUNC;
 	return json_object_new_string("");
 }
 
-/* SizeValueでPackしたものを使い、実際にはPackしない  */
 extern	size_t
 JSON_PackValue(
 	CONVOPT		*opt,
 	unsigned char		*p,
 	ValueStruct	*value)
 {
+	json_object	*obj;
+	size_t	size;
 ENTER_FUNC;
-	if (ValueJSON(value) != NULL) {
-		memcpy(p,json_object_to_json_string(ValueJSON(value)),ValueJSONSize(value));
-		json_object_put(ValueJSON(value));
-		ValueJSON(value) = NULL;
-	}
+	obj = _JSON_PackValue(opt,value);
+	size = strlen(json_object_to_json_string(obj)) + 1;
+	memcpy(p,json_object_to_json_string(obj),size);
+	json_object_put(obj);
 LEAVE_FUNC;
-	return	ValueJSONSize(value);
+	return	size;
 }
 
-/* SizeValueでPackし、その結果を保存してPackValueで使う  */
-/* SizeValueした後PackValueしないとリークする  */
 extern	size_t
 JSON_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	ValueJSON(value) = _JSON_PackValue(opt,value);
-	ValueJSONSize(value) = strlen(json_object_to_json_string(ValueJSON(value))) + 1;
-
-	return	ValueJSONSize(value);
+	json_object	*obj;
+	size_t	size;
+	obj = _JSON_PackValue(opt,value);
+	size = strlen(json_object_to_json_string(obj)) + 1;
+	json_object_put(obj);
+	return	size;
 }
