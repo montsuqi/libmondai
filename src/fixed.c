@@ -123,7 +123,7 @@ FloatToFixed(
 	} else {
 		fMinus = FALSE;
 	}
-	sprintf(str, "%0*.*f", (int)xval->flen+1, (int)xval->slen, fval);
+	sprintf(str, "%0*.*f", (int)xval->flen, (int)xval->slen, fval);
 	p = str;
 	q = xval->sval;
 	while	(  *p  !=  0  ) {
