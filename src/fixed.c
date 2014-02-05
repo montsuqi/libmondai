@@ -116,6 +116,7 @@ FloatToFixed(
 	char	*p
 	,		*q;
 	Bool	fMinus;
+	int len;
 
 	if		(  fval  <  0  ) {
 		fval = - fval;
@@ -123,7 +124,13 @@ FloatToFixed(
 	} else {
 		fMinus = FALSE;
 	}
-	sprintf(str, "%0*.*f", (int)xval->flen, (int)xval->slen, fval);
+
+	len = (int)xval->flen;
+	if (xval->slen > 0) {
+            /* ignore decimal point */
+	    len++;
+	}
+	sprintf(str, "%0*.*f", len, (int)xval->slen, fval);
 	p = str;
 	q = xval->sval;
 	while	(  *p  !=  0  ) {
