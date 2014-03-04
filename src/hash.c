@@ -34,6 +34,7 @@
 #include	<ctype.h>
 #include	<glib.h>
 #include	<math.h>
+#include	<pthread.h>
 
 #include	"types.h"
 #include	"monstring.h"
@@ -190,7 +191,6 @@ DestroyHashTable(
 	if (hash == NULL) {
 		return;
 	}
-MonWarning("==================== destoryhashtable");
 
 	pthread_mutex_lock(&lock);
 	g_hash_table_destroy(hash);
