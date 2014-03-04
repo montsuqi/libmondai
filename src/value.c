@@ -171,7 +171,7 @@ FreeValueStruct(
 				FreeValueStruct(ValueRecordItem(val,i));
 				xfree(ValueRecordName(val,i));
 			}
-			g_hash_table_destroy(ValueRecordMembers(val));
+			DestroyHashTable(ValueRecordMembers(val));
 			xfree(ValueRecordNames(val));
 			xfree(ValueRecordItems(val));
 			break;

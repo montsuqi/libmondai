@@ -41,6 +41,9 @@
 #include	"hash_v.h"
 #include	"debug.h"
 
+static gboolean need_init_lock = TRUE;
+static pthread_mutex_t lock;
+
 static	guint
 NameHash(
 	gconstpointer	key)
@@ -76,7 +79,14 @@ NewNameHash(void)
 {
 	GHashTable	*ret;
 
+	if (need_init_lock) {
+		pthread_mutex_init(&lock,NULL);
+		need_init_lock = FALSE;
+	}
+
+	pthread_mutex_lock(&lock);
 	ret = g_hash_table_new((GHashFunc)NameHash,(GCompareFunc)NameCompare);
+	pthread_mutex_unlock(&lock);
 
 	return	(ret);
 }
@@ -110,7 +120,14 @@ NewNameiHash(void)
 {
 	GHashTable	*ret;
 
+	if (need_init_lock) {
+		pthread_mutex_init(&lock,NULL);
+		need_init_lock = FALSE;
+	}
+
+	pthread_mutex_lock(&lock);
 	ret = g_hash_table_new((GHashFunc)NameiHash,(GCompareFunc)NameiCompare);
+	pthread_mutex_unlock(&lock);
 
 	return	(ret);
 }
@@ -130,7 +147,7 @@ DestroySymbols(
 {
 	if		(  sym  !=  NULL  ) {
 		g_hash_table_foreach(sym,(GHFunc)_ClearNames,NULL);
-		g_hash_table_destroy(sym);
+		DestroyHashTable(sym);
 	}
 }
 
@@ -154,9 +171,30 @@ NewIntHash(void)
 {
 	GHashTable	*ret;
 
+	if (need_init_lock) {
+		pthread_mutex_init(&lock,NULL);
+		need_init_lock = FALSE;
+	}
+
+	pthread_mutex_lock(&lock);
 	ret = g_hash_table_new((GHashFunc)IntHash,(GCompareFunc)IntCompare);
+	pthread_mutex_unlock(&lock);
 
 	return	(ret);
+}
+
+extern	void
+DestroyHashTable(
+	GHashTable *hash)
+{
+	if (hash == NULL) {
+		return;
+	}
+MonWarning("==================== destoryhashtable");
+
+	pthread_mutex_lock(&lock);
+	g_hash_table_destroy(hash);
+	pthread_mutex_unlock(&lock);
 }
 
 extern	Chunk	*
