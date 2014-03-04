@@ -35,6 +35,7 @@ extern	GHashTable	*NewIntHash(void);
 extern	Chunk		*NewChunk(void);
 extern	void		ChunkAppend(Chunk *chunk, void *body);
 extern	void		ChunkDestroy(Chunk *chunk);
+extern	void		DestroyHashTable(GHashTable*);
 
 #define	g_int_hash_table_insert(h,i,d)		g_hash_table_insert((h),(void *)(i),(d))
 #define	g_int_hash_table_foreach(h,p,a)		g_hash_table_foreach((h),(p),(a))
