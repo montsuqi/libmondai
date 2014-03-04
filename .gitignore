@@ -29,3 +29,4 @@ src/testvalue
 src/testfileutils
 tools/monconv
 tools/rec2copy
+*.swp
