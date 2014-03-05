@@ -165,6 +165,9 @@ FreeValueStruct(
 				FreeValueStruct(ValueArrayItem(val,i));
 			}
 			xfree(ValueArrayItems(val));
+			if (ValueArrayPrototype(val) != NULL) {
+				FreeValueStruct(ValueArrayPrototype(val));
+			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
