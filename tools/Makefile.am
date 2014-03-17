@@ -28,7 +28,7 @@ LDADD 		=	\
 	$(XML_LIBS)						\
 	$(top_builddir)/src/libmondai.la
 
-INCLUDES 			= 					\
+AM_CPPFLAGS 			= 					\
 	-I$(top_srcdir)/src					\
 	$(JSON_CFLAGS)						\
 	$(GLIB_CFLAGS)

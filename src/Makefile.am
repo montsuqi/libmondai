@@ -70,7 +70,7 @@ libmondaiinclude_HEADERS =	\
 	numeric.h				\
 	fileutils.h
 
-INCLUDES 			= 		\
+AM_CPPFLAGS 			= 		\
 	$(GLIB_CFLAGS) 			\
 	$(XML_CFLAGS)			\
 	$(JSON_CFLAGS) 			\
