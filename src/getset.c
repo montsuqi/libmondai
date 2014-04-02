@@ -519,7 +519,7 @@ ENTER_FUNC;
 				ValueString(val) = (unsigned char *)xmalloc(size);
 			}
 			memclear(ValueString(val),ValueStringSize(val));
-			memcpy(ValueString(val),str,size - 1);
+			strncpy(ValueString(val),str,size - 1);
 			if		(  codeset  !=  NULL  ) {
 				cd = iconv_open("utf8",codeset);
 				while	(TRUE) {
