@@ -282,7 +282,7 @@ _JSON_PackValue(
 	ValueStruct	*value)
 {
 	int i;
-	json_object *obj,*child,*key,*keys;
+	json_object *obj,*child;
 
 ENTER_FUNC;
 	if (value == NULL) {
@@ -318,14 +318,10 @@ ENTER_FUNC;
 		return obj;
 	case GL_TYPE_RECORD:
 		obj = json_object_new_object();
-		keys = json_object_new_array();
 		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
 			child = _JSON_PackValue(opt,ValueRecordItem(value,i));
 			json_object_object_add(obj,ValueRecordName(value,i),child);
-			key = json_object_new_string(ValueRecordName(value,i));
-			json_object_array_add(keys,key);
 		}
-		json_object_object_add(obj,"__keys__",keys);
 		return obj;
 	}
 LEAVE_FUNC;
