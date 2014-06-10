@@ -75,8 +75,14 @@ LBS_Grown(
 	Bool			fKeep)
 {
 	unsigned char   *body;
-	
+
 	if ( lbs->asize < size ) {
+#if 1 /* realloc */
+		body = (unsigned char *)realloc(lbs->body, size);
+		if (  !fKeep  ) {
+			memclear(body,size);
+		}
+#else    /* normal */
 		body = (unsigned char *)xmalloc(size);
 		if (  fKeep  ) {
 			memcpy(body,lbs->body,lbs->size);
@@ -86,6 +92,7 @@ LBS_Grown(
 		if		(  lbs->body  !=  NULL  ) {
 			xfree(lbs->body);
 		}
+#endif
 		lbs->body = body;
 		lbs->asize = size;
 	}
@@ -281,10 +288,22 @@ LBS_EmitString(
 	LargeByteString	*lbs,
 	char			*str)
 {
+	size_t str_size, left_size;
+
 	if		(  lbs  !=  NULL  ) {
-		while	(  *str  !=  0  ) {
-			LBS_EmitChar(lbs,*str);
-			str ++;
+		str_size = strlen(str);
+		left_size = lbs->asize - lbs->size;
+		if (left_size < str_size) {
+			if ((str_size - left_size) < SIZE_GROWN) {
+				LBS_Grown(lbs, lbs->asize + SIZE_GROWN, TRUE);
+			} else {
+				LBS_Grown(lbs, lbs->size + str_size + 1, TRUE);
+			}
+		}
+		memcpy(lbs->body + lbs->ptr, str, str_size);
+		lbs->ptr = lbs->ptr + str_size;
+		if		(  lbs->ptr  >  lbs->size  ) {
+			lbs->size = lbs->ptr;
 		}
 	}
 }
