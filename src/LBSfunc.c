@@ -290,22 +290,18 @@ LBS_EmitString(
 {
 	size_t str_size, left_size;
 
-	if		(  lbs  !=  NULL  ) {
-		str_size = strlen(str);
-		left_size = lbs->asize - lbs->size;
-		if (left_size < str_size) {
-			if ((str_size - left_size) < SIZE_GROWN) {
-				LBS_Grown(lbs, lbs->asize + SIZE_GROWN, TRUE);
-			} else {
-				LBS_Grown(lbs, lbs->size + str_size + 1, TRUE);
-			}
-		}
-		memcpy(lbs->body + lbs->ptr, str, str_size);
-		lbs->ptr = lbs->ptr + str_size;
-		if		(  lbs->ptr  >  lbs->size  ) {
-			lbs->size = lbs->ptr;
-		}
+	if		(  lbs  ==  NULL  ) {
+		MonWarning("LBS is null");
+		return;
 	}
+	str_size = strlen(str);
+	left_size = lbs->asize - lbs->ptr;
+	if (left_size < str_size) {
+		LBS_Grown(lbs, lbs->asize + ((((str_size - left_size) / SIZE_GROWN) + 1) * SIZE_GROWN), TRUE);
+	}
+	memcpy(lbs->body + lbs->ptr, str, str_size);
+	lbs->ptr = lbs->ptr + str_size;
+	lbs->size = lbs->ptr;
 }
 
 extern	void
