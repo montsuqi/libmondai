@@ -219,7 +219,7 @@ ENTER_FUNC;
 			ValueDateTimeSec(value) = StrToInt(p,2);	p += 2;
 			break;
 		  case	GL_TYPE_DATE:
-			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeYear(value) = StrToInt(p,4);	p += 4;
 			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeHour(value) = 0;
