@@ -202,7 +202,7 @@ ENTER_FUNC;
 			p += ValueFixedLength(value);
 			break;
 		  case	GL_TYPE_TIMESTAMP:
-			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
+			ValueDateTimeYear(value) = StrToInt(p,4);	p += 4;
 			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
