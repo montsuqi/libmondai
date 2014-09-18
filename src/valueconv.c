@@ -242,6 +242,7 @@ NewConvOpt(void)
 	ret->fType = FALSE;
 	ret->fName = FALSE;
 	ret->fBigEndian = FALSE;
+	ret->fNewLine = FALSE;
 	ret->nIndent = 0;
 
 	return	(ret);
