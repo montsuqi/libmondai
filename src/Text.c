@@ -217,6 +217,7 @@ __CSV_PackValue(
 	CONVOPT		*opt,
 	unsigned char		*p,
 	ValueStruct	*value,
+	Bool		fOuter,
 	Bool		fNsep,
 	Bool		fSsep,
 	Bool		fCesc,
@@ -262,12 +263,15 @@ __CSV_PackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += __CSV_PackValue(opt,p,ValueArrayItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueArrayItem(value,i),FALSE,fNsep,fSsep,fCesc,buff);
+				if ((opt->fNewLine) && (fOuter)) {
+					*(p - 1) = '\n';
+				}
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p += __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueRecordItem(value,i),FALSE,fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -290,7 +294,7 @@ _CSV_PackValue(
 {
 	size_t	ret;
 
-	ret = __CSV_PackValue(opt,p,value,fNsep,fSsep,fCesc,buff);
+	ret = __CSV_PackValue(opt,p,value,TRUE,fNsep,fSsep,fCesc,buff);
 	if		(  ret  >  0  ) {
 		*(p+ret-1) = 0;
 	}
