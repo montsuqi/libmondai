@@ -293,7 +293,7 @@ _CSV_PackValue(
 	char		*buff)
 {
 	size_t	ret;
-
+	*p = '\0';
 	ret = __CSV_PackValue(opt,p,value,TRUE,fNsep,fSsep,fCesc,buff);
 	if		(  ret  >  0  ) {
 		*(p+ret-1) = 0;
@@ -658,6 +658,7 @@ SQL_PackValue(
 	size_t	ret;
 
 	fFirst = TRUE;
+	*p = '\0';
 	ret = _SQL_PackValue(opt,p,value,&fFirst);
 
 	return	(ret);
