@@ -41,6 +41,7 @@ typedef	struct {
 	Bool	fIndent;
 	Bool	fType;
 	Bool	fBigEndian;				/*	integer format is bigendian	*/
+	Bool	fNewLine;
 	int		nIndent;
 }	CONVOPT;
 

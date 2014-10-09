@@ -144,7 +144,7 @@ _CSV_UnPackValue(
 			break;
 		  case	GL_TYPE_ALIAS:
 		  default:
-			printf("invalid flag [%d]\n",value->type);
+			MonWarningPrintf("invalid flag [%d]\n",value->type);
 			break;
 		}
 	}
@@ -162,12 +162,15 @@ CSV_UnPackValue(
 	return	(_CSV_UnPackValue(opt,p,value,buff));
 }
 
-static	void
+static	size_t
 CSV_Encode(
 	char	*str,
 	char	fSsep,
 	char	*p)
 {
+	char	*pp;
+
+	pp = p;
 	for	( ; *str != 0 ; str ++ ) {
 		switch	(*str) {
 		  case	'"':
@@ -190,6 +193,7 @@ CSV_Encode(
 		}
 	}
 	*p = 0;
+	return	(p-pp);
 }
 
 static	Bool
@@ -217,6 +221,7 @@ __CSV_PackValue(
 	CONVOPT		*opt,
 	unsigned char		*p,
 	ValueStruct	*value,
+	Bool		fOuter,
 	Bool		fNsep,
 	Bool		fSsep,
 	Bool		fCesc,
@@ -262,12 +267,15 @@ __CSV_PackValue(
 			break;
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				p += __CSV_PackValue(opt,p,ValueArrayItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueArrayItem(value,i),FALSE,fNsep,fSsep,fCesc,buff);
+				if ((opt->fNewLine) && (fOuter)) {
+					*(p - 1) = '\n';
+				}
 			}
 			break;
 		  case	GL_TYPE_RECORD:
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p += __CSV_PackValue(opt,p,ValueRecordItem(value,i),fNsep,fSsep,fCesc,buff);
+				p += __CSV_PackValue(opt,p,ValueRecordItem(value,i),FALSE,fNsep,fSsep,fCesc,buff);
 			}
 			break;
 		  case	GL_TYPE_ALIAS:
@@ -289,8 +297,8 @@ _CSV_PackValue(
 	char		*buff)
 {
 	size_t	ret;
-
-	ret = __CSV_PackValue(opt,p,value,fNsep,fSsep,fCesc,buff);
+	*p = '\0';
+	ret = __CSV_PackValue(opt,p,value,TRUE,fNsep,fSsep,fCesc,buff);
 	if		(  ret  >  0  ) {
 		*(p+ret-1) = 0;
 	}
@@ -341,6 +349,7 @@ static	size_t
 _CSV_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value,
+	Bool		fOuter,
 	Bool		fNsep,
 	Bool		fSsep,
 	Bool		fCesc)
@@ -348,6 +357,7 @@ _CSV_SizeValue(
 	int		i;
 	size_t	ret;
 	char	*str;
+	char	buff[SIZE_BUFF+1];;
 	Bool	fComma;
 
 dbgmsg(">_CSV_SizeValue");
@@ -362,12 +372,12 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_BINARY:
 	  case	GL_TYPE_BOOL:
 	  case	GL_TYPE_OBJECT:
-		str = ValueToString(value,ConvCodeset(opt));
-		ret = strlen(str) + 1;
+		ret = CSV_Encode(ValueToString(value,ConvCodeset(opt)),fSsep, buff) +1;
 		if		(  fSsep  )	{
 			ret += 2;
 		} else {
 			fComma = FALSE;
+			str = buff;
 			for	( ; *str != 0 ; str ++ ) {
 				switch	(*str) {
 				  case	'"':
@@ -399,13 +409,16 @@ dbgmsg(">_CSV_SizeValue");
 	  case	GL_TYPE_ARRAY:
 		ret = 0;
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-			ret += _CSV_SizeValue(opt,ValueArrayItem(value,i),fNsep,fSsep,fCesc);
+			ret += _CSV_SizeValue(opt,ValueArrayItem(value,i),FALSE,fNsep,fSsep,fCesc);
+			if ((opt->fNewLine) && (fOuter)) {
+				ret += 1;
+			}
 		}
 		break;
 	  case	GL_TYPE_RECORD:
 		ret = 0;
 		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			ret += _CSV_SizeValue(opt,ValueRecordItem(value,i),fNsep,fSsep,fCesc);
+			ret += _CSV_SizeValue(opt,ValueRecordItem(value,i),FALSE,fNsep,fSsep,fCesc);
 		}
 		break;
 	  case	GL_TYPE_ALIAS:
@@ -422,7 +435,7 @@ CSV1_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(opt,value,TRUE,TRUE,FALSE));
+	return	(_CSV_SizeValue(opt,value,TRUE,TRUE,TRUE,FALSE));
 }
 
 extern	size_t
@@ -430,7 +443,7 @@ CSV2_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(opt,value,FALSE,FALSE,FALSE));
+	return	(_CSV_SizeValue(opt,value,TRUE,FALSE,FALSE,FALSE));
 }
 
 extern	size_t
@@ -438,7 +451,7 @@ CSV3_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(opt,value,FALSE,TRUE,FALSE));
+	return	(_CSV_SizeValue(opt,value,TRUE,FALSE,TRUE,FALSE));
 }
 
 extern	size_t
@@ -446,7 +459,7 @@ CSVE_SizeValue(
 	CONVOPT		*opt,
 	ValueStruct	*value)
 {
-	return	(_CSV_SizeValue(opt,value,FALSE,FALSE,TRUE));
+	return	(_CSV_SizeValue(opt,value,TRUE,FALSE,FALSE,TRUE));
 }
 
 /*
@@ -535,7 +548,7 @@ SQL_UnPackValue(
 			break;
 		  case	GL_TYPE_ALIAS:
 		  default:
-			printf("invalid flag [%d]\n",value->type);
+			MonWarningPrintf("invalid flag [%d]\n",value->type);
 			break;
 		}
 		FreeLBS(lbs);
@@ -654,6 +667,7 @@ SQL_PackValue(
 	size_t	ret;
 
 	fFirst = TRUE;
+	*p = '\0';
 	ret = _SQL_PackValue(opt,p,value,&fFirst);
 
 	return	(ret);
