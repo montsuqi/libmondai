@@ -138,3 +138,5 @@ testfixed_SOURCES		=		\
 
 testfileutils_SOURCES		=		\
 	testfileutils.c
+
+EXTRA_DIST = lgpl testrec.rec testinc.rec
