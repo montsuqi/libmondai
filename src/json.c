@@ -268,7 +268,6 @@ ENTER_FUNC;
 	if (is_error(obj)) {
 		MonWarning("invalid json");
 	} else {
-		InitializeValue(value);
 		_JSON_UnPackValue(opt,obj,value);
 	}
 	json_object_put(obj);
