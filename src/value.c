@@ -660,6 +660,113 @@ ENTER_FUNC;
 LEAVE_FUNC;
 }
 
+extern	void
+FillValue(
+	ValueStruct	*value)
+{
+	int		i;
+	char	*buf;
+
+ENTER_FUNC;
+	if		(  value  ==  NULL  )	return;
+	if		(  ValueStr(value)  !=  NULL  ) {
+		FreeLBS(ValueStr(value));
+	}
+	ValueStr(value) = NULL;
+    switch (ValueType(value)) {
+	  case	GL_TYPE_ARRAY:
+	  case	GL_TYPE_VALUES:
+	  case	GL_TYPE_RECORD:
+	  case	GL_TYPE_ALIAS:
+        break;
+      default:
+        ValueIsNil(value);
+        break;
+    }
+	switch	(ValueType(value)) {
+	  case	GL_TYPE_INT:
+		ValueInteger(value) = 1;
+		break;
+	  case	GL_TYPE_FLOAT:
+		ValueFloat(value) = 1.0;
+		break;
+	  case	GL_TYPE_BOOL:
+		ValueBool(value) = FALSE;
+		break;
+	  case	GL_TYPE_OBJECT:
+		ValueObjectId(value) = 0;
+		if		(  ValueObjectFile(value)  !=  NULL  ) {
+			xfree(ValueObjectFile(value));
+		}
+		ValueObjectFile(value) = NULL;
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		buf = xmalloc(ValueStringSize(value));
+		memclear(buf,ValueStringSize(value));
+		memset(buf,'a',ValueStringSize(value)-1);
+		SetValueString(value,buf,NULL);
+		break;
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
+		if		(  ValueString(value)  !=  NULL  ) {
+			xfree(ValueString(value));
+		}
+		ValueString(value) = NULL;
+		ValueStringLength(value) = 0;
+		ValueStringSize(value) = 0;
+		break;
+	  case	GL_TYPE_BINARY:
+		if		(  ValueByte(value)  !=  NULL  ) {
+			xfree(ValueByte(value));
+		}
+		ValueByte(value) = NULL;
+		ValueByteLength(value) = 0;
+		ValueByteSize(value) = 0;
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  ValueFixedLength(value)  >  0  ) {
+			memset(ValueFixedBody(value),'1',ValueFixedLength(value));
+		}
+		ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_DATE:
+	  case	GL_TYPE_TIME:
+		ValueDateTimeSec(value) = 0;
+		ValueDateTimeMin(value) = 0;
+		ValueDateTimeHour(value) = 0;
+		ValueDateTimeMDay(value) = 0;
+		ValueDateTimeMon(value) = 0;
+		ValueDateTimeYear(value) = 0;
+		ValueDateTimeWDay(value) = 0;
+		ValueDateTimeYDay(value) = 0;
+		ValueDateTimeIsdst(value) = 0;
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			InitializeValue(ValueArrayItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(value) ; i ++ ) {
+			InitializeValue(ValueValuesItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			InitializeValue(ValueRecordItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_ALIAS:
+	  default:
+		break;
+	}
+LEAVE_FUNC;
+}
+
 /*
  *	moves simple data only
  */

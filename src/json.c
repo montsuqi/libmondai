@@ -275,18 +275,142 @@ LEAVE_FUNC;
 	return	0;
 }
 
-static	json_object*
-_JSON_PackValue(
-	CONVOPT	*opt,
-	ValueStruct	*value)
+static	void
+emit(
+	unsigned char **p,
+	const char *str,
+	size_t size)
 {
-	int i;
-	json_object *obj,*child;
+	memcpy(*p,str,size);
+	*p += size;
+}
 
+static	size_t
+EscapeStr(
+	const char *str,
+	unsigned char *p)
+{
+	size_t size;
+	int i;
+
+	size = 0;
+
+	*p = '\"';
+	p++;
+	size++;
+
+	for (i=0;i<strlen(str);i++) {
+		switch(*(str+i)) {
+		case '\"':
+			emit(&p,"\\\"",2);
+			size += 2;
+			break;
+		case '\\':
+			emit(&p,"\\\\",2);
+			size += 2;
+			break;
+		case '/':
+			emit(&p,"\\/",2);
+			size += 2;
+			break;
+		case '\b':
+			emit(&p,"\\b",2);
+			size += 2;
+			break;
+		case '\f':
+			emit(&p,"\\f",2);
+			size += 2;
+			break;
+		case '\n':
+			emit(&p,"\\n",2);
+			size += 2;
+			break;
+		case '\r':
+			emit(&p,"\\r",2);
+			size += 2;
+			break;
+		case '\t':
+			emit(&p,"\\t",2);
+			size += 2;
+			break;
+		default:
+			*p = *(str+i);
+			p++;
+			size++;
+			break;
+		}
+	}
+
+	*p = '\"';
+	p++;
+	size++;
+
+	return size;
+}
+
+static	size_t
+EscapeStrLength(
+	const char *str)
+{
+	size_t size;
+	int i;
+
+	size = 1;/* " */
+
+	for (i=0;i<strlen(str);i++) {
+		switch(*(str+i)) {
+		case '\"':
+			size += 2;
+			break;
+		case '\\':
+			size += 2;
+			break;
+		case '/':
+			size += 2;
+			break;
+		case '\b':
+			size += 2;
+			break;
+		case '\f':
+			size += 2;
+			break;
+		case '\n':
+			size += 2;
+			break;
+		case '\r':
+			size += 2;
+			break;
+		case '\t':
+			size += 2;
+			break;
+		default:
+			size++;
+			break;
+		}
+	}
+	size++;/* " */
+
+	return size;
+}
+
+extern	size_t
+_JSON_PackValue(
+	CONVOPT *opt,
+	unsigned char *p,
+	ValueStruct *value,
+	PacketDataType parent_type)
+{
+	size_t size,inc;
+	int i,j;
+	unsigned char *pp;
+	char buf[256],*str,*key;
 ENTER_FUNC;
 	if (value == NULL) {
-		return json_object_new_string("");
+		return 0;
 	}
+
+	pp = p;
+
 	switch	(value->type) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
@@ -300,63 +424,191 @@ ENTER_FUNC;
 	case GL_TYPE_TIMESTAMP:
 	case GL_TYPE_DATE:
 	case GL_TYPE_TIME:
-		return json_object_new_string(ValueToString(value,NULL));
+		str = ValueToString(value,NULL);
+		if (strlen(str)) {
+			size = EscapeStr(str,p);
+			p += size;
+		} else {
+			if (parent_type == GL_TYPE_ARRAY) {
+				emit(&p,"\"\"",2);
+			}
+		}
+		break;
 	case GL_TYPE_BOOL:
-		return json_object_new_boolean(ValueBool(value));
+		if (ValueBool(value)) {
+			emit(&p,"true",4);
+		} else {
+			emit(&p,"false",5);
+		}
+		break;
 	case GL_TYPE_INT:
-		return json_object_new_int(ValueInteger(value));
+		snprintf(buf,sizeof(buf),"%d",ValueInteger(value));
+		size = strlen(buf);
+		emit(&p,buf,size);
+		break;
 	case GL_TYPE_NUMBER:
 	case GL_TYPE_FLOAT:
-		return json_object_new_double(ValueToFloat(value));
+		snprintf(buf,sizeof(buf),"%lf",ValueToFloat(value));
+		size = strlen(buf);
+		emit(&p,buf,size);
+		break;
 	case GL_TYPE_ARRAY:
-		obj = json_object_new_array();
+		emit(&p,"[",1);
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-			child = _JSON_PackValue(opt,ValueArrayItem(value,i));
-			json_object_array_add(obj,child);
+			if (i > 0) {
+				emit(&p,",",1);
+			}
+			p += _JSON_PackValue(opt,p,ValueArrayItem(value,i),value->type);
 		}
-		return obj;
+		emit(&p,"]",1);
+		break;
 	case GL_TYPE_RECORD:
-		obj = json_object_new_object();
-		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			child = _JSON_PackValue(opt,ValueRecordItem(value,i));
-			json_object_object_add(obj,ValueRecordName(value,i),child);
+		emit(&p,"{",1);
+		for	( i = j = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			inc = 0;
+			if (j > 0) {
+				emit(&p,",",1);
+				inc += 1;
+			}
+			key = ValueRecordName(value,i);
+			emit(&p,"\"",1);
+			inc += 1;
+			emit(&p,key,strlen(key));
+			inc += strlen(key);
+			emit(&p,"\":",2);
+			inc += 2;
+		    size = _JSON_PackValue(opt,p,ValueRecordItem(value,i),value->type);
+			p += size;
+			if (size > 0) {
+				j++;
+			} else {
+				p -= inc;
+			}
 		}
-		return obj;
+		emit(&p,"}",1);
+		break;
 	}
 LEAVE_FUNC;
-	return json_object_new_string("");
+	return	(p-pp);
 }
 
 extern	size_t
 JSON_PackValue(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	ValueStruct	*value)
+	CONVOPT *opt,
+	unsigned char *p,
+	ValueStruct *value)
 {
-	json_object	*obj;
-	size_t	size;
+	size_t size;
 ENTER_FUNC;
-	obj = _JSON_PackValue(opt,value);
-	size = strlen(json_object_to_json_string(obj)) + 1;
-	memcpy(p,json_object_to_json_string(obj),size);
-	json_object_put(obj);
+	size = _JSON_PackValue(opt,p,value,GL_TYPE_RECORD);
+	p += size;
+	/*null terminate*/
+	*p = 0;
+	size += 1;
+LEAVE_FUNC;
+	return	size;
+}
+
+extern	size_t
+_JSON_SizeValue(
+	CONVOPT *opt,
+	ValueStruct *value,
+	PacketDataType parent_type)
+{
+	size_t size,name_size,inc;
+	int i;
+	char buf[256],*str;
+ENTER_FUNC;
+	if (value == NULL) {
+		return 0;
+	}
+
+	size = 0;
+
+	switch	(value->type) {
+	case GL_TYPE_CHAR:
+	case GL_TYPE_VARCHAR:
+	case GL_TYPE_DBCODE:
+	case GL_TYPE_TEXT:
+	case GL_TYPE_SYMBOL:
+	case GL_TYPE_ALIAS:
+	case GL_TYPE_OBJECT:
+	case GL_TYPE_BYTE:
+	case GL_TYPE_BINARY:
+	case GL_TYPE_TIMESTAMP:
+	case GL_TYPE_DATE:
+	case GL_TYPE_TIME:
+		str = ValueToString(value,NULL);
+		if (strlen(str)) {
+			size = EscapeStrLength(str);
+		} else {
+			if (parent_type == GL_TYPE_ARRAY) {
+				size = 2; /* "" */
+			}
+		}
+		break;
+	case GL_TYPE_BOOL:
+		if (ValueBool(value)) {
+			size = 4; /*true*/
+		} else {
+			size = 5 /*false*/;
+		}
+		break;
+	case GL_TYPE_INT:
+		snprintf(buf,sizeof(buf),"%d",ValueInteger(value));
+		size = strlen(buf);
+		break;
+	case GL_TYPE_NUMBER:
+	case GL_TYPE_FLOAT:
+		snprintf(buf,sizeof(buf),"%lf",ValueToFloat(value));
+		size = strlen(buf);
+		break;
+	case GL_TYPE_ARRAY:
+		size ++; /*[*/
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			if (i > 0) {
+				size ++; /*,*/
+			}
+			size += _JSON_SizeValue(opt,ValueArrayItem(value,i),value->type);
+		}
+		size ++; /*]*/
+		break;
+	case GL_TYPE_RECORD:
+		size ++; /*{*/
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			inc = 0;
+			if (i > 0) {
+				size ++; inc ++; /* , */
+			}
+			name_size = strlen(ValueRecordName(value,i));
+			size += name_size; inc += name_size;
+			size += 3; inc += 3; /* "<key>": */
+			name_size = _JSON_SizeValue(opt,ValueRecordItem(value,i),value->type);
+			size += name_size;
+			if (name_size == 0) {
+				size -= inc;
+			}
+		}
+		size ++; /*}*/
+		break;
+	}
 LEAVE_FUNC;
 	return	size;
 }
 
 extern	size_t
 JSON_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
+	CONVOPT *opt,
+	ValueStruct *value)
 {
-	json_object	*obj;
-	size_t	size;
-	obj = _JSON_PackValue(opt,value);
-	size = strlen(json_object_to_json_string(obj)) + 1;
-	json_object_put(obj);
+	size_t size;
+ENTER_FUNC;
+	size = _JSON_SizeValue(opt,value,GL_TYPE_RECORD);
+	/*null terminate*/
+	size += 1;
+LEAVE_FUNC;
 	return	size;
 }
-
 
 Bool
 CheckJSONObject(

@@ -257,6 +257,7 @@ extern	ValueStruct	*GetValuesItem(ValueStruct *value, int i);
 extern	ValueStruct	*GetItemLongName(ValueStruct *root, char *longname);
 
 extern	void		InitializeValue(ValueStruct *value);
+extern	void		FillValue(ValueStruct *value);
 extern	void		CopyValue(ValueStruct *vd, ValueStruct *vs);
 extern	int			CompareValue(ValueStruct *vl, ValueStruct *vr);
 extern	Bool		EqualValue(ValueStruct *vl, ValueStruct *vr);
