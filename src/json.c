@@ -400,8 +400,7 @@ _JSON_PackValue(
 	ValueStruct *value,
 	PacketDataType parent_type)
 {
-	size_t size,inc;
-	int i,j;
+	int i;
 	unsigned char *pp;
 	char buf[256],*str,*key;
 ENTER_FUNC;
@@ -426,12 +425,9 @@ ENTER_FUNC;
 	case GL_TYPE_TIME:
 		str = ValueToString(value,NULL);
 		if (strlen(str)) {
-			size = EscapeStr(str,p);
-			p += size;
+			p += EscapeStr(str,p);
 		} else {
-			if (parent_type == GL_TYPE_ARRAY) {
-				emit(&p,"\"\"",2);
-			}
+			emit(&p,"\"\"",2);
 		}
 		break;
 	case GL_TYPE_BOOL:
@@ -443,14 +439,12 @@ ENTER_FUNC;
 		break;
 	case GL_TYPE_INT:
 		snprintf(buf,sizeof(buf),"%d",ValueInteger(value));
-		size = strlen(buf);
-		emit(&p,buf,size);
+		emit(&p,buf,strlen(buf));
 		break;
 	case GL_TYPE_NUMBER:
 	case GL_TYPE_FLOAT:
 		snprintf(buf,sizeof(buf),"%lf",ValueToFloat(value));
-		size = strlen(buf);
-		emit(&p,buf,size);
+		emit(&p,buf,strlen(buf));
 		break;
 	case GL_TYPE_ARRAY:
 		emit(&p,"[",1);
@@ -464,26 +458,15 @@ ENTER_FUNC;
 		break;
 	case GL_TYPE_RECORD:
 		emit(&p,"{",1);
-		for	( i = j = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			inc = 0;
-			if (j > 0) {
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			if (i > 0) {
 				emit(&p,",",1);
-				inc += 1;
 			}
 			key = ValueRecordName(value,i);
 			emit(&p,"\"",1);
-			inc += 1;
 			emit(&p,key,strlen(key));
-			inc += strlen(key);
 			emit(&p,"\":",2);
-			inc += 2;
-		    size = _JSON_PackValue(opt,p,ValueRecordItem(value,i),value->type);
-			p += size;
-			if (size > 0) {
-				j++;
-			} else {
-				p -= inc;
-			}
+			p += _JSON_PackValue(opt,p,ValueRecordItem(value,i),value->type);
 		}
 		emit(&p,"}",1);
 		break;
@@ -515,7 +498,7 @@ _JSON_SizeValue(
 	ValueStruct *value,
 	PacketDataType parent_type)
 {
-	size_t size,name_size,inc;
+	size_t size;
 	int i;
 	char buf[256],*str;
 ENTER_FUNC;
@@ -542,9 +525,7 @@ ENTER_FUNC;
 		if (strlen(str)) {
 			size = EscapeStrLength(str);
 		} else {
-			if (parent_type == GL_TYPE_ARRAY) {
-				size = 2; /* "" */
-			}
+			size = 2; /* "" */
 		}
 		break;
 	case GL_TYPE_BOOL:
@@ -576,18 +557,12 @@ ENTER_FUNC;
 	case GL_TYPE_RECORD:
 		size ++; /*{*/
 		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			inc = 0;
 			if (i > 0) {
-				size ++; inc ++; /* , */
+				size ++; /* , */
 			}
-			name_size = strlen(ValueRecordName(value,i));
-			size += name_size; inc += name_size;
-			size += 3; inc += 3; /* "<key>": */
-			name_size = _JSON_SizeValue(opt,ValueRecordItem(value,i),value->type);
-			size += name_size;
-			if (name_size == 0) {
-				size -= inc;
-			}
+			size += strlen(ValueRecordName(value,i));
+			size += 3; /* "<key>": */
+			size += _JSON_SizeValue(opt,ValueRecordItem(value,i),value->type);
 		}
 		size ++; /*}*/
 		break;
