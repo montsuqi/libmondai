@@ -29,6 +29,7 @@ src/testsoap
 src/testvalue
 src/testfileutils
 src/test.native*
+src/testjson
 tools/monconv
 tools/rec2copy
 *.swp
