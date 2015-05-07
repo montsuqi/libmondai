@@ -1086,8 +1086,7 @@ endElement2_(
 	ValueContext	*ctx,
 	xmlChar	*name)
 {
-	xmlChar	*vname
-	,		*rname;
+	xmlChar	*vname;
 	xmlChar	*p
 	,		*q;
 	xmlChar	buff[SIZE_LONGNAME+1];
@@ -1098,10 +1097,8 @@ endElement2_(
 	strcpy((char *)buff,(char *)name);
 	if		(  ( p = (xmlChar *)strchr((char *)buff,':')  )  !=  NULL  ) {
 		*p = 0;
-		rname = buff;
 		vname = p + 1;
 	} else {
-		rname = (xmlChar *)"";
 		vname = buff;
 	}
 	if		(  ( p = (xmlChar *)strchr((char *)vname,':')  )  !=  NULL  ) {
