@@ -403,7 +403,7 @@ _JSON_PackValueOmmit(
 	ValueStruct *value,
 	PacketDataType parent_type)
 {
-	size_t size,inc;
+	size_t size;
 	int i,j;
 	unsigned char *pp;
 	char buf[256],*str,*key;
@@ -484,24 +484,18 @@ ENTER_FUNC;
 		if (size > 0) {
 			emit(&p,"{",1);
 			for	( i = j = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				inc = 0;
-				if (j > 0) {
-					emit(&p,",",1);
-					inc += 1;
-				}
-				key = ValueRecordName(value,i);
-				emit(&p,"\"",1);
-				inc += 1;
-				emit(&p,key,strlen(key));
-				inc += strlen(key);
-				emit(&p,"\":",2);
-				inc += 2;
-			    size = _JSON_PackValueOmmit(opt,p,ValueRecordItem(value,i),value->type);
-				p += size;
+			    size = _JSON_SizeValueOmmit(opt,ValueRecordItem(value,i),GL_TYPE_RECORD);
 				if (size > 0) {
+					if (j > 0) {
+						emit(&p,",",1);
+					}
+					key = ValueRecordName(value,i);
+					emit(&p,"\"",1);
+					emit(&p,key,strlen(key));
+					emit(&p,"\":",2);
+			    	size = _JSON_PackValueOmmit(opt,p,ValueRecordItem(value,i),GL_TYPE_RECORD);
+					p += size;
 					j++;
-				} else {
-					p -= inc;
 				}
 			}
 			emit(&p,"}",1);
