@@ -22,7 +22,7 @@ const char *recdef = ""
 "    record2 {\n"
 "      col21 varchar(256);\n"
 "    };\n"
-"  }[10];\n"
+"  }[3];\n"
 "};";
 
 int
@@ -34,8 +34,8 @@ main(int argc,char *argv[])
 
   RecParserInit();
   value = RecParseValueMem(recdef,NULL);
-  InitializeValue(value);
 
+  InitializeValue(value);
   v = GetRecordItem(value,"command");
   SetValueString(v,"a\"a\\a/a\ba\fa\na\ra\ta",NULL);
   v = GetItemLongName(value,"record1[0].col1");
@@ -64,6 +64,20 @@ main(int argc,char *argv[])
   JSON_UnPackValue(NULL,"{\"int1\":1000,\"int2\":2000}",value);
   DumpValueStruct(value);
 
+  /* ommit */
+
+  InitializeValue(value);
+  v = GetRecordItem(value,"command");
+  SetValueString(v,"a\"a\\a/a\ba\fa\na\ra\ta",NULL);
+  v = GetItemLongName(value,"record1[0].col1");
+  SetValueString(v,"bbbb",NULL);
+  v = GetItemLongName(value,"record1[0].record2.col21");
+  SetValueString(v,"cccc",NULL);
+  v = GetItemLongName(value,"int1");
+  ValueInteger(v) = 10;
+  v = GetItemLongName(value,"int2");
+  ValueInteger(v) = 20;
+
   fprintf(stderr,"\n---- JSON_PackValueOmmit\n");
   size = JSON_SizeValueOmmit(NULL,value);
   fprintf(stderr,"size:%ld\n",size);
@@ -72,6 +86,20 @@ main(int argc,char *argv[])
   JSON_PackValueOmmit(NULL,buf,value);
   fprintf(stderr,"[%s]\nsize:%ld\n",buf,strlen(buf));
   free(buf);
+
+  fprintf(stderr,"\n---- JSON_UnPackValueOmmit\n");
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":1000,\"int2\":2000}",value);
+  DumpValueStruct(value);
+
+  fprintf(stderr,"\n---- JSON_UnPackValueOmmit 2\n");
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":1234,\"int2\":5678,\"bool1\":false,\"double1\":3.141592}",value);
+  DumpValueStruct(value);
+
+  fprintf(stderr,"\n---- JSON_UnPackValueOmmit 3\n");
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":1000,\"command\":\"moge\",\"record1\":[{\"col1\":\"muge\",\"record2\":{\"col21\":\"gage\"}},{},{\"col2\":\"nuge\"}]}",value);
+  DumpValueStruct(value);
+
+  FreeValueStruct(value);
 
   return 0;
 }

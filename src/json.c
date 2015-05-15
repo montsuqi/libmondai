@@ -81,6 +81,277 @@ print_type_error(
 		str_json_object_type(expected));
 }
 
+static void
+_JSON_UnPackValueOmmitChar(
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
+{
+	char buf[256];
+	json_type type;
+
+	if (obj != NULL) {
+		type = json_object_get_type(obj);
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				SetValueString(value,"True",NULL);
+			} else {
+				SetValueString(value,"False",NULL);
+			}
+			break;
+		case json_type_double:
+			snprintf(buf,sizeof(buf),"%lf",json_object_get_double(obj));
+			SetValueString(value,buf,NULL);
+			break;
+		case json_type_int:
+			snprintf(buf,sizeof(buf),"%d",json_object_get_int(obj));
+			SetValueString(value,buf,NULL);
+			break;
+		case json_type_object:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_array:
+			SetValueString(value,json_object_to_json_string(obj),NULL);
+			break;
+		case json_type_string:
+			SetValueString(value,json_object_get_string(obj),NULL);
+			break;
+		case json_type_null:
+			print_type_error(type,json_type_string);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+	} else {
+		SetValueString(value,"",NULL);
+	}
+}
+
+static void
+_JSON_UnPackValueOmmitBool(
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
+{
+	const char *str;
+	json_type type;
+
+	if (obj != NULL) {
+		type = json_object_get_type(obj);
+		switch (type) {
+		case json_type_string:
+			str = json_object_get_string(obj);
+			if (str != NULL && (str[0] == 'T' || str[0] == 't')) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_boolean:
+			ValueBool(value) = json_object_get_boolean(obj);
+			break;
+		case json_type_int:
+			if (json_object_get_int(obj) != 0) {
+				ValueBool(value) = TRUE;
+			} else {
+				ValueBool(value) = FALSE;
+			}
+			break;
+		case json_type_double:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_boolean);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+	} else {
+		ValueBool(value) = TRUE;
+	}
+}
+
+static void
+_JSON_UnPackValueOmmitInt(
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
+{
+	json_type type;
+
+	if (obj != NULL) {
+		type = json_object_get_type(obj);
+		switch (type) {
+		case json_type_boolean:
+			if (json_object_get_boolean(obj)) {
+				ValueInteger(value) = 1;
+			} else {
+				ValueInteger(value) = 0;
+			}
+			break;
+		case json_type_double:
+			ValueInteger(value) = (int)(json_object_get_double(obj));
+			break;
+		case json_type_int:
+			ValueInteger(value) = json_object_get_int(obj);
+			break;
+		case json_type_string:
+			ValueInteger(value) = atoi(json_object_get_string(obj));
+			break;
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_int);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+	} else {
+		ValueInteger(value) = 0;
+	}
+}
+
+static void
+_JSON_UnPackValueOmmitFloat(
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
+{
+	json_type type;
+
+	if (obj != NULL) {
+		type = json_object_get_type(obj);
+		switch (type) {
+		case json_type_double:
+			SetValueFloat(value,json_object_get_double(obj));
+			break;
+		case json_type_int:
+			SetValueFloat(value,(double)(json_object_get_int(obj)));
+			break;
+		case json_type_string:
+			SetValueFloat(value,atof(json_object_get_string(obj)));
+			break;
+		case json_type_boolean:
+		case json_type_null:
+		case json_type_object:
+		case json_type_array:
+			print_type_error(type,json_type_double);
+			break;
+		default:
+			MonWarning("does not reach here");
+			break;
+		}
+	} else {
+		SetValueFloat(value,0.0);
+	}
+}
+
+static void
+_JSON_UnPackValueOmmit(
+	CONVOPT *opt,
+	json_object *obj,
+	ValueStruct *value)
+{
+	int i,length;
+	json_object *child;
+	json_type type;
+
+ENTER_FUNC;
+	if (value == NULL) {
+#if 0
+		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
+#endif
+		return;
+	}
+	ValueIsNonNil(value);
+	switch	(value->type) {
+	case GL_TYPE_CHAR:
+	case GL_TYPE_VARCHAR:
+	case GL_TYPE_DBCODE:
+	case GL_TYPE_TEXT:
+	case GL_TYPE_SYMBOL:
+	case GL_TYPE_ALIAS:
+	case GL_TYPE_OBJECT:
+	case GL_TYPE_BYTE:
+	case GL_TYPE_BINARY:
+	case GL_TYPE_TIMESTAMP:
+	case GL_TYPE_DATE:
+	case GL_TYPE_TIME:
+		_JSON_UnPackValueOmmitChar(opt,obj,value);
+		break;
+	case GL_TYPE_BOOL:
+		_JSON_UnPackValueOmmitBool(opt,obj,value);
+		break;
+	case GL_TYPE_INT:
+		_JSON_UnPackValueOmmitInt(opt,obj,value);
+		break;
+	case GL_TYPE_NUMBER:
+	case GL_TYPE_FLOAT:
+		_JSON_UnPackValueOmmitFloat(opt,obj,value);
+		break;
+	case GL_TYPE_ARRAY:
+		if (obj != NULL) {
+			type = json_object_get_type(obj);
+			if (type == json_type_array) {
+				length = json_object_array_length(obj);
+				for	(i = 0 ; i < ValueArraySize(value) && i < length ; i ++ ) {
+					_JSON_UnPackValueOmmit(opt,
+						json_object_array_get_idx(obj,i),
+						ValueArrayItem(value,i));
+				}
+			} else {
+				print_type_error(type,json_type_array);
+			}
+		} else {
+			for	(i = 0 ; i < ValueArraySize(value); i ++ ) {
+				_JSON_UnPackValueOmmit(opt,NULL,ValueArrayItem(value,i));
+			}
+		}
+		break;
+	case GL_TYPE_RECORD:
+		if (obj != NULL) {
+			type = json_object_get_type(obj);
+			if (type == json_type_object) {
+				for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+					child = json_object_object_get(obj,ValueRecordName(value,i));
+					_JSON_UnPackValueOmmit(opt,child,ValueRecordItem(value,i));
+				}
+			} else {
+				print_type_error(type,json_type_array);
+			}
+		} else {
+			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+				_JSON_UnPackValueOmmit(opt,NULL,ValueRecordItem(value,i));
+			}
+		}
+		break;
+	}
+LEAVE_FUNC;
+}
+
+extern	size_t
+JSON_UnPackValueOmmit(
+	CONVOPT			*opt,
+	unsigned char	*p,
+	ValueStruct		*value)
+{
+	json_object *obj;
+ENTER_FUNC;
+	obj = json_tokener_parse(p);
+	if (is_error(obj)) {
+		MonWarning("invalid json");
+	} else {
+		_JSON_UnPackValueOmmit(opt,obj,value);
+	}
+	json_object_put(obj);
+LEAVE_FUNC;
+	return	0;
+}
+
 static	void
 _JSON_UnPackValue(
 	CONVOPT *opt,
