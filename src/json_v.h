@@ -25,8 +25,11 @@
 #include	<json.h>
 
 extern	size_t	JSON_UnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	JSON_UnPackValueOmmit(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	JSON_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern	size_t	JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern	size_t	JSON_SizeValue(CONVOPT *opt, ValueStruct *value);
+extern	size_t	JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value);
 extern	size_t	JSON_Parse(char *str, ValueStruct **ret);
 extern	Bool	CheckJSONObject(json_object *obj,enum json_type type);
 
