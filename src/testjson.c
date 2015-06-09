@@ -23,6 +23,20 @@ const char *recdef = ""
 "      col21 varchar(256);\n"
 "    };\n"
 "  }[3];\n"
+"  record3 {\n"
+"    vc31 varchar(256);\n"
+"    record4 {\n"
+"      vc41 varchar(256);\n"
+"      int41 int;\n"
+"    }[2];\n"
+"  }[2];\n"
+"};";
+
+const char *recdef2 = ""
+"test2 {\n"
+"  int1 int;\n"
+"  arg1 varchar(256);\n"
+"  arg2 varchar(256);\n"
 "};";
 
 int
@@ -77,6 +91,10 @@ main(int argc,char *argv[])
   ValueInteger(v) = 10;
   v = GetItemLongName(value,"int2");
   ValueInteger(v) = 20;
+#if 1
+  v = GetItemLongName(value,"record3[1].record4[1].vc41");
+  SetValueString(v,"vc41",NULL);
+#endif
 
   fprintf(stderr,"\n---- JSON_PackValueOmmit\n");
   size = JSON_SizeValueOmmit(NULL,value);
@@ -84,7 +102,7 @@ main(int argc,char *argv[])
   buf = malloc(size+1);
   memset(buf,0,size+1);
   JSON_PackValueOmmit(NULL,buf,value);
-  fprintf(stderr,"[%s]\nsize:%ld\n",buf,strlen(buf));
+  fprintf(stderr,"size:%ld [%s]\n",strlen(buf),buf);
   free(buf);
 
   fprintf(stderr,"\n---- JSON_UnPackValueOmmit\n");
@@ -96,10 +114,30 @@ main(int argc,char *argv[])
   DumpValueStruct(value);
 
   fprintf(stderr,"\n---- JSON_UnPackValueOmmit 3\n");
-  JSON_UnPackValueOmmit(NULL,"{\"int1\":1000,\"command\":\"moge\",\"record1\":[{\"col1\":\"muge\",\"record2\":{\"col21\":\"gage\"}},{},{\"col2\":\"nuge\"}]}",value);
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":1000,\"command\":\"moge\",\"record1\":[{\"col1\":\"muge\",\"record2\":{\"col21\":\"gage\"}},{},{\"col2\":\"nuge\"}],\"record3\":[{},{\"record4\":[{},{\"vc41\":\"vc41\"}]}]}",value);
   DumpValueStruct(value);
 
   FreeValueStruct(value);
+
+  fprintf(stderr,"\n---- JSON_PackValueOmmit2\n");
+  value = RecParseValueMem(recdef2,NULL);
+  InitializeValue(value);
+#if 0
+  v = GetItemLongName(value,"int1");
+  ValueInteger(v) = 1;
+  v = GetItemLongName(value,"arg1");
+  SetValueString(v,"1",NULL);
+  v = GetItemLongName(value,"arg2");
+  SetValueString(v,"2",NULL);
+#endif
+
+  size = JSON_SizeValueOmmit(NULL,value);
+  fprintf(stderr,"size:%ld\n",size);
+  buf = malloc(size+1);
+  memset(buf,0,size+1);
+  JSON_PackValueOmmit(NULL,buf,value);
+  fprintf(stderr,"size:%ld [%s]\n",strlen(buf),buf);
+  free(buf);
 
   return 0;
 }

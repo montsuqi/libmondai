@@ -45,7 +45,7 @@
 #include	"json_v.h"
 #include	"debug.h"
 
-static size_t _JSON_SizeValueOmmit(CONVOPT *,ValueStruct *,PacketDataType p) ;
+static size_t _JSON_SizeValueOmmit(CONVOPT *,ValueStruct *) ;
 
 static const char*
 str_json_object_type(
@@ -671,13 +671,13 @@ static	size_t
 _JSON_PackValueOmmit(
 	CONVOPT *opt,
 	unsigned char *p,
-	ValueStruct *value,
-	PacketDataType parent_type)
+	ValueStruct *value)
 {
-	size_t size;
+	size_t size,inc;
 	int i,j;
 	unsigned char *pp;
 	char buf[256],*str,*key;
+	ValueStruct *child;
 ENTER_FUNC;
 	if (value == NULL) {
 		return 0;
@@ -703,26 +703,18 @@ ENTER_FUNC;
 			size = EscapeStr(str,p);
 			p += size;
 		} else {
-			if (parent_type != GL_TYPE_RECORD) {
-				emit(&p,"\"\"",2);
-			} else {
-				/* ommit "" */
-			}
+			/* ommit "" */
 		}
 		break;
 	case GL_TYPE_BOOL:
-		if (ValueBool(value) && parent_type == GL_TYPE_RECORD) {
+		if (ValueBool(value)) {
 			/*ommit TRUE*/
 		} else {
-			if (ValueBool(value)) {
-				emit(&p,"true",4);
-			} else {
-				emit(&p,"false",5);
-			}
+			emit(&p,"false",5);
 		}
 		break;
 	case GL_TYPE_INT:
-		if (ValueInteger(value) == 0 && parent_type == GL_TYPE_RECORD) {
+		if (ValueInteger(value) == 0) {
 			/*ommit 0*/
 		} else {
 			snprintf(buf,sizeof(buf),"%d",ValueInteger(value));
@@ -732,7 +724,7 @@ ENTER_FUNC;
 		break;
 	case GL_TYPE_NUMBER:
 	case GL_TYPE_FLOAT:
-		if (ValueToFloat(value) == 0.0 && parent_type == GL_TYPE_RECORD) {
+		if (ValueToFloat(value) == 0.0) {
 			/*ommit 0.0*/
 		} else {
 			snprintf(buf,sizeof(buf),"%lf",ValueToFloat(value));
@@ -741,21 +733,64 @@ ENTER_FUNC;
 		}
 		break;
 	case GL_TYPE_ARRAY:
-		emit(&p,"[",1);
+		inc = 0;
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-			if (i > 0) {
-				emit(&p,",",1);
-			}
-			p += _JSON_PackValueOmmit(opt,p,ValueArrayItem(value,i),value->type);
+			inc += _JSON_SizeValueOmmit(opt,ValueArrayItem(value,i));
 		}
-		emit(&p,"]",1);
+		if (inc > 0) {
+			emit(&p,"[",1);
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				child = ValueArrayItem(value,i);
+				if (i > 0) {
+					emit(&p,",",1);
+				}
+				inc = _JSON_SizeValueOmmit(opt,child);
+				if (inc > 0) {
+					p += _JSON_PackValueOmmit(opt,p,child);
+				} else {
+					switch(child->type) {
+					case GL_TYPE_CHAR:
+					case GL_TYPE_VARCHAR:
+					case GL_TYPE_DBCODE:
+					case GL_TYPE_TEXT:
+					case GL_TYPE_SYMBOL:
+					case GL_TYPE_ALIAS:
+					case GL_TYPE_OBJECT:
+					case GL_TYPE_BYTE:
+					case GL_TYPE_BINARY:
+					case GL_TYPE_TIMESTAMP:
+					case GL_TYPE_DATE:
+					case GL_TYPE_TIME:
+						emit(&p,"\"\"",2);
+						break;
+					case GL_TYPE_BOOL:
+						emit(&p,"true",4);
+						break;
+					case GL_TYPE_INT:
+						emit(&p,"0",1);
+						break;
+					case GL_TYPE_NUMBER:
+					case GL_TYPE_FLOAT:
+						emit(&p,"0.0",3);
+						break;
+					case GL_TYPE_ARRAY:
+						emit(&p,"[]",2);
+						break;
+					case GL_TYPE_RECORD:
+						emit(&p,"{}",2);
+						break;
+					}
+				}
+			}
+			emit(&p,"]",1);
+		}
 		break;
 	case GL_TYPE_RECORD:
-		size = _JSON_SizeValueOmmit(opt,value,parent_type);
+		size = _JSON_SizeValueOmmit(opt,value);
 		if (size > 0) {
 			emit(&p,"{",1);
 			for	( i = j = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-			    size = _JSON_SizeValueOmmit(opt,ValueRecordItem(value,i),GL_TYPE_RECORD);
+			    size = _JSON_SizeValueOmmit(opt,ValueRecordItem(value,i));
 				if (size > 0) {
 					if (j > 0) {
 						emit(&p,",",1);
@@ -764,7 +799,7 @@ ENTER_FUNC;
 					emit(&p,"\"",1);
 					emit(&p,key,strlen(key));
 					emit(&p,"\":",2);
-			    	size = _JSON_PackValueOmmit(opt,p,ValueRecordItem(value,i),GL_TYPE_RECORD);
+			    	size = _JSON_PackValueOmmit(opt,p,ValueRecordItem(value,i));
 					p += size;
 					j++;
 				}
@@ -785,7 +820,7 @@ JSON_PackValueOmmit(
 {
 	size_t size;
 ENTER_FUNC;
-	size = _JSON_PackValueOmmit(opt,p,value,GL_TYPE_RECORD);
+	size = _JSON_PackValueOmmit(opt,p,value);
 	p += size;
 	/*null terminate*/
 	*p = 0;
@@ -797,12 +832,12 @@ LEAVE_FUNC;
 static	size_t
 _JSON_SizeValueOmmit(
 	CONVOPT *opt,
-	ValueStruct *value,
-	PacketDataType parent_type)
+	ValueStruct *value)
 {
 	size_t size,inc,inc_total,inc_child;
 	int i,j;
 	char buf[256],*str;
+	ValueStruct *child;
 ENTER_FUNC;
 	if (value == NULL) {
 		return 0;
@@ -827,26 +862,18 @@ ENTER_FUNC;
 		if (strlen(str)) {
 			size = EscapeStrLength(str);
 		} else {
-			if (parent_type == GL_TYPE_RECORD) {
-				/* ommit "" */
-			} else {
-				size = 2; /* "" */
-			}
+			/* ommit "" */
 		}
 		break;
 	case GL_TYPE_BOOL:
-		if (ValueBool(value) && parent_type == GL_TYPE_RECORD) {
+		if (ValueBool(value)) {
 			/*ommit TRUE*/
 		} else {
-			if (ValueBool(value)) {
-				size = 4; /*true*/
-			} else {
-				size = 5 /*false*/;
-			}
+			size = 5 /*false*/;
 		}
 		break;
 	case GL_TYPE_INT:
-		if (ValueInteger(value) == 0 && parent_type == GL_TYPE_RECORD) {
+		if (ValueInteger(value) == 0) {
 			/*ommit 0*/
 		} else {
 			snprintf(buf,sizeof(buf),"%d",ValueInteger(value));
@@ -855,7 +882,7 @@ ENTER_FUNC;
 		break;
 	case GL_TYPE_NUMBER:
 	case GL_TYPE_FLOAT:
-		if (ValueToFloat(value) == 0.0 && parent_type == GL_TYPE_RECORD) {
+		if (ValueToFloat(value) == 0.0) {
 			/* ommit 0.0 */
 		} else {
 			snprintf(buf,sizeof(buf),"%lf",ValueToFloat(value));
@@ -863,14 +890,57 @@ ENTER_FUNC;
 		}
 		break;
 	case GL_TYPE_ARRAY:
-		size ++; /*[*/
+		inc = 0;
 		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-			if (i > 0) {
-				size ++; /*,*/
-			}
-			size += _JSON_SizeValueOmmit(opt,ValueArrayItem(value,i),value->type);
+			inc += _JSON_SizeValueOmmit(opt,ValueArrayItem(value,i));
 		}
-		size ++; /*]*/
+		if (inc > 0) {
+			size ++; /*[*/
+			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+				child = ValueArrayItem(value,i);
+				if (i > 0) {
+					size ++; /*,*/
+				}
+				inc = _JSON_SizeValueOmmit(opt,child);
+				if (inc > 0) {
+					size += inc;
+				} else {
+					switch(child->type) {
+					case GL_TYPE_CHAR:
+					case GL_TYPE_VARCHAR:
+					case GL_TYPE_DBCODE:
+					case GL_TYPE_TEXT:
+					case GL_TYPE_SYMBOL:
+					case GL_TYPE_ALIAS:
+					case GL_TYPE_OBJECT:
+					case GL_TYPE_BYTE:
+					case GL_TYPE_BINARY:
+					case GL_TYPE_TIMESTAMP:
+					case GL_TYPE_DATE:
+					case GL_TYPE_TIME:
+						size += 2; /* "" */
+						break;
+					case GL_TYPE_BOOL:
+						size += 4; /* true */
+						break;
+					case GL_TYPE_INT:
+						size += 1; /* 0 */
+						break;
+					case GL_TYPE_NUMBER:
+					case GL_TYPE_FLOAT:
+						size += 3; /* 0.0 */
+						break;
+					case GL_TYPE_ARRAY:
+						size += 2; /* [] */
+						break;
+					case GL_TYPE_RECORD:
+						size += 2; /* {} */
+						break;
+					}
+				}
+			}
+			size ++; /*]*/
+		}
 		break;
 	case GL_TYPE_RECORD:
 		for	( i = j = inc_total = 0 ; i < ValueRecordSize(value) ; i ++ ) {
@@ -880,18 +950,14 @@ ENTER_FUNC;
 			}
 			inc += strlen(ValueRecordName(value,i));
 			inc += 3; /* "<key>": */
-			inc_child = _JSON_SizeValueOmmit(opt,ValueRecordItem(value,i),value->type);
-			inc += inc_child;
+			inc_child = _JSON_SizeValueOmmit(opt,ValueRecordItem(value,i));
 			if (inc_child > 0) {
-				inc_total += inc;
+				inc_total += (inc + inc_child);
 				j++;
 			}
 		}
-		size += inc_total;
-		if (parent_type == GL_TYPE_RECORD && inc_total == 0) {
-			/* ommit */
-		} else {
-			size += 2; /*{}*/
+		if (inc_total > 0) {
+			size += inc_total + 2; /* {} */
 		}
 		break;
 	}
@@ -906,7 +972,7 @@ JSON_SizeValueOmmit(
 {
 	size_t size;
 ENTER_FUNC;
-	size = _JSON_SizeValueOmmit(opt,value,GL_TYPE_RECORD);
+	size = _JSON_SizeValueOmmit(opt,value);
 	/*null terminate*/
 	size += 1;
 LEAVE_FUNC;
