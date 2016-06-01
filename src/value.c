@@ -1118,10 +1118,7 @@ DuplicateValue(
 		  case	GL_TYPE_OBJECT:
 			if		(  fCopy  ) {
 				ValueObjectId(p) = ValueObjectId(template);
-				if		(  ValueObjectFile(p)  !=  NULL  ) {
-					xfree(ValueObjectFile(p));
-				}
-				ValueObjectFile(p) = StrDup(ValueObjectFile(template));
+				ValueObjectFile(p) = NULL;
 			} else {
 				ValueObjectId(p) = 0;
 				ValueObjectFile(p) = NULL;

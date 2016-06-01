@@ -741,45 +741,12 @@ ENTER_FUNC;
 			emit(&p,"[",1);
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				child = ValueArrayItem(value,i);
-				if (i > 0) {
-					emit(&p,",",1);
-				}
 				inc = _JSON_SizeValueOmmit(opt,child);
 				if (inc > 0) {
-					p += _JSON_PackValueOmmit(opt,p,child);
-				} else {
-					switch(child->type) {
-					case GL_TYPE_CHAR:
-					case GL_TYPE_VARCHAR:
-					case GL_TYPE_DBCODE:
-					case GL_TYPE_TEXT:
-					case GL_TYPE_SYMBOL:
-					case GL_TYPE_ALIAS:
-					case GL_TYPE_OBJECT:
-					case GL_TYPE_BYTE:
-					case GL_TYPE_BINARY:
-					case GL_TYPE_TIMESTAMP:
-					case GL_TYPE_DATE:
-					case GL_TYPE_TIME:
-						emit(&p,"\"\"",2);
-						break;
-					case GL_TYPE_BOOL:
-						emit(&p,"true",4);
-						break;
-					case GL_TYPE_INT:
-						emit(&p,"0",1);
-						break;
-					case GL_TYPE_NUMBER:
-					case GL_TYPE_FLOAT:
-						emit(&p,"0.0",3);
-						break;
-					case GL_TYPE_ARRAY:
-						emit(&p,"[]",2);
-						break;
-					case GL_TYPE_RECORD:
-						emit(&p,"{}",2);
-						break;
+					if (i > 0) {
+						emit(&p,",",1);
 					}
+					p += _JSON_PackValueOmmit(opt,p,child);
 				}
 			}
 			emit(&p,"]",1);
@@ -898,45 +865,12 @@ ENTER_FUNC;
 			size ++; /*[*/
 			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				child = ValueArrayItem(value,i);
-				if (i > 0) {
-					size ++; /*,*/
-				}
 				inc = _JSON_SizeValueOmmit(opt,child);
 				if (inc > 0) {
-					size += inc;
-				} else {
-					switch(child->type) {
-					case GL_TYPE_CHAR:
-					case GL_TYPE_VARCHAR:
-					case GL_TYPE_DBCODE:
-					case GL_TYPE_TEXT:
-					case GL_TYPE_SYMBOL:
-					case GL_TYPE_ALIAS:
-					case GL_TYPE_OBJECT:
-					case GL_TYPE_BYTE:
-					case GL_TYPE_BINARY:
-					case GL_TYPE_TIMESTAMP:
-					case GL_TYPE_DATE:
-					case GL_TYPE_TIME:
-						size += 2; /* "" */
-						break;
-					case GL_TYPE_BOOL:
-						size += 4; /* true */
-						break;
-					case GL_TYPE_INT:
-						size += 1; /* 0 */
-						break;
-					case GL_TYPE_NUMBER:
-					case GL_TYPE_FLOAT:
-						size += 3; /* 0.0 */
-						break;
-					case GL_TYPE_ARRAY:
-						size += 2; /* [] */
-						break;
-					case GL_TYPE_RECORD:
-						size += 2; /* {} */
-						break;
+					if (i > 0) {
+						size ++; /*,*/
 					}
+					size += inc;
 				}
 			}
 			size ++; /*]*/
