@@ -340,16 +340,21 @@ JSON_UnPackValueOmmit(
 	ValueStruct		*value)
 {
 	json_object *obj;
+	size_t ret;
 ENTER_FUNC;
+	ret = 0;
 	obj = json_tokener_parse(p);
 	if (is_error(obj)) {
+#if 0
 		MonWarning("invalid json");
+#endif
 	} else {
 		_JSON_UnPackValueOmmit(opt,obj,value);
+		ret = 1;
 	}
 	json_object_put(obj);
 LEAVE_FUNC;
-	return	0;
+	return	ret;
 }
 
 static	void
@@ -536,16 +541,21 @@ JSON_UnPackValue(
 	ValueStruct	*value)
 {
 	json_object *obj;
+	size_t ret;
 ENTER_FUNC;
+	ret = 0;
 	obj = json_tokener_parse(p);
 	if (is_error(obj)) {
+#if 0
 		MonWarning("invalid json");
+#endif
 	} else {
 		_JSON_UnPackValue(opt,obj,value);
+		ret = 1;
 	}
 	json_object_put(obj);
 LEAVE_FUNC;
-	return	0;
+	return	ret;
 }
 
 static	void
