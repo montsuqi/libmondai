@@ -6,6 +6,7 @@
 
 const char *recdef = ""
 "test2 {\n"
+"  int0 int[10];\n"
 "  int1 int;\n"
 "  int2 int;\n"
 "  double1 number(10,5);\n"
@@ -79,6 +80,9 @@ main(int argc,char *argv[])
   DumpValueStruct(value);
 
   /* ommit */
+  fprintf(stderr,"\n-------------------\n");
+  fprintf(stderr,"ommit\n");
+  fprintf(stderr,"-------------------\n\n");
 
   InitializeValue(value);
   v = GetRecordItem(value,"command");
@@ -117,26 +121,15 @@ main(int argc,char *argv[])
   JSON_UnPackValueOmmit(NULL,"{\"int1\":1000,\"command\":\"moge\",\"record1\":[{\"col1\":\"muge\",\"record2\":{\"col21\":\"gage\"}},{},{\"col2\":\"nuge\"}],\"record3\":[{},{\"record4\":[{},{\"vc41\":\"vc41\"}]}]}",value);
   DumpValueStruct(value);
 
-  FreeValueStruct(value);
-
-  fprintf(stderr,"\n---- JSON_PackValueOmmit2\n");
-  value = RecParseValueMem(recdef2,NULL);
   InitializeValue(value);
-#if 0
-  v = GetItemLongName(value,"int1");
-  ValueInteger(v) = 1;
-  v = GetItemLongName(value,"arg1");
-  SetValueString(v,"1",NULL);
-  v = GetItemLongName(value,"arg2");
-  SetValueString(v,"2",NULL);
-#endif
-
+  fprintf(stderr,"\n---- test\n");
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":10,\"int0\":[0],\"bool1\":false,\"arg1\":\"hogehoge\"}",value);
   size = JSON_SizeValueOmmit(NULL,value);
   fprintf(stderr,"size:%ld\n",size);
   buf = malloc(size+1);
   memset(buf,0,size+1);
   JSON_PackValueOmmit(NULL,buf,value);
-  fprintf(stderr,"size:%ld [%s]\n",strlen(buf),buf);
+  fprintf(stderr,"size:%ld %s\n",strlen(buf),buf);
   free(buf);
 
   return 0;

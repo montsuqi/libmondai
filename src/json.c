@@ -749,14 +749,15 @@ ENTER_FUNC;
 		}
 		if (inc > 0) {
 			emit(&p,"[",1);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			for	( i = j = 0 ; i < ValueArraySize(value) ; i ++ ) {
 				child = ValueArrayItem(value,i);
 				inc = _JSON_SizeValueOmmit(opt,child);
 				if (inc > 0) {
-					if (i > 0) {
+					if (j > 0) {
 						emit(&p,",",1);
 					}
 					p += _JSON_PackValueOmmit(opt,p,child);
+					j++;
 				}
 			}
 			emit(&p,"]",1);
@@ -873,14 +874,15 @@ ENTER_FUNC;
 		}
 		if (inc > 0) {
 			size ++; /*[*/
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			for	( i = j = 0; i < ValueArraySize(value) ; i ++ ) {
 				child = ValueArrayItem(value,i);
 				inc = _JSON_SizeValueOmmit(opt,child);
 				if (inc > 0) {
-					if (i > 0) {
+					if (j > 0) {
 						size ++; /*,*/
 					}
 					size += inc;
+					j++;
 				}
 			}
 			size ++; /*]*/
