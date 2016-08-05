@@ -123,13 +123,13 @@ main(int argc,char *argv[])
 
   InitializeValue(value);
   fprintf(stderr,"\n---- test\n");
-  JSON_UnPackValueOmmit(NULL,"{\"int1\":10,\"int0\":[0],\"bool1\":false,\"arg1\":\"hogehoge\"}",value);
+  JSON_UnPackValueOmmit(NULL,"{\"int1\":10,\"int0\":[0,1,2,3,0,5,0,6],\"bool1\":false,\"arg1\":\"hogehoge\"}",value);
   size = JSON_SizeValueOmmit(NULL,value);
   fprintf(stderr,"size:%ld\n",size);
-  buf = malloc(size+1);
-  memset(buf,0,size+1);
+  buf = malloc(size);
+  memset(buf,0,size);
   JSON_PackValueOmmit(NULL,buf,value);
-  fprintf(stderr,"size:%ld %s\n",strlen(buf),buf);
+  fprintf(stderr,"size:%d %s\n",(int)strlen(buf),buf);
   free(buf);
 
   return 0;
