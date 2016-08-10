@@ -115,7 +115,7 @@ mkdir_p(
 		path[s] = 0;
 
 		if (mkdir(path, mode) && errno != EEXIST) {
-			if (*p == NULL) {
+			if (*p == '\0') {
 				return FALSE;
 			}
 		}
