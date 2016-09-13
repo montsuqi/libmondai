@@ -33,3 +33,8 @@ src/testjson
 tools/monconv
 tools/rec2copy
 *.swp
+config.guess
+config.sub
+depcomp
+install-sh
+missing
