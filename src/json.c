@@ -832,10 +832,15 @@ JSON_PackValueOmmit(
 	size_t size;
 ENTER_FUNC;
 	size = _JSON_PackValueOmmit(opt,p,value);
-	p += size;
-	/*null terminate*/
-	*p = 0;
-	size += 1;
+ 	if (size == 0) {
+		snprintf(p,2,"{}");
+		size = 3;
+	} else {
+		p += size;
+		/*null terminate*/
+		*p = 0;
+		size += 1;
+	}
 LEAVE_FUNC;
 	return	size;
 }
@@ -984,8 +989,13 @@ JSON_SizeValueOmmit(
 	size_t size;
 ENTER_FUNC;
 	size = _JSON_SizeValueOmmit(opt,value);
-	/*null terminate*/
-	size += 1;
+	if (size == 0) {
+		/*{} empty json*/
+		size = 3;
+	} else {
+		/*null terminate*/
+		size += 1;
+	}
 LEAVE_FUNC;
 	return	size;
 }
