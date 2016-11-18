@@ -37,7 +37,6 @@ main(
 {
 	ValueStruct *val;
 	ValueStruct *val2;
-	ValueStruct *val3;
 	ValueStruct *v;
 	LargeByteString *lbs;
 	size_t size;
@@ -58,7 +57,7 @@ main(
 fprintf(stderr, "\n\n---- normal\n");
 	lbs = NewLBS();
 	val = RecParseValueMem(str, NULL);
-	val3 = RecParseValueMem(str, NULL);
+	val2 = RecParseValueMem(str, NULL);
 	InitializeValue(val);
 	v = GetItemLongName(val,"query[0].key");
 	SetValueStringWithLength(v, "key0", strlen("key0"), NULL);
@@ -87,9 +86,9 @@ p++;
 fprintf(stderr, "####\n");
 
 fprintf(stderr, "#nativeunpack\n");
-	NativeUnPackValue(NULL, LBS_Body(lbs), val3);
-fprintf(stderr, "#dump val3\n");
-	DumpValueStruct(val3);
+	NativeUnPackValue(NULL, LBS_Body(lbs), val2);
+fprintf(stderr, "#dump val2\n");
+	DumpValueStruct(val2);
 fprintf(stderr, "#end\n");
 
 	return 0;

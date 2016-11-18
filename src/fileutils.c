@@ -101,7 +101,7 @@ mkdir_p(
 	if (dname == NULL) {
 		return FALSE;
 	}
-	p = q = dname;	
+	p = q = dname;
 	while (*p) {
 		while (*p && !(G_DIR_SEPARATOR == (*p))) {
 			p++;
@@ -115,7 +115,7 @@ mkdir_p(
 		path[s] = 0;
 
 		if (mkdir(path, mode) && errno != EEXIST) {
-			if (*p == NULL) {
+			if (p == NULL) {
 				return FALSE;
 			}
 		}

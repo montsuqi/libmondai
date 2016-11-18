@@ -16,12 +16,12 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-lib_LTLIBRARIES = libmondai.la 
+lib_LTLIBRARIES = libmondai.la
 
 if SOAP
-TESTSOAP  =  testsoap
+TESTSOAP =  testsoap
 else
-TESTSOAP  =
+TESTSOAP =
 endif
 noinst_PROGRAMS =	\
 	testfileutils \
@@ -33,16 +33,16 @@ noinst_PROGRAMS =	\
 	testjson \
 	$(TESTSOAP)
 
-libmondai_la_LDFLAGS	=	\
-	-version-info $(LTVERSION)	\
+libmondai_la_LDFLAGS = \
+	-version-info $(LTVERSION) \
 	-export-dynamic
 
-AM_CFLAGS	=	-Wall -Wunused -Wredundant-decls -funsigned-char \
-	-Wno-pointer-sign
+AM_CFLAGS = -Wall -Wunused -Wredundant-decls -funsigned-char \
+            -Wno-pointer-sign
 
 libmondaiincludedir = $(includedir)/libmondai
 
-libmondaiinclude_HEADERS =	\
+libmondaiinclude_HEADERS = \
 	lock.h					\
 	misc_v.h				\
 	LBSfunc.h				\
@@ -71,13 +71,13 @@ libmondaiinclude_HEADERS =	\
 	numeric.h				\
 	fileutils.h
 
-AM_CPPFLAGS 			= 		\
+AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) 			\
 	$(XML_CFLAGS)			\
 	$(JSON_CFLAGS) 			\
 	-I$(top_srcdir)
 
-libmondai_la_SOURCES	=	\
+libmondai_la_SOURCES = \
 	libmondai.h						\
 	misc.c							\
 	lock.c			lock.h			\
@@ -106,41 +106,41 @@ libmondai_la_SOURCES	=	\
 	fileutils.c		fileutils.h		\
 	debug.h
 
-libmondai_la_LIBADD	=		\
+libmondai_la_LIBADD = \
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
 	$(JSON_LIBS)
 
-LDADD 				=		\
+LDADD = \
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
 	$(JSON_LIBS)			\
 	$(top_builddir)/src/libmondai.la
 
-testconv_SOURCES	=		\
+testconv_SOURCES = \
 	testconv.c
 
-testvalue_SOURCES	=		\
+testvalue_SOURCES = \
 	testvalue.c
 
-testNativePack_SOURCES	=		\
+testNativePack_SOURCES = \
 	testNativePack.c
 
 if SOAP
-testsoap_SOURCES	=		\
+testsoap_SOURCES = \
 	testsoap.c
 endif
 
-testmem_SOURCES		=		\
+testmem_SOURCES = \
 	testmem.c
 
-testfixed_SOURCES		=		\
+testfixed_SOURCES = \
 	testfixed.c
 
-testfileutils_SOURCES		=		\
+testfileutils_SOURCES = \
 	testfileutils.c
 
-testfileutils_SOURCES		=		\
+testjson_SOURCES = \
 	testjson.c
 
 EXTRA_DIST = lgpl testrec.rec testinc.rec
