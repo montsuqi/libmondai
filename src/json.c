@@ -833,7 +833,7 @@ JSON_PackValueOmmit(
 ENTER_FUNC;
 	size = _JSON_PackValueOmmit(opt,p,value);
  	if (size == 0) {
-		snprintf(p,2,"{}");
+		snprintf(p,3,"{}");
 		size = 3;
 	} else {
 		p += size;
