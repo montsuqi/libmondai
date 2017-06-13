@@ -317,7 +317,7 @@ ENTER_FUNC;
 			type = json_object_get_type(obj);
 			if (type == json_type_object) {
 				for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-					child = json_object_object_get(obj,ValueRecordName(value,i));
+					json_object_object_get_ex(obj,ValueRecordName(value,i),&child);
 					_JSON_UnPackValueOmmit(opt,child,ValueRecordItem(value,i));
 				}
 			} else {
@@ -521,8 +521,7 @@ ENTER_FUNC;
 	case GL_TYPE_RECORD:
 		if (type == json_type_object) {
 			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				child = json_object_object_get(obj,ValueRecordName(value,i));
-				if (child != NULL) {
+				if (json_object_object_get_ex(obj,ValueRecordName(value,i),&child)) {
 					_JSON_UnPackValue(opt,child,ValueRecordItem(value,i));
 				}
 			}
