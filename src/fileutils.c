@@ -129,7 +129,7 @@ mkdir_p(
 }
 
 extern	Bool
-MakeDir(
+mkdir_p_clean(
 	char *dir,
 	int mode)
 {
