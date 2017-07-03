@@ -344,7 +344,6 @@ JSON_UnPackValueOmmit(
 	size_t ret;
 ENTER_FUNC;
 	ret = 0;
-	InitializeValue(value);
 	obj = json_tokener_parse(p);
 	if (is_error(obj)) {
 #if 0
@@ -545,7 +544,6 @@ JSON_UnPackValue(
 	size_t ret;
 ENTER_FUNC;
 	ret = 0;
-	InitializeValue(value);
 	obj = json_tokener_parse(p);
 	if (is_error(obj)) {
 #if 0
