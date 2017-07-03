@@ -95,10 +95,8 @@ main(int argc,char *argv[])
   ValueInteger(v) = 10;
   v = GetItemLongName(value,"int2");
   ValueInteger(v) = 20;
-#if 1
   v = GetItemLongName(value,"record3[1].record4[1].vc41");
   SetValueString(v,"vc41",NULL);
-#endif
 
   fprintf(stderr,"\n---- JSON_PackValueOmmit\n");
   size = JSON_SizeValueOmmit(NULL,value);
@@ -130,6 +128,35 @@ main(int argc,char *argv[])
   memset(buf,0,size);
   JSON_PackValueOmmit(NULL,buf,value);
   fprintf(stderr,"size:%d %s\n",(int)strlen(buf),buf);
+  free(buf);
+
+
+  fprintf(stderr,"\n\n\n\n\n\n---- JSON_PackValueOmmitString\n");
+
+  InitializeValue(value);
+  v = GetRecordItem(value,"command");
+  SetValueString(v,"a\"a\\a/a\ba\fa\na\ra\ta",NULL);
+  v = GetItemLongName(value,"record1[0].col1");
+  SetValueString(v,"bbbb",NULL);
+#if 0
+  v = GetItemLongName(value,"record1[0].record2.col21");
+  SetValueString(v,"cccc",NULL);
+#endif
+  v = GetItemLongName(value,"int1");
+  ValueInteger(v) = 10;
+  v = GetItemLongName(value,"int2");
+  ValueInteger(v) = 20;
+  v = GetItemLongName(value,"record3[1].record4[1].vc41");
+  SetValueString(v,"vc41",NULL);
+
+  DumpValueStruct(value);
+
+  size = JSON_SizeValueOmmitString(NULL,value);
+  fprintf(stderr,"size:%ld\n",size);
+  buf = malloc(size+1);
+  memset(buf,0,size+1);
+  JSON_PackValueOmmitString(NULL,buf,value);
+  fprintf(stderr,"size:%ld [%s]\n",strlen(buf),buf);
   free(buf);
 
   return 0;
