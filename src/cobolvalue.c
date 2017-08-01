@@ -74,7 +74,9 @@ StringC2Cobol(
 		++p;
 		--left;
 	}
-	memset(p, ' ', left);
+	if (left > 0) {
+		memset(p, ' ', left);
+	}
 	p += left;
 }
 

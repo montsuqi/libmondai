@@ -519,7 +519,6 @@ ENTER_FUNC;
 		  case	'<':
 			in->Token = T_LE;
 			break;
-			break;
 		  default:
 			in->Token = T_EQ;
 			UnGetChar(in,c);

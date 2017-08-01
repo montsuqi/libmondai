@@ -675,7 +675,7 @@ LBS_Duplicate(
 	} else {
 		ret = NULL;
 	}
-	return	(ret);
+	return (ret);
 }
 
 

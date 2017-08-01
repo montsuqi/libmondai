@@ -30,6 +30,7 @@ noinst_PROGRAMS =	\
 	testvalue \
 	testmem \
 	testNativePack \
+	testjson \
 	$(TESTSOAP)
 
 libmondai_la_LDFLAGS	=	\
@@ -138,3 +139,8 @@ testfixed_SOURCES		=		\
 
 testfileutils_SOURCES		=		\
 	testfileutils.c
+
+testjson_SOURCES		=		\
+	testjson.c
+
+EXTRA_DIST = lgpl testrec.rec testinc.rec

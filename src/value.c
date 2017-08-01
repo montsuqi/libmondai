@@ -417,144 +417,89 @@ LEAVE_FUNC;
 }
 
 static	void
-DumpItem(
-	char		*name,
-	ValueStruct	*value)
+_DumpValueStruct(
+	ValueStruct	*val,
+	int level)
 {
-	if		(  name  !=  NULL  ) {
-		printf("%s:",name);
+	int		i,j;
+
+	if (val == NULL) {
+		fprintf(stderr,"[null]\n");
 	} else {
-		printf(":");
+		switch	(ValueType(val)) {
+		  case	GL_TYPE_INT:
+			fprintf(stderr,"%d\n",ValueInteger(val));
+			break;
+		  case	GL_TYPE_FLOAT:
+			fprintf(stderr,"%g\n",ValueFloat(val));
+			break;
+		  case	GL_TYPE_BOOL:
+			fprintf(stderr,"%s\n",(ValueBool(val) ? "T" : "F"));
+			break;
+		  case	GL_TYPE_CHAR:
+		  case	GL_TYPE_VARCHAR:
+		  case	GL_TYPE_TEXT:
+			fprintf(stderr,"\"%s\"\n",ValueToString(val,NULL));
+			break;
+		  case	GL_TYPE_DBCODE:
+			fprintf(stderr,"[%s]\n",ValueString(val));
+			break;
+		  case	GL_TYPE_NUMBER:
+			fprintf(stderr,"%s\n",ValueFixedBody(val));
+			break;
+		  case	GL_TYPE_OBJECT:
+			fprintf(stderr,"%d\n",(int)ValueObjectId(val));
+			break;
+		  case	GL_TYPE_TIMESTAMP:
+			fprintf(stderr,"[%s]\n",ValueToString(val,DUMP_LOCALE));
+			break;
+		  case	GL_TYPE_DATE:
+			fprintf(stderr,"[%s]\n",ValueToString(val,DUMP_LOCALE));
+			break;
+		  case	GL_TYPE_TIME:
+			fprintf(stderr,"[%s]\n",ValueToString(val,DUMP_LOCALE));
+			break;
+		  case	GL_TYPE_ARRAY:
+			fprintf(stderr,"[\n");
+			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
+				for(j=0;j<level;j++){
+					fprintf(stderr,"  ");
+				}
+				fprintf(stderr,"%d: ",i);
+				_DumpValueStruct(ValueArrayItem(val,i),level+1);
+			}
+			for(j=0;j<(level-1);j++){
+				fprintf(stderr,"  ");
+			}
+			fprintf(stderr,"]\n");
+			break;
+		  case	GL_TYPE_RECORD:
+			fprintf(stderr,"{\n");
+
+			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
+				for(j=0;j<level;j++){
+					fprintf(stderr,"  ");
+				}
+				fprintf(stderr,"%s: ",ValueRecordName(val,i));
+				_DumpValueStruct(ValueRecordItem(val,i),level+1);
+			}
+
+			for(j=0;j<(level-1);j++){
+				fprintf(stderr,"  ");
+			}
+			fprintf(stderr,"}\n");
+			break;
+		  default:
+			break;
+		}
 	}
-	printf("%s",((value->attr&GL_ATTR_INPUT) == GL_ATTR_INPUT) ? "I" : "O");
-	printf("%s",((value->attr&GL_ATTR_ALIAS) == GL_ATTR_ALIAS) ? " ALIAS" : "");
-	printf("%s",((value->attr&GL_ATTR_NIL) == GL_ATTR_NIL) ? " NIL:" : ":");
-	DumpValueStruct(value);
 }
 
 extern	void
 DumpValueStruct(
 	ValueStruct	*val)
 {
-	int		i;
-
-	if		(  val  ==  NULL  )	{
-		printf("null value\n");
-	} else {
-		switch	(ValueType(val)) {
-		  case	GL_TYPE_INT:
-			printf("integer[%d]\n",ValueInteger(val));
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_FLOAT:
-			printf("float[%g]\n",ValueFloat(val));
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_BOOL:
-			printf("Bool[%s]\n",(ValueBool(val) ? "T" : "F"));
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_CHAR:
-			printf("char(%d,%d) [",(int)ValueStringLength(val),(int)ValueStringSize(val));
-			if		(  !IS_VALUE_NIL(val)  ) {
-				PrintFixString(ValueToString(val,DUMP_LOCALE),ValueStringLength(val));
-			}
-			printf("]\n");
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_VARCHAR:
-			printf("varchar(%d,%d)",(int)ValueStringLength(val),(int)ValueStringSize(val));
-			if		(  !IS_VALUE_NIL(val)  ) {
-				printf(" [%s]",ValueToString(val,DUMP_LOCALE));
-			}
-			printf("\n");
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_DBCODE:
-			printf("code(%d,%d) [%s]\n",(int)ValueStringLength(val),(int)ValueStringSize(val),
-				   ValueString(val));
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_NUMBER:
-			printf("number(%d,%d) [%s]\n",
-				   (int)ValueFixedLength(val),(int)ValueFixedSlen(val),
-				   ValueFixedBody(val));
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_TEXT:
-			printf("text(%d,%d)",(int)ValueStringLength(val),(int)ValueStringSize(val));
-			fflush(stdout);
-			if		(  !IS_VALUE_NIL(val)  ) {
-				printf(" [%s]\n",ValueStringPointer(val));
-				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
-			}
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_SYMBOL:
-			printf("symbol(%d,%d)",(int)ValueStringLength(val),(int)ValueStringSize(val));
-			fflush(stdout);
-			if		(  !IS_VALUE_NIL(val)  ) {
-				printf(" [%s]\n",ValueStringPointer(val));
-				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
-			}
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_BINARY:
-			printf("binary(%d,%d)",(int)ValueByteLength(val),(int)ValueByteSize(val));
-			fflush(stdout);
-			if		(  !IS_VALUE_NIL(val)  ) {
-				printf(" [%s]\n",ValueToString(val,DUMP_LOCALE));
-			}
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_OBJECT:
-			printf("object [%d:",(int)ValueObjectId(val));
-			if		(  ValueObjectFile(val)  !=  NULL  ) {
-				printf("%s",ValueObjectFile(val));
-			}
-			printf("]\n");
-			fflush(stdout);
-			break;
-		  case	GL_TYPE_TIMESTAMP:
-			printf("datetime [%s]\n",ValueToString(val,DUMP_LOCALE));
-			break;
-		  case	GL_TYPE_DATE:
-			printf("date [%s]\n",ValueToString(val,DUMP_LOCALE));
-			break;
-		  case	GL_TYPE_TIME:
-			printf("time [%s]\n",ValueToString(val,DUMP_LOCALE));
-			break;
-		  case	GL_TYPE_ARRAY:
-			printf("array size = %d(%s)\n",
-				   (int)ValueArraySize(val),IS_VALUE_EXPANDABLE(val) ? "expandable" : "fixed");
-			fflush(stdout);
-			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-				DumpValueStruct(ValueArrayItem(val,i));
-			}
-			break;
-		  case	GL_TYPE_VALUES:
-			printf("values size = %d\n",(int)ValueValuesSize(val));
-			fflush(stdout);
-			for	( i = 0 ; i < ValueValuesSize(val) ; i ++ ) {
-				DumpValueStruct(ValueValuesItem(val,i));
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			printf("<-- record members = %d\n",(int)ValueRecordSize(val));
-			fflush(stdout);
-			for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-				DumpItem(ValueRecordName(val,i),ValueRecordItem(val,i));
-			}
-			printf("-->\n");
-			break;
-		  case	GL_TYPE_ALIAS:
-			printf("alias name = [%s]\n",ValueAliasName(val));
-			fflush(stdout);
-			break;
-		  default:
-			break;
-		}
-	}
+	_DumpValueStruct(val,1);
 }
 #define	_dbgmsg(s)		printf("%s:%d:%s\n",__FILE__,__LINE__,(s));fflush(stdout);
 extern	void
@@ -622,6 +567,113 @@ ENTER_FUNC;
 	  case	GL_TYPE_NUMBER:
 		if		(  ValueFixedLength(value)  >  0  ) {
 			memset(ValueFixedBody(value),'0',ValueFixedLength(value));
+		}
+		ValueFixedBody(value)[ValueFixedLength(value)] = 0;
+		break;
+	  case	GL_TYPE_TIMESTAMP:
+	  case	GL_TYPE_DATE:
+	  case	GL_TYPE_TIME:
+		ValueDateTimeSec(value) = 0;
+		ValueDateTimeMin(value) = 0;
+		ValueDateTimeHour(value) = 0;
+		ValueDateTimeMDay(value) = 0;
+		ValueDateTimeMon(value) = 0;
+		ValueDateTimeYear(value) = 0;
+		ValueDateTimeWDay(value) = 0;
+		ValueDateTimeYDay(value) = 0;
+		ValueDateTimeIsdst(value) = 0;
+		break;
+	  case	GL_TYPE_ARRAY:
+		for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
+			InitializeValue(ValueArrayItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_VALUES:
+		for	( i = 0 ; i < ValueValuesSize(value) ; i ++ ) {
+			InitializeValue(ValueValuesItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_RECORD:
+		for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
+			InitializeValue(ValueRecordItem(value,i));
+		}
+		break;
+	  case	GL_TYPE_ALIAS:
+	  default:
+		break;
+	}
+LEAVE_FUNC;
+}
+
+extern	void
+FillValue(
+	ValueStruct	*value)
+{
+	int		i;
+	char	*buf;
+
+ENTER_FUNC;
+	if		(  value  ==  NULL  )	return;
+	if		(  ValueStr(value)  !=  NULL  ) {
+		FreeLBS(ValueStr(value));
+	}
+	ValueStr(value) = NULL;
+    switch (ValueType(value)) {
+	  case	GL_TYPE_ARRAY:
+	  case	GL_TYPE_VALUES:
+	  case	GL_TYPE_RECORD:
+	  case	GL_TYPE_ALIAS:
+        break;
+      default:
+        ValueIsNil(value);
+        break;
+    }
+	switch	(ValueType(value)) {
+	  case	GL_TYPE_INT:
+		ValueInteger(value) = 1;
+		break;
+	  case	GL_TYPE_FLOAT:
+		ValueFloat(value) = 1.0;
+		break;
+	  case	GL_TYPE_BOOL:
+		ValueBool(value) = FALSE;
+		break;
+	  case	GL_TYPE_OBJECT:
+		ValueObjectId(value) = 0;
+		if		(  ValueObjectFile(value)  !=  NULL  ) {
+			xfree(ValueObjectFile(value));
+		}
+		ValueObjectFile(value) = NULL;
+		break;
+	  case	GL_TYPE_BYTE:
+	  case	GL_TYPE_CHAR:
+	  case	GL_TYPE_VARCHAR:
+	  case	GL_TYPE_DBCODE:
+		buf = xmalloc(ValueStringSize(value));
+		memclear(buf,ValueStringSize(value));
+		memset(buf,'a',ValueStringSize(value)-1);
+		SetValueString(value,buf,NULL);
+		break;
+	  case	GL_TYPE_TEXT:
+	  case	GL_TYPE_SYMBOL:
+		if		(  ValueString(value)  !=  NULL  ) {
+			xfree(ValueString(value));
+		}
+		ValueString(value) = NULL;
+		ValueStringLength(value) = 0;
+		ValueStringSize(value) = 0;
+		break;
+	  case	GL_TYPE_BINARY:
+		if		(  ValueByte(value)  !=  NULL  ) {
+			xfree(ValueByte(value));
+		}
+		ValueByte(value) = NULL;
+		ValueByteLength(value) = 0;
+		ValueByteSize(value) = 0;
+		break;
+	  case	GL_TYPE_NUMBER:
+		if		(  ValueFixedLength(value)  >  0  ) {
+			memset(ValueFixedBody(value),'1',ValueFixedLength(value));
 		}
 		ValueFixedBody(value)[ValueFixedLength(value)] = 0;
 		break;
