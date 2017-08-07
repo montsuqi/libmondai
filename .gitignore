@@ -30,6 +30,7 @@ src/testvalue
 src/testfileutils
 src/test.native*
 src/testjson
+src/testnumeric
 tools/monconv
 tools/rec2copy
 *.swp
