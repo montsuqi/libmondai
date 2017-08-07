@@ -189,14 +189,16 @@ FixedToFloat(
 	double	fval;
 	int		i;
 	Bool	fMinus;
+	unsigned char work[SIZE_NUMBUF+1];
 
-	if		(  *xval->sval  >=  0x70  ) {
-		*xval->sval ^= 0x40;
+	strcpy(work,xval->sval);
+	if		(  *work  >=  0x70  ) {
+		*work ^= 0x40;
 		fMinus = TRUE;
 	} else {
 		fMinus = FALSE;
 	}
-	fval = atof(xval->sval);
+	fval = atof(work);
 	for	( i = 0 ; i < xval->slen ; i ++ ) {
 		fval /= 10.0;
 	}
