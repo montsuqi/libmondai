@@ -139,3 +139,11 @@ mkdir_p_clean(
 	}
 	return FALSE;
 }
+
+extern	Bool
+MakeDir(
+	char *dir,
+	int mode)
+{
+	return mkdir_p_clean(dir,mode);
+}

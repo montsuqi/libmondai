@@ -23,10 +23,9 @@
 #define	_INC_FILEUTILS_H
 #include	<types.h>
 
-#define MakeDir(d,m) mkdir_p_clean(d,m)
-
 extern Bool rm_r(char *dname);
 extern Bool mkdir_p(char *dname,int mode);
 extern Bool mkdir_p_clean(char *dir,int mode);
+extern Bool MakeDir(char *dir,int mode);
 
 #endif
