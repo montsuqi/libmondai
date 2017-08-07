@@ -6,7 +6,9 @@
 int
 main(int argc,char *argv[])
 {
+
   Numeric num;
+  Fixed *fixed;
   char *out,buf[64],*format;
 
   format = "---,---";
@@ -28,6 +30,10 @@ main(int argc,char *argv[])
   NumericFormat(buf,format, num);
   fprintf(stderr,"%s %s\n",out,buf);
   xfree(out);
-  
+
+  fixed = NewFixed(2,6);
+  FloatToFixed(fixed,-10.0);
+  fprintf(stderr,"%lf\n",FixedToFloat(fixed));
+
   return 0;
 }

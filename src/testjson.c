@@ -61,6 +61,8 @@ main(int argc,char *argv[])
   ValueInteger(v) = 10;
   v = GetItemLongName(value,"int2");
   ValueInteger(v) = 20;
+  v = GetItemLongName(value,"double1");
+  SetValueFloat(v,-3.2);
 
   fprintf(stderr,"\n---- JSON_PackValue\n");
   size = JSON_SizeValue(NULL,value);
