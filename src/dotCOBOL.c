@@ -161,7 +161,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			break;
 		  case	GL_TYPE_TIMESTAMP:
 			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
-			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMon(value) = StrToInt(p,2)-1;	p += 2;
 			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeHour(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeMin(value) = StrToInt(p,2);	p += 2;
@@ -178,7 +178,7 @@ dbgmsg(">dotCOBOL_UnPackValue");
 			break;
 		  case	GL_TYPE_DATE:
 			ValueDateTimeYear(value) = StrToInt(p,2);	p += 4;
-			ValueDateTimeMon(value) = StrToInt(p,2);	p += 2;
+			ValueDateTimeMon(value) = StrToInt(p,2)-1;	p += 2;
 			ValueDateTimeMDay(value) = StrToInt(p,2);	p += 2;
 			ValueDateTimeHour(value) = 0;
 			ValueDateTimeMin(value) = 0;
@@ -272,7 +272,7 @@ dbgmsg(">dotCOBOL_PackValue");
 		  case	GL_TYPE_TIMESTAMP:
 			p += sprintf(p,"%04d%02d%02d%02d%02d%02d",
 						 ValueDateTimeYear(value),
-						 ValueDateTimeMon(value),
+						 ValueDateTimeMon(value) + 1,
 						 ValueDateTimeMDay(value),
 						 ValueDateTimeHour(value),
 						 ValueDateTimeMin(value),
@@ -281,7 +281,7 @@ dbgmsg(">dotCOBOL_PackValue");
 		  case	GL_TYPE_DATE:
 			p += sprintf(p,"%04d%02d%02d",
 						 ValueDateTimeYear(value),
-						 ValueDateTimeMon(value),
+						 ValueDateTimeMon(value) + 1,
 						 ValueDateTimeMDay(value));
 			break;
 		  case	GL_TYPE_TIME:
