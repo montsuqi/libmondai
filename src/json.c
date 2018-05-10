@@ -269,7 +269,7 @@ ENTER_FUNC;
 		return;
 	}
 	ValueIsNonNil(value);
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -379,7 +379,7 @@ ENTER_FUNC;
 	}
 	ValueIsNonNil(value);
 	type = json_object_get_type(obj);
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -695,7 +695,7 @@ ENTER_FUNC;
 
 	pp = p;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -759,7 +759,7 @@ ENTER_FUNC;
 				if (inc > 0) {
 					p += _JSON_PackValueOmmit(opt,p,child);
 				} else {
-					switch(child->type) {
+					switch(ValueType(child)) {
 					case GL_TYPE_CHAR:
 					case GL_TYPE_VARCHAR:
 					case GL_TYPE_DBCODE:
@@ -861,7 +861,7 @@ ENTER_FUNC;
 
 	size = 0;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -921,7 +921,7 @@ ENTER_FUNC;
 				if (inc > 0) {
 					size += inc;
 				} else {
-					switch(child->type) {
+					switch(ValueType(child)) {
 					case GL_TYPE_CHAR:
 					case GL_TYPE_VARCHAR:
 					case GL_TYPE_DBCODE:
@@ -1019,7 +1019,7 @@ ENTER_FUNC;
 
 	pp = p;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -1075,7 +1075,7 @@ ENTER_FUNC;
 				if (inc > 0) {
 					p += _JSON_PackValueOmmitString(opt,p,child);
 				} else {
-					switch(child->type) {
+					switch(ValueType(child)) {
 					case GL_TYPE_CHAR:
 					case GL_TYPE_VARCHAR:
 					case GL_TYPE_DBCODE:
@@ -1167,7 +1167,7 @@ ENTER_FUNC;
 
 	size = 0;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -1219,7 +1219,7 @@ ENTER_FUNC;
 				if (inc > 0) {
 					size += inc;
 				} else {
-					switch(child->type) {
+					switch(ValueType(child)) {
 					case GL_TYPE_CHAR:
 					case GL_TYPE_VARCHAR:
 					case GL_TYPE_DBCODE:
@@ -1305,7 +1305,7 @@ ENTER_FUNC;
 
 	pp = p;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:
@@ -1402,7 +1402,7 @@ ENTER_FUNC;
 
 	size = 0;
 
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	case GL_TYPE_CHAR:
 	case GL_TYPE_VARCHAR:
 	case GL_TYPE_DBCODE:

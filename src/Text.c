@@ -144,7 +144,7 @@ _CSV_UnPackValue(
 			break;
 		  case	GL_TYPE_ALIAS:
 		  default:
-			MonWarningPrintf("invalid flag [%d]\n",value->type);
+			MonWarningPrintf("invalid flag [%d]\n",	ValueType(value));
 			break;
 		}
 	}
@@ -232,7 +232,7 @@ __CSV_PackValue(
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:
@@ -362,7 +362,7 @@ _CSV_SizeValue(
 
 dbgmsg(">_CSV_SizeValue");
 	if		(  value  ==  NULL  )	return	(0);
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_DBCODE:
@@ -548,7 +548,7 @@ SQL_UnPackValue(
 			break;
 		  case	GL_TYPE_ALIAS:
 		  default:
-			MonWarningPrintf("invalid flag [%d]\n",value->type);
+			MonWarningPrintf("invalid flag [%d]\n", ValueType(value));
 			break;
 		}
 		FreeLBS(lbs);
@@ -692,7 +692,7 @@ ENTER_FUNC;
 		}
 		*fFirst = FALSE;
 	} else
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_CHAR:
 	  case	GL_TYPE_VARCHAR:
 	  case	GL_TYPE_TEXT:
@@ -1310,7 +1310,7 @@ _CGI_PackValue(
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:

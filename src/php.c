@@ -192,7 +192,7 @@ _PHP_PackValue(
 
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_CHAR:
 		  case	GL_TYPE_VARCHAR:
 		  case	GL_TYPE_DBCODE:

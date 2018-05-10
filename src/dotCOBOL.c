@@ -217,7 +217,7 @@ dotCOBOL_PackValue(
 dbgmsg(">dotCOBOL_PackValue");
 	pp = p;
 	if		(  value  !=  NULL  ) {
-		switch	(value->type) {
+		switch	(ValueType(value)) {
 		  case	GL_TYPE_INT:
 			*(int *)p = ValueInteger(value);
 			dotCOBOL_IntegerC2Cobol((int *)p);
@@ -319,7 +319,7 @@ dotCOBOL_SizeValue(
 
 	if		(  value  ==  NULL  )	return	(0);
 dbgmsg(">dotCOBOL_SizeValue");
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_INT:
 		ret = sizeof(int);
 		break;

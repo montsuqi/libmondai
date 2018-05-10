@@ -1173,7 +1173,7 @@ SetNil(
 		}
 		break;
 	  default:
-		val->attr |= GL_ATTR_NIL;
+		ValueIsNil(val);
 		break;
 	}
 }
