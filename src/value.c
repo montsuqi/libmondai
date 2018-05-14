@@ -155,11 +155,11 @@ FreeValueStruct(
 	int		i;
 
 	if		(  val  !=  NULL  ) {
-		dbgprintf("type = %02X\n",val->type);
+		dbgprintf("type = %02X\n",ValueType(val));
 		if (ValueName(val) != NULL) {
 			xfree(ValueName(val));
 		}
-		switch	(val->type) {
+		switch	(ValueType(val)) {
 		  case	GL_TYPE_ARRAY:
 			for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
 				FreeValueStruct(ValueArrayItem(val,i));
@@ -799,7 +799,7 @@ ENTER_FUNC;
 	if		(  vs  ==  NULL  )	return;
 	if		(  IS_VALUE_NIL(vs)  )	return;
 	ValueAttribute(vd) = ValueAttribute(vs);
-	switch	(vs->type) {
+	switch	(ValueType(vs)) {
 	  case	GL_TYPE_INT:
 		ValueInteger(vd) = ValueInteger(vs);
 		break;

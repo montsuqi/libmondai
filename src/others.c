@@ -329,10 +329,6 @@ DecodeBase64(
 	unsigned char	*outp = out;
 	char	buf[4];
 
-	if		(  len  <  0  ) {
-		len = G_MAXINT;
-	}
-
 	while	(	(  len  >=  4  )
 			&&	(  *inp   !=  0  ) )	{
 		if		(	(  size  >=  0  )

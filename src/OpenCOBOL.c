@@ -363,7 +363,7 @@ OpenCOBOL_SizeValue(
 
 	if		(  value  ==  NULL  )	return	(0);
 dbgmsg(">OpenCOBOL_SizeValue");
-	switch	(value->type) {
+	switch	(ValueType(value)) {
 	  case	GL_TYPE_INT:
 		ret = sizeof(int);
 		break;
