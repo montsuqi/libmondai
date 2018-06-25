@@ -2,17 +2,17 @@
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2001-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -25,1686 +25,1465 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
-#ifdef	USE_XML
+#ifdef USE_XML
 
-#include	<signal.h>
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<string.h>
-#include    <sys/types.h>
-#include	<libxml/parser.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <libxml/parser.h>
 
-#include	"types.h"
-#include	"misc_v.h"
-#include	"value.h"
-#include	"getset.h"
-#include	"memory_v.h"
-#include	"monstring.h"
-#include	"others.h"
-#include	"valueconv.h"
-#include	"XML_v.h"
-#include	"debug.h"
+#include "types.h"
+#include "misc_v.h"
+#include "value.h"
+#include "getset.h"
+#include "memory_v.h"
+#include "monstring.h"
+#include "others.h"
+#include "valueconv.h"
+#include "XML_v.h"
+#include "debug.h"
 
-typedef struct	{
-	ValueStruct	*root
-	,			*value;
-	char		longname[SIZE_LONGNAME+1];
-	xmlChar		*buff;
-	size_t		size;
-	Bool		fStart;
-	CONVOPT		*opt;
-}	ValueContext;
-#define	NextName(ctx)	(xmlChar *)(((ctx)->longname)+strlen((ctx)->longname))
+typedef struct {
+  ValueStruct *root, *value;
+  char longname[SIZE_LONGNAME + 1];
+  xmlChar *buff;
+  size_t size;
+  Bool fStart;
+  CONVOPT *opt;
+} ValueContext;
+#define NextName(ctx) (xmlChar *)(((ctx)->longname) + strlen((ctx)->longname))
 
-static	XMLOPT	*
-NewXMLOPT(void)
-{
-	XMLOPT	*ret;
+static XMLOPT *NewXMLOPT(void) {
+  XMLOPT *ret;
 
-ENTER_FUNC;
-	ret = New(XMLOPT);
-	ret->type = XML_TYPE1;
-	ret->fOutput = XML_OUT_HEADER | XML_OUT_TAILER | XML_OUT_BODY;
+  ENTER_FUNC;
+  ret = New(XMLOPT);
+  ret->type = XML_TYPE1;
+  ret->fOutput = XML_OUT_HEADER | XML_OUT_TAILER | XML_OUT_BODY;
 
-LEAVE_FUNC;
-	return	(ret);
+  LEAVE_FUNC;
+  return (ret);
 }
 
-extern	void
-ConvSetXmlType(
-	CONVOPT	*opt,
-	int		type)
-{
-	if		(  opt->appendix  ==  NULL  ) {
-		opt->appendix = NewXMLOPT();
-	}
-	((XMLOPT *)opt->appendix)->type = type;
+extern void ConvSetXmlType(CONVOPT *opt, int type) {
+  if (opt->appendix == NULL) {
+    opt->appendix = NewXMLOPT();
+  }
+  ((XMLOPT *)opt->appendix)->type = type;
 }
 
-extern	void
-ConvSetOutput(
-	CONVOPT	*opt,
-	unsigned char	v)
-{
-ENTER_FUNC;
-	if		(  opt->appendix  ==  NULL  ) {
-		opt->appendix = NewXMLOPT();
-	}
-	((XMLOPT *)opt->appendix)->fOutput = v;
-LEAVE_FUNC;
+extern void ConvSetOutput(CONVOPT *opt, unsigned char v) {
+  ENTER_FUNC;
+  if (opt->appendix == NULL) {
+    opt->appendix = NewXMLOPT();
+  }
+  ((XMLOPT *)opt->appendix)->fOutput = v;
+  LEAVE_FUNC;
 }
 
-static	int
-XML_Encode(
-	char	*str,
-	char	*buff)
-{
-	char	*p;
+static int XML_Encode(char *str, char *buff) {
+  char *p;
 
-	p = buff;
-	for	( ; *str != 0 ; str ++ ) {
-#if	1
-		switch(*str) {
-		case '<':
-			memcpy(p, "&lt;", strlen("&lt;"));
-			p += strlen("&lt;");
-			break;
-		case '>':
-			memcpy(p, "&gt;", strlen("&gt;"));
-			p += strlen("&gt;");
-			break;
-		case '&':
-			memcpy(p, "&amp;", strlen("&amp;"));
-			p += strlen("&amp;");
-			break;
-		default:
-			*p ++ = *str;
-			break;
-		}
+  p = buff;
+  for (; *str != 0; str++) {
+#if 1
+    switch (*str) {
+    case '<':
+      memcpy(p, "&lt;", strlen("&lt;"));
+      p += strlen("&lt;");
+      break;
+    case '>':
+      memcpy(p, "&gt;", strlen("&gt;"));
+      p += strlen("&gt;");
+      break;
+    case '&':
+      memcpy(p, "&amp;", strlen("&amp;"));
+      p += strlen("&amp;");
+      break;
+    default:
+      *p++ = *str;
+      break;
+    }
 #else
-		*p ++ = *str;
+    *p++ = *str;
 #endif
-	}
-	*p = 0;
-	return	(p - buff);
+  }
+  *p = 0;
+  return (p - buff);
 }
 
-static	int	
-XML_EncodeSize(
-	char	*str)
-{
-	int size;
+static int XML_EncodeSize(char *str) {
+  int size;
 
-	size = 0;
-#if	1
-	for	( ; *str != 0 ; str ++ ) {
-		switch(*str) {
-		case '<':
-			size += strlen("&lt;");
-			break;
-		case '>':
-			size += strlen("&gt;");
-			break;
-		case '&':
-			size += strlen("&amp;");
-			break;
-		default:
-			size += 1;
-			break;
-		}
-	}
+  size = 0;
+#if 1
+  for (; *str != 0; str++) {
+    switch (*str) {
+    case '<':
+      size += strlen("&lt;");
+      break;
+    case '>':
+      size += strlen("&gt;");
+      break;
+    case '&':
+      size += strlen("&amp;");
+      break;
+    default:
+      size += 1;
+      break;
+    }
+  }
 #else
-	size = strlen(str);
+  size = strlen(str);
 #endif
-	return size;
+  return size;
 }
 
+static size_t _XML_PackValue1(CONVOPT *opt, unsigned char *p, char *name,
+                              ValueStruct *value) {
+  char num[SIZE_NAME + 1];
+  int i;
+  unsigned char *pp;
 
-static	size_t
-_XML_PackValue1(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	char		*name,
-	ValueStruct	*value)
-{
-	char	num[SIZE_NAME+1];
-	int		i;
-	unsigned char	*pp;
-
-ENTER_FUNC;
-	pp = p;
-	if		(  value  !=  NULL  ) {
-		//if		(  IS_VALUE_NIL(value)  )	return	(0);
-		opt->nIndent ++;
-		p += IndentLine(opt,p);
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_ARRAY:
-			if		(  name  !=  NULL  ) {
-				p += sprintf(p,"<lm:array name=\"%s\" count=\"%d\">"
-							 ,name,(int)ValueArraySize(value));
-			} else {
-				p += sprintf(p,"<lm:array count=\"%d\">"
-							 ,(int)ValueArraySize(value));
-			}
-			p += PutCR(opt,p);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s[%d]",name,i);
-				p += _XML_PackValue1(opt,p,num,ValueArrayItem(value,i));
-			}
-			p += IndentLine(opt,p);
-			p += sprintf(p,"</lm:array>");
-			break;
-		  case	GL_TYPE_RECORD:
-			if		(  name  !=  NULL  ) {
-				p += sprintf(p,"<lm:record name=\"%s\" size=\"%d\">"
-							 ,name,(int)ValueRecordSize(value));
-			} else {
-				p += sprintf(p,"<lm:record size=\"%d\">"
-							 ,(int)ValueRecordSize(value));
-			}
-			p += PutCR(opt,p);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p += _XML_PackValue1(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i));
-			}
-			p += IndentLine(opt,p);
-			p += sprintf(p,"</lm:record>");
-			break;
-		  case	GL_TYPE_ALIAS:
-			if		(  name  !=  NULL  ) {
-				p += sprintf(p,"<lm:alias name=\"%s\">",name);
-			} else {
-				p += sprintf(p,"<lm:alias>");
-			}
-			p += sprintf(p,"%s",ValueAliasName(value));
-			p += sprintf(p,"</lm:alias>");
-			break;
-		  default:
-			if		(  name  !=  NULL  ) {
-				p += sprintf(p,"<lm:item name=\"%s\"",name);
-			} else {
-				p += sprintf(p,"<lm:item");
-			}
-			if		(  ConvType(opt)  ) {
-				p += sprintf(p," type=");
-				switch	(ValueType(value)) {
-				  case	GL_TYPE_INT:
-					p += sprintf(p,"\"int\"");
-					break;
-				  case	GL_TYPE_BOOL:
-					p += sprintf(p,"\"bool\"");
-					break;
-				  case	GL_TYPE_BYTE:
-					p += sprintf(p,"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
-					break;
-				  case	GL_TYPE_BINARY:
-					p += sprintf(p,"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
-					break;
-				  case	GL_TYPE_CHAR:
-					p += sprintf(p,"\"char\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_VARCHAR:
-					p += sprintf(p,"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_TEXT:
-					p += sprintf(p,"\"text\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_SYMBOL:
-					p += sprintf(p,"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_DBCODE:
-					p += sprintf(p,"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_NUMBER:
-					p += sprintf(p,"\"number\" size=\"%d\" ssize=\"%d\"",
-								 (int)ValueFixedLength(value),(int)ValueFixedSlen(value));
-					break;
-				  case	GL_TYPE_FLOAT:
-					p += sprintf(p,"\"float\"");
-					break;
-				  case	GL_TYPE_OBJECT:
-					p += sprintf(p,"\"object\"");
-					break;
-				  case	GL_TYPE_TIMESTAMP:
-					p += sprintf(p,"\"timestamp\"");
-					break;
-				  case	GL_TYPE_DATE:
-					p += sprintf(p,"\"date\"");
-					break;
-				  case	GL_TYPE_TIME:
-					p += sprintf(p,"\"time\"");
-					break;
-				  default:
-					break;
-				}
-			}
-			p += sprintf(p,">");
-			if		(  !IS_VALUE_NIL(value)  ) {
-				p += XML_Encode(ValueToString(value,ConvCodeset(opt)),p);
-			}
-			p += sprintf(p,"</lm:item>");
-			break;
-		}
-		p += PutCR(opt,p);
-		opt->nIndent --;
-	}
-LEAVE_FUNC;
-	return	(p-pp);
+  ENTER_FUNC;
+  pp = p;
+  if (value != NULL) {
+    // if		(  IS_VALUE_NIL(value)  )	return	(0);
+    opt->nIndent++;
+    p += IndentLine(opt, p);
+    switch (ValueType(value)) {
+    case GL_TYPE_ARRAY:
+      if (name != NULL) {
+        p += sprintf(p, "<lm:array name=\"%s\" count=\"%d\">", name,
+                     (int)ValueArraySize(value));
+      } else {
+        p += sprintf(p, "<lm:array count=\"%d\">", (int)ValueArraySize(value));
+      }
+      p += PutCR(opt, p);
+      for (i = 0; i < ValueArraySize(value); i++) {
+        sprintf(num, "%s[%d]", name, i);
+        p += _XML_PackValue1(opt, p, num, ValueArrayItem(value, i));
+      }
+      p += IndentLine(opt, p);
+      p += sprintf(p, "</lm:array>");
+      break;
+    case GL_TYPE_RECORD:
+      if (name != NULL) {
+        p += sprintf(p, "<lm:record name=\"%s\" size=\"%d\">", name,
+                     (int)ValueRecordSize(value));
+      } else {
+        p += sprintf(p, "<lm:record size=\"%d\">", (int)ValueRecordSize(value));
+      }
+      p += PutCR(opt, p);
+      for (i = 0; i < ValueRecordSize(value); i++) {
+        p += _XML_PackValue1(opt, p, ValueRecordName(value, i),
+                             ValueRecordItem(value, i));
+      }
+      p += IndentLine(opt, p);
+      p += sprintf(p, "</lm:record>");
+      break;
+    case GL_TYPE_ALIAS:
+      if (name != NULL) {
+        p += sprintf(p, "<lm:alias name=\"%s\">", name);
+      } else {
+        p += sprintf(p, "<lm:alias>");
+      }
+      p += sprintf(p, "%s", ValueAliasName(value));
+      p += sprintf(p, "</lm:alias>");
+      break;
+    default:
+      if (name != NULL) {
+        p += sprintf(p, "<lm:item name=\"%s\"", name);
+      } else {
+        p += sprintf(p, "<lm:item");
+      }
+      if (ConvType(opt)) {
+        p += sprintf(p, " type=");
+        switch (ValueType(value)) {
+        case GL_TYPE_INT:
+          p += sprintf(p, "\"int\"");
+          break;
+        case GL_TYPE_BOOL:
+          p += sprintf(p, "\"bool\"");
+          break;
+        case GL_TYPE_BYTE:
+          p += sprintf(p, "\"byte\" size=\"%d\"", (int)ValueByteLength(value));
+          break;
+        case GL_TYPE_BINARY:
+          p +=
+              sprintf(p, "\"binary\" size=\"%d\"", (int)ValueByteLength(value));
+          break;
+        case GL_TYPE_CHAR:
+          p +=
+              sprintf(p, "\"char\" size=\"%d\"", (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_VARCHAR:
+          p += sprintf(p, "\"varchar\" size=\"%d\"",
+                       (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_TEXT:
+          p +=
+              sprintf(p, "\"text\" size=\"%d\"", (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_SYMBOL:
+          p += sprintf(p, "\"symbol\" size=\"%d\"",
+                       (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_DBCODE:
+          p += sprintf(p, "\"dbcode\" size=\"%d\"",
+                       (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_NUMBER:
+          p +=
+              sprintf(p, "\"number\" size=\"%d\" ssize=\"%d\"",
+                      (int)ValueFixedLength(value), (int)ValueFixedSlen(value));
+          break;
+        case GL_TYPE_FLOAT:
+          p += sprintf(p, "\"float\"");
+          break;
+        case GL_TYPE_OBJECT:
+          p += sprintf(p, "\"object\"");
+          break;
+        case GL_TYPE_TIMESTAMP:
+          p += sprintf(p, "\"timestamp\"");
+          break;
+        case GL_TYPE_DATE:
+          p += sprintf(p, "\"date\"");
+          break;
+        case GL_TYPE_TIME:
+          p += sprintf(p, "\"time\"");
+          break;
+        default:
+          break;
+        }
+      }
+      p += sprintf(p, ">");
+      if (!IS_VALUE_NIL(value)) {
+        p += XML_Encode(ValueToString(value, ConvCodeset(opt)), p);
+      }
+      p += sprintf(p, "</lm:item>");
+      break;
+    }
+    p += PutCR(opt, p);
+    opt->nIndent--;
+  }
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-static	size_t
-_XML_PackValue2(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	char		*name,
-	ValueStruct	*value)
-{
-	char	num[SIZE_NAME+1];
-	int		i;
-	unsigned char	*pp;
+static size_t _XML_PackValue2(CONVOPT *opt, unsigned char *p, char *name,
+                              ValueStruct *value) {
+  char num[SIZE_NAME + 1];
+  int i;
+  unsigned char *pp;
 
-ENTER_FUNC;
-	if		(  IS_VALUE_NIL(value)  )	return	(0);
-	pp = p;
-	if		(  value  !=  NULL  ) {
-		opt->nIndent ++;
-		p += IndentLine(opt,p);
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_ARRAY:
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"<%s:%s type=\"array\"",opt->recname,name);
-			} else {
-				p += sprintf(p,"<%s type=\"array\"",name);
-			}
-			p += sprintf(p," count=\"%d\">",(int)ValueArraySize(value));
-			p += PutCR(opt,p);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s",name);
-				p += _XML_PackValue2(opt,p,num,ValueArrayItem(value,i));
-			}
-			p += IndentLine(opt,p);
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"</%s:%s>",opt->recname,name);
-			} else {
-				p += sprintf(p,"</%s>",name);
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"<%s:%s type=\"record\"",opt->recname,name);
-			} else {
-				p += sprintf(p,"<%s type=\"record\"",name);
-			}
-			p += sprintf(p," size=\"%d\">",(int)ValueRecordSize(value));
-			p += PutCR(opt,p);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				p += _XML_PackValue2(opt,p,ValueRecordName(value,i),ValueRecordItem(value,i));
-			}
-			p += IndentLine(opt,p);
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"</%s:%s>",opt->recname,name);
-			} else {
-				p += sprintf(p,"</%s>",name);
-			}
-			break;
-		  case	GL_TYPE_ALIAS:
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"<%s:%s type=\"alias\">",opt->recname,name);
-			} else {
-				p += sprintf(p,"<%s type=\"alias\">",name);
-			}
-			p += sprintf(p,"%s",ValueAliasName(value));
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"</%s:%s>",opt->recname,name);
-			} else {
-				p += sprintf(p,"</%s>",name);
-			}
-			break;
-		  default:
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf(p,"<%s:%s",opt->recname,name);
-			} else {
-				p += sprintf(p,"<%s",name);
-			}
-			p += sprintf(p," type=");
-			switch	(ValueType(value)) {
-			  case	GL_TYPE_INT:
-				p += sprintf(p,"\"int\"");
-				break;
-			  case	GL_TYPE_BOOL:
-				p += sprintf(p,"\"bool\"");
-				break;
-			  case	GL_TYPE_BYTE:
-				p += sprintf(p,"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
-				break;
-			  case	GL_TYPE_BINARY:
-				p += sprintf(p,"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
-				break;
-			  case	GL_TYPE_CHAR:
-				p += sprintf(p,"\"char\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_VARCHAR:
-				p += sprintf(p,"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_TEXT:
-				p += sprintf(p,"\"text\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_SYMBOL:
-				p += sprintf(p,"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_DBCODE:
-				p += sprintf(p,"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_NUMBER:
-				p += sprintf(p,"\"number\" size=\"%d\" ssize=\"%d\"",
-							 (int)ValueFixedLength(value),(int)ValueFixedSlen(value));
-				break;
-			  case	GL_TYPE_FLOAT:
-				p += sprintf(p,"\"float\"");
-				break;
-			  case	GL_TYPE_OBJECT:
-				p += sprintf(p,"\"object\"");
-				break;
-			  case	GL_TYPE_TIMESTAMP:
-				p += sprintf(p,"\"timestamp\"");
-				break;
-			  case	GL_TYPE_DATE:
-				p += sprintf(p,"\"date\"");
-				break;
-			  case	GL_TYPE_TIME:
-				p += sprintf(p,"\"time\"");
-				break;
-			  default:
-				break;
-			}
-			p += sprintf(p,">");
-			if		(  !IS_VALUE_NIL(value)  ) {
-				p += XML_Encode(ValueToString(value,ConvCodeset(opt)),p);
-			}
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf((char *)p,"</%s:%s>",opt->recname,name);
-			} else {
-				p += sprintf((char *)p,"</%s>",name);
-			}
-			break;
-		}
-		p += PutCR(opt,(char *)p);
-		opt->nIndent --;
-	}
-LEAVE_FUNC;
-	return	(p-pp);
+  ENTER_FUNC;
+  if (IS_VALUE_NIL(value))
+    return (0);
+  pp = p;
+  if (value != NULL) {
+    opt->nIndent++;
+    p += IndentLine(opt, p);
+    switch (ValueType(value)) {
+    case GL_TYPE_ARRAY:
+      if (opt->recname != NULL) {
+        p += sprintf(p, "<%s:%s type=\"array\"", opt->recname, name);
+      } else {
+        p += sprintf(p, "<%s type=\"array\"", name);
+      }
+      p += sprintf(p, " count=\"%d\">", (int)ValueArraySize(value));
+      p += PutCR(opt, p);
+      for (i = 0; i < ValueArraySize(value); i++) {
+        sprintf(num, "%s", name);
+        p += _XML_PackValue2(opt, p, num, ValueArrayItem(value, i));
+      }
+      p += IndentLine(opt, p);
+      if (opt->recname != NULL) {
+        p += sprintf(p, "</%s:%s>", opt->recname, name);
+      } else {
+        p += sprintf(p, "</%s>", name);
+      }
+      break;
+    case GL_TYPE_RECORD:
+      if (opt->recname != NULL) {
+        p += sprintf(p, "<%s:%s type=\"record\"", opt->recname, name);
+      } else {
+        p += sprintf(p, "<%s type=\"record\"", name);
+      }
+      p += sprintf(p, " size=\"%d\">", (int)ValueRecordSize(value));
+      p += PutCR(opt, p);
+      for (i = 0; i < ValueRecordSize(value); i++) {
+        p += _XML_PackValue2(opt, p, ValueRecordName(value, i),
+                             ValueRecordItem(value, i));
+      }
+      p += IndentLine(opt, p);
+      if (opt->recname != NULL) {
+        p += sprintf(p, "</%s:%s>", opt->recname, name);
+      } else {
+        p += sprintf(p, "</%s>", name);
+      }
+      break;
+    case GL_TYPE_ALIAS:
+      if (opt->recname != NULL) {
+        p += sprintf(p, "<%s:%s type=\"alias\">", opt->recname, name);
+      } else {
+        p += sprintf(p, "<%s type=\"alias\">", name);
+      }
+      p += sprintf(p, "%s", ValueAliasName(value));
+      if (opt->recname != NULL) {
+        p += sprintf(p, "</%s:%s>", opt->recname, name);
+      } else {
+        p += sprintf(p, "</%s>", name);
+      }
+      break;
+    default:
+      if (opt->recname != NULL) {
+        p += sprintf(p, "<%s:%s", opt->recname, name);
+      } else {
+        p += sprintf(p, "<%s", name);
+      }
+      p += sprintf(p, " type=");
+      switch (ValueType(value)) {
+      case GL_TYPE_INT:
+        p += sprintf(p, "\"int\"");
+        break;
+      case GL_TYPE_BOOL:
+        p += sprintf(p, "\"bool\"");
+        break;
+      case GL_TYPE_BYTE:
+        p += sprintf(p, "\"byte\" size=\"%d\"", (int)ValueByteLength(value));
+        break;
+      case GL_TYPE_BINARY:
+        p += sprintf(p, "\"binary\" size=\"%d\"", (int)ValueByteLength(value));
+        break;
+      case GL_TYPE_CHAR:
+        p += sprintf(p, "\"char\" size=\"%d\"", (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_VARCHAR:
+        p += sprintf(p, "\"varchar\" size=\"%d\"",
+                     (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_TEXT:
+        p += sprintf(p, "\"text\" size=\"%d\"", (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_SYMBOL:
+        p +=
+            sprintf(p, "\"symbol\" size=\"%d\"", (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_DBCODE:
+        p +=
+            sprintf(p, "\"dbcode\" size=\"%d\"", (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_NUMBER:
+        p += sprintf(p, "\"number\" size=\"%d\" ssize=\"%d\"",
+                     (int)ValueFixedLength(value), (int)ValueFixedSlen(value));
+        break;
+      case GL_TYPE_FLOAT:
+        p += sprintf(p, "\"float\"");
+        break;
+      case GL_TYPE_OBJECT:
+        p += sprintf(p, "\"object\"");
+        break;
+      case GL_TYPE_TIMESTAMP:
+        p += sprintf(p, "\"timestamp\"");
+        break;
+      case GL_TYPE_DATE:
+        p += sprintf(p, "\"date\"");
+        break;
+      case GL_TYPE_TIME:
+        p += sprintf(p, "\"time\"");
+        break;
+      default:
+        break;
+      }
+      p += sprintf(p, ">");
+      if (!IS_VALUE_NIL(value)) {
+        p += XML_Encode(ValueToString(value, ConvCodeset(opt)), p);
+      }
+      if (opt->recname != NULL) {
+        p += sprintf((char *)p, "</%s:%s>", opt->recname, name);
+      } else {
+        p += sprintf((char *)p, "</%s>", name);
+      }
+      break;
+    }
+    p += PutCR(opt, (char *)p);
+    opt->nIndent--;
+  }
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
+extern size_t XML_PackValue(CONVOPT *opt, unsigned char *p,
+                            ValueStruct *value) {
+  unsigned char *pp;
 
-extern	size_t
-XML_PackValue(
-	CONVOPT		*opt,
-	 unsigned char		*p,
-	ValueStruct	*value)
-{
-	unsigned char	*pp;
-
-ENTER_FUNC;
-	pp = p;
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
-		}
-		p += sprintf((char *)p,"?>");
-		p += PutCR(opt,(char *)p);
-		opt->nIndent = 0;
-	} else {
-		opt->nIndent = -1;
-	}
-	switch	(ConvXmlType(opt)) {
-	  case	XML_TYPE1:
-		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			p += sprintf((char *)p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-			p += PutCR(opt,(char *)p);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			p +=_XML_PackValue1(opt,p,opt->recname,value);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			p += sprintf((char *)p,"</lm:block>");
-		}
-		break;
-	  case	XML_TYPE2:
-	  default:
-		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf((char *)p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-							 ,opt->recname,opt->recname,NS_URI,opt->recname);
-			} else {
-				p += sprintf((char *)p,"<data>");
-			}
-			p += PutCR(opt,(char *)p);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			if		(  opt->recname  !=  NULL  ) {
-				p +=_XML_PackValue2(opt,p,opt->recname,value);
-			} else {
-				p +=_XML_PackValue2(opt,p,"value",value);
-			}
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			if		(  opt->recname  !=  NULL  ) {
-				p += sprintf((char *)p,"</%s:data>",opt->recname);
-			} else {
-				p += sprintf((char *)p,"</data>");
-			}
-		}
-		break;
-	}
-	*p = 0;
-LEAVE_FUNC;
-	return	(p-pp);
+  ENTER_FUNC;
+  pp = p;
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    p += sprintf((char *)p, "<?xml version=\"1.0\"");
+    if (ConvCodeset(opt) != NULL) {
+      p += sprintf((char *)p, " encoding=\"%s\"", ConvCodeset(opt));
+    }
+    p += sprintf((char *)p, "?>");
+    p += PutCR(opt, (char *)p);
+    opt->nIndent = 0;
+  } else {
+    opt->nIndent = -1;
+  }
+  switch (ConvXmlType(opt)) {
+  case XML_TYPE1:
+    if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+      p += sprintf((char *)p, "<lm:block xmlns:lm=\"%s\">", NS_URI);
+      p += PutCR(opt, (char *)p);
+    }
+    if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+      p += _XML_PackValue1(opt, p, opt->recname, value);
+    }
+    if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+      p += sprintf((char *)p, "</lm:block>");
+    }
+    break;
+  case XML_TYPE2:
+  default:
+    if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+      if (opt->recname != NULL) {
+        p += sprintf((char *)p, "<%s:data xmlns:%s=\"%s/%s.rec\">",
+                     opt->recname, opt->recname, NS_URI, opt->recname);
+      } else {
+        p += sprintf((char *)p, "<data>");
+      }
+      p += PutCR(opt, (char *)p);
+    }
+    if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+      if (opt->recname != NULL) {
+        p += _XML_PackValue2(opt, p, opt->recname, value);
+      } else {
+        p += _XML_PackValue2(opt, p, "value", value);
+      }
+    }
+    if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+      if (opt->recname != NULL) {
+        p += sprintf((char *)p, "</%s:data>", opt->recname);
+      } else {
+        p += sprintf((char *)p, "</data>");
+      }
+    }
+    break;
+  }
+  *p = 0;
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-extern	size_t
-XML1_PackValue(
-	CONVOPT		*opt,
-	 unsigned char		*p,
-	ValueStruct	*value)
-{
-	unsigned char	*pp;
+extern size_t XML1_PackValue(CONVOPT *opt, unsigned char *p,
+                             ValueStruct *value) {
+  unsigned char *pp;
 
-ENTER_FUNC;
-	pp = p;
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
-		}
-		p += sprintf((char *)p,"?>");
-		p += PutCR(opt,(char *)p);
-		opt->nIndent = 0;
-	} else {
-		opt->nIndent = -1;
-	}
+  ENTER_FUNC;
+  pp = p;
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    p += sprintf((char *)p, "<?xml version=\"1.0\"");
+    if (ConvCodeset(opt) != NULL) {
+      p += sprintf((char *)p, " encoding=\"%s\"", ConvCodeset(opt));
+    }
+    p += sprintf((char *)p, "?>");
+    p += PutCR(opt, (char *)p);
+    opt->nIndent = 0;
+  } else {
+    opt->nIndent = -1;
+  }
 
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf((char *)p,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-		p += PutCR(opt,(char *)p);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-		p +=_XML_PackValue1(opt,p,opt->recname,value);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		p += sprintf((char *)p,"</lm:block>");
-	}
-	*p = 0;
-LEAVE_FUNC;
-	return	(p-pp);
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    p += sprintf((char *)p, "<lm:block xmlns:lm=\"%s\">", NS_URI);
+    p += PutCR(opt, (char *)p);
+  }
+  if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+    p += _XML_PackValue1(opt, p, opt->recname, value);
+  }
+  if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    p += sprintf((char *)p, "</lm:block>");
+  }
+  *p = 0;
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-extern	size_t
-XML2_PackValue(
-	CONVOPT		*opt,
-	 unsigned char		*p,
-	ValueStruct	*value)
-{
-	unsigned char	*pp;
+extern size_t XML2_PackValue(CONVOPT *opt, unsigned char *p,
+                             ValueStruct *value) {
+  unsigned char *pp;
 
-ENTER_FUNC;
-	pp = p;
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		p += sprintf((char *)p,"<?xml version=\"1.0\"");
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			p += sprintf((char *)p," encoding=\"%s\"",ConvCodeset(opt));
-		}
-		p += sprintf((char *)p,"?>");
-		p += PutCR(opt,(char *)p);
-		opt->nIndent = 0;
-	} else {
-		opt->nIndent = -1;
-	}
+  ENTER_FUNC;
+  pp = p;
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    p += sprintf((char *)p, "<?xml version=\"1.0\"");
+    if (ConvCodeset(opt) != NULL) {
+      p += sprintf((char *)p, " encoding=\"%s\"", ConvCodeset(opt));
+    }
+    p += sprintf((char *)p, "?>");
+    p += PutCR(opt, (char *)p);
+    opt->nIndent = 0;
+  } else {
+    opt->nIndent = -1;
+  }
 
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		if		(  opt->recname  !=  NULL  ) {
-			p += sprintf((char *)p,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-						 ,opt->recname,opt->recname,NS_URI,opt->recname);
-		} else {
-			p += sprintf((char *)p,"<data>");
-		}
-		p += PutCR(opt,(char *)p);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-		if		(  opt->recname  !=  NULL  ) {
-			p +=_XML_PackValue2(opt,p,opt->recname,value);
-		} else {
-			p +=_XML_PackValue2(opt,p,"value",value);
-		}
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		if		(  opt->recname  !=  NULL  ) {
-			p += sprintf((char *)p,"</%s:data>",opt->recname);
-		} else {
-			p += sprintf((char *)p,"</data>");
-		}
-	}
-	*p = 0;
-LEAVE_FUNC;
-	return	(p-pp);
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    if (opt->recname != NULL) {
+      p += sprintf((char *)p, "<%s:data xmlns:%s=\"%s/%s.rec\">", opt->recname,
+                   opt->recname, NS_URI, opt->recname);
+    } else {
+      p += sprintf((char *)p, "<data>");
+    }
+    p += PutCR(opt, (char *)p);
+  }
+  if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+    if (opt->recname != NULL) {
+      p += _XML_PackValue2(opt, p, opt->recname, value);
+    } else {
+      p += _XML_PackValue2(opt, p, "value", value);
+    }
+  }
+  if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    if (opt->recname != NULL) {
+      p += sprintf((char *)p, "</%s:data>", opt->recname);
+    } else {
+      p += sprintf((char *)p, "</data>");
+    }
+  }
+  *p = 0;
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-static	int
-isStandalone_(
-	ValueContext	*value)
-{
-	fprintf(stderr, "SAX.isStandalone()\n");
-	return(0);
+static int isStandalone_(ValueContext *value) {
+  fprintf(stderr, "SAX.isStandalone()\n");
+  return (0);
 }
 
-static	int
-hasInternalSubset_(
-	ValueContext	*value)
-{
-	fprintf(stderr, "SAX.hasInternalSubset()\n");
-	return(0);
+static int hasInternalSubset_(ValueContext *value) {
+  fprintf(stderr, "SAX.hasInternalSubset()\n");
+  return (0);
 }
 
-static	int
-hasExternalSubset_(
-	ValueContext	*value)
-{
-	fprintf(stderr, "SAX.hasExternalSubset()\n");
-	return(0);
+static int hasExternalSubset_(ValueContext *value) {
+  fprintf(stderr, "SAX.hasExternalSubset()\n");
+  return (0);
 }
 
-static	void
-internalSubset_(
-	ValueContext	*value,
-	xmlChar		*name,
-	xmlChar		*ExternalID,
-	xmlChar		*SystemID)
-{
-	fprintf(stderr, "SAX.internalSubset(%s,", name);
-	if (ExternalID == NULL)
-		fprintf(stderr, " ,");
-	else
-		fprintf(stderr, " %s,", ExternalID);
-	if (SystemID == NULL)
-		fprintf(stderr, " )\n");
-	else
-		fprintf(stderr, " %s)\n", SystemID);
+static void internalSubset_(ValueContext *value, xmlChar *name,
+                            xmlChar *ExternalID, xmlChar *SystemID) {
+  fprintf(stderr, "SAX.internalSubset(%s,", name);
+  if (ExternalID == NULL)
+    fprintf(stderr, " ,");
+  else
+    fprintf(stderr, " %s,", ExternalID);
+  if (SystemID == NULL)
+    fprintf(stderr, " )\n");
+  else
+    fprintf(stderr, " %s)\n", SystemID);
 }
 
-static	void
-externalSubset_(
-	ValueContext	*value,
-	xmlChar		*name,
-	xmlChar		*ExternalID,
-	xmlChar		*SystemID)
-{
-	fprintf(stderr, "SAX.externalSubset(%s,", name);
-	if (ExternalID == NULL)
-		fprintf(stderr, " ,");
-	else
-		fprintf(stderr, " %s,", ExternalID);
-	if (SystemID == NULL)
-		fprintf(stderr, " )\n");
-	else
-		fprintf(stderr, " %s)\n", SystemID);
+static void externalSubset_(ValueContext *value, xmlChar *name,
+                            xmlChar *ExternalID, xmlChar *SystemID) {
+  fprintf(stderr, "SAX.externalSubset(%s,", name);
+  if (ExternalID == NULL)
+    fprintf(stderr, " ,");
+  else
+    fprintf(stderr, " %s,", ExternalID);
+  if (SystemID == NULL)
+    fprintf(stderr, " )\n");
+  else
+    fprintf(stderr, " %s)\n", SystemID);
 }
 
-static	xmlParserInputPtr
-resolveEntity_(
-	ValueContext	*value,
-	xmlChar		*publicId,
-	xmlChar		*systemId)
-{
-	fprintf(stderr, "SAX.resolveEntity(");
-	if (publicId != NULL)
-		fprintf(stderr, "%s", (char *)publicId);
-	else
-		fprintf(stderr, " ");
-	if (systemId != NULL)
-		fprintf(stderr, ", %s)\n", (char *)systemId);
-	else
-		fprintf(stderr, ", )\n");
-	return	(NULL);
+static xmlParserInputPtr resolveEntity_(ValueContext *value, xmlChar *publicId,
+                                        xmlChar *systemId) {
+  fprintf(stderr, "SAX.resolveEntity(");
+  if (publicId != NULL)
+    fprintf(stderr, "%s", (char *)publicId);
+  else
+    fprintf(stderr, " ");
+  if (systemId != NULL)
+    fprintf(stderr, ", %s)\n", (char *)systemId);
+  else
+    fprintf(stderr, ", )\n");
+  return (NULL);
 }
 
-static	xmlEntityPtr
-getEntity_(
-	ValueContext	*value,
-	xmlChar		*name)
-{
-	fprintf(stderr, "SAX.getEntity(%s)\n", name);
-	return(NULL);
+static xmlEntityPtr getEntity_(ValueContext *value, xmlChar *name) {
+  fprintf(stderr, "SAX.getEntity(%s)\n", name);
+  return (NULL);
 }
 
-static	xmlEntityPtr
-getParameterEntity_(
-	ValueContext	*value,
-	xmlChar		*name)
-{
-	fprintf(stderr, "SAX.getParameterEntity(%s)\n", name);
-    return(NULL);
+static xmlEntityPtr getParameterEntity_(ValueContext *value, xmlChar *name) {
+  fprintf(stderr, "SAX.getParameterEntity(%s)\n", name);
+  return (NULL);
 }
 
-
-static	void
-entityDecl_(
-	ValueContext	*value,
-	xmlChar	*name,
-	int		type,
-	xmlChar	*publicId,
-	xmlChar	*systemId,
-	xmlChar *content)
-{
-	fprintf(stderr, "SAX.entityDecl(%s, %d, %s, %s, %s)\n",
-			name, type, publicId, systemId, content);
+static void entityDecl_(ValueContext *value, xmlChar *name, int type,
+                        xmlChar *publicId, xmlChar *systemId,
+                        xmlChar *content) {
+  fprintf(stderr, "SAX.entityDecl(%s, %d, %s, %s, %s)\n", name, type, publicId,
+          systemId, content);
 }
 
-static	void
-attributeDecl_(
-	ValueContext	*value,
-	xmlChar		*elem,
-	xmlChar		*name,
-	int			type,
-	int			def,
-	xmlChar		*defaultValue,
-	xmlEnumerationPtr tree)
-{
-	if (defaultValue == NULL)
-		fprintf(stderr, "SAX.attributeDecl(%s, %s, %d, %d, NULL, ...)\n",
-				elem, name, type, def);
-    else
-		fprintf(stderr, "SAX.attributeDecl(%s, %s, %d, %d, %s, ...)\n",
-				elem, name, type, def, defaultValue);
+static void attributeDecl_(ValueContext *value, xmlChar *elem, xmlChar *name,
+                           int type, int def, xmlChar *defaultValue,
+                           xmlEnumerationPtr tree) {
+  if (defaultValue == NULL)
+    fprintf(stderr, "SAX.attributeDecl(%s, %s, %d, %d, NULL, ...)\n", elem,
+            name, type, def);
+  else
+    fprintf(stderr, "SAX.attributeDecl(%s, %s, %d, %d, %s, ...)\n", elem, name,
+            type, def, defaultValue);
 }
 
-static	void
-elementDecl_(
-	ValueContext	*value,
-	xmlChar		*name,
-	int			type,
-	xmlElementContentPtr	content)
-{
-	fprintf(stderr, "SAX.elementDecl(%s, %d, ...)\n",
-			name, type);
+static void elementDecl_(ValueContext *value, xmlChar *name, int type,
+                         xmlElementContentPtr content) {
+  fprintf(stderr, "SAX.elementDecl(%s, %d, ...)\n", name, type);
 }
 
-static	void
-notationDecl_(
-	ValueContext	*value,
-	xmlChar		*name,
-	xmlChar		*publicId,
-	xmlChar		*systemId)
-{
-	fprintf(stderr, "SAX.notationDecl(%s, %s, %s)\n",
-			(char *) name, (char *) publicId, (char *) systemId);
+static void notationDecl_(ValueContext *value, xmlChar *name, xmlChar *publicId,
+                          xmlChar *systemId) {
+  fprintf(stderr, "SAX.notationDecl(%s, %s, %s)\n", (char *)name,
+          (char *)publicId, (char *)systemId);
 }
 
-static	void
-unparsedEntityDecl_(
-	ValueContext	*value,
-	xmlChar		*name,
-	xmlChar		*publicId,
-	xmlChar		*systemId,
-	xmlChar		*notationName)
-{
-	fprintf(stdout, "SAX.unparsedEntityDecl(%s, %s, %s, %s)\n",
-			(char *) name, (char *) publicId, (char *) systemId,
-			(char *) notationName);
+static void unparsedEntityDecl_(ValueContext *value, xmlChar *name,
+                                xmlChar *publicId, xmlChar *systemId,
+                                xmlChar *notationName) {
+  fprintf(stdout, "SAX.unparsedEntityDecl(%s, %s, %s, %s)\n", (char *)name,
+          (char *)publicId, (char *)systemId, (char *)notationName);
 }
 
-static	void
-setDocumentLocator_(
-	ValueContext			*value,
-	xmlSAXLocatorPtr	loc)
-{
-#ifdef	DEBUG
-	fprintf(stderr, "SAX.setDocumentLocator()\n");
+static void setDocumentLocator_(ValueContext *value, xmlSAXLocatorPtr loc) {
+#ifdef DEBUG
+  fprintf(stderr, "SAX.setDocumentLocator()\n");
 #endif
 }
 
-static	void
-startDocument_(
-	ValueContext	*value)
-{
-#ifdef	DEBUG
-    fprintf(stderr, "SAX.startDocument()\n");
+static void startDocument_(ValueContext *value) {
+#ifdef DEBUG
+  fprintf(stderr, "SAX.startDocument()\n");
 #endif
 }
 
-static	void
-endDocument_(
-	ValueContext	*value)
-{
-#ifdef	DEBUG
-    fprintf(stderr, "SAX.endDocument()\n");
+static void endDocument_(ValueContext *value) {
+#ifdef DEBUG
+  fprintf(stderr, "SAX.endDocument()\n");
 #endif
 }
 
-static	void
-reference_(
-	ValueContext	*value,
-	xmlChar		*name)
-{
-	fprintf(stderr, "SAX.reference(%s)\n", name);
+static void reference_(ValueContext *value, xmlChar *name) {
+  fprintf(stderr, "SAX.reference(%s)\n", name);
 }
 
-static void
-ignorableWhitespace_(
-	ValueContext	*value,
-	xmlChar		*ch,
-	int			len)
-{
-    char output[40];
-    int i;
+static void ignorableWhitespace_(ValueContext *value, xmlChar *ch, int len) {
+  char output[40];
+  int i;
 
-    for (i = 0;(i<len) && (i < 30);i++)
-		output[i] = ch[i];
-	output[i] = 0;
-	fprintf(stderr, "SAX.ignorableWhitespace(%s, %d)\n", output, len);
+  for (i = 0; (i < len) && (i < 30); i++)
+    output[i] = ch[i];
+  output[i] = 0;
+  fprintf(stderr, "SAX.ignorableWhitespace(%s, %d)\n", output, len);
 }
 
-static	void
-processingInstruction_(
-	ValueContext	*value,
-	xmlChar		*target,
-	xmlChar		*data)
-{
-	fprintf(stderr, "SAX.processingInstruction(%s, %s)\n",
-			(char *) target, (char *) data);
+static void processingInstruction_(ValueContext *value, xmlChar *target,
+                                   xmlChar *data) {
+  fprintf(stderr, "SAX.processingInstruction(%s, %s)\n", (char *)target,
+          (char *)data);
 }
 
-static	void
-cdataBlock_(
-	ValueContext	*value,
-	xmlChar		*data,
-	int len)
-{
-	fprintf(stderr, "SAX.pcdata(%.20s, %d)\n",
-			(char *) data, len);
+static void cdataBlock_(ValueContext *value, xmlChar *data, int len) {
+  fprintf(stderr, "SAX.pcdata(%.20s, %d)\n", (char *)data, len);
 }
 
-static	void
-comment_(
-	ValueContext	*value,
-	xmlChar		*comment)
-{
-	fprintf(stderr, "SAX.comment(%s)\n", comment);
+static void comment_(ValueContext *value, xmlChar *comment) {
+  fprintf(stderr, "SAX.comment(%s)\n", comment);
 }
 
-static	void
-warning_(
-	ValueContext	*value,
-	char		*msg, ...)
-{
-    va_list args;
+static void warning_(ValueContext *value, char *msg, ...) {
+  va_list args;
 
-    va_start(args, msg);
-    fprintf(stdout, "SAX.warning: ");
-    vfprintf(stdout, msg, args);
-    va_end(args);
+  va_start(args, msg);
+  fprintf(stdout, "SAX.warning: ");
+  vfprintf(stdout, msg, args);
+  va_end(args);
 }
 
-static	void
-error_(
-	ValueContext	*value,
-	char		*msg, ...)
-{
-    va_list args;
+static void error_(ValueContext *value, char *msg, ...) {
+  va_list args;
 
-    va_start(args, msg);
-    fprintf(stdout, "SAX.error: ");
-    vfprintf(stdout, msg, args);
-    va_end(args);
+  va_start(args, msg);
+  fprintf(stdout, "SAX.error: ");
+  vfprintf(stdout, msg, args);
+  va_end(args);
 }
 
-static	void
-fatalError_(
-	ValueContext	*value,
-	char		*msg, ...)
-{
-    va_list args;
+static void fatalError_(ValueContext *value, char *msg, ...) {
+  va_list args;
 
-    va_start(args, msg);
-    fprintf(stderr, "fatalError: ");
-    vfprintf(stderr, msg, args);
-    va_end(args);
+  va_start(args, msg);
+  fprintf(stderr, "fatalError: ");
+  vfprintf(stderr, msg, args);
+  va_end(args);
 }
 
-static	xmlChar	*
-GetAttribute(
-	xmlChar	**atts,
-	xmlChar	*name)
-{
-	xmlChar	*ret;
+static xmlChar *GetAttribute(xmlChar **atts, xmlChar *name) {
+  xmlChar *ret;
 
-	ret = NULL;
-	while	( *atts  !=  NULL  ) {
-		if		(  stricmp((char *)*atts,(char *)name)  ==  0  ) {
-			ret = *(atts + 1);
-			break;
-		}
-		atts ++;
-	}
-	return	(ret);
+  ret = NULL;
+  while (*atts != NULL) {
+    if (stricmp((char *)*atts, (char *)name) == 0) {
+      ret = *(atts + 1);
+      break;
+    }
+    atts++;
+  }
+  return (ret);
 }
 
-static	void
-startElement1_(
-	ValueContext	*ctx,
-	xmlChar	*name,
-	xmlChar	**atts)
-{
-	xmlChar	*vname
-		,	*p
-		,	*q;
+static void startElement1_(ValueContext *ctx, xmlChar *name, xmlChar **atts) {
+  xmlChar *vname, *p, *q;
 
-	p = NextName(ctx);
-	q = p;
-	if		(  ( vname = GetAttribute(atts,(xmlChar *)"name") )  !=  NULL  ) {
-		if		(  (char *)p  !=  ctx->longname  ) {
-			*p++ = '.';
-		}
-		sprintf((char *)p,"%s",(char *)vname);
-	}
-#ifdef	DEBUG
-	printf("startElement_(%s)[%s]\n",(char *)name,ctx->longname);
+  p = NextName(ctx);
+  q = p;
+  if ((vname = GetAttribute(atts, (xmlChar *)"name")) != NULL) {
+    if ((char *)p != ctx->longname) {
+      *p++ = '.';
+    }
+    sprintf((char *)p, "%s", (char *)vname);
+  }
+#ifdef DEBUG
+  printf("startElement_(%s)[%s]\n", (char *)name, ctx->longname);
 #endif
-	if		(  stricmp((char *)name,"lm:item")  ==  0  ) {
-		ctx->value = GetItemLongName(ctx->root,ctx->longname);
-		*q = 0;
-		ctx->fStart = TRUE;
-	} else
-	if		(  stricmp((char *)name,"lm:record")  ==  0  ) {
-		if		(  ctx->value  ==  NULL  ) {
-			*q = 0;
-		}
-		ctx->value = GetItemLongName(ctx->root,ctx->longname);
-		ctx->fStart = FALSE;
-	} else
-	if		(  stricmp((char *)name,"lm:array")  ==  0  ) {
-		*q = 0;
-		ctx->fStart = FALSE;
-	} else
-	if		(  stricmp((char *)name,"lm:block")  ==  0  ) {
-		ctx->value = NULL;
-		ctx->fStart = FALSE;
-	}
+  if (stricmp((char *)name, "lm:item") == 0) {
+    ctx->value = GetItemLongName(ctx->root, ctx->longname);
+    *q = 0;
+    ctx->fStart = TRUE;
+  } else if (stricmp((char *)name, "lm:record") == 0) {
+    if (ctx->value == NULL) {
+      *q = 0;
+    }
+    ctx->value = GetItemLongName(ctx->root, ctx->longname);
+    ctx->fStart = FALSE;
+  } else if (stricmp((char *)name, "lm:array") == 0) {
+    *q = 0;
+    ctx->fStart = FALSE;
+  } else if (stricmp((char *)name, "lm:block") == 0) {
+    ctx->value = NULL;
+    ctx->fStart = FALSE;
+  }
 }
 
-static	void
-endElement1_(
-	ValueContext	*ctx,
-	xmlChar	*name)
-{
-	xmlChar	*p;
+static void endElement1_(ValueContext *ctx, xmlChar *name) {
+  xmlChar *p;
 
-#ifdef	DEBUG
-	printf("endElement_(%s)\n",(char *)name);
+#ifdef DEBUG
+  printf("endElement_(%s)\n", (char *)name);
 #endif
-	if		(	(  stricmp((char *)name,"lm:array")  ==  0  )
-			||	(  stricmp((char *)name,"lm:record")  ==  0  ) ) {
-		if		(  ( p = (xmlChar *)strrchr(ctx->longname,'.') )  !=  NULL  ) {
-			*p = 0;
-		} else {
-			*ctx->longname = 0;
-		}
-	}
-	ctx->fStart = FALSE;
+  if ((stricmp((char *)name, "lm:array") == 0) ||
+      (stricmp((char *)name, "lm:record") == 0)) {
+    if ((p = (xmlChar *)strrchr(ctx->longname, '.')) != NULL) {
+      *p = 0;
+    } else {
+      *ctx->longname = 0;
+    }
+  }
+  ctx->fStart = FALSE;
 }
 
-static	void
-characters_(
-	ValueContext	*ctx,
-	xmlChar	*ch,
-	size_t	len)
-{
+static void characters_(ValueContext *ctx, xmlChar *ch, size_t len) {
 
-	if		(  ctx->fStart  ) {
-		if		(  ctx->size  <  len  ) {
-			xfree(ctx->buff);
-			ctx->size = ( len + 1 );
-			ctx->buff = (xmlChar *)xmalloc(ctx->size * sizeof(xmlChar));
-		}
-		memcpy(ctx->buff,ch,len*sizeof(xmlChar));
-		ctx->buff[len] = 0;
-		dbgprintf("characters_[%s]\n",(char *)ctx->buff);
-		if		(  ctx->value  !=  NULL  ) {
-			SetValueString(ctx->value,(char *)ctx->buff,NULL);
-			ValueIsNonNil(ctx->value);
-		}
-	}
+  if (ctx->fStart) {
+    if (ctx->size < len) {
+      xfree(ctx->buff);
+      ctx->size = (len + 1);
+      ctx->buff = (xmlChar *)xmalloc(ctx->size * sizeof(xmlChar));
+    }
+    memcpy(ctx->buff, ch, len * sizeof(xmlChar));
+    ctx->buff[len] = 0;
+    dbgprintf("characters_[%s]\n", (char *)ctx->buff);
+    if (ctx->value != NULL) {
+      SetValueString(ctx->value, (char *)ctx->buff, NULL);
+      ValueIsNonNil(ctx->value);
+    }
+  }
 }
 
-static	xmlSAXHandler mondaiSAXHandlerStruct1 = {
-	(internalSubsetSAXFunc)internalSubset_,
-	(isStandaloneSAXFunc)isStandalone_,
-	(hasInternalSubsetSAXFunc)hasInternalSubset_,
-	(hasExternalSubsetSAXFunc)hasExternalSubset_,
-	(resolveEntitySAXFunc)resolveEntity_,
-	(getEntitySAXFunc)getEntity_,
-	(entityDeclSAXFunc)entityDecl_,
-	(notationDeclSAXFunc)notationDecl_,
-	(attributeDeclSAXFunc)attributeDecl_,
-	(elementDeclSAXFunc)elementDecl_,
-	(unparsedEntityDeclSAXFunc)unparsedEntityDecl_,
-	(setDocumentLocatorSAXFunc)setDocumentLocator_,
-	(startDocumentSAXFunc)startDocument_,
-	(endDocumentSAXFunc)endDocument_,
-	(startElementSAXFunc)startElement1_,
-	(endElementSAXFunc)endElement1_,
-	(referenceSAXFunc)reference_,
-	(charactersSAXFunc)characters_,
-	(ignorableWhitespaceSAXFunc)ignorableWhitespace_,
-	(processingInstructionSAXFunc)processingInstruction_,
-	(commentSAXFunc)comment_,
-	(warningSAXFunc)warning_,
-	(errorSAXFunc)error_,
-	(fatalErrorSAXFunc)fatalError_,
-	(getParameterEntitySAXFunc)getParameterEntity_,
-	(cdataBlockSAXFunc)cdataBlock_,
-	(externalSubsetSAXFunc)externalSubset_,
-    1
-};
+static xmlSAXHandler mondaiSAXHandlerStruct1 = {
+    (internalSubsetSAXFunc)internalSubset_,
+    (isStandaloneSAXFunc)isStandalone_,
+    (hasInternalSubsetSAXFunc)hasInternalSubset_,
+    (hasExternalSubsetSAXFunc)hasExternalSubset_,
+    (resolveEntitySAXFunc)resolveEntity_,
+    (getEntitySAXFunc)getEntity_,
+    (entityDeclSAXFunc)entityDecl_,
+    (notationDeclSAXFunc)notationDecl_,
+    (attributeDeclSAXFunc)attributeDecl_,
+    (elementDeclSAXFunc)elementDecl_,
+    (unparsedEntityDeclSAXFunc)unparsedEntityDecl_,
+    (setDocumentLocatorSAXFunc)setDocumentLocator_,
+    (startDocumentSAXFunc)startDocument_,
+    (endDocumentSAXFunc)endDocument_,
+    (startElementSAXFunc)startElement1_,
+    (endElementSAXFunc)endElement1_,
+    (referenceSAXFunc)reference_,
+    (charactersSAXFunc)characters_,
+    (ignorableWhitespaceSAXFunc)ignorableWhitespace_,
+    (processingInstructionSAXFunc)processingInstruction_,
+    (commentSAXFunc)comment_,
+    (warningSAXFunc)warning_,
+    (errorSAXFunc)error_,
+    (fatalErrorSAXFunc)fatalError_,
+    (getParameterEntitySAXFunc)getParameterEntity_,
+    (cdataBlockSAXFunc)cdataBlock_,
+    (externalSubsetSAXFunc)externalSubset_,
+    1};
 
-static	void
-startElement2_(
-	ValueContext	*ctx,
-	xmlChar	*name,
-	xmlChar	**atts)
-{
-	xmlChar	*vname
-	,		*rname
-	,		*p
-	,		*q
-	,		*type;
-	xmlChar	buff[SIZE_LONGNAME+1];
-	int		count;
-	Bool	fArray;
+static void startElement2_(ValueContext *ctx, xmlChar *name, xmlChar **atts) {
+  xmlChar *vname, *rname, *p, *q, *type;
+  xmlChar buff[SIZE_LONGNAME + 1];
+  int count;
+  Bool fArray;
 
-	strcpy((char *)buff,(char *)name);
-	if		(  ( p = (xmlChar *)strchr((char *)buff,':')  )  !=  NULL  ) {
-		*p = 0;
-		rname = buff;
-		vname = p + 1;
-	} else {
-		rname = (xmlChar *)"";
-		vname = buff;
-	}
-	if		(  ( p = (xmlChar *)strchr((char *)vname,':')  )  !=  NULL  ) {
-		*p = 0;
-		count = atoi((char *)p+1);
-		fArray = TRUE;
-	} else {
-		fArray = FALSE;
-		count = 0;
-	}
+  strcpy((char *)buff, (char *)name);
+  if ((p = (xmlChar *)strchr((char *)buff, ':')) != NULL) {
+    *p = 0;
+    rname = buff;
+    vname = p + 1;
+  } else {
+    rname = (xmlChar *)"";
+    vname = buff;
+  }
+  if ((p = (xmlChar *)strchr((char *)vname, ':')) != NULL) {
+    *p = 0;
+    count = atoi((char *)p + 1);
+    fArray = TRUE;
+  } else {
+    fArray = FALSE;
+    count = 0;
+  }
 
-	p = NextName(ctx);
-	q = p;
-	if		(  (char *)p  !=  ctx->longname  ) {
-		*p++ = '.';
-	}
-	if		(  fArray  ) {
-		sprintf((char *)p,"%s[%d]",(char *)vname,count);
-	} else {
-		sprintf((char *)p,"%s",(char *)vname);
-	}
-#ifdef	DEBUG
-	printf("startElement_(%s)[%s]\n",(char *)name,ctx->longname);
+  p = NextName(ctx);
+  q = p;
+  if ((char *)p != ctx->longname) {
+    *p++ = '.';
+  }
+  if (fArray) {
+    sprintf((char *)p, "%s[%d]", (char *)vname, count);
+  } else {
+    sprintf((char *)p, "%s", (char *)vname);
+  }
+#ifdef DEBUG
+  printf("startElement_(%s)[%s]\n", (char *)name, ctx->longname);
 #endif
-	if		(  stricmp((char *)rname,ctx->opt->recname)  ==  0  ) {
-		if		(  stricmp((char *)vname,"data")  ==  0  ) {
-			*ctx->longname = 0;
-			ctx->value = NULL;
-			ctx->fStart = FALSE;
-		} else {
-			type = GetAttribute(atts,(xmlChar *)"type");
-			if		(  stricmp((char *)type,"record")  ==  0  ) {
-				if		(  ctx->value  ==  NULL  ) {
-					*q = 0;
-				}
-				ctx->value = GetItemLongName(ctx->root,ctx->longname);
-				ctx->fStart = FALSE;
-			} else
-			if		(  stricmp((char *)type,"array")  ==  0  ) {
-				*q = 0;
-				ctx->fStart = FALSE;
-			} else {
-				ctx->value = GetItemLongName(ctx->root,ctx->longname);
-				ctx->fStart = TRUE;
-			}
-		}
-	} else {
-		*q = 0;
-		ctx->fStart = FALSE;
-	}
+  if (stricmp((char *)rname, ctx->opt->recname) == 0) {
+    if (stricmp((char *)vname, "data") == 0) {
+      *ctx->longname = 0;
+      ctx->value = NULL;
+      ctx->fStart = FALSE;
+    } else {
+      type = GetAttribute(atts, (xmlChar *)"type");
+      if (stricmp((char *)type, "record") == 0) {
+        if (ctx->value == NULL) {
+          *q = 0;
+        }
+        ctx->value = GetItemLongName(ctx->root, ctx->longname);
+        ctx->fStart = FALSE;
+      } else if (stricmp((char *)type, "array") == 0) {
+        *q = 0;
+        ctx->fStart = FALSE;
+      } else {
+        ctx->value = GetItemLongName(ctx->root, ctx->longname);
+        ctx->fStart = TRUE;
+      }
+    }
+  } else {
+    *q = 0;
+    ctx->fStart = FALSE;
+  }
 }
 
-static	void
-endElement2_(
-	ValueContext	*ctx,
-	xmlChar	*name)
-{
-	xmlChar	*vname;
-	xmlChar	*p
-	,		*q;
-	xmlChar	buff[SIZE_LONGNAME+1];
+static void endElement2_(ValueContext *ctx, xmlChar *name) {
+  xmlChar *vname;
+  xmlChar *p, *q;
+  xmlChar buff[SIZE_LONGNAME + 1];
 
-#ifdef	DEBUG
-	printf("endElement_(%s)\n",(char *)name);
+#ifdef DEBUG
+  printf("endElement_(%s)\n", (char *)name);
 #endif
-	strcpy((char *)buff,(char *)name);
-	if		(  ( p = (xmlChar *)strchr((char *)buff,':')  )  !=  NULL  ) {
-		*p = 0;
-		vname = p + 1;
-	} else {
-		vname = buff;
-	}
-	if		(  ( p = (xmlChar *)strchr((char *)vname,':')  )  !=  NULL  ) {
-		*p = 0;
-	}
+  strcpy((char *)buff, (char *)name);
+  if ((p = (xmlChar *)strchr((char *)buff, ':')) != NULL) {
+    *p = 0;
+    vname = p + 1;
+  } else {
+    vname = buff;
+  }
+  if ((p = (xmlChar *)strchr((char *)vname, ':')) != NULL) {
+    *p = 0;
+  }
 
-	if		(  ( p = (xmlChar *)strrchr((char *)ctx->longname,'.') )  !=  NULL  ) {
-		if		(  ( q = (xmlChar *)strchr((char *)p+1,'[')  )  !=  NULL  ) {
-			*q = 0;
-		}
-		if		(  strcmp((char *)p+1,(char *)vname)  ==  0  ) {
-			*p = 0;
-		}
-		if		(  q  !=  NULL  ) {
-			*q = '[';
-		}
-	} else {
-		*ctx->longname = 0;
-	}
-	ctx->fStart = FALSE;
+  if ((p = (xmlChar *)strrchr((char *)ctx->longname, '.')) != NULL) {
+    if ((q = (xmlChar *)strchr((char *)p + 1, '[')) != NULL) {
+      *q = 0;
+    }
+    if (strcmp((char *)p + 1, (char *)vname) == 0) {
+      *p = 0;
+    }
+    if (q != NULL) {
+      *q = '[';
+    }
+  } else {
+    *ctx->longname = 0;
+  }
+  ctx->fStart = FALSE;
 }
 
-static	xmlSAXHandler mondaiSAXHandlerStruct2 = {
-	(internalSubsetSAXFunc)internalSubset_,
-	(isStandaloneSAXFunc)isStandalone_,
-	(hasInternalSubsetSAXFunc)hasInternalSubset_,
-	(hasExternalSubsetSAXFunc)hasExternalSubset_,
-	(resolveEntitySAXFunc)resolveEntity_,
-	(getEntitySAXFunc)getEntity_,
-	(entityDeclSAXFunc)entityDecl_,
-	(notationDeclSAXFunc)notationDecl_,
-	(attributeDeclSAXFunc)attributeDecl_,
-	(elementDeclSAXFunc)elementDecl_,
-	(unparsedEntityDeclSAXFunc)unparsedEntityDecl_,
-	(setDocumentLocatorSAXFunc)setDocumentLocator_,
-	(startDocumentSAXFunc)startDocument_,
-	(endDocumentSAXFunc)endDocument_,
-	(startElementSAXFunc)startElement2_,
-	(endElementSAXFunc)endElement2_,
-	(referenceSAXFunc)reference_,
-	(charactersSAXFunc)characters_,
-	(ignorableWhitespaceSAXFunc)ignorableWhitespace_,
-	(processingInstructionSAXFunc)processingInstruction_,
-	(commentSAXFunc)comment_,
-	(warningSAXFunc)warning_,
-	(errorSAXFunc)error_,
-	(fatalErrorSAXFunc)fatalError_,
-	(getParameterEntitySAXFunc)getParameterEntity_,
-	(cdataBlockSAXFunc)cdataBlock_,
-	(externalSubsetSAXFunc)externalSubset_,
-    1
-};
+static xmlSAXHandler mondaiSAXHandlerStruct2 = {
+    (internalSubsetSAXFunc)internalSubset_,
+    (isStandaloneSAXFunc)isStandalone_,
+    (hasInternalSubsetSAXFunc)hasInternalSubset_,
+    (hasExternalSubsetSAXFunc)hasExternalSubset_,
+    (resolveEntitySAXFunc)resolveEntity_,
+    (getEntitySAXFunc)getEntity_,
+    (entityDeclSAXFunc)entityDecl_,
+    (notationDeclSAXFunc)notationDecl_,
+    (attributeDeclSAXFunc)attributeDecl_,
+    (elementDeclSAXFunc)elementDecl_,
+    (unparsedEntityDeclSAXFunc)unparsedEntityDecl_,
+    (setDocumentLocatorSAXFunc)setDocumentLocator_,
+    (startDocumentSAXFunc)startDocument_,
+    (endDocumentSAXFunc)endDocument_,
+    (startElementSAXFunc)startElement2_,
+    (endElementSAXFunc)endElement2_,
+    (referenceSAXFunc)reference_,
+    (charactersSAXFunc)characters_,
+    (ignorableWhitespaceSAXFunc)ignorableWhitespace_,
+    (processingInstructionSAXFunc)processingInstruction_,
+    (commentSAXFunc)comment_,
+    (warningSAXFunc)warning_,
+    (errorSAXFunc)error_,
+    (fatalErrorSAXFunc)fatalError_,
+    (getParameterEntitySAXFunc)getParameterEntity_,
+    (cdataBlockSAXFunc)cdataBlock_,
+    (externalSubsetSAXFunc)externalSubset_,
+    1};
 
-static	xmlSAXHandlerPtr	mondaiSAXHandler1		= &mondaiSAXHandlerStruct1;
-static	xmlSAXHandlerPtr	mondaiSAXHandler2		= &mondaiSAXHandlerStruct2;
+static xmlSAXHandlerPtr mondaiSAXHandler1 = &mondaiSAXHandlerStruct1;
+static xmlSAXHandlerPtr mondaiSAXHandler2 = &mondaiSAXHandlerStruct2;
 
-static	void
-SetNil(
-	ValueStruct	*val)
-{
-	int		i;
+static void SetNil(ValueStruct *val) {
+  int i;
 
-	switch	(ValueType(val)) {
-	  case	GL_TYPE_ARRAY:
-		for	( i = 0 ; i < ValueArraySize(val) ; i ++ ) {
-			SetNil(ValueArrayItem(val,i));
-		}
-		break;
-	  case	GL_TYPE_RECORD:
-		for	( i = 0 ; i < ValueRecordSize(val) ; i ++ ) {
-			SetNil(ValueRecordItem(val,i));
-		}
-		break;
-	  default:
-		ValueIsNil(val);
-		break;
-	}
+  switch (ValueType(val)) {
+  case GL_TYPE_ARRAY:
+    for (i = 0; i < ValueArraySize(val); i++) {
+      SetNil(ValueArrayItem(val, i));
+    }
+    break;
+  case GL_TYPE_RECORD:
+    for (i = 0; i < ValueRecordSize(val); i++) {
+      SetNil(ValueRecordItem(val, i));
+    }
+    break;
+  default:
+    ValueIsNil(val);
+    break;
+  }
 }
 
-extern	size_t
-XML_UnPackValue(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	ValueStruct	*value)
-{
-	ValueContext	*ctx;
-	unsigned char	*pp;
+extern size_t XML_UnPackValue(CONVOPT *opt, unsigned char *p,
+                              ValueStruct *value) {
+  ValueContext *ctx;
+  unsigned char *pp;
 
-ENTER_FUNC;
-	ctx = New(ValueContext);
-	ctx->root = value;
-	ctx->buff = (xmlChar *)xmalloc(1);
-	ctx->size = 1;
-	ctx->fStart = FALSE;
-	ctx->opt = opt;
-	ctx->value = NULL;
-	memset(ctx->longname,0,SIZE_LONGNAME+1);
+  ENTER_FUNC;
+  ctx = New(ValueContext);
+  ctx->root = value;
+  ctx->buff = (xmlChar *)xmalloc(1);
+  ctx->size = 1;
+  ctx->fStart = FALSE;
+  ctx->opt = opt;
+  ctx->value = NULL;
+  memset(ctx->longname, 0, SIZE_LONGNAME + 1);
 
-	SetNil(value);
-	pp = p;
-	switch	(ConvXmlType(opt)) {
-	  case	XML_TYPE1:
-		xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,(char *)p,strlen((char *)p));
-		break;
-	  case	XML_TYPE2:
-		xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,(char *)p,strlen((char *)p));
-		break;
-	}
-    xmlCleanupParser();
-	xfree(ctx->buff);
-	xfree(ctx);
-LEAVE_FUNC;
-	return	(p-pp);
+  SetNil(value);
+  pp = p;
+  switch (ConvXmlType(opt)) {
+  case XML_TYPE1:
+    xmlSAXUserParseMemory(mondaiSAXHandler1, ctx, (char *)p, strlen((char *)p));
+    break;
+  case XML_TYPE2:
+    xmlSAXUserParseMemory(mondaiSAXHandler2, ctx, (char *)p, strlen((char *)p));
+    break;
+  }
+  xmlCleanupParser();
+  xfree(ctx->buff);
+  xfree(ctx);
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-extern	size_t
-XML1_UnPackValue(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	ValueStruct	*value)
-{
-	ValueContext	*ctx;
-	unsigned char	*pp;
+extern size_t XML1_UnPackValue(CONVOPT *opt, unsigned char *p,
+                               ValueStruct *value) {
+  ValueContext *ctx;
+  unsigned char *pp;
 
-ENTER_FUNC;
-	ctx = New(ValueContext);
-	ctx->root = value;
-	ctx->buff = (xmlChar *)xmalloc(1);
-	ctx->size = 1;
-	ctx->fStart = FALSE;
-	ctx->opt = opt;
-	ctx->value = NULL;
-	memset(ctx->longname,0,SIZE_LONGNAME+1);
+  ENTER_FUNC;
+  ctx = New(ValueContext);
+  ctx->root = value;
+  ctx->buff = (xmlChar *)xmalloc(1);
+  ctx->size = 1;
+  ctx->fStart = FALSE;
+  ctx->opt = opt;
+  ctx->value = NULL;
+  memset(ctx->longname, 0, SIZE_LONGNAME + 1);
 
-	SetNil(value);
-	pp = p;
-	xmlSAXUserParseMemory(mondaiSAXHandler1,ctx,(char *)p,strlen((char *)p));
-    xmlCleanupParser();
-	xfree(ctx->buff);
-	xfree(ctx);
-LEAVE_FUNC;
-	return	(p-pp);
+  SetNil(value);
+  pp = p;
+  xmlSAXUserParseMemory(mondaiSAXHandler1, ctx, (char *)p, strlen((char *)p));
+  xmlCleanupParser();
+  xfree(ctx->buff);
+  xfree(ctx);
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-extern	size_t
-XML2_UnPackValue(
-	CONVOPT		*opt,
-	unsigned char		*p,
-	ValueStruct	*value)
-{
-	ValueContext	*ctx;
-	unsigned char	*pp;
+extern size_t XML2_UnPackValue(CONVOPT *opt, unsigned char *p,
+                               ValueStruct *value) {
+  ValueContext *ctx;
+  unsigned char *pp;
 
-ENTER_FUNC;
-	ctx = New(ValueContext);
-	ctx->root = value;
-	ctx->buff = (xmlChar *)xmalloc(1);
-	ctx->size = 1;
-	ctx->fStart = FALSE;
-	ctx->opt = opt;
-	ctx->value = NULL;
-	memset(ctx->longname,0,SIZE_LONGNAME+1);
+  ENTER_FUNC;
+  ctx = New(ValueContext);
+  ctx->root = value;
+  ctx->buff = (xmlChar *)xmalloc(1);
+  ctx->size = 1;
+  ctx->fStart = FALSE;
+  ctx->opt = opt;
+  ctx->value = NULL;
+  memset(ctx->longname, 0, SIZE_LONGNAME + 1);
 
-	SetNil(value);
-	pp = p;
-	xmlSAXUserParseMemory(mondaiSAXHandler2,ctx,(char *)p,strlen((char *)p));
-    xmlCleanupParser();
-	xfree(ctx->buff);
-	xfree(ctx);
-LEAVE_FUNC;
-	return	(p-pp);
+  SetNil(value);
+  pp = p;
+  xmlSAXUserParseMemory(mondaiSAXHandler2, ctx, (char *)p, strlen((char *)p));
+  xmlCleanupParser();
+  xfree(ctx->buff);
+  xfree(ctx);
+  LEAVE_FUNC;
+  return (p - pp);
 }
 
-static	size_t
-_XML_SizeValue1(
-	CONVOPT		*opt,
-	char		*name,
-	ValueStruct	*value,
-	char		*buff)
-{
-	char	num[SIZE_NAME+1];
-	int		i;
-	size_t	size;
+static size_t _XML_SizeValue1(CONVOPT *opt, char *name, ValueStruct *value,
+                              char *buff) {
+  char num[SIZE_NAME + 1];
+  int i;
+  size_t size;
 
-	size = 0;
-	if		(  value  !=  NULL  ) {
-		//if		(  IS_VALUE_NIL(value)  )	return	(0);
-		opt->nIndent ++;
-		size += IndentLine(opt,NULL);
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_ARRAY:
-			if		(  name  !=  NULL  ) {
-				size += sprintf(buff,"<lm:array name=\"%s\" count=\"%d\">",
-								name,(int)ValueArraySize(value));
-			} else {
-				size += sprintf(buff,"<lm:array count=\"%d\">",
-								(int)ValueArraySize(value));
-			}
-			size += PutCR(opt,buff);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s[%d]",name,i);
-				size += _XML_SizeValue1(opt,num,ValueArrayItem(value,i),buff);
-			}
-			size += IndentLine(opt,NULL);
-			size += 11;		//	</lm:array>
-			break;
-		  case	GL_TYPE_RECORD:
-			if		(  name  !=  NULL  ) {
-				size += sprintf(buff,"<lm:record name=\"%s\" size=\"%d\">",
-								name,(int)ValueRecordSize(value));
-			} else {
-				size += sprintf(buff,"<lm:record size=\"%d\">",
-								(int)ValueRecordSize(value));
-			}
-			size += PutCR(opt,buff);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				size += _XML_SizeValue1(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
-			}
-			size += IndentLine(opt,NULL);
-			size += 12;		//	</lm:record>
-			break;
-		  default:
-			if		(  name  !=  NULL  ) {
-				size += sprintf(buff,"<lm:item name=\"%s\"",name);
-			} else {
-				size += sprintf(buff,"<lm:item");
-			}
-			if		(  ConvType(opt)  ) {
-				size += 6;		//	" type="
-				switch	(ValueType(value)) {
-				  case	GL_TYPE_INT:
-					size += 5;			//	"int"
-					break;
-				  case	GL_TYPE_BOOL:
-					size += 6;			//	"bool"
-					break;
-				  case	GL_TYPE_BYTE:
-					size += sprintf(buff,
-									"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
-					break;
-				  case	GL_TYPE_BINARY:
-					size += sprintf(buff,
-									"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
-					break;
-				  case	GL_TYPE_CHAR:
-					size += sprintf(buff,
-									"\"char\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_VARCHAR:
-					size += sprintf(buff,
-									"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_TEXT:
-					size += sprintf(buff,
-									"\"text\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_SYMBOL:
-					size += sprintf(buff,
-									"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_DBCODE:
-					size += sprintf(buff,
-									"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
-					break;
-				  case	GL_TYPE_NUMBER:
-					size += sprintf(buff,"\"number\" size=\"%d\" ssize=\"%d\"",
-									(int)ValueFixedLength(value),(int)ValueFixedSlen(value));
-					break;
-				  case	GL_TYPE_FLOAT:
-					size += 7;			//	"float"
-					break;
-				  case	GL_TYPE_OBJECT:
-					size += 8;			//	"object"
-					break;
-				  case	GL_TYPE_TIMESTAMP:
-					size += 9;			//	"timestamp"
-					break;
-				  case	GL_TYPE_DATE:
-					size += 4;			//	"date"
-					break;
-				  case	GL_TYPE_TIME:
-					size += 8;			//	"time"
-					break;
-				  case	GL_TYPE_ALIAS:
-				  default:
-					break;
-				}
-			}
-			size += 1;		//	">"
-			if		(  !IS_VALUE_NIL(value)  ) {
-				size += XML_EncodeSize(ValueToString(value,ConvCodeset(opt)));
-			}
-			size += 10;		//	"</lm:item>"
-			break;
-		}
-		size += PutCR(opt,buff);
-		opt->nIndent --;
-	}
-	return	(size);
+  size = 0;
+  if (value != NULL) {
+    // if		(  IS_VALUE_NIL(value)  )	return	(0);
+    opt->nIndent++;
+    size += IndentLine(opt, NULL);
+    switch (ValueType(value)) {
+    case GL_TYPE_ARRAY:
+      if (name != NULL) {
+        size += sprintf(buff, "<lm:array name=\"%s\" count=\"%d\">", name,
+                        (int)ValueArraySize(value));
+      } else {
+        size += sprintf(buff, "<lm:array count=\"%d\">",
+                        (int)ValueArraySize(value));
+      }
+      size += PutCR(opt, buff);
+      for (i = 0; i < ValueArraySize(value); i++) {
+        sprintf(num, "%s[%d]", name, i);
+        size += _XML_SizeValue1(opt, num, ValueArrayItem(value, i), buff);
+      }
+      size += IndentLine(opt, NULL);
+      size += 11; //	</lm:array>
+      break;
+    case GL_TYPE_RECORD:
+      if (name != NULL) {
+        size += sprintf(buff, "<lm:record name=\"%s\" size=\"%d\">", name,
+                        (int)ValueRecordSize(value));
+      } else {
+        size += sprintf(buff, "<lm:record size=\"%d\">",
+                        (int)ValueRecordSize(value));
+      }
+      size += PutCR(opt, buff);
+      for (i = 0; i < ValueRecordSize(value); i++) {
+        size += _XML_SizeValue1(opt, ValueRecordName(value, i),
+                                ValueRecordItem(value, i), buff);
+      }
+      size += IndentLine(opt, NULL);
+      size += 12; //	</lm:record>
+      break;
+    default:
+      if (name != NULL) {
+        size += sprintf(buff, "<lm:item name=\"%s\"", name);
+      } else {
+        size += sprintf(buff, "<lm:item");
+      }
+      if (ConvType(opt)) {
+        size += 6; //	" type="
+        switch (ValueType(value)) {
+        case GL_TYPE_INT:
+          size += 5; //	"int"
+          break;
+        case GL_TYPE_BOOL:
+          size += 6; //	"bool"
+          break;
+        case GL_TYPE_BYTE:
+          size += sprintf(buff, "\"byte\" size=\"%d\"",
+                          (int)ValueByteLength(value));
+          break;
+        case GL_TYPE_BINARY:
+          size += sprintf(buff, "\"binary\" size=\"%d\"",
+                          (int)ValueByteLength(value));
+          break;
+        case GL_TYPE_CHAR:
+          size += sprintf(buff, "\"char\" size=\"%d\"",
+                          (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_VARCHAR:
+          size += sprintf(buff, "\"varchar\" size=\"%d\"",
+                          (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_TEXT:
+          size += sprintf(buff, "\"text\" size=\"%d\"",
+                          (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_SYMBOL:
+          size += sprintf(buff, "\"symbol\" size=\"%d\"",
+                          (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_DBCODE:
+          size += sprintf(buff, "\"dbcode\" size=\"%d\"",
+                          (int)ValueStringLength(value));
+          break;
+        case GL_TYPE_NUMBER:
+          size +=
+              sprintf(buff, "\"number\" size=\"%d\" ssize=\"%d\"",
+                      (int)ValueFixedLength(value), (int)ValueFixedSlen(value));
+          break;
+        case GL_TYPE_FLOAT:
+          size += 7; //	"float"
+          break;
+        case GL_TYPE_OBJECT:
+          size += 8; //	"object"
+          break;
+        case GL_TYPE_TIMESTAMP:
+          size += 9; //	"timestamp"
+          break;
+        case GL_TYPE_DATE:
+          size += 4; //	"date"
+          break;
+        case GL_TYPE_TIME:
+          size += 8; //	"time"
+          break;
+        case GL_TYPE_ALIAS:
+        default:
+          break;
+        }
+      }
+      size += 1; //	">"
+      if (!IS_VALUE_NIL(value)) {
+        size += XML_EncodeSize(ValueToString(value, ConvCodeset(opt)));
+      }
+      size += 10; //	"</lm:item>"
+      break;
+    }
+    size += PutCR(opt, buff);
+    opt->nIndent--;
+  }
+  return (size);
 }
 
-static	size_t
-_XML_SizeValue2(
-	CONVOPT		*opt,
-	char		*name,
-	ValueStruct	*value,
-	char		*buff)
-{
-	char	num[SIZE_NAME+1];
-	int		i;
-	size_t	size;
+static size_t _XML_SizeValue2(CONVOPT *opt, char *name, ValueStruct *value,
+                              char *buff) {
+  char num[SIZE_NAME + 1];
+  int i;
+  size_t size;
 
-	size = 0;
-	if		(  value  !=  NULL  ) {
-		if		(  IS_VALUE_NIL(value)  )	return	(0);
-		opt->nIndent ++;
-		size += IndentLine(opt,NULL);
-		switch	(ValueType(value)) {
-		  case	GL_TYPE_ARRAY:
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:%s type=\"array\" count=\"%d\">",
-								opt->recname,name,(int)ValueArraySize(value));
-			} else {
-				size += sprintf(buff,"<%s type=\"array\" count=\"%d\">",
-								name,(int)ValueArraySize(value));
-			}
-			size += PutCR(opt,buff);
-			for	( i = 0 ; i < ValueArraySize(value) ; i ++ ) {
-				sprintf(num,"%s:%d",name,i);
-				size += _XML_SizeValue2(opt,num,ValueArrayItem(value,i),buff);
-			}
-			size += IndentLine(opt,NULL);
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"</%s:%s>",opt->recname,name);
-			} else {
-				size += sprintf(buff,"</%s>",name);
-			}
-			break;
-		  case	GL_TYPE_RECORD:
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:%s type=\"record\" size=\"%d\">",
-								opt->recname,name,(int)ValueRecordSize(value));
-			} else {
-				size += sprintf(buff,"<%s type=\"record\" size=\"%d\">",
-								name,(int)ValueRecordSize(value));
-			}
-			size += PutCR(opt,buff);
-			for	( i = 0 ; i < ValueRecordSize(value) ; i ++ ) {
-				size += _XML_SizeValue2(opt,ValueRecordName(value,i),ValueRecordItem(value,i),buff);
-			}
-			size += IndentLine(opt,NULL);
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"</%s:%s>",opt->recname,name);
-			} else {
-				size += sprintf(buff,"</%s>",name);
-			}
-			break;
-		  default:
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:%s",opt->recname,name);
-			} else {
-				size += sprintf(buff,"<%s",name);
-			}
-			size += 6;		//	" type="
-			switch	(ValueType(value)) {
-			  case	GL_TYPE_INT:
-				size += 5;			//	"int"
-				break;
-			  case	GL_TYPE_BOOL:
-				size += 6;			//	"bool"
-				break;
-			  case	GL_TYPE_BYTE:
-				size += sprintf(buff,
-								"\"byte\" size=\"%d\"",(int)ValueByteLength(value));
-				break;
-			  case	GL_TYPE_BINARY:
-				size += sprintf(buff,
-								"\"binary\" size=\"%d\"",(int)ValueByteLength(value));
-				break;
-			  case	GL_TYPE_CHAR:
-				size += sprintf(buff,
-								"\"char\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_VARCHAR:
-				size += sprintf(buff,
-								"\"varchar\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_TEXT:
-				size += sprintf(buff,
-								"\"text\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_SYMBOL:
-				size += sprintf(buff,
-								"\"symbol\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_DBCODE:
-				size += sprintf(buff,
-								"\"dbcode\" size=\"%d\"",(int)ValueStringLength(value));
-				break;
-			  case	GL_TYPE_NUMBER:
-				size += sprintf(buff,"\"number\" size=\"%d\" ssize=\"%d\"",
-								(int)ValueFixedLength(value),(int)ValueFixedSlen(value));
-				break;
-			  case	GL_TYPE_FLOAT:
-				size += 7;			//	"float"
-				break;
-			  case	GL_TYPE_OBJECT:
-				size += 8;			//	"object"
-				break;
-			  case	GL_TYPE_TIMESTAMP:
-				size += 9;			//	"timestamp"
-				break;
-			  case	GL_TYPE_DATE:
-				size += 4;			//	"date"
-				break;
-			  case	GL_TYPE_TIME:
-				size += 8;			//	"time"
-				break;
-			  case	GL_TYPE_ALIAS:
-			  default:
-				break;
-			}
-			size += 1;		//	">"
-			if		(  !IS_VALUE_NIL(value)  ) {
-				size += XML_EncodeSize(ValueToString(value,ConvCodeset(opt)));
-			}
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"</%s:%s>",opt->recname,name);
-			} else {
-				size += sprintf(buff,"</%s>",name);
-			}
-			break;
-		}
-		size += PutCR(opt,buff);
-		opt->nIndent --;
-	}
-	return	(size);
+  size = 0;
+  if (value != NULL) {
+    if (IS_VALUE_NIL(value))
+      return (0);
+    opt->nIndent++;
+    size += IndentLine(opt, NULL);
+    switch (ValueType(value)) {
+    case GL_TYPE_ARRAY:
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "<%s:%s type=\"array\" count=\"%d\">",
+                        opt->recname, name, (int)ValueArraySize(value));
+      } else {
+        size += sprintf(buff, "<%s type=\"array\" count=\"%d\">", name,
+                        (int)ValueArraySize(value));
+      }
+      size += PutCR(opt, buff);
+      for (i = 0; i < ValueArraySize(value); i++) {
+        sprintf(num, "%s:%d", name, i);
+        size += _XML_SizeValue2(opt, num, ValueArrayItem(value, i), buff);
+      }
+      size += IndentLine(opt, NULL);
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "</%s:%s>", opt->recname, name);
+      } else {
+        size += sprintf(buff, "</%s>", name);
+      }
+      break;
+    case GL_TYPE_RECORD:
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "<%s:%s type=\"record\" size=\"%d\">",
+                        opt->recname, name, (int)ValueRecordSize(value));
+      } else {
+        size += sprintf(buff, "<%s type=\"record\" size=\"%d\">", name,
+                        (int)ValueRecordSize(value));
+      }
+      size += PutCR(opt, buff);
+      for (i = 0; i < ValueRecordSize(value); i++) {
+        size += _XML_SizeValue2(opt, ValueRecordName(value, i),
+                                ValueRecordItem(value, i), buff);
+      }
+      size += IndentLine(opt, NULL);
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "</%s:%s>", opt->recname, name);
+      } else {
+        size += sprintf(buff, "</%s>", name);
+      }
+      break;
+    default:
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "<%s:%s", opt->recname, name);
+      } else {
+        size += sprintf(buff, "<%s", name);
+      }
+      size += 6; //	" type="
+      switch (ValueType(value)) {
+      case GL_TYPE_INT:
+        size += 5; //	"int"
+        break;
+      case GL_TYPE_BOOL:
+        size += 6; //	"bool"
+        break;
+      case GL_TYPE_BYTE:
+        size +=
+            sprintf(buff, "\"byte\" size=\"%d\"", (int)ValueByteLength(value));
+        break;
+      case GL_TYPE_BINARY:
+        size += sprintf(buff, "\"binary\" size=\"%d\"",
+                        (int)ValueByteLength(value));
+        break;
+      case GL_TYPE_CHAR:
+        size += sprintf(buff, "\"char\" size=\"%d\"",
+                        (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_VARCHAR:
+        size += sprintf(buff, "\"varchar\" size=\"%d\"",
+                        (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_TEXT:
+        size += sprintf(buff, "\"text\" size=\"%d\"",
+                        (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_SYMBOL:
+        size += sprintf(buff, "\"symbol\" size=\"%d\"",
+                        (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_DBCODE:
+        size += sprintf(buff, "\"dbcode\" size=\"%d\"",
+                        (int)ValueStringLength(value));
+        break;
+      case GL_TYPE_NUMBER:
+        size +=
+            sprintf(buff, "\"number\" size=\"%d\" ssize=\"%d\"",
+                    (int)ValueFixedLength(value), (int)ValueFixedSlen(value));
+        break;
+      case GL_TYPE_FLOAT:
+        size += 7; //	"float"
+        break;
+      case GL_TYPE_OBJECT:
+        size += 8; //	"object"
+        break;
+      case GL_TYPE_TIMESTAMP:
+        size += 9; //	"timestamp"
+        break;
+      case GL_TYPE_DATE:
+        size += 4; //	"date"
+        break;
+      case GL_TYPE_TIME:
+        size += 8; //	"time"
+        break;
+      case GL_TYPE_ALIAS:
+      default:
+        break;
+      }
+      size += 1; //	">"
+      if (!IS_VALUE_NIL(value)) {
+        size += XML_EncodeSize(ValueToString(value, ConvCodeset(opt)));
+      }
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "</%s:%s>", opt->recname, name);
+      } else {
+        size += sprintf(buff, "</%s>", name);
+      }
+      break;
+    }
+    size += PutCR(opt, buff);
+    opt->nIndent--;
+  }
+  return (size);
 }
 
-extern	size_t
-XML_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
-{
-	char	buff[SIZE_BUFF+1];
-	size_t	size;
+extern size_t XML_SizeValue(CONVOPT *opt, ValueStruct *value) {
+  char buff[SIZE_BUFF + 1];
+  size_t size;
 
-ENTER_FUNC;
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		size = 19;			//	<?xml version="1.0"
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			size += 12 + strlen(ConvCodeset(opt));	
-			//	" encoding=\"%s\"",ConvCodeset(opt)
-		}
-		size += 2;			//	?>
-		size += PutCR(opt,buff);
-		opt->nIndent = 0;
-	} else
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		size = 0;
-		opt->nIndent = 0;
-	} else {
-		size = 0;
-		opt->nIndent = -1;
-	}
-	switch	(ConvXmlType(opt)) {
-	  case	XML_TYPE1:
-		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-			size += PutCR(opt,buff);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			size += _XML_SizeValue1(opt,opt->recname,value,buff);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			size += 11;			//	</lm:block>
-		}
-		break;
-	  case	XML_TYPE2:
-	  default:
-		if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-								,opt->recname,opt->recname,NS_URI,opt->recname);
-			} else {
-				size += sprintf(buff,"<data>");
-			}
-			size += PutCR(opt,buff);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-			size += _XML_SizeValue2(opt,opt->recname,value,buff);
-		}
-		if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-			if		(  opt->recname  !=  NULL  ) {
-				size += sprintf(buff,"</%s:data>",opt->recname);
-			} else {
-				size += sprintf(buff,"</data>");
-			}
-		}
-		break;
-	}
-LEAVE_FUNC;
-	return	(size);
+  ENTER_FUNC;
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    size = 19; //	<?xml version="1.0"
+    if (ConvCodeset(opt) != NULL) {
+      size += 12 + strlen(ConvCodeset(opt));
+      //	" encoding=\"%s\"",ConvCodeset(opt)
+    }
+    size += 2; //	?>
+    size += PutCR(opt, buff);
+    opt->nIndent = 0;
+  } else if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    size = 0;
+    opt->nIndent = 0;
+  } else {
+    size = 0;
+    opt->nIndent = -1;
+  }
+  switch (ConvXmlType(opt)) {
+  case XML_TYPE1:
+    if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+      size += sprintf(buff, "<lm:block xmlns:lm=\"%s\">", NS_URI);
+      size += PutCR(opt, buff);
+    }
+    if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+      size += _XML_SizeValue1(opt, opt->recname, value, buff);
+    }
+    if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+      size += 11; //	</lm:block>
+    }
+    break;
+  case XML_TYPE2:
+  default:
+    if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "<%s:data xmlns:%s=\"%s/%s.rec\">", opt->recname,
+                        opt->recname, NS_URI, opt->recname);
+      } else {
+        size += sprintf(buff, "<data>");
+      }
+      size += PutCR(opt, buff);
+    }
+    if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+      size += _XML_SizeValue2(opt, opt->recname, value, buff);
+    }
+    if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+      if (opt->recname != NULL) {
+        size += sprintf(buff, "</%s:data>", opt->recname);
+      } else {
+        size += sprintf(buff, "</data>");
+      }
+    }
+    break;
+  }
+  LEAVE_FUNC;
+  return (size);
 }
 
-extern	size_t
-XML1_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
-{
-	char	buff[SIZE_BUFF+1];
-	size_t	size;
+extern size_t XML1_SizeValue(CONVOPT *opt, ValueStruct *value) {
+  char buff[SIZE_BUFF + 1];
+  size_t size;
 
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		size = 19;			//	<?xml version="1.0"
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			size += 12 + strlen(ConvCodeset(opt));	
-			//	" encoding=\"%s\"",ConvCodeset(opt)
-		}
-		size += 2;			//	?>
-		size += PutCR(opt,buff);
-		opt->nIndent = 0;
-	} else
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		size = 0;
-		opt->nIndent = 0;
-	} else {
-		size = 0;
-		opt->nIndent = -1;
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		size += sprintf(buff,"<lm:block xmlns:lm=\"%s\">",NS_URI);
-		size += PutCR(opt,buff);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-		size += _XML_SizeValue1(opt,opt->recname,value,buff);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		size += 11;			//	</lm:block>
-	}
-	return	(size);
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    size = 19; //	<?xml version="1.0"
+    if (ConvCodeset(opt) != NULL) {
+      size += 12 + strlen(ConvCodeset(opt));
+      //	" encoding=\"%s\"",ConvCodeset(opt)
+    }
+    size += 2; //	?>
+    size += PutCR(opt, buff);
+    opt->nIndent = 0;
+  } else if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    size = 0;
+    opt->nIndent = 0;
+  } else {
+    size = 0;
+    opt->nIndent = -1;
+  }
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    size += sprintf(buff, "<lm:block xmlns:lm=\"%s\">", NS_URI);
+    size += PutCR(opt, buff);
+  }
+  if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+    size += _XML_SizeValue1(opt, opt->recname, value, buff);
+  }
+  if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    size += 11; //	</lm:block>
+  }
+  return (size);
 }
 
-extern	size_t
-XML2_SizeValue(
-	CONVOPT		*opt,
-	ValueStruct	*value)
-{
-	char	buff[SIZE_BUFF+1];
-	size_t	size;
+extern size_t XML2_SizeValue(CONVOPT *opt, ValueStruct *value) {
+  char buff[SIZE_BUFF + 1];
+  size_t size;
 
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		size = 19;			//	<?xml version="1.0"
-		if		(  ConvCodeset(opt)  !=  NULL  ) {
-			size += 12 + strlen(ConvCodeset(opt));	
-			//	" encoding=\"%s\"",ConvCodeset(opt)
-		}
-		size += 2;			//	?>
-		size += PutCR(opt,buff);
-		opt->nIndent = 0;
-	} else
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		size = 0;
-		opt->nIndent = 0;
-	} else {
-		size = 0;
-		opt->nIndent = -1;
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_HEADER )  !=  0  ) {
-		if		(  opt->recname  !=  NULL  ) {
-			size += sprintf(buff,"<%s:data xmlns:%s=\"%s/%s.rec\">"
-							,opt->recname,opt->recname,NS_URI,opt->recname);
-		} else {
-			size += sprintf(buff,"<data>");
-		}
-		size += PutCR(opt,buff);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_BODY )  !=  0  ) {
-		size += _XML_SizeValue2(opt,opt->recname,value,buff);
-	}
-	if		(  ( ConvOutput(opt) & XML_OUT_TAILER )  !=  0  ) {
-		if		(  opt->recname  !=  NULL  ) {
-			size += sprintf(buff,"</%s:data>",opt->recname);
-		} else {
-			size += sprintf(buff,"</data>");
-		}
-	}
-	return	(size);
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    size = 19; //	<?xml version="1.0"
+    if (ConvCodeset(opt) != NULL) {
+      size += 12 + strlen(ConvCodeset(opt));
+      //	" encoding=\"%s\"",ConvCodeset(opt)
+    }
+    size += 2; //	?>
+    size += PutCR(opt, buff);
+    opt->nIndent = 0;
+  } else if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    size = 0;
+    opt->nIndent = 0;
+  } else {
+    size = 0;
+    opt->nIndent = -1;
+  }
+  if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
+    if (opt->recname != NULL) {
+      size += sprintf(buff, "<%s:data xmlns:%s=\"%s/%s.rec\">", opt->recname,
+                      opt->recname, NS_URI, opt->recname);
+    } else {
+      size += sprintf(buff, "<data>");
+    }
+    size += PutCR(opt, buff);
+  }
+  if ((ConvOutput(opt) & XML_OUT_BODY) != 0) {
+    size += _XML_SizeValue2(opt, opt->recname, value, buff);
+  }
+  if ((ConvOutput(opt) & XML_OUT_TAILER) != 0) {
+    if (opt->recname != NULL) {
+      size += sprintf(buff, "</%s:data>", opt->recname);
+    } else {
+      size += sprintf(buff, "</data>");
+    }
+  }
+  return (size);
 }
 
-extern	void
-DestroyXMLOPT(
-	XMLOPT	*opt)
-{
-	xfree(opt);
+extern void DestroyXMLOPT(XMLOPT *opt) { xfree(opt); }
+
+extern void DestroyConvOptXML(CONVOPT *opt) {
+  if (opt->appendix != NULL) {
+    DestroyXMLOPT((XMLOPT *)opt->appendix);
+    opt->appendix = NULL;
+  }
+  DestroyConvOpt(opt);
 }
 
-extern	void
-DestroyConvOptXML(
-	CONVOPT	*opt)
-{
-	if		(  opt->appendix  !=  NULL  ) {
-		DestroyXMLOPT((XMLOPT *)opt->appendix);
-		opt->appendix = NULL;
-	}
-	DestroyConvOpt(opt);
-}
-
-#endif	/*	USE_XML	*/
+#endif /*	USE_XML	*/
