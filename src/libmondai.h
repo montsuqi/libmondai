@@ -2,45 +2,45 @@
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2007 Ogochan.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_INC_LIBMONDAI_H
-#define	_INC_LIBMONDAI_H
+#ifndef _INC_LIBMONDAI_H
+#define _INC_LIBMONDAI_H
 
-#include	"value.h"
-#include	"getset.h"
-#include	"OpenCOBOL_v.h"
-#include	"dotCOBOL_v.h"
-#include	"Native_v.h"
-#include	"Text_v.h"
-#include	"XML_v.h"
-#include	"php_v.h"
-#include	"json_v.h"
-#include	"cobolvalue.h"
-#include	"valueconv.h"
-#include	"fixed_v.h"
-#include	"numerici.h"
-#include	"hash_v.h"
-#include	"monstring.h"
-#include	"memory_v.h"
-#include	"misc_v.h"
-#include	"others.h"
-#include	"fileutils.h"
+#include "value.h"
+#include "getset.h"
+#include "OpenCOBOL_v.h"
+#include "dotCOBOL_v.h"
+#include "Native_v.h"
+#include "Text_v.h"
+#include "XML_v.h"
+#include "php_v.h"
+#include "json_v.h"
+#include "cobolvalue.h"
+#include "valueconv.h"
+#include "fixed_v.h"
+#include "numerici.h"
+#include "hash_v.h"
+#include "monstring.h"
+#include "memory_v.h"
+#include "misc_v.h"
+#include "others.h"
+#include "fileutils.h"
 
-static	const	unsigned int	libmondai_i18n = 1;
+static const unsigned int libmondai_i18n = 1;
 #endif

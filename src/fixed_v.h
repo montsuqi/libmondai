@@ -2,39 +2,39 @@
  * libmondai -- MONTSUQI data access library
  * Copyright (C) 2000-2003 Ogochan & JMA (Japan Medical Association).
  * Copyright (C) 2004-2008 Ogochan.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef	_INC_FIXED_H
-#define	_INC_FIXED_H
+#ifndef _INC_FIXED_H
+#define _INC_FIXED_H
 
-typedef	struct {
-	size_t		flen;
-	size_t		slen;
-	char		*sval;
-}	Fixed;
+typedef struct {
+  size_t flen;
+  size_t slen;
+  char *sval;
+} Fixed;
 
-extern	int			FixedToInt(Fixed *xval);
-extern	void		FloatToFixed(Fixed *xval, double fval);
-extern	void		IntToFixed(Fixed *xval, int ival);
-extern	double		FixedToFloat(Fixed *xval);
-extern	Fixed		*NewFixed(int flen, int slen);
+extern int FixedToInt(Fixed *xval);
+extern void FloatToFixed(Fixed *xval, double fval);
+extern void IntToFixed(Fixed *xval, int ival);
+extern double FixedToFloat(Fixed *xval);
+extern Fixed *NewFixed(int flen, int slen);
 
-extern	void		FreeFixed(Fixed *xval);
-extern	void		FixedRescale(Fixed *to, Fixed *fr);
+extern void FreeFixed(Fixed *xval);
+extern void FixedRescale(Fixed *to, Fixed *fr);
 
 #endif
