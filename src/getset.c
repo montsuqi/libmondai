@@ -61,7 +61,7 @@ extern int ValueToInteger(ValueStruct *val) {
       ret = StrToInt(ValueString(val), strlen(ValueString(val)));
       break;
     case GL_TYPE_NUMBER:
-      ret = FixedToInt(&ValueFixed(val));
+      ret = FixedToInt(ValueFixed(val));
       break;
     case GL_TYPE_INT:
       ret = ValueInteger(val);
@@ -100,7 +100,7 @@ extern double ValueToFloat(ValueStruct *val) {
       ret = atof(ValueString(val));
       break;
     case GL_TYPE_NUMBER:
-      ret = FixedToFloat(&ValueFixed(val));
+      ret = FixedToFloat(ValueFixed(val));
       break;
     case GL_TYPE_INT:
       ret = (double)ValueInteger(val);
@@ -138,7 +138,7 @@ extern Fixed *ValueToFixed(ValueStruct *val) {
       IntToFixed(ret, StrToInt(ValueString(val), strlen(ValueString(val))));
       break;
     case GL_TYPE_NUMBER:
-      xval = &ValueFixed(val);
+      xval = ValueFixed(val);
       ret = NewFixed(xval->flen, xval->slen);
       strcpy(ret->sval, xval->sval);
       break;
@@ -192,7 +192,7 @@ extern Bool ValueToBool(ValueStruct *val) {
       ret = (*ValueString(val) == 'T') ? TRUE : FALSE;
       break;
     case GL_TYPE_NUMBER:
-      ret = FixedToInt(&ValueFixed(val)) ? TRUE : FALSE;
+      ret = FixedToInt(ValueFixed(val)) ? TRUE : FALSE;
       break;
     case GL_TYPE_INT:
       ret = ValueInteger(val) ? TRUE : FALSE;
@@ -324,7 +324,7 @@ extern LargeByteString *ValueToLBS(ValueStruct *val, char *codeset) {
       LBS_EmitString(ValueStr(val), work2);
       break;
     case GL_TYPE_INT:
-      sprintf(work, "%d", ValueInteger(val));
+      sprintf(work, "%ld", ValueInteger(val));
       LBS_EmitString(ValueStr(val), work);
       break;
     case GL_TYPE_OBJECT:
@@ -604,11 +604,11 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
         if (fMinus) {
           *buff |= 0x40;
         }
-        FixedRescale(&ValueFixed(val), &from);
+        FixedRescale(ValueFixed(val), &from);
         rc = TRUE;
         break;
       case GL_TYPE_INT:
-        ValueInteger(val) = StrToInt(str, slen);
+        SetValueInteger(val, StrToInt(str, slen));
         rc = TRUE;
         break;
       case GL_TYPE_FLOAT:
@@ -616,7 +616,7 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
         rc = TRUE;
         break;
       case GL_TYPE_BOOL:
-        ValueBool(val) = (toupper(*str) == 'T') ? TRUE : FALSE;
+        SetValueBool(val, (toupper(*str) == 'T') ? TRUE : FALSE);
         rc = TRUE;
         break;
       case GL_TYPE_TIMESTAMP:
@@ -696,7 +696,7 @@ extern Bool SetValueInteger(ValueStruct *val, int ival) {
       rc = SetValueString(val, str, NULL);
       break;
     case GL_TYPE_INT:
-      ValueInteger(val) = ival;
+      ValueBody(val) = (void*)(int64_t)ival;
       rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
@@ -704,7 +704,7 @@ extern Bool SetValueInteger(ValueStruct *val, int ival) {
       rc = TRUE;
       break;
     case GL_TYPE_BOOL:
-      ValueBool(val) = (ival == 0) ? FALSE : TRUE;
+      SetValueBool(val, (ival == 0) ? FALSE : TRUE);
       rc = TRUE;
       break;
     case GL_TYPE_OBJECT:
@@ -752,7 +752,7 @@ extern Bool SetValueChar(ValueStruct *val, char cval) {
       rc = SetValueString(val, str, NULL);
       break;
     case GL_TYPE_INT:
-      ValueInteger(val) = (int)cval;
+      SetValueInteger(val, (int)cval);
       rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
@@ -760,12 +760,33 @@ extern Bool SetValueChar(ValueStruct *val, char cval) {
       rc = TRUE;
       break;
     case GL_TYPE_BOOL:
-      ValueBool(val) = (cval == 0) ? FALSE : TRUE;
+      SetValueBool(val, (cval == 0) ? FALSE : TRUE);
       rc = TRUE;
       break;
     default:
       ValueIsNil(val);
       rc = FALSE;
+    }
+  }
+  return (rc);
+}
+
+extern Bool SetValueAliasName(ValueStruct *val, char *name) {
+  Bool rc;
+
+  rc = FALSE;
+  if (val == NULL) {
+    MonWarning("no ValueStruct");
+  } else {
+    ValueIsNonNil(val);
+    switch (ValueType(val)) {
+    case GL_TYPE_ALIAS:
+      ValueBody(val) = name;
+      rc = TRUE;
+      break;
+    default:
+      ValueIsNil(val);
+      break;
     }
   }
   return (rc);
@@ -794,7 +815,7 @@ extern Bool SetValueBool(ValueStruct *val, Bool bval) {
       rc = SetValueString(val, str, NULL);
       break;
     case GL_TYPE_INT:
-      ValueInteger(val) = bval;
+      SetValueInteger(val, bval);
       rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
@@ -802,7 +823,7 @@ extern Bool SetValueBool(ValueStruct *val, Bool bval) {
       rc = TRUE;
       break;
     case GL_TYPE_BOOL:
-      ValueBool(val) = bval;
+      ValueBody(val) = (void*)(uint64_t)bval;
       rc = TRUE;
       break;
     default:
@@ -834,11 +855,11 @@ extern Bool SetValueFloat(ValueStruct *val, double fval) {
       rc = SetValueString(val, str, NULL);
       break;
     case GL_TYPE_NUMBER:
-      FloatToFixed(&ValueFixed(val), fval);
+      FloatToFixed(ValueFixed(val), fval);
       rc = TRUE;
       break;
     case GL_TYPE_INT:
-      ValueInteger(val) = (int)fval;
+      SetValueInteger(val, (int)fval);
       rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
@@ -846,7 +867,7 @@ extern Bool SetValueFloat(ValueStruct *val, double fval) {
       rc = TRUE;
       break;
     case GL_TYPE_BOOL:
-      ValueBool(val) = (fval == 0) ? FALSE : TRUE;
+      SetValueBool(val, (fval == 0) ? FALSE : TRUE);
       rc = TRUE;
       break;
     case GL_TYPE_TIMESTAMP:
@@ -882,11 +903,11 @@ extern Bool SetValueFixed(ValueStruct *val, Fixed *fval) {
       rc = SetValueString(val, fval->sval, NULL);
       break;
     case GL_TYPE_NUMBER:
-      FixedRescale(&ValueFixed(val), fval);
+      FixedRescale(ValueFixed(val), fval);
       rc = TRUE;
       break;
     case GL_TYPE_INT:
-      ValueInteger(val) = FixedToInt(fval);
+      SetValueInteger(val, FixedToInt(fval));
       rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
@@ -1017,17 +1038,16 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
       break;
     case GL_TYPE_NUMBER:
       if (str != NULL) {
-        memcpy(&ValueFixed(val), str, sizeof(Fixed));
+        memcpy(ValueFixed(val), str, sizeof(Fixed));
       } else {
-        memclear(&ValueFixed(val), sizeof(Fixed));
+        memclear(ValueFixed(val), sizeof(Fixed));
       }
       rc = TRUE;
       break;
     case GL_TYPE_INT:
+      memclear(ValueBody(val), sizeof(void*));
       if (str != NULL) {
-        memcpy(&ValueInteger(val), str, sizeof(int));
-      } else {
-        memclear(&ValueInteger(val), sizeof(int));
+        memcpy(ValueBody(val), str, sizeof(int));
       }
       rc = TRUE;
       break;
@@ -1052,10 +1072,9 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
       rc = TRUE;
       break;
     case GL_TYPE_BOOL:
+      memclear(ValueBody(val), sizeof(void*));
       if (str != NULL) {
-        memcpy(&ValueBool(val), str, sizeof(Bool));
-      } else {
-        memclear(&ValueBool(val), sizeof(Bool));
+        memcpy(ValueBody(val), str, sizeof(Bool));
       }
       rc = TRUE;
       break;
@@ -1115,23 +1134,23 @@ extern unsigned char *ValueToBinary(ValueStruct *val) {
         break;
       case GL_TYPE_NUMBER:
         LBS_ReserveSize(ValueStr(val), sizeof(Fixed), FALSE);
-        memcpy(ValueStrBody(val), &ValueFixed(val), sizeof(Fixed));
+        memcpy(ValueStrBody(val), ValueFixed(val), sizeof(Fixed));
         break;
       case GL_TYPE_INT:
         LBS_ReserveSize(ValueStr(val), sizeof(int), FALSE);
-        memcpy(ValueStrBody(val), &ValueInteger(val), sizeof(int));
+        memcpy(ValueStrBody(val), ValueBody(val), sizeof(int));
         break;
       case GL_TYPE_OBJECT:
         LBS_ReserveSize(ValueStr(val), sizeof(MonObjectType), FALSE);
-        memcpy(ValueStrBody(val), &ValueObject(val), sizeof(MonObjectType));
+        memcpy(ValueStrBody(val), ValueObject(val), sizeof(MonObjectType));
         break;
       case GL_TYPE_FLOAT:
         LBS_ReserveSize(ValueStr(val), sizeof(double), FALSE);
-        memcpy(ValueStrBody(val), &ValueFloat(val), sizeof(double));
+        memcpy(ValueStrBody(val), ValueBody(val), sizeof(double));
         break;
       case GL_TYPE_BOOL:
         LBS_ReserveSize(ValueStr(val), sizeof(Bool), FALSE);
-        memcpy(ValueStrBody(val), &ValueBool(val), sizeof(Bool));
+        memcpy(ValueStrBody(val), ValueBody(val), sizeof(Bool));
         break;
       case GL_TYPE_TIMESTAMP:
       case GL_TYPE_DATE:
@@ -1170,14 +1189,13 @@ extern Bool SetValueDateTime(ValueStruct *val, struct tm tval) {
       rc = SetValueString(val, str, NULL);
       break;
     case GL_TYPE_INT:
-      rc = ((ValueInteger(val) = (int)mktime(&tval)) < 0) ? FALSE : TRUE;
+      rc = SetValueInteger(val, (int)mktime(&tval) < 0 ? FALSE : TRUE);
       break;
     case GL_TYPE_FLOAT:
       rc = ((ValueFloat(val) = (double)mktime(&tval)) < 0) ? FALSE : TRUE;
       break;
     case GL_TYPE_BOOL:
-      rc = (ValueBool(val) = (mktime(&tval) == 0 ? FALSE : TRUE) < 0) ? FALSE
-                                                                      : TRUE;
+      rc = SetValueBool(val, ((mktime(&tval) == 0 ? FALSE : TRUE) < 0) ? FALSE : TRUE);
       break;
     case GL_TYPE_TIMESTAMP:
     case GL_TYPE_DATE:
@@ -1223,7 +1241,7 @@ extern struct tm ValueToDateTime(ValueStruct *val) {
       mktime(&ret);
       break;
     case GL_TYPE_NUMBER:
-      xval = &ValueFixed(val);
+      xval = ValueFixed(val);
       str = xval->sval;
       ret.tm_year = StrToInt(str, 4);
       str += 4;
@@ -1297,7 +1315,7 @@ extern struct tm ValueToDate(ValueStruct *val) {
       mktime(&ret);
       break;
     case GL_TYPE_NUMBER:
-      xval = &ValueFixed(val);
+      xval = ValueFixed(val);
       str = xval->sval;
       ret.tm_year = StrToInt(str, 4);
       str += 4;
@@ -1350,7 +1368,7 @@ extern struct tm ValueToTime(ValueStruct *val) {
       str += 2;
       break;
     case GL_TYPE_NUMBER:
-      xval = &ValueFixed(val);
+      xval = ValueFixed(val);
       str = xval->sval;
       ret.tm_year = 0;
       ret.tm_mon = 0;

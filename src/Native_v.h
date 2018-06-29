@@ -23,16 +23,13 @@
 #define _INC_NATIVE_VALUE_H
 #include "valueconv.h"
 
-extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
-                                ValueStruct *value);
-extern size_t NativePackValue(CONVOPT *opt, unsigned char *p,
-                              ValueStruct *value);
+extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
+extern size_t NativePackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value);
 extern size_t NativeSizeValue(CONVOPT *opt, ValueStruct *val);
 
 extern ValueStruct *NativeRestoreValue(unsigned char *p, Bool fData);
 extern size_t NativeSaveValue(unsigned char *p, ValueStruct *value, Bool fData);
 extern size_t NativeSaveSize(ValueStruct *value, Bool fData);
-extern size_t _NativeRestoreValue(unsigned char *p, ValueStruct **ret,
-                                  Bool fData);
+extern size_t _NativeRestoreValue(unsigned char *p, ValueStruct **ret, Bool fData);
 
 #endif

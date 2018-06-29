@@ -46,6 +46,7 @@
 #include "others.h"
 #include "Lex.h"
 #include "RecParser.h"
+#include "getset.h"
 #include "debug.h"
 
 #define T_CHAR (T_YYBASE + 1)
@@ -177,7 +178,7 @@ extern ValueStruct *ParValueDefine(CURFILE *in) {
         Error("invalid char in alias");
         break;
       }
-      ValueAliasName(value) = StrDup(buff);
+      SetValueAliasName(value, StrDup(buff));
     }
     break;
   case T_BYTE:

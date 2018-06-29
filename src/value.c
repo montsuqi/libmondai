@@ -64,6 +64,7 @@ extern ValueStruct *NewValue(PacketDataType type) {
   switch (type) {
   case GL_TYPE_BYTE:
   case GL_TYPE_BINARY:
+    ret->body = New(CharData);
     ValueByteLength(ret) = 0;
     ValueByteSize(ret) = 0;
     ValueByte(ret) = NULL;
@@ -73,30 +74,35 @@ extern ValueStruct *NewValue(PacketDataType type) {
   case GL_TYPE_DBCODE:
   case GL_TYPE_TEXT:
   case GL_TYPE_SYMBOL:
+    ret->body = New(CharData);
     ValueStringLength(ret) = 0;
     ValueStringSize(ret) = 0;
     ValueString(ret) = NULL;
     ValueIsExpandable(ret);
     break;
   case GL_TYPE_NUMBER:
+    ret->body = New(Fixed);
     ValueFixedLength(ret) = 0;
     ValueFixedSlen(ret) = 0;
     ValueFixedBody(ret) = NULL;
     break;
   case GL_TYPE_INT:
-    ValueInteger(ret) = 0;
+    SetValueInteger(ret,0);
     break;
   case GL_TYPE_FLOAT:
+    ret->body = xmalloc(sizeof(double));
     ValueFloat(ret) = 0.0;
     break;
   case GL_TYPE_BOOL:
-    ValueBool(ret) = FALSE;
+    SetValueBool(ret,FALSE);
     break;
   case GL_TYPE_OBJECT:
+    ret->body = New(ObjectData);
     ValueObjectId(ret) = 0;
     ValueObjectFile(ret) = NULL;
     break;
   case GL_TYPE_RECORD:
+    ret->body = New(RecordData);
     ValueRecordSize(ret) = 0;
     ValueRecordMembers(ret) = NewNameHash();
     ValueRecordItems(ret) = NULL;
@@ -104,16 +110,18 @@ extern ValueStruct *NewValue(PacketDataType type) {
     ValueAttribute(ret) = GL_ATTR_NULL;
     break;
   case GL_TYPE_ARRAY:
+    ret->body = New(ArrayData);
     ValueArraySize(ret) = 0;
     ValueArrayPrototype(ret) = NULL;
     ValueArrayItems(ret) = NULL;
     ValueAttribute(ret) = GL_ATTR_NULL;
     break;
   case GL_TYPE_ALIAS:
-    ValueAliasName(ret) = NULL;
+    SetValueAliasName(ret,NULL);
     ValueAttribute(ret) = GL_ATTR_NULL;
     break;
   case GL_TYPE_VALUES:
+    ret->body = New(ValuesData);
     ValueValuesSize(ret) = 0;
     ValueValuesItems(ret) = NULL;
     ValueAttribute(ret) = GL_ATTR_NULL;
@@ -121,7 +129,7 @@ extern ValueStruct *NewValue(PacketDataType type) {
   case GL_TYPE_TIMESTAMP:
   case GL_TYPE_DATE:
   case GL_TYPE_TIME:
-    ValueDateTime(ret) = (struct tm *)xmalloc(sizeof(struct tm));
+    ret->body = (struct tm *)xmalloc(sizeof(struct tm));
     ValueDateTimeSec(ret) = 0;
     ValueDateTimeMin(ret) = 0;
     ValueDateTimeHour(ret) = 0;
@@ -133,7 +141,7 @@ extern ValueStruct *NewValue(PacketDataType type) {
     ValueDateTimeIsdst(ret) = 0;
     break;
   case GL_TYPE_POINTER:
-    ValuePointer(ret) = NULL;
+    ret->body = NULL;
     break;
   default:
     MonWarningPrintf("invalid type:%#X", type);
@@ -158,10 +166,10 @@ extern void FreeValueStruct(ValueStruct *val) {
       for (i = 0; i < ValueArraySize(val); i++) {
         FreeValueStruct(ValueArrayItem(val, i));
       }
-      xfree(ValueArrayItems(val));
       if (ValueArrayPrototype(val) != NULL) {
         FreeValueStruct(ValueArrayPrototype(val));
       }
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(val); i++) {
@@ -169,46 +177,42 @@ extern void FreeValueStruct(ValueStruct *val) {
         xfree(ValueRecordName(val, i));
       }
       DestroyHashTable(ValueRecordMembers(val));
-      xfree(ValueRecordNames(val));
-      xfree(ValueRecordItems(val));
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_BYTE:
     case GL_TYPE_BINARY:
-      if (ValueByte(val) != NULL) {
-        xfree(ValueByte(val));
-      }
+      xfree(ValueByte(val));
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_CHAR:
     case GL_TYPE_VARCHAR:
     case GL_TYPE_DBCODE:
     case GL_TYPE_TEXT:
     case GL_TYPE_SYMBOL:
-      if (ValueString(val) != NULL) {
-        xfree(ValueString(val));
-      }
+      xfree(ValueString(val));
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_TIMESTAMP:
     case GL_TYPE_DATE:
     case GL_TYPE_TIME:
-      xfree(ValueDateTime(val));
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_NUMBER:
-      if (ValueFixedBody(val) != NULL) {
-        xfree(ValueFixedBody(val));
-      }
+      xfree(ValueFixedBody(val));
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_OBJECT:
-      if (ValueObjectFile(val) != NULL) {
-        xfree(ValueObjectFile(val));
-      }
+      xfree(ValueObjectFile(val));
+      xfree(ValueBody(val));
+      break;
+    case GL_TYPE_FLOAT:
+      xfree(ValueBody(val));
       break;
     case GL_TYPE_ALIAS:
     default:
       break;
     }
-    if (ValueStr(val) != NULL) {
-      FreeLBS(ValueStr(val));
-    }
+    FreeLBS(ValueStr(val));
     xfree(val);
   }
 }
@@ -389,7 +393,7 @@ static void _DumpValueStruct(ValueStruct *val, int level) {
   } else {
     switch (ValueType(val)) {
     case GL_TYPE_INT:
-      fprintf(stderr, "%d\n", ValueInteger(val));
+      fprintf(stderr, "%ld\n", ValueInteger(val));
       break;
     case GL_TYPE_FLOAT:
       fprintf(stderr, "%g\n", ValueFloat(val));
@@ -482,13 +486,13 @@ extern void InitializeValue(ValueStruct *value) {
   }
   switch (ValueType(value)) {
   case GL_TYPE_INT:
-    ValueInteger(value) = 0;
+    SetValueInteger(value, 0);
     break;
   case GL_TYPE_FLOAT:
     ValueFloat(value) = 0.0;
     break;
   case GL_TYPE_BOOL:
-    ValueBool(value) = FALSE;
+    SetValueBool(value, FALSE);
     break;
   case GL_TYPE_OBJECT:
     ValueObjectId(value) = 0;
@@ -584,13 +588,13 @@ extern void FillValue(ValueStruct *value) {
   }
   switch (ValueType(value)) {
   case GL_TYPE_INT:
-    ValueInteger(value) = 1;
+    SetValueInteger(value, 1);
     break;
   case GL_TYPE_FLOAT:
     ValueFloat(value) = 1.0;
     break;
   case GL_TYPE_BOOL:
-    ValueBool(value) = FALSE;
+    SetValueBool(value, FALSE);
     break;
   case GL_TYPE_OBJECT:
     ValueObjectId(value) = 0;
@@ -750,13 +754,13 @@ extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
   ValueAttribute(vd) = ValueAttribute(vs);
   switch (ValueType(vs)) {
   case GL_TYPE_INT:
-    ValueInteger(vd) = ValueInteger(vs);
+    SetValueInteger(vd, ValueInteger(vs));
     break;
   case GL_TYPE_FLOAT:
     ValueFloat(vd) = ValueFloat(vs);
     break;
   case GL_TYPE_BOOL:
-    ValueBool(vd) = ValueBool(vs);
+    SetValueBool(vd, ValueBool(vs));
     break;
   case GL_TYPE_OBJECT:
     ValueObjectId(vd) = ValueObjectId(vs);
@@ -768,7 +772,7 @@ extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
   case GL_TYPE_TIMESTAMP:
   case GL_TYPE_DATE:
   case GL_TYPE_TIME:
-    ValueDateTime(vd) = ValueDateTime(vs);
+    memcpy(ValueBody(vd),ValueBody(vs),sizeof(struct tm));
     break;
   case GL_TYPE_TEXT:
   case GL_TYPE_SYMBOL:
@@ -1077,9 +1081,9 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
     switch (ValueType(template)) {
     case GL_TYPE_INT:
       if (fCopy) {
-        ValueInteger(p) = ValueInteger(template);
+        SetValueInteger(p, ValueInteger(template));
       } else {
-        ValueInteger(p) = 0;
+        SetValueInteger(p, 0);
       }
       break;
     case GL_TYPE_FLOAT:
@@ -1091,9 +1095,9 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
       break;
     case GL_TYPE_BOOL:
       if (fCopy) {
-        ValueBool(p) = ValueBool(template);
+        SetValueBool(p, ValueBool(template));
       } else {
-        ValueBool(p) = FALSE;
+        SetValueBool(p, FALSE);
       }
       break;
     case GL_TYPE_OBJECT:
@@ -1112,7 +1116,7 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
     case GL_TYPE_DATE:
     case GL_TYPE_TIME:
       if (fCopy) {
-        ValueDateTime(p) = ValueDateTime(template);
+        memcpy(ValueBody(p), ValueBody(template),sizeof(struct tm));
       } else {
         ValueDateTimeSec(p) = 0;
         ValueDateTimeMin(p) = 0;
@@ -1217,7 +1221,7 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
       }
       break;
     case GL_TYPE_ALIAS:
-      ValueAliasName(p) = StrDup(ValueAliasName(template));
+      SetValueAliasName(p, StrDup(ValueAliasName(template)));
       break;
     default:
       break;

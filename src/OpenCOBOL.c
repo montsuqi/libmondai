@@ -124,8 +124,9 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
     ValueIsNonNil(value);
     switch (ValueType(value)) {
     case GL_TYPE_INT:
-      ValueInteger(value) = *(int *)p;
-      IntegerCobol2C(opt, &ValueInteger(value));
+      i = *(int*)p;
+      IntegerCobol2C(opt, &i);
+      SetValueInteger(value, i);
       p += sizeof(int);
       break;
     case GL_TYPE_FLOAT:
@@ -133,7 +134,7 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       p += sizeof(double);
       break;
     case GL_TYPE_BOOL:
-      ValueBool(value) = (*(char *)p == 'T') ? TRUE : FALSE;
+      SetValueBool(value,(*(char *)p == 'T') ? TRUE : FALSE);
       p++;
       break;
     case GL_TYPE_OBJECT:

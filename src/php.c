@@ -192,7 +192,7 @@ static size_t _PHP_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value,
       }
       break;
     case GL_TYPE_INT:
-      p += sprintf(p, "i:%d;", ValueInteger(value));
+      p += sprintf(p, "i:%ld;", ValueInteger(value));
       break;
     case GL_TYPE_NUMBER:
     case GL_TYPE_FLOAT:

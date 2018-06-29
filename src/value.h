@@ -63,38 +63,35 @@ typedef struct _ValueStruct {
   LargeByteString *str;
   struct _ValueStruct *parent;
   int index;
-  union {
-    struct {
-      size_t count;
-      struct _ValueStruct *prototype, **item;
-    } ArrayData;
-    struct {
-      size_t count;
-      struct _ValueStruct **item;
-      char **names;
-      GHashTable *members;
-    } RecordData;
-    struct {
-      size_t length, asize;
-      unsigned char *sval;
-    } CharData;
-    struct {
-      size_t count;
-      struct _ValueStruct **item;
-    } ValuesData;
-    struct {
-      MonObjectType oid;
-      char *file;
-    } Object;
-    struct tm *DateTime;
-    char *AliasName;
-    Fixed FixedData;
-    int IntegerData;
-    Bool BoolData;
-    double FloatData;
-    struct _ValueStruct *Pointer;
-  } body;
+  void *body;
 } ValueStruct;
+
+typedef struct _ArrayData {
+  size_t count;
+  struct _ValueStruct *prototype, **item;
+} ArrayData;
+
+typedef struct _RecordData {
+  size_t count;
+  struct _ValueStruct **item;
+  char **names;
+  GHashTable *members;
+} RecordData;
+
+typedef struct _CharData {
+  size_t length, asize;
+  unsigned char *sval;
+} CharData;
+
+typedef struct _ValueData {
+  size_t count;
+  struct _ValueStruct **item;
+} ValuesData;
+
+typedef struct _ObjectData {
+  MonObjectType oid;
+  char *file;
+} ObjectData;
 
 #define GL_TYPE_CLASS (PacketDataType)0xF0
 #define GL_TYPE_NULL (PacketDataType)0x00
@@ -149,8 +146,7 @@ typedef struct _ValueStruct {
 #define IS_VALUE_UPDATE(v) (((v)->attr & GL_ATTR_UPDATE) == GL_ATTR_UPDATE)
 #define IS_VALUE_DESC(v) (((v)->attr & GL_ATTR_DESC) == GL_ATTR_DESC)
 #define IS_VALUE_UNIQ(v) (((v)->attr & GL_ATTR_UNIQ) == GL_ATTR_UNIQ)
-#define IS_VALUE_EXPANDABLE(v)                                                 \
-  (((v)->attr & GL_ATTR_EXPANDABLE) == GL_ATTR_EXPANDABLE)
+#define IS_VALUE_EXPANDABLE(v) (((v)->attr & GL_ATTR_EXPANDABLE) == GL_ATTR_EXPANDABLE)
 
 #define GL_OBJ_NULL 0
 
@@ -179,61 +175,73 @@ typedef struct _ValueStruct {
 
 #define ValueParent(v) ((v)->parent)
 #define ValueIndex(v) ((v)->index)
+#define ValueBody(v) ((v)->body)
 
+/*CharData*/
+#define ValueCharData(v)      ((CharData*)ValueBody(v))
+#define ValueStringPointer(v) ((ValueCharData(v))->sval)
+#define ValueStringLength(v)  ((ValueCharData(v))->length)
 #ifdef __VALUE_DIRECT
-#define ValueString(v) ((v)->body.CharData.sval)
-#define ValueStringSize(v) ((v)->body.CharData.asize)
+#define ValueString(v)        (ValueStringPointer(v))
+#define ValueStringSize(v)    (ValueByteSize(v))
 #endif
-#define ValueStringPointer(v) ((v)->body.CharData.sval)
-#define ValueStringLength(v) ((v)->body.CharData.length)
 
-#define ValueByte(v) ((v)->body.CharData.sval)
-#define ValueByteLength(v) ((v)->body.CharData.length)
-#define ValueByteSize(v) ((v)->body.CharData.asize)
+/*Byte*/
+#define ValueByte(v)          (ValueStringPointer(v))
+#define ValueByteLength(v)    (ValueStringLength(v))
+#define ValueByteSize(v)      ((ValueCharData(v))->asize)
 
-#define ValueInteger(v) ((v)->body.IntegerData)
-#define ValueBool(v) ((v)->body.BoolData)
-#define ValueFloat(v) ((v)->body.FloatData)
+/*DateTime*/
+#define ValueDateTime(v)      ((struct tm*)ValueBody(v))
+#define ValueDateTimeSec(v)   ((ValueDateTime(v))->tm_sec)
+#define ValueDateTimeMin(v)   ((ValueDateTime(v))->tm_min)
+#define ValueDateTimeHour(v)  ((ValueDateTime(v))->tm_hour)
+#define ValueDateTimeMDay(v)  ((ValueDateTime(v))->tm_mday)
+#define ValueDateTimeMon(v)   ((ValueDateTime(v))->tm_mon)
+#define ValueDateTimeYear(v)  ((ValueDateTime(v))->tm_year)
+#define ValueDateTimeWDay(v)  ((ValueDateTime(v))->tm_wday)
+#define ValueDateTimeYDay(v)  ((ValueDateTime(v))->tm_yday)
+#define ValueDateTimeIsdst(v) ((ValueDateTime(v))->tm_isdst)
 
-#define ValueDateTime(v) ((v)->body.DateTime)
-#define ValueDateTimeSec(v) ((v)->body.DateTime->tm_sec)
-#define ValueDateTimeMin(v) ((v)->body.DateTime->tm_min)
-#define ValueDateTimeHour(v) ((v)->body.DateTime->tm_hour)
-#define ValueDateTimeMDay(v) ((v)->body.DateTime->tm_mday)
-#define ValueDateTimeMon(v) ((v)->body.DateTime->tm_mon)
-#define ValueDateTimeYear(v) ((v)->body.DateTime->tm_year)
-#define ValueDateTimeWDay(v) ((v)->body.DateTime->tm_wday)
-#define ValueDateTimeYDay(v) ((v)->body.DateTime->tm_yday)
-#define ValueDateTimeIsdst(v) ((v)->body.DateTime->tm_isdst)
+/*Fixed*/
+#define ValueFixed(v)       ((Fixed*)ValueBody(v))
+#define ValueFixedLength(v) ((ValueFixed(v))->flen)
+#define ValueFixedSlen(v)   ((ValueFixed(v))->slen)
+#define ValueFixedBody(v)   ((ValueFixed(v))->sval)
 
-#define ValueFixed(v) ((v)->body.FixedData)
-#define ValueFixedLength(v) ((v)->body.FixedData.flen)
-#define ValueFixedSlen(v) ((v)->body.FixedData.slen)
-#define ValueFixedBody(v) ((v)->body.FixedData.sval)
+/*ArrayData*/
+#define ValueArray(v)          ((ArrayData*)ValueBody(v))
+#define ValueArraySize(v)      ((ValueArray(v))->count)
+#define ValueArrayPrototype(v) ((ValueArray(v))->prototype)
+#define ValueArrayItems(v)     ((ValueArray(v))->item)
+#define ValueArrayItem(v, i)   ((ValueArray(v))->item[(i)])
 
-#define ValueArraySize(v) ((v)->body.ArrayData.count)
-#define ValueArrayPrototype(v) ((v)->body.ArrayData.prototype)
-#define ValueArrayItems(v) ((v)->body.ArrayData.item)
-#define ValueArrayItem(v, i) ((v)->body.ArrayData.item[(i)])
+/*RecordData*/
+#define ValueRecord(v)        ((RecordData*)ValueBody(v))
+#define ValueRecordSize(v)    ((ValueRecord(v))->count)
+#define ValueRecordItems(v)   ((ValueRecord(v))->item)
+#define ValueRecordItem(v, i) ((ValueRecord(v))->item[(i)])
+#define ValueRecordNames(v)   ((ValueRecord(v))->names)
+#define ValueRecordName(v, i) ((ValueRecord(v))->names[(i)])
+#define ValueRecordMembers(v) ((ValueRecord(v))->members)
 
-#define ValueRecordSize(v) ((v)->body.RecordData.count)
-#define ValueRecordItems(v) ((v)->body.RecordData.item)
-#define ValueRecordItem(v, i) ((v)->body.RecordData.item[(i)])
-#define ValueRecordNames(v) ((v)->body.RecordData.names)
-#define ValueRecordName(v, i) ((v)->body.RecordData.names[(i)])
-#define ValueRecordMembers(v) ((v)->body.RecordData.members)
+/*ObjecData*/
+#define ValueObject(v)     ((ObjectData*)ValueBody(v))
+#define ValueObjectId(v)   ((ValueObject(v))->oid)
+#define ValueObjectFile(v) ((ValueObject(v))->file)
 
-#define ValueObject(v) ((v)->body.Object)
-#define ValueObjectId(v) ((v)->body.Object.oid)
-#define ValueObjectFile(v) ((v)->body.Object.file)
+/*Values*/
+#define ValueValues(v)        ((ValuesData*)ValueBody(v))
+#define ValueValuesSize(v)    ((ValueValues(v))->count)
+#define ValueValuesItems(v)   ((ValueValues(v))->item)
+#define ValueValuesItem(v, i) ((ValueValues(v))->item[(i)])
 
-#define ValueAliasName(v) ((v)->body.AliasName)
-
-#define ValuePointer(v) ((v)->body.Pointer)
-
-#define ValueValuesSize(v) ((v)->body.ValuesData.count)
-#define ValueValuesItems(v) ((v)->body.ValuesData.item)
-#define ValueValuesItem(v, i) ((v)->body.ValuesData.item[(i)])
+/*misc*/
+#define ValueInteger(v)        ((int64_t)ValueBody(v))
+#define ValueBool(v)           ((int64_t)ValueBody(v))
+#define ValueFloat(v)          (*((double*)(ValueBody(v))))
+#define ValueAliasName(v)      ((char*)ValueBody(v))
+#define ValuePointer(v)        ((ValueStruct*)ValueBody(v))
 
 extern ValueStruct *NewValue(PacketDataType type);
 extern void FreeValueStruct(ValueStruct *val);

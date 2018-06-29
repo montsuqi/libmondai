@@ -41,6 +41,7 @@
 #include "monstring.h"
 #include "memory_v.h"
 #include "value.h"
+#include "getset.h"
 #include "Native_v.h"
 #include "debug.h"
 
@@ -69,7 +70,7 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
     switch (ValueType(value)) {
     case GL_TYPE_INT:
       dbgprintf("GL_TYPE_INT value[%d]", *(int *)p);
-      ValueInteger(value) = *(int *)p;
+      SetValueInteger(value,*(int *)p);
       p += sizeof(int);
       break;
     case GL_TYPE_TIMESTAMP:
@@ -97,7 +98,7 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
       break;
     case GL_TYPE_BOOL:
       dbgprintf("GL_TYPE_BOOL value[%c]", *(char *)p);
-      ValueBool(value) = (*(char *)p == 'T') ? TRUE : FALSE;
+      SetValueBool(value, (*(char *)p == 'T') ? TRUE : FALSE);
       p++;
       break;
     case GL_TYPE_FLOAT:
@@ -247,7 +248,7 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
       dbgmsg("GL_TYPE_ALIAS");
       name = StrDup(p);
       p += strlen(name) + 1;
-      ValueAliasName(value) = name;
+      SetValueAliasName(value, name);
       break;
     default:
       dbgmsg("default");
@@ -714,10 +715,10 @@ extern size_t _NativeRestoreValue(unsigned char *p, ValueStruct **ret,
     switch (ValueType(value)) {
     case GL_TYPE_INT:
       if (fData) {
-        ValueInteger(value) = *(int *)p;
+        SetValueInteger(value, *(int *)p);
         p += sizeof(int);
       } else {
-        ValueInteger(value) = 0;
+        SetValueInteger(value, 0);
       }
       break;
     case GL_TYPE_TIMESTAMP:
@@ -756,10 +757,10 @@ extern size_t _NativeRestoreValue(unsigned char *p, ValueStruct **ret,
       break;
     case GL_TYPE_BOOL:
       if (fData) {
-        ValueBool(value) = (*(char *)p == 'T') ? TRUE : FALSE;
+        SetValueBool(value, (*(char *)p == 'T') ? TRUE : FALSE);
         p++;
       } else {
-        ValueBool(value) = FALSE;
+        SetValueBool(value, FALSE);
       }
       break;
     case GL_TYPE_FLOAT:
@@ -879,7 +880,7 @@ extern size_t _NativeRestoreValue(unsigned char *p, ValueStruct **ret,
     case GL_TYPE_ALIAS:
       name = StrDup(p);
       p += strlen(name) + 1;
-      ValueAliasName(value) = name;
+      SetValueAliasName(value, name);
       break;
     default:
       ValueIsNil(value);

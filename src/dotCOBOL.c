@@ -85,8 +85,9 @@ extern size_t dotCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
     ValueIsNonNil(value);
     switch (ValueType(value)) {
     case GL_TYPE_INT:
-      ValueInteger(value) = *(int *)p;
-      dotCOBOL_IntegerCobol2C(&ValueInteger(value));
+      i = *(int *)p;
+      dotCOBOL_IntegerCobol2C(&i);
+      SetValueInteger(value, i);
       p += sizeof(int);
       break;
     case GL_TYPE_FLOAT:
@@ -94,7 +95,7 @@ extern size_t dotCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       p += sizeof(double);
       break;
     case GL_TYPE_BOOL:
-      ValueBool(value) = (*(char *)p == 'T') ? TRUE : FALSE;
+      SetValueBool(value, (*(char *)p == 'T') ? TRUE : FALSE);
       p++;
       break;
     case GL_TYPE_BYTE:
