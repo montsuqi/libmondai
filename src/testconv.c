@@ -33,8 +33,6 @@
 
 #define TEST_NATIVE1
 #define TEST_NATIVE2
-#define TEST_NATIVE3
-#define TEST_NATIVE4
 /*
 #define	TEST_VALUE
 #define	TEST_XML1
@@ -373,60 +371,6 @@ extern int main(int argc, char **argv) {
   NativeUnPackValue(opt, buff, val);
   DumpValueStruct(val);
   printf("***** Native(2) end *****\n");
-  xfree(buff);
-#endif
-
-#ifdef TEST_NATIVE3
-  buff = (unsigned char *)xmalloc(SIZE_BUFF);
-  memset(buff, 0, SIZE_BUFF);
-
-  printf("***** Native(3) *****\n");
-  ConvSetUseName(opt, TRUE);
-  ConvSetType(opt, TRUE);
-
-  printf("***** Native Size(3) *****\n");
-  size = NativeSaveSize(val, TRUE);
-  size1 = NativeSaveValue(buff, val, TRUE);
-  printf("size = %d\n", (int)size);
-  printf("size = %d\n", (int)size1);
-
-  if ((fp = fopen("test.native3", "w")) == NULL)
-    exit(1);
-  fwrite(buff, size, 1, fp);
-  fclose(fp);
-
-  printf("***** Native UnPack(3) *****\n");
-
-  val = NativeRestoreValue(buff, TRUE);
-  DumpValueStruct(val);
-  printf("***** Native(3) end *****\n");
-  xfree(buff);
-#endif
-
-#ifdef TEST_NATIVE4
-  buff = (unsigned char *)xmalloc(SIZE_BUFF);
-  memset(buff, 0, SIZE_BUFF);
-
-  printf("***** Native(4) *****\n");
-  ConvSetUseName(opt, TRUE);
-  ConvSetType(opt, TRUE);
-
-  printf("***** Native Size(4) *****\n");
-  size = NativeSizeValue(opt, val);
-  size1 = NativePackValue(opt, buff, val);
-  printf("size = %d\n", (int)size);
-  printf("size = %d\n", (int)size1);
-
-  if ((fp = fopen("test.native4", "w")) == NULL)
-    exit(1);
-  fwrite(buff, size, 1, fp);
-  fclose(fp);
-
-  printf("***** Native UnPack(4) *****\n");
-
-  val = NativeRestoreValue(buff, TRUE);
-  DumpValueStruct(val);
-  printf("***** Native(4) end *****\n");
   xfree(buff);
 #endif
 
