@@ -79,7 +79,6 @@ extern CURFILE *PushLexInfo(CURFILE *in, const char *name, const char *path,
   struct stat sb;
   FILE *fp;
 
-  ENTER_FUNC;
   if ((fp = fopen(name, "r")) != NULL) {
     fstat(fileno(fp), &sb);
     info = NewCURFILE(in, path, res);
@@ -92,7 +91,6 @@ extern CURFILE *PushLexInfo(CURFILE *in, const char *name, const char *path,
     }
     info = NULL;
   }
-  LEAVE_FUNC;
   return (info);
 }
 
@@ -100,11 +98,9 @@ extern CURFILE *PushLexInfoMem(CURFILE *in, const char *mem, const char *path,
                                GHashTable *res) {
   CURFILE *info;
 
-  ENTER_FUNC;
   info = NewCURFILE(in, path, res);
   info->body = (char *)mem;
   info->size = strlen(mem) + 1;
-  LEAVE_FUNC;
   return (info);
 }
 
@@ -112,17 +108,14 @@ extern CURFILE *PushLexInfoStream(CURFILE *in, FILE *fp, const char *path,
                                   GHashTable *res) {
   CURFILE *info;
 
-  ENTER_FUNC;
   info = NewCURFILE(in, path, res);
   info->fp = fp;
-  LEAVE_FUNC;
   return (info);
 }
 
 extern void DropLexInfo(CURFILE **in) {
   CURFILE *info;
 
-  ENTER_FUNC;
   info = (*in);
   if ((info->fp != NULL) && (info->fp != stdin)) {
     fclose(info->fp);
@@ -139,13 +132,11 @@ extern void DropLexInfo(CURFILE **in) {
   }
   (*in) = info->next;
   xfree(info);
-  LEAVE_FUNC;
 }
 
 static void ExitInclude(CURFILE *in) {
   INCFILE *back;
 
-  ENTER_FUNC;
   if (in->fp != NULL) {
     fclose(in->fp);
   }
@@ -164,7 +155,6 @@ static void ExitInclude(CURFILE *in) {
   in->cLine = back->cLine;
   in->ftop = back->next;
   xfree(back);
-  LEAVE_FUNC;
 }
 
 static void DoInclude(CURFILE *in, char *fn) {
@@ -174,7 +164,6 @@ static void DoInclude(CURFILE *in, char *fn) {
   char *p, *q;
   struct stat sb;
 
-  ENTER_FUNC;
   back = New(INCFILE);
   back->next = in->ftop;
   back->fn = in->fn;
@@ -210,7 +199,6 @@ static void DoInclude(CURFILE *in, char *fn) {
     fprintf(stderr, "include file %s not found.\n", fn);
     ExitInclude(in);
   }
-  LEAVE_FUNC;
 }
 
 extern void LexInit(void) { fLexVerbose = FALSE; }
@@ -219,13 +207,11 @@ extern GHashTable *MakeReservedTable(TokenTable *table) {
   int i;
   GHashTable *res;
 
-  ENTER_FUNC;
   res = NewNameiHash();
   for (i = 0; table[i].token != 0; i++) {
     g_hash_table_insert(res, StrDup(table[i].str),
                         (gpointer)(long)table[i].token);
   }
-  LEAVE_FUNC;
   return (res);
 }
 
@@ -291,7 +277,6 @@ static void ReadyDirective(CURFILE *in) {
   char buff[SIZE_LONGNAME + 1];
   int c;
 
-  ENTER_FUNC;
   SKIP_SPACE(in);
   p = buff;
   *p++ = c;
@@ -327,7 +312,6 @@ static void ReadyDirective(CURFILE *in) {
     UnGetChar(in, c);
     in->cLine++;
   }
-  LEAVE_FUNC;
 }
 
 #ifdef DEBUG
@@ -362,7 +346,6 @@ extern int Lex(CURFILE *in, int type) {
   Bool fDot;
   LargeByteString *lbs;
 
-  ENTER_FUNC;
   lbs = NewLBS();
 retry:
   if (in->Symbol != NULL) {
@@ -526,6 +509,5 @@ retry:
 #ifdef DEBUG
   DumpCURFILE(in);
 #endif
-  LEAVE_FUNC;
   return (in->Token);
 }

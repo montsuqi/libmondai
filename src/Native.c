@@ -54,7 +54,6 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
   unsigned char *q;
   char *name;
 
-  ENTER_FUNC;
   q = p;
   if (value != NULL) {
     type = *(PacketDataType *)p;
@@ -214,7 +213,6 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
         dbgprintf("child[%d]", i);
         rc = NativeUnPackValue(opt, p, ValueArrayItem(value, i));
         ValueParent(ValueArrayItem(value, i)) = value;
-        ValueIndex(ValueArrayItem(value, i)) = i;
         if (rc > 0) {
           p += rc;
         } else {
@@ -222,6 +220,7 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
         }
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       dbgmsg("GL_TYPE_RECORD");
       p += sizeof(size_t);
@@ -235,7 +234,6 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
         p += strlen(p) + 1;
         rc = NativeUnPackValue(opt, p, ValueRecordItem(value, i));
         ValueParent(ValueRecordItem(value, i)) = value;
-        ValueIndex(ValueRecordItem(value, i)) = i;
         dbgprintf("rc[%d]", rc);
         if (rc > 0) {
           p += rc;
@@ -256,7 +254,6 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
       break;
     }
   }
-  LEAVE_FUNC;
   return (p - q);
 }
 
@@ -264,7 +261,6 @@ extern size_t NativeSizeValue(CONVOPT *opt, ValueStruct *value) {
   size_t esize, size;
   int i;
 
-  ENTER_FUNC;
   esize = 0;
   if (value != NULL) {
     esize += sizeof(PacketDataType);
@@ -319,6 +315,7 @@ extern size_t NativeSizeValue(CONVOPT *opt, ValueStruct *value) {
         esize += NativeSizeValue(opt, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       esize += sizeof(size_t);
       for (i = 0; i < ValueRecordSize(value); i++) {
@@ -333,7 +330,6 @@ extern size_t NativeSizeValue(CONVOPT *opt, ValueStruct *value) {
       break;
     }
   }
-  LEAVE_FUNC;
   return (esize);
 }
 
@@ -343,7 +339,6 @@ extern size_t NativePackValue(CONVOPT *opt, unsigned char *p,
   int i;
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     *(PacketDataType *)p = ValueType(value);
@@ -437,6 +432,7 @@ extern size_t NativePackValue(CONVOPT *opt, unsigned char *p,
         p += NativePackValue(opt, p, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       *(size_t *)p = ValueRecordSize(value);
       p += sizeof(size_t);
@@ -454,6 +450,5 @@ extern size_t NativePackValue(CONVOPT *opt, unsigned char *p,
       break;
     }
   }
-  LEAVE_FUNC;
   return (p - pp);
 }

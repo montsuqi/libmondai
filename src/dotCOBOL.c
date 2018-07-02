@@ -188,6 +188,7 @@ extern size_t dotCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
         p += dotCOBOL_UnPackValue(opt, p, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += dotCOBOL_UnPackValue(opt, p, ValueRecordItem(value, i));
@@ -286,6 +287,7 @@ extern size_t dotCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
         p += dotCOBOL_PackValue(opt, p, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += dotCOBOL_PackValue(opt, p, ValueRecordItem(value, i));
@@ -350,6 +352,7 @@ extern size_t dotCOBOL_SizeValue(CONVOPT *opt, ValueStruct *value) {
     }
     ret = dotCOBOL_SizeValue(opt, ValueArrayItem(value, 0)) * n;
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {

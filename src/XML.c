@@ -60,12 +60,10 @@ typedef struct {
 static XMLOPT *NewXMLOPT(void) {
   XMLOPT *ret;
 
-  ENTER_FUNC;
   ret = New(XMLOPT);
   ret->type = XML_TYPE1;
   ret->fOutput = XML_OUT_HEADER | XML_OUT_TAILER | XML_OUT_BODY;
 
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -77,12 +75,10 @@ extern void ConvSetXmlType(CONVOPT *opt, int type) {
 }
 
 extern void ConvSetOutput(CONVOPT *opt, unsigned char v) {
-  ENTER_FUNC;
   if (opt->appendix == NULL) {
     opt->appendix = NewXMLOPT();
   }
   ((XMLOPT *)opt->appendix)->fOutput = v;
-  LEAVE_FUNC;
 }
 
 static int XML_Encode(char *str, char *buff) {
@@ -149,7 +145,6 @@ static size_t _XML_PackValue1(CONVOPT *opt, unsigned char *p, char *name,
   int i;
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     // if		(  IS_VALUE_NIL(value)  )	return	(0);
@@ -171,6 +166,7 @@ static size_t _XML_PackValue1(CONVOPT *opt, unsigned char *p, char *name,
       p += IndentLine(opt, p);
       p += sprintf(p, "</lm:array>");
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       if (name != NULL) {
         p += sprintf(p, "<lm:record name=\"%s\" size=\"%d\">", name,
@@ -271,7 +267,6 @@ static size_t _XML_PackValue1(CONVOPT *opt, unsigned char *p, char *name,
     p += PutCR(opt, p);
     opt->nIndent--;
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -281,7 +276,6 @@ static size_t _XML_PackValue2(CONVOPT *opt, unsigned char *p, char *name,
   int i;
   unsigned char *pp;
 
-  ENTER_FUNC;
   if (IS_VALUE_NIL(value))
     return (0);
   pp = p;
@@ -308,6 +302,7 @@ static size_t _XML_PackValue2(CONVOPT *opt, unsigned char *p, char *name,
         p += sprintf(p, "</%s>", name);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       if (opt->recname != NULL) {
         p += sprintf(p, "<%s:%s type=\"record\"", opt->recname, name);
@@ -414,7 +409,6 @@ static size_t _XML_PackValue2(CONVOPT *opt, unsigned char *p, char *name,
     p += PutCR(opt, (char *)p);
     opt->nIndent--;
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -422,7 +416,6 @@ extern size_t XML_PackValue(CONVOPT *opt, unsigned char *p,
                             ValueStruct *value) {
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
     p += sprintf((char *)p, "<?xml version=\"1.0\"");
@@ -476,7 +469,6 @@ extern size_t XML_PackValue(CONVOPT *opt, unsigned char *p,
     break;
   }
   *p = 0;
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -484,7 +476,6 @@ extern size_t XML1_PackValue(CONVOPT *opt, unsigned char *p,
                              ValueStruct *value) {
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
     p += sprintf((char *)p, "<?xml version=\"1.0\"");
@@ -509,7 +500,6 @@ extern size_t XML1_PackValue(CONVOPT *opt, unsigned char *p,
     p += sprintf((char *)p, "</lm:block>");
   }
   *p = 0;
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -517,7 +507,6 @@ extern size_t XML2_PackValue(CONVOPT *opt, unsigned char *p,
                              ValueStruct *value) {
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
     p += sprintf((char *)p, "<?xml version=\"1.0\"");
@@ -555,7 +544,6 @@ extern size_t XML2_PackValue(CONVOPT *opt, unsigned char *p,
     }
   }
   *p = 0;
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -986,6 +974,7 @@ static void SetNil(ValueStruct *val) {
       SetNil(ValueArrayItem(val, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(val); i++) {
       SetNil(ValueRecordItem(val, i));
@@ -1002,7 +991,6 @@ extern size_t XML_UnPackValue(CONVOPT *opt, unsigned char *p,
   ValueContext *ctx;
   unsigned char *pp;
 
-  ENTER_FUNC;
   ctx = New(ValueContext);
   ctx->root = value;
   ctx->buff = (xmlChar *)xmalloc(1);
@@ -1025,7 +1013,6 @@ extern size_t XML_UnPackValue(CONVOPT *opt, unsigned char *p,
   xmlCleanupParser();
   xfree(ctx->buff);
   xfree(ctx);
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -1034,7 +1021,6 @@ extern size_t XML1_UnPackValue(CONVOPT *opt, unsigned char *p,
   ValueContext *ctx;
   unsigned char *pp;
 
-  ENTER_FUNC;
   ctx = New(ValueContext);
   ctx->root = value;
   ctx->buff = (xmlChar *)xmalloc(1);
@@ -1050,7 +1036,6 @@ extern size_t XML1_UnPackValue(CONVOPT *opt, unsigned char *p,
   xmlCleanupParser();
   xfree(ctx->buff);
   xfree(ctx);
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -1059,7 +1044,6 @@ extern size_t XML2_UnPackValue(CONVOPT *opt, unsigned char *p,
   ValueContext *ctx;
   unsigned char *pp;
 
-  ENTER_FUNC;
   ctx = New(ValueContext);
   ctx->root = value;
   ctx->buff = (xmlChar *)xmalloc(1);
@@ -1075,7 +1059,6 @@ extern size_t XML2_UnPackValue(CONVOPT *opt, unsigned char *p,
   xmlCleanupParser();
   xfree(ctx->buff);
   xfree(ctx);
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -1107,6 +1090,7 @@ static size_t _XML_SizeValue1(CONVOPT *opt, char *name, ValueStruct *value,
       size += IndentLine(opt, NULL);
       size += 11; //	</lm:array>
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       if (name != NULL) {
         size += sprintf(buff, "<lm:record name=\"%s\" size=\"%d\">", name,
@@ -1237,6 +1221,7 @@ static size_t _XML_SizeValue2(CONVOPT *opt, char *name, ValueStruct *value,
         size += sprintf(buff, "</%s>", name);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       if (opt->recname != NULL) {
         size += sprintf(buff, "<%s:%s type=\"record\" size=\"%d\">",
@@ -1344,7 +1329,6 @@ extern size_t XML_SizeValue(CONVOPT *opt, ValueStruct *value) {
   char buff[SIZE_BUFF + 1];
   size_t size;
 
-  ENTER_FUNC;
   if ((ConvOutput(opt) & XML_OUT_HEADER) != 0) {
     size = 19; //	<?xml version="1.0"
     if (ConvCodeset(opt) != NULL) {
@@ -1397,7 +1381,6 @@ extern size_t XML_SizeValue(CONVOPT *opt, ValueStruct *value) {
     }
     break;
   }
-  LEAVE_FUNC;
   return (size);
 }
 

@@ -217,7 +217,6 @@ extern LargeByteString *ValueToLBS(ValueStruct *val, char *codeset) {
   int size;
   LargeByteString *ret;
 
-  ENTER_FUNC;
   if (val == NULL) {
     ret = NULL;
   } else {
@@ -364,7 +363,6 @@ extern LargeByteString *ValueToLBS(ValueStruct *val, char *codeset) {
     }
     ret = ValueStr(val);
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -442,7 +440,6 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
   char *istr, *hexstr;
   int i;
 
-  ENTER_FUNC;
   if (val == NULL) {
     MonWarning("no ValueStruct");
     rc = FALSE;
@@ -668,7 +665,6 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
       rc = FALSE;
     }
   }
-  LEAVE_FUNC;
   return (rc);
 }
 
@@ -975,7 +971,6 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
   Bool rc;
   size_t size;
 
-  ENTER_FUNC;
   if (val == NULL) {
     MonWarning("no ValueStruct");
     rc = FALSE;
@@ -1095,13 +1090,11 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
       break;
     }
   }
-  LEAVE_FUNC;
   return (rc);
 }
 
 extern unsigned char *ValueToBinary(ValueStruct *val) {
   unsigned char *ret;
-  ENTER_FUNC;
 
   if (val == NULL) {
     ret = NULL;
@@ -1164,7 +1157,6 @@ extern unsigned char *ValueToBinary(ValueStruct *val) {
     }
     ret = ValueStrBody(val);
   }
-  LEAVE_FUNC;
   return (ret);
 }
 

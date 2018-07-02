@@ -233,7 +233,6 @@ static void _JSON_UnPackValueOmmit(CONVOPT *opt, json_object *obj,
   json_object *child;
   json_type type;
 
-  ENTER_FUNC;
   if (value == NULL) {
 #if 0
 		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
@@ -284,6 +283,7 @@ static void _JSON_UnPackValueOmmit(CONVOPT *opt, json_object *obj,
       }
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     if (obj != NULL) {
       type = json_object_get_type(obj);
@@ -302,14 +302,12 @@ static void _JSON_UnPackValueOmmit(CONVOPT *opt, json_object *obj,
     }
     break;
   }
-  LEAVE_FUNC;
 }
 
 extern size_t JSON_UnPackValueOmmit(CONVOPT *opt, unsigned char *p,
                                     ValueStruct *value) {
   json_object *obj;
   size_t ret;
-  ENTER_FUNC;
   ret = 0;
   obj = json_tokener_parse(p);
   if (is_error(obj)) {
@@ -321,7 +319,6 @@ extern size_t JSON_UnPackValueOmmit(CONVOPT *opt, unsigned char *p,
     ret = 1;
   }
   json_object_put(obj);
-  LEAVE_FUNC;
   return ret;
 }
 
@@ -333,7 +330,6 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
   json_object *child;
   json_type type;
 
-  ENTER_FUNC;
   if (value == NULL || obj == NULL) {
 #if 0
 		MonWarningPrintf("invalid value[%p] or obj[%p]",value,obj);
@@ -481,7 +477,7 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
       print_type_error(type, json_type_array);
     }
     break;
-  case GL_TYPE_RECORD:
+  case GL_TYPE_ROOT_RECORD:
     if (type == json_type_object) {
       for (i = 0; i < ValueRecordSize(value); i++) {
         if (json_object_object_get_ex(obj, ValueRecordName(value, i), &child)) {
@@ -493,14 +489,12 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
     }
     break;
   }
-  LEAVE_FUNC;
 }
 
 extern size_t JSON_UnPackValue(CONVOPT *opt, unsigned char *p,
                                ValueStruct *value) {
   json_object *obj;
   size_t ret;
-  ENTER_FUNC;
   ret = 0;
   obj = json_tokener_parse(p);
   if (is_error(obj)) {
@@ -512,7 +506,6 @@ extern size_t JSON_UnPackValue(CONVOPT *opt, unsigned char *p,
     ret = 1;
   }
   json_object_put(obj);
-  LEAVE_FUNC;
   return ret;
 }
 
@@ -630,7 +623,6 @@ static size_t _JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
   unsigned char *pp;
   char buf[256], *str, *key;
   ValueStruct *child;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -729,6 +721,7 @@ static size_t _JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
           case GL_TYPE_ARRAY:
             emit(&p, "[]", 2);
             break;
+          case GL_TYPE_ROOT_RECORD:
           case GL_TYPE_RECORD:
             emit(&p, "{}", 2);
             break;
@@ -738,6 +731,7 @@ static size_t _JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
       emit(&p, "]", 1);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     size = _JSON_SizeValueOmmit(opt, value);
     if (size > 0) {
@@ -761,14 +755,12 @@ static size_t _JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
     }
     break;
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
 extern size_t JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
                                   ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_PackValueOmmit(opt, p, value);
   if (size == 0) {
     snprintf(p, 3, "{}");
@@ -779,7 +771,6 @@ extern size_t JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
     *p = 0;
     size += 1;
   }
-  LEAVE_FUNC;
   return size;
 }
 
@@ -788,7 +779,6 @@ static size_t _JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
   int i, j;
   char buf[256], *str;
   ValueStruct *child;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -883,6 +873,7 @@ static size_t _JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
           case GL_TYPE_ARRAY:
             size += 2; /* [] */
             break;
+          case GL_TYPE_ROOT_RECORD:
           case GL_TYPE_RECORD:
             size += 2; /* {} */
             break;
@@ -892,6 +883,7 @@ static size_t _JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
       size++; /*]*/
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = j = inc_total = 0; i < ValueRecordSize(value); i++) {
       inc = 0;
@@ -911,13 +903,11 @@ static size_t _JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
     }
     break;
   }
-  LEAVE_FUNC;
   return size;
 }
 
 extern size_t JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_SizeValueOmmit(opt, value);
   if (size == 0) {
     /*{} empty json*/
@@ -926,7 +916,6 @@ extern size_t JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
     /*null terminate*/
     size += 1;
   }
-  LEAVE_FUNC;
   return size;
 }
 
@@ -938,7 +927,6 @@ static size_t _JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
   unsigned char *pp;
   char buf[256], *str, *key;
   ValueStruct *child;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -1019,6 +1007,7 @@ static size_t _JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
           case GL_TYPE_ARRAY:
             emit(&p, "[]", 2);
             break;
+          case GL_TYPE_ROOT_RECORD:
           case GL_TYPE_RECORD:
             emit(&p, "{}", 2);
             break;
@@ -1028,6 +1017,7 @@ static size_t _JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
       emit(&p, "]", 1);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     size = _JSON_SizeValueOmmitString(opt, value);
     if (size > 0) {
@@ -1051,14 +1041,12 @@ static size_t _JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
     }
     break;
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
 extern size_t JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
                                         ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_PackValueOmmitString(opt, p, value);
   if (size == 0) {
     snprintf(p, 3, "{}");
@@ -1069,7 +1057,6 @@ extern size_t JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
     *p = 0;
     size += 1;
   }
-  LEAVE_FUNC;
   return size;
 }
 
@@ -1078,7 +1065,6 @@ static size_t _JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
   int i, j;
   char buf[256], *str;
   ValueStruct *child;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -1155,6 +1141,7 @@ static size_t _JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
           case GL_TYPE_ARRAY:
             size += 2; /* [] */
             break;
+          case GL_TYPE_ROOT_RECORD:
           case GL_TYPE_RECORD:
             size += 2; /* {} */
             break;
@@ -1164,6 +1151,7 @@ static size_t _JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
       size++; /*]*/
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = j = inc_total = 0; i < ValueRecordSize(value); i++) {
       inc = 0;
@@ -1183,13 +1171,11 @@ static size_t _JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
     }
     break;
   }
-  LEAVE_FUNC;
   return size;
 }
 
 extern size_t JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_SizeValueOmmitString(opt, value);
   if (size == 0) {
     /*{} empty json*/
@@ -1198,7 +1184,6 @@ extern size_t JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
     /*null terminate*/
     size += 1;
   }
-  LEAVE_FUNC;
   return size;
 }
 
@@ -1208,7 +1193,6 @@ static size_t _JSON_PackValue(CONVOPT *opt, unsigned char *p,
   int i;
   unsigned char *pp;
   char buf[256], *str, *key;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -1261,6 +1245,7 @@ static size_t _JSON_PackValue(CONVOPT *opt, unsigned char *p,
     }
     emit(&p, "]", 1);
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     emit(&p, "{", 1);
     for (i = 0; i < ValueRecordSize(value); i++) {
@@ -1276,20 +1261,17 @@ static size_t _JSON_PackValue(CONVOPT *opt, unsigned char *p,
     emit(&p, "}", 1);
     break;
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
 extern size_t JSON_PackValue(CONVOPT *opt, unsigned char *p,
                              ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_PackValue(opt, p, value);
   p += size;
   /*null terminate*/
   *p = 0;
   size += 1;
-  LEAVE_FUNC;
   return size;
 }
 
@@ -1297,7 +1279,6 @@ extern size_t _JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
   size_t size, name_size, inc;
   int i;
   char buf[256], *str;
-  ENTER_FUNC;
   if (value == NULL) {
     return 0;
   }
@@ -1350,6 +1331,7 @@ extern size_t _JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
     }
     size++; /*]*/
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     size++; /*{*/
     for (i = 0; i < ValueRecordSize(value); i++) {
@@ -1372,17 +1354,14 @@ extern size_t _JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
     size++; /*}*/
     break;
   }
-  LEAVE_FUNC;
   return size;
 }
 
 extern size_t JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
   size_t size;
-  ENTER_FUNC;
   size = _JSON_SizeValue(opt, value);
   /*null terminate*/
   size += 1;
-  LEAVE_FUNC;
   return size;
 }
 

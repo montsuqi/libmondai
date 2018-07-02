@@ -73,7 +73,6 @@ static ValueStruct *BuildMcpArea(size_t stacksize) {
   char buff[SIZE_BUFF];
   char *p;
 
-  ENTER_FUNC;
   p = buff;
   p += sprintf(
       p, "/*\n"
@@ -136,7 +135,6 @@ static ValueStruct *BuildMcpArea(size_t stacksize) {
   p += sprintf(p, "};");
 
   value = RecParseValueMem(buff, NULL);
-  LEAVE_FUNC;
   return (value);
 }
 

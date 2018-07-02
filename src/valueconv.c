@@ -140,7 +140,6 @@ extern size_t EncodeLength(CONVOPT *opt, char *in) {
 extern void ConvSetLanguage(char *name) {
   ConvFuncs *func;
 
-  ENTER_FUNC;
   if (name != NULL) {
     if ((func = GetConvFunc(name)) == NULL) {
       MonErrorPrintf("can not found %s convert rule", name);
@@ -153,7 +152,6 @@ extern void ConvSetLanguage(char *name) {
     UnPackValue = NULL;
     SizeValue = NULL;
   }
-  LEAVE_FUNC;
 }
 
 extern void ConvSetIndent(CONVOPT *opt, Bool v) {

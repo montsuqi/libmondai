@@ -57,12 +57,10 @@ typedef uint64_t MonObjectType;
 #define IS_OBJECT_NULL(obj) ((obj) == 0)
 
 typedef struct _ValueStruct {
-  char *name;
   PacketDataType type;
   ValueAttributeType attr;
   LargeByteString *str;
   struct _ValueStruct *parent;
-  int index;
   void *body;
 } ValueStruct;
 
@@ -77,6 +75,11 @@ typedef struct _RecordData {
   char **names;
   GHashTable *members;
 } RecordData;
+
+typedef struct _RootRecordData {
+  RecordData *parent;
+  char *name;
+} RootRecordData;
 
 typedef struct _CharData {
   size_t length, asize;
@@ -125,6 +128,7 @@ typedef struct _ObjectData {
 #define GL_TYPE_RECORD (PacketDataType)0x82
 #define GL_TYPE_ALIAS (PacketDataType)0x83
 #define GL_TYPE_VALUES (PacketDataType)0x84
+#define GL_TYPE_ROOT_RECORD (PacketDataType)0x85
 
 #define GL_ATTR_NIL (ValueAttributeType)0x8000
 #define GL_ATTR_EXPANDABLE (ValueAttributeType)0x0080
@@ -150,14 +154,14 @@ typedef struct _ObjectData {
 
 #define GL_OBJ_NULL 0
 
-#define IS_VALUE_RECORD(v) ((v)->type == GL_TYPE_RECORD)
+#define IS_VALUE_ROOT_RECORD(v) ((v)->type == GL_TYPE_ROOT_RECORD)
+#define IS_VALUE_RECORD(v) ((v)->type == GL_TYPE_RECORD || (v)->type == GL_TYPE_ROOT_RECORD)
 #define IS_VALUE_ARRAY(v) ((v)->type == GL_TYPE_ARRAY)
 #define IS_VALUE_NUMERIC(v) (((v)->type & GL_TYPE_CLASS) == GL_TYPE_NUMERIC)
 #define IS_VALUE_STRING(v) (((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRING)
 #define IS_VALUE_BITS(v) (((v)->type & GL_TYPE_CLASS) == GL_TYPE_BITS)
 #define IS_VALUE_STRUCTURE(v) (((v)->type & GL_TYPE_CLASS) == GL_TYPE_STRUCTURE)
 
-#define ValueName(v) ((v)->name)
 #define ValueType(v) ((v)->type)
 #define ValueSize(v) LBS_StringLength((v)->str)
 #define ValueStr(v) ((v)->str)
@@ -174,7 +178,6 @@ typedef struct _ObjectData {
 #define ValueIsNonExpandable(v) ((v)->attr &= ~GL_ATTR_EXPANDABLE)
 
 #define ValueParent(v) ((v)->parent)
-#define ValueIndex(v) ((v)->index)
 #define ValueBody(v) ((v)->body)
 
 /*CharData*/
@@ -225,6 +228,10 @@ typedef struct _ObjectData {
 #define ValueRecordName(v, i) ((ValueRecord(v))->names[(i)])
 #define ValueRecordMembers(v) ((ValueRecord(v))->members)
 
+/*RootRecordData*/
+#define ValueRootRecord(v)      ((RootRecordData*)ValueBody(v))
+#define ValueRootRecordName(v)  ((ValueRootRecord(v))->name)
+
 /*ObjecData*/
 #define ValueObject(v)     ((ObjectData*)ValueBody(v))
 #define ValueObjectId(v)   ((ValueObject(v))->oid)
@@ -271,5 +278,7 @@ extern Bool EqualValue(ValueStruct *vl, ValueStruct *vr);
 
 extern void AssignValue(ValueStruct *to, ValueStruct *from);
 extern void MoveValue(ValueStruct *to, ValueStruct *from);
+
+extern int ValueIndex(ValueStruct *val);
 
 #endif
