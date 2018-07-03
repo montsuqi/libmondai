@@ -77,7 +77,7 @@ typedef struct _RecordData {
 } RecordData;
 
 typedef struct _RootRecordData {
-  RecordData *parent;
+  RecordData parent;
   char *name;
 } RootRecordData;
 

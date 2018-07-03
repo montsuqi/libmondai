@@ -110,6 +110,7 @@ extern void SetValueAttribute(ValueStruct *val, ValueAttributeType attr) {
       SetValueAttribute(ValueArrayItem(val, i), attr);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(val); i++) {
       SetValueAttribute(ValueRecordItem(val, i), attr);
@@ -440,6 +441,7 @@ extern ValueStruct *RecParseMain(CURFILE *in) {
     if (GetSymbol == '{') {
       ret = NewValue(GL_TYPE_ROOT_RECORD);
       ValueAttribute(ret) = attr;
+      GetName;
       ParValueDefines(in, ret);
       if (in->fError) {
         Error("syntax error");
