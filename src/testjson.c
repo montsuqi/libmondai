@@ -56,9 +56,9 @@ int main(int argc, char *argv[]) {
   v = GetItemLongName(value, "record1[0].record2.col21");
   SetValueString(v, "cccc", NULL);
   v = GetItemLongName(value, "int1");
-  ValueInteger(v) = 10;
+  SetValueInteger(v, 10);
   v = GetItemLongName(value, "int2");
-  ValueInteger(v) = 20;
+  SetValueInteger(v, 20);
   v = GetItemLongName(value, "double1");
   SetValueFloat(v, -3.2);
 
@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
   v = GetItemLongName(value, "record1[0].record2.col21");
   SetValueString(v, "cccc", NULL);
   v = GetItemLongName(value, "int1");
-  ValueInteger(v) = 10;
+  SetValueInteger(v, 10);
   v = GetItemLongName(value, "int2");
-  ValueInteger(v) = 20;
+  SetValueInteger(v, 20);
   v = GetItemLongName(value, "record3[1].record4[1].vc41");
   SetValueString(v, "vc41", NULL);
 
@@ -153,9 +153,9 @@ int main(int argc, char *argv[]) {
   SetValueString(v,"cccc",NULL);
 #endif
   v = GetItemLongName(value, "int1");
-  ValueInteger(v) = 10;
+  SetValueInteger(v, 10);
   v = GetItemLongName(value, "int2");
-  ValueInteger(v) = 20;
+  SetValueInteger(v, 20);
   v = GetItemLongName(value, "record3[1].record4[1].vc41");
   SetValueString(v, "vc41", NULL);
 

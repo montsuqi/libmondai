@@ -149,7 +149,6 @@ extern int main(int argc, char **argv) {
   ValueStruct *val, *val2, *val3;
   CONVOPT *opt;
   unsigned char *buff;
-  size_t size;
 
   printf("***** libmondai test start *****\n");
   RecordDir = ".";
@@ -207,14 +206,9 @@ extern int main(int argc, char **argv) {
   SetValueBinary(GetItemLongName(val, "bin"), buff, 256);
   printf("***** Value setting (end)*****\n");
 
-  buff = xmalloc(SIZE_BUFF);
-  memset(buff, 0, SIZE_BUFF);
-  printf("***** Value Save (structure only)*****\n");
-  size = NativeSaveValue(buff, val, FALSE);
-  printf("***** Value Save (end)*****\n");
-  printf("***** Value Restore *****\n");
-  val2 = NativeRestoreValue(buff, FALSE);
-  printf("***** Value Restore (end)*****\n");
+  printf("***** Value duplicate *****\n");
+  val2 = DuplicateValue(val, FALSE);
+  printf("***** Value duplicate (end)*****\n");
 
   opt = NewConvOpt();
   ConvSetCodeset(opt, TEST_CODE);
@@ -231,13 +225,9 @@ extern int main(int argc, char **argv) {
   XML_PackValue(opt, buff, val2);
   printf("%s\n", buff);
 
-  memset(buff, 0, SIZE_BUFF);
-  printf("***** Value Save (with data)*****\n");
-  size = NativeSaveValue(buff, val, TRUE);
-  printf("***** Value Save (end)*****\n");
-  printf("***** Value Restore *****\n");
-  val2 = NativeRestoreValue(buff, TRUE);
-  printf("***** Value Restore (end)*****\n");
+  printf("***** Value duplicate *****\n");
+  val2 = DuplicateValue(val, TRUE);
+  printf("***** Value duplicate (end)*****\n");
 
   opt = NewConvOpt();
   ConvSetCodeset(opt, TEST_CODE);

@@ -114,7 +114,7 @@ static void FixedC2Cobol(char *buff, size_t size) {
 
 extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
                                     ValueStruct *value) {
-  int i;
+  int32_t i;
   char buff[SIZE_NUMBUF + 1];
   unsigned char *q;
 
@@ -124,16 +124,17 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
     ValueIsNonNil(value);
     switch (ValueType(value)) {
     case GL_TYPE_INT:
-      ValueInteger(value) = *(int *)p;
-      IntegerCobol2C(opt, &ValueInteger(value));
-      p += sizeof(int);
+      i = *(int32_t*)p;
+      IntegerCobol2C(opt, &i);
+      SetValueInteger(value, (int64_t)i);
+      p += sizeof(int32_t);
       break;
     case GL_TYPE_FLOAT:
       ValueFloat(value) = *(double *)p;
       p += sizeof(double);
       break;
     case GL_TYPE_BOOL:
-      ValueBool(value) = (*(char *)p == 'T') ? TRUE : FALSE;
+      SetValueBool(value,(*(char *)p == 'T') ? TRUE : FALSE);
       p++;
       break;
     case GL_TYPE_OBJECT:
@@ -248,9 +249,9 @@ extern size_t OpenCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
   if (value != NULL) {
     switch (ValueType(value)) {
     case GL_TYPE_INT:
-      *(int *)p = ValueInteger(value);
-      IntegerC2Cobol(opt, (int *)p);
-      p += sizeof(int);
+      *(int32_t *)p = (int32_t)ValueInteger(value);
+      IntegerC2Cobol(opt, (int32_t *)p);
+      p += sizeof(int32_t);
       break;
     case GL_TYPE_FLOAT:
       *(double *)p = ValueFloat(value);

@@ -33,6 +33,7 @@ extern Bool SetValueFloat(ValueStruct *val, double bval);
 extern Bool SetValueFixed(ValueStruct *val, Fixed *fval);
 extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen);
 extern Bool SetValueDateTime(ValueStruct *val, struct tm tval);
+extern Bool SetValueAliasName(ValueStruct *val, char *);
 
 extern int ValueToInteger(ValueStruct *val);
 extern double ValueToFloat(ValueStruct *val);

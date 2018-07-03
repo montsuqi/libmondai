@@ -129,19 +129,19 @@ static void _JSON_UnPackValueOmmitBool(CONVOPT *opt, json_object *obj,
     case json_type_string:
       str = json_object_get_string(obj);
       if (str != NULL && (str[0] == 'T' || str[0] == 't')) {
-        ValueBool(value) = TRUE;
+        SetValueBool(value, TRUE);
       } else {
-        ValueBool(value) = FALSE;
+        SetValueBool(value, FALSE);
       }
       break;
     case json_type_boolean:
-      ValueBool(value) = json_object_get_boolean(obj);
+      SetValueBool(value, json_object_get_boolean(obj));
       break;
     case json_type_int:
       if (json_object_get_int(obj) != 0) {
-        ValueBool(value) = TRUE;
+        SetValueBool(value, TRUE);
       } else {
-        ValueBool(value) = FALSE;
+        SetValueBool(value, FALSE);
       }
       break;
     case json_type_double:
@@ -155,7 +155,7 @@ static void _JSON_UnPackValueOmmitBool(CONVOPT *opt, json_object *obj,
       break;
     }
   } else {
-    ValueBool(value) = TRUE;
+    SetValueBool(value, TRUE);
   }
 }
 
@@ -168,19 +168,19 @@ static void _JSON_UnPackValueOmmitInt(CONVOPT *opt, json_object *obj,
     switch (type) {
     case json_type_boolean:
       if (json_object_get_boolean(obj)) {
-        ValueInteger(value) = 1;
+        SetValueInteger(value, 1);
       } else {
-        ValueInteger(value) = 0;
+        SetValueInteger(value, 0);
       }
       break;
     case json_type_double:
-      ValueInteger(value) = (int)(json_object_get_double(obj));
+      SetValueInteger(value, (int)(json_object_get_double(obj)));
       break;
     case json_type_int:
-      ValueInteger(value) = json_object_get_int(obj);
+      SetValueInteger(value, json_object_get_int(obj));
       break;
     case json_type_string:
-      ValueInteger(value) = atoi(json_object_get_string(obj));
+      SetValueInteger(value, atoi(json_object_get_string(obj)));
       break;
     case json_type_null:
     case json_type_object:
@@ -192,7 +192,7 @@ static void _JSON_UnPackValueOmmitInt(CONVOPT *opt, json_object *obj,
       break;
     }
   } else {
-    ValueInteger(value) = 0;
+    SetValueInteger(value, 0);
   }
 }
 
@@ -393,19 +393,19 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
     case json_type_string:
       str = json_object_get_string(obj);
       if (str != NULL && (str[0] == 'T' || str[0] == 't')) {
-        ValueBool(value) = TRUE;
+        SetValueBool(value, TRUE);
       } else {
-        ValueBool(value) = FALSE;
+        SetValueBool(value, FALSE);
       }
       break;
     case json_type_boolean:
-      ValueBool(value) = json_object_get_boolean(obj);
+      SetValueBool(value, json_object_get_boolean(obj));
       break;
     case json_type_int:
       if (json_object_get_int(obj) != 0) {
-        ValueBool(value) = TRUE;
+        SetValueBool(value, TRUE);
       } else {
-        ValueBool(value) = FALSE;
+        SetValueBool(value, FALSE);
       }
       break;
     case json_type_double:
@@ -423,19 +423,19 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
     switch (type) {
     case json_type_boolean:
       if (json_object_get_boolean(obj)) {
-        ValueInteger(value) = 1;
+        SetValueInteger(value, 1);
       } else {
-        ValueInteger(value) = 0;
+        SetValueInteger(value, 0);
       }
       break;
     case json_type_double:
-      ValueInteger(value) = (int)(json_object_get_double(obj));
+      SetValueInteger(value, (int)(json_object_get_double(obj)));
       break;
     case json_type_int:
-      ValueInteger(value) = json_object_get_int(obj);
+      SetValueInteger(value, json_object_get_int(obj));
       break;
     case json_type_string:
-      ValueInteger(value) = atoi(json_object_get_string(obj));
+      SetValueInteger(value, atoi(json_object_get_string(obj)));
       break;
     case json_type_null:
     case json_type_object:
@@ -669,7 +669,7 @@ static size_t _JSON_PackValueOmmit(CONVOPT *opt, unsigned char *p,
     if (ValueInteger(value) == 0) {
       /*ommit 0*/
     } else {
-      snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+      snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
       size = strlen(buf);
       emit(&p, buf, size);
     }
@@ -826,7 +826,7 @@ static size_t _JSON_SizeValueOmmit(CONVOPT *opt, ValueStruct *value) {
     if (ValueInteger(value) == 0) {
       /*ommit 0*/
     } else {
-      snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+      snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
       size = strlen(buf);
     }
     break;
@@ -974,7 +974,7 @@ static size_t _JSON_PackValueOmmitString(CONVOPT *opt, unsigned char *p,
     }
     break;
   case GL_TYPE_INT:
-    snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+    snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
     size = strlen(buf);
     emit(&p, buf, size);
     break;
@@ -1113,7 +1113,7 @@ static size_t _JSON_SizeValueOmmitString(CONVOPT *opt, ValueStruct *value) {
     }
     break;
   case GL_TYPE_INT:
-    snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+    snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
     size = strlen(buf);
     break;
   case GL_TYPE_NUMBER:
@@ -1243,7 +1243,7 @@ static size_t _JSON_PackValue(CONVOPT *opt, unsigned char *p,
     }
     break;
   case GL_TYPE_INT:
-    snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+    snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
     emit(&p, buf, strlen(buf));
     break;
   case GL_TYPE_NUMBER:
@@ -1332,7 +1332,7 @@ extern size_t _JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
     }
     break;
   case GL_TYPE_INT:
-    snprintf(buf, sizeof(buf), "%d", ValueInteger(value));
+    snprintf(buf, sizeof(buf), "%ld", ValueInteger(value));
     size = strlen(buf);
     break;
   case GL_TYPE_NUMBER:

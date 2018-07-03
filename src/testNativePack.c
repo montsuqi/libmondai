@@ -31,10 +31,7 @@
 #include "debug.h"
 
 extern int main(int argc, char **argv) {
-  ValueStruct *val;
-  ValueStruct *val2;
-  ValueStruct *val3;
-  ValueStruct *v;
+  ValueStruct *v1,*v2,*v;
   LargeByteString *lbs;
   size_t size;
   int i;
@@ -53,27 +50,27 @@ extern int main(int argc, char **argv) {
 
   fprintf(stderr, "\n\n---- normal\n");
   lbs = NewLBS();
-  val = RecParseValueMem(str, NULL);
-  val3 = RecParseValueMem(str, NULL);
-  InitializeValue(val);
-  v = GetItemLongName(val, "query[0].key");
+  v1 = RecParseValueMem(str, NULL);
+  v2 = RecParseValueMem(str, NULL);
+  InitializeValue(v1);
+  v = GetItemLongName(v1, "query[0].key");
   SetValueStringWithLength(v, "key0", strlen("key0"), NULL);
-  v = GetItemLongName(val, "query[1].key");
+  v = GetItemLongName(v1, "query[1].key");
   SetValueStringWithLength(v, "key1", strlen("key1"), NULL);
-  v = GetItemLongName(val, "query[0].value");
+  v = GetItemLongName(v1, "query[0].value");
   // SetValueStringWithLength(v, "value0", strlen("value0"), NULL);
   SetValueStringWithLength(v, "valvalvalvalvalvalvalue0",
                            strlen("valvalvalvalvalvalue0"), NULL);
-  v = GetItemLongName(val, "query[1].value");
+  v = GetItemLongName(v1, "query[1].value");
   SetValueStringWithLength(v, "value1", strlen("value1"), NULL);
 
   fprintf(stderr, "#dump before\n");
-  DumpValueStruct(val);
+  DumpValueStruct(v1);
   fprintf(stderr, "#pack\n");
-  size = NativeSizeValue(NULL, val);
+  size = NativeSizeValue(NULL, v1);
   fprintf(stderr, "#size = %ld\n", (long)size);
   LBS_ReserveSize(lbs, size, FALSE);
-  NativePackValue(NULL, LBS_Body(lbs), val);
+  NativePackValue(NULL, LBS_Body(lbs), v1);
 
   fprintf(stderr, "####\n");
   p = LBS_Body(lbs);
@@ -84,9 +81,9 @@ extern int main(int argc, char **argv) {
   fprintf(stderr, "####\n");
 
   fprintf(stderr, "#nativeunpack\n");
-  NativeUnPackValue(NULL, LBS_Body(lbs), val3);
+  NativeUnPackValue(NULL, LBS_Body(lbs), v2);
   fprintf(stderr, "#dump val3\n");
-  DumpValueStruct(val3);
+  DumpValueStruct(v2);
   fprintf(stderr, "#end\n");
 
   return 0;
