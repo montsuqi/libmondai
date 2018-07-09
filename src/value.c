@@ -19,11 +19,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/*
-#define	DEBUG
-#define	TRACE
-*/
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -52,15 +47,12 @@
 extern ValueStruct *NewValue(PacketDataType type) {
   ValueStruct *ret;
 
-  ENTER_FUNC;
   ret = New(ValueStruct);
   dbgprintf("value = %p\n", ret);
   ValueAttribute(ret) = GL_ATTR_NIL;
   ValueStr(ret) = NULL;
   ValueType(ret) = type;
   ValueParent(ret) = NULL;
-  ValueIndex(ret) = 0;
-  ValueName(ret) = NULL;
   switch (type) {
   case GL_TYPE_BYTE:
   case GL_TYPE_BINARY:
@@ -101,8 +93,14 @@ extern ValueStruct *NewValue(PacketDataType type) {
     ValueObjectId(ret) = 0;
     ValueObjectFile(ret) = NULL;
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
-    ret->body = New(RecordData);
+    if (type == GL_TYPE_ROOT_RECORD) {
+      ret->body = New(RootRecordData);
+      ValueRootRecordName(ret) = NULL;
+    } else {
+      ret->body = New(RecordData);
+    }
     ValueRecordSize(ret) = 0;
     ValueRecordMembers(ret) = NewNameHash();
     ValueRecordItems(ret) = NULL;
@@ -149,19 +147,15 @@ extern ValueStruct *NewValue(PacketDataType type) {
     ret = NULL;
     break;
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
 extern void FreeValueStruct(ValueStruct *val) {
-  int i;
+  int i,type;
 
   if (val != NULL) {
-    dbgprintf("type = %02X\n", ValueType(val));
-    if (ValueName(val) != NULL) {
-      xfree(ValueName(val));
-    }
-    switch (ValueType(val)) {
+    type = ValueType(val);
+    switch (type) {
     case GL_TYPE_ARRAY:
       for (i = 0; i < ValueArraySize(val); i++) {
         FreeValueStruct(ValueArrayItem(val, i));
@@ -171,7 +165,11 @@ extern void FreeValueStruct(ValueStruct *val) {
       }
       xfree(ValueBody(val));
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
+      if (type == GL_TYPE_ROOT_RECORD) {
+        xfree(ValueRootRecordName(val));
+      }
       for (i = 0; i < ValueRecordSize(val); i++) {
         FreeValueStruct(ValueRecordItem(val, i));
         xfree(ValueRecordName(val, i));
@@ -209,6 +207,7 @@ extern void FreeValueStruct(ValueStruct *val) {
       xfree(ValueBody(val));
       break;
     case GL_TYPE_ALIAS:
+      xfree(ValueBody(val));
     default:
       break;
     }
@@ -222,12 +221,13 @@ extern char *GetValueName(ValueStruct *value) {
   char buff[16];
   int index;
   ValueStruct *parent;
-  ENTER_FUNC;
+
   ret = NULL;
   if (value != NULL) {
     if ((parent = ValueParent(value)) != NULL) {
       index = ValueIndex(value);
       switch (ValueType(parent)) {
+      case GL_TYPE_ROOT_RECORD:
       case GL_TYPE_RECORD:
         ret = StrDup(ValueRecordName(parent, index));
         break;
@@ -244,7 +244,6 @@ extern char *GetValueName(ValueStruct *value) {
   if (ret == NULL) {
     ret = StrDup("");
   }
-  LEAVE_FUNC;
   return ret;
 }
 
@@ -253,7 +252,7 @@ extern char *GetValueLongName(ValueStruct *value) {
   char *name;
   char *tmp;
   ValueStruct *parent;
-  ENTER_FUNC;
+
   lname = NULL;
   if (value != NULL) {
     parent = value;
@@ -271,17 +270,17 @@ extern char *GetValueLongName(ValueStruct *value) {
       parent = ValueParent(parent);
     }
   }
-  LEAVE_FUNC;
   return lname;
 }
 
 extern ValueStruct *GetRecordItem(ValueStruct *value, char *name) {
   gpointer p;
   ValueStruct *item;
+  int type;
 
-  ENTER_FUNC;
   if (value != NULL) {
-    if (ValueType(value) == GL_TYPE_RECORD) {
+    type = ValueType(value);
+    if (type == GL_TYPE_RECORD || type == GL_TYPE_ROOT_RECORD) {
       if ((p = g_hash_table_lookup(ValueRecordMembers(value), name)) == NULL) {
         item = NULL;
       } else {
@@ -293,7 +292,6 @@ extern ValueStruct *GetRecordItem(ValueStruct *value, char *name) {
   } else {
     item = NULL;
   }
-  LEAVE_FUNC;
   return (item);
 }
 
@@ -302,7 +300,6 @@ extern ValueStruct *GetArrayItem(ValueStruct *value, int index) {
   size_t size;
   int i;
 
-  ENTER_FUNC;
   if ((index >= 0) && (index < ValueArraySize(value))) {
     item = ValueArrayItem(value, index);
   } else {
@@ -325,7 +322,6 @@ extern ValueStruct *GetArrayItem(ValueStruct *value, int index) {
       item = NULL;
     }
   }
-  LEAVE_FUNC;
   return (item);
 }
 
@@ -345,7 +341,6 @@ extern ValueStruct *GetItemLongName(ValueStruct *root, char *longname) {
   int n;
   ValueStruct *val;
 
-  ENTER_FUNC;
   if (root == NULL) {
     printf("no root ValueStruct [%s]\n", longname);
     return (FALSE);
@@ -381,7 +376,6 @@ extern ValueStruct *GetItemLongName(ValueStruct *root, char *longname) {
       break;
     }
   }
-  LEAVE_FUNC;
   return (val);
 }
 
@@ -438,6 +432,7 @@ static void _DumpValueStruct(ValueStruct *val, int level) {
       }
       fprintf(stderr, "]\n");
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       fprintf(stderr, "{\n");
 
@@ -461,22 +456,22 @@ static void _DumpValueStruct(ValueStruct *val, int level) {
 }
 
 extern void DumpValueStruct(ValueStruct *val) { _DumpValueStruct(val, 1); }
-#define _dbgmsg(s)                                                             \
-  printf("%s:%d:%s\n", __FILE__, __LINE__, (s));                               \
-  fflush(stdout);
-extern void InitializeValue(ValueStruct *value) {
-  int i;
 
-  ENTER_FUNC;
-  if (value == NULL)
+extern void InitializeValue(ValueStruct *value) {
+  int i,type;
+
+  if (value == NULL) {
     return;
+  }
   if (ValueStr(value) != NULL) {
     FreeLBS(ValueStr(value));
   }
   ValueStr(value) = NULL;
-  switch (ValueType(value)) {
+  type = ValueType(value);
+  switch (type) {
   case GL_TYPE_ARRAY:
   case GL_TYPE_VALUES:
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
   case GL_TYPE_ALIAS:
     break;
@@ -484,7 +479,7 @@ extern void InitializeValue(ValueStruct *value) {
     ValueIsNil(value);
     break;
   }
-  switch (ValueType(value)) {
+  switch (type) {
   case GL_TYPE_INT:
     SetValueInteger(value, 0);
     break;
@@ -553,6 +548,7 @@ extern void InitializeValue(ValueStruct *value) {
       InitializeValue(ValueValuesItem(value, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(value); i++) {
       InitializeValue(ValueRecordItem(value, i));
@@ -562,23 +558,25 @@ extern void InitializeValue(ValueStruct *value) {
   default:
     break;
   }
-  LEAVE_FUNC;
 }
 
 extern void FillValue(ValueStruct *value) {
-  int i;
+  int i,type;
   char *buf;
 
-  ENTER_FUNC;
-  if (value == NULL)
+  if (value == NULL) {
     return;
+  }
   if (ValueStr(value) != NULL) {
     FreeLBS(ValueStr(value));
   }
   ValueStr(value) = NULL;
-  switch (ValueType(value)) {
+  type = ValueType(value);
+
+  switch (type) {
   case GL_TYPE_ARRAY:
   case GL_TYPE_VALUES:
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
   case GL_TYPE_ALIAS:
     break;
@@ -586,7 +584,8 @@ extern void FillValue(ValueStruct *value) {
     ValueIsNil(value);
     break;
   }
-  switch (ValueType(value)) {
+
+  switch (type) {
   case GL_TYPE_INT:
     SetValueInteger(value, 1);
     break;
@@ -658,6 +657,7 @@ extern void FillValue(ValueStruct *value) {
       InitializeValue(ValueValuesItem(value, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(value); i++) {
       InitializeValue(ValueRecordItem(value, i));
@@ -667,18 +667,18 @@ extern void FillValue(ValueStruct *value) {
   default:
     break;
   }
-  LEAVE_FUNC;
 }
 
 /*
  *	moves simple data only
  */
 extern void MoveValue(ValueStruct *to, ValueStruct *from) {
+  int type;
   Fixed *xval;
 
-  ENTER_FUNC;
   ValueAttribute(to) = ValueAttribute(from);
-  switch (ValueType(to)) {
+  type = ValueType(to);
+  switch (type) {
   case GL_TYPE_CHAR:
   case GL_TYPE_VARCHAR:
   case GL_TYPE_DBCODE:
@@ -735,24 +735,21 @@ extern void MoveValue(ValueStruct *to, ValueStruct *from) {
   default:
     break;
   }
-  LEAVE_FUNC;
 }
 
 /*
  *	copies same structure
  */
 extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
-  int i;
+  int i,type;
 
-  ENTER_FUNC;
-  if (vd == NULL)
+  if (vd == NULL || vs == NULL || IS_VALUE_NIL(vs)) {
     return;
-  if (vs == NULL)
-    return;
-  if (IS_VALUE_NIL(vs))
-    return;
+  }
   ValueAttribute(vd) = ValueAttribute(vs);
-  switch (ValueType(vs)) {
+  type = ValueType(vs);
+
+  switch (type) {
   case GL_TYPE_INT:
     SetValueInteger(vd, ValueInteger(vs));
     break;
@@ -800,6 +797,7 @@ extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
       CopyValue(ValueValuesItem(vd, i), ValueValuesItem(vs, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(vs); i++) {
       CopyValue(ValueRecordItem(vd, i), ValueRecordItem(vs, i));
@@ -809,21 +807,19 @@ extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
   default:
     break;
   }
-  LEAVE_FUNC;
 }
 
 /*
  *	assign compatible structure
  */
 extern void AssignValue(ValueStruct *vd, ValueStruct *vs) {
-  int i;
+  int i,type;
 
-  ENTER_FUNC;
-  if (vd == NULL)
+  if (vd == NULL || vs == NULL) {
     return;
-  if (vs == NULL)
-    return;
-  switch (ValueType(vd)) {
+  }
+  type = ValueType(vd);
+  switch (type) {
   case GL_TYPE_INT:
   case GL_TYPE_FLOAT:
   case GL_TYPE_BOOL:
@@ -851,6 +847,7 @@ extern void AssignValue(ValueStruct *vd, ValueStruct *vs) {
       AssignValue(ValueValuesItem(vd, i), ValueValuesItem(vs, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(vs); i++) {
       AssignValue(ValueRecordItem(vd, i), ValueRecordItem(vs, i));
@@ -860,19 +857,16 @@ extern void AssignValue(ValueStruct *vd, ValueStruct *vs) {
   default:
     break;
   }
-  LEAVE_FUNC;
 }
 
 /*
  *	compare same structure
  */
 extern int CompareValue(ValueStruct *vl, ValueStruct *vr) {
-  int i;
-  int res;
+  int i, res;
   Fixed *fl, *fr;
   Numeric nl, nr;
 
-  ENTER_FUNC;
   res = 0;
   if (vl == NULL) {
     res = -1;
@@ -955,10 +949,10 @@ extern int CompareValue(ValueStruct *vl, ValueStruct *vr) {
           break;
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(vr); i++) {
-        if ((res = CompareValue(ValueRecordItem(vl, i),
-                                ValueRecordItem(vr, i))) != 0)
+        if ((res = CompareValue(ValueRecordItem(vl, i), ValueRecordItem(vr, i))) != 0)
           break;
       }
       break;
@@ -968,7 +962,6 @@ extern int CompareValue(ValueStruct *vl, ValueStruct *vr) {
       res = 0;
       break;
     }
-  LEAVE_FUNC;
   return (res);
 }
 
@@ -979,7 +972,6 @@ extern Bool EqualValue(ValueStruct *vl, ValueStruct *vr) {
   int i;
   Bool ret;
 
-  ENTER_FUNC;
   if (ValueType(vl) == ValueType(vr)) {
     ret = TRUE;
     switch (ValueType(vl)) {
@@ -1032,6 +1024,7 @@ extern Bool EqualValue(ValueStruct *vl, ValueStruct *vr) {
           }
         }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       if (ValueRecordSize(vl) != ValueRecordSize(vr)) {
         ret = FALSE;
@@ -1050,7 +1043,6 @@ extern Bool EqualValue(ValueStruct *vl, ValueStruct *vr) {
   } else {
     ret = FALSE;
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -1069,16 +1061,14 @@ extern ValueStruct **MakeValueArray(ValueStruct *template, size_t count,
 extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
   ValueStruct *p;
   ValueStruct **ret;
-  int i;
+  int i,type;
 
   if (template != NULL) {
     p = NewValue(ValueType(template));
     ValueAttribute(p) = ValueAttribute(template);
     ValueStr(p) = NULL;
-    if (ValueName(template) != NULL) {
-      ValueName(p) = StrDup(ValueName(template));
-    }
-    switch (ValueType(template)) {
+    type = ValueType(template);
+    switch (type) {
     case GL_TYPE_INT:
       if (fCopy) {
         SetValueInteger(p, ValueInteger(template));
@@ -1181,32 +1171,31 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
       for (i = 0; i < ValueArraySize(template); i++) {
         ret[i] = DuplicateValue(ValueArrayItem(template, i), fCopy);
         ValueParent(ret[i]) = p;
-        ValueIndex(ret[i]) = i;
       }
       ValueArrayItems(p) = ret;
       ValueArraySize(p) = ValueArraySize(template);
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
+      if (type == GL_TYPE_ROOT_RECORD) {
+        if (ValueRootRecordName(template) != NULL) {
+          ValueRootRecordName(p) = StrDup(ValueRootRecordName(template));
+        }
+      }
       /*	share name table		*/
-      ValueRecordNames(p) =
-          (char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
+      ValueRecordNames(p) = (char **)xmalloc(sizeof(char *) * ValueRecordSize(template));
       /*	duplicate data space	*/
-      ValueRecordItems(p) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) *
-                                                    ValueRecordSize(template));
+      ValueRecordItems(p) = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * ValueRecordSize(template));
       ValueRecordSize(p) = ValueRecordSize(template);
       for (i = 0; i < ValueRecordSize(template); i++) {
-        ValueRecordItem(p, i) =
-            DuplicateValue(ValueRecordItem(template, i), fCopy);
+        ValueRecordItem(p, i) = DuplicateValue(ValueRecordItem(template, i), fCopy);
         ValueRecordName(p, i) = StrDup(ValueRecordName(template, i));
         if (g_hash_table_lookup(ValueRecordMembers(p), ValueRecordName(p, i)) !=
             NULL) {
           MonWarningPrintf("duplicate value:%s", ValueRecordName(p, i));
         }
-        g_hash_table_insert(ValueRecordMembers(p),
-                            (gpointer)ValueRecordName(p, i),
-                            (gpointer)((long)i + 1));
+        g_hash_table_insert(ValueRecordMembers(p), (gpointer)ValueRecordName(p, i), (gpointer)((long)i + 1));
         ValueParent(ValueRecordItem(p, i)) = p;
-        ValueIndex(ValueRecordItem(p, i)) = i;
       }
       break;
     case GL_TYPE_VALUES:
@@ -1217,7 +1206,6 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
         ValueValuesItem(p, i) =
             DuplicateValue(ValueValuesItem(template, i), fCopy);
         ValueParent(ValueValuesItem(p, i)) = p;
-        ValueIndex(ValueValuesItem(p, i)) = i;
       }
       break;
     case GL_TYPE_ALIAS:
@@ -1239,7 +1227,6 @@ extern void ValueAddRecordItem(ValueStruct *upper, char *name,
   char *dname;
   size_t nsize;
 
-  ENTER_FUNC;
   dbgprintf("name = [%s]\n", name);
   nsize = ValueRecordSize(upper) + 1;
   items = (ValueStruct **)xmalloc(sizeof(ValueStruct *) * nsize);
@@ -1256,7 +1243,6 @@ extern void ValueAddRecordItem(ValueStruct *upper, char *name,
   dname = StrDup(name);
   names[ValueRecordSize(upper)] = dname;
   ValueParent(value) = upper;
-  ValueIndex(value) = ValueRecordSize(upper);
   if (name != NULL) {
     if (g_hash_table_lookup(ValueRecordMembers(upper), name) == NULL) {
       g_hash_table_insert(ValueRecordMembers(upper), (gpointer)dname,
@@ -1268,14 +1254,12 @@ extern void ValueAddRecordItem(ValueStruct *upper, char *name,
   ValueRecordItems(upper) = items;
   ValueRecordNames(upper) = names;
   ValueRecordSize(upper) = nsize;
-  LEAVE_FUNC;
 }
 
 extern void ValueAddArrayItem(ValueStruct *upper, int ix, ValueStruct *value) {
   ValueStruct **items;
   size_t nsize;
 
-  ENTER_FUNC;
   if (ix < 0) {
     ix = ValueArraySize(upper);
   }
@@ -1293,6 +1277,34 @@ extern void ValueAddArrayItem(ValueStruct *upper, int ix, ValueStruct *value) {
   }
   ValueArrayItem(upper, ix) = value;
   ValueParent(value) = upper;
-  ValueIndex(value) = ix;
-  LEAVE_FUNC;
+}
+
+extern int ValueIndex(ValueStruct *val) {
+  ValueStruct *p;
+  p = ValueParent(val);
+  if (p == NULL) {
+    return 0;
+  }
+
+  int i,size;
+  switch (ValueType(p)) {
+  case GL_TYPE_ROOT_RECORD:
+  case GL_TYPE_RECORD:
+    size = ValueRecordSize(p);
+    for (i = 0; i < size; i++) {
+      if (val == ValueRecordItem(p, i)) {
+        return i;
+      }
+    }
+    break;
+  case GL_TYPE_ARRAY:
+    size = ValueArraySize(p);
+    for (i = 0; i < size; i++) {
+      if (val == ValueArrayItem(p, i)) {
+        return i;
+      }
+    }
+    break;
+  }
+  return 0;
 }

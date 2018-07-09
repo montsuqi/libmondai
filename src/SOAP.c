@@ -136,7 +136,6 @@ static xmlNodePtr SearchNode(xmlNodePtr tree, char *ns, char *tag, char *prop,
   xmlChar *thisns, *thisnn;
   xmlNodePtr ret;
 
-  ENTER_FUNC;
   ret = NULL;
   while (tree != NULL) {
     switch (XMLNodeType(tree)) {
@@ -173,7 +172,6 @@ static xmlNodePtr SearchNode(xmlNodePtr tree, char *ns, char *tag, char *prop,
       break;
     tree = XMLNodeNext(tree);
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -186,7 +184,6 @@ static void _SOAP_UnPackValue(ValueStruct *value, GHashTable *ids,
   xmlNode *child, *rnode;
   size_t size;
 
-  ENTER_FUNC;
   if (value != NULL) {
     if (((xsi_null = XMLGetNsProp(node, "null", XSI_URL)) != NULL) &&
         (strcmp(xsi_null, "true") == 0)) {
@@ -265,6 +262,7 @@ static void _SOAP_UnPackValue(ValueStruct *value, GHashTable *ids,
           child = XMLNodeNext(child);
         }
         break;
+      case GL_TYPE_ROOT_RECORD:
       case GL_TYPE_RECORD:
         child = XMLNodeChildren(node);
         for (i = 0; i < ValueRecordSize(value);) {
@@ -299,7 +297,6 @@ static void _SOAP_UnPackValue(ValueStruct *value, GHashTable *ids,
       }
     }
   }
-  LEAVE_FUNC;
 }
 
 extern void SOAP_UnPackValue(ValueStruct *val, char *data, char *method) {
@@ -307,7 +304,6 @@ extern void SOAP_UnPackValue(ValueStruct *val, char *data, char *method) {
   xmlNode *body, *top;
   GHashTable *ids;
 
-  ENTER_FUNC;
   if ((doc = xmlReadMemory(data, strlen(data), "", NULL, XML_PARSE_NOBLANKS)) ==
       NULL) {
     exit(1);
@@ -337,7 +333,6 @@ extern void SOAP_UnPackValue(ValueStruct *val, char *data, char *method) {
   xmlFreeDoc(doc);
   g_hash_table_destroy(ids);
   xmlCleanupParser();
-  LEAVE_FUNC;
 }
 
 static ValueStruct *_SOAP_LoadValue(ValueStruct *upper, GHashTable *ids,
@@ -349,7 +344,6 @@ static ValueStruct *_SOAP_LoadValue(ValueStruct *upper, GHashTable *ids,
   unsigned char *buff;
   size_t size;
 
-  ENTER_FUNC;
   if (node != NULL) {
     dbgprintf("name  = [%s]\n", XMLName(node));
     if ((tname = XMLGetNsProp(node, "type", XSI_URL)) != NULL) {
@@ -427,7 +421,6 @@ static ValueStruct *_SOAP_LoadValue(ValueStruct *upper, GHashTable *ids,
   } else {
     value = NULL;
   }
-  LEAVE_FUNC;
   return (value);
 }
 
@@ -437,7 +430,6 @@ extern ValueStruct *SOAP_LoadValue(char *data, char *method) {
   GHashTable *ids;
   ValueStruct *val, *elem;
 
-  ENTER_FUNC;
   if ((doc = xmlReadMemory(data, strlen(data), "", NULL, XML_PARSE_NOBLANKS)) ==
       NULL) {
     exit(1);
@@ -477,7 +469,6 @@ extern ValueStruct *SOAP_LoadValue(char *data, char *method) {
   xmlFreeDoc(doc);
   g_hash_table_destroy(ids);
   xmlCleanupParser();
-  LEAVE_FUNC;
   return (val);
 }
 
@@ -490,7 +481,6 @@ static size_t _SOAP_PackValue(CONVOPT *opt, unsigned char *p, char *ns,
   Bool fOut;
   char ibuff[SIZE_LONGNAME + 1];
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     switch (ValueType(value)) {
@@ -522,6 +512,7 @@ static size_t _SOAP_PackValue(CONVOPT *opt, unsigned char *p, char *ns,
       }
       p += PutCR(opt, p);
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       p += IndentLine(opt, p);
       if (ns != NULL) {
@@ -664,7 +655,6 @@ static size_t _SOAP_PackValue(CONVOPT *opt, unsigned char *p, char *ns,
       break;
     }
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -675,7 +665,6 @@ extern size_t SOAP_PackValue(unsigned char *p, ValueStruct *value, char *method,
   unsigned char *pp;
   CONVOPT *opt;
 
-  ENTER_FUNC;
   opt = NewConvOpt();
 
   ConvSetIndent(opt, fIndent);
@@ -713,7 +702,6 @@ extern size_t SOAP_PackValue(unsigned char *p, ValueStruct *value, char *method,
   *p = 0;
 
   DestroyConvOptXML(opt);
-  LEAVE_FUNC;
   return (p - pp);
 }
 

@@ -110,6 +110,7 @@ extern void SetValueAttribute(ValueStruct *val, ValueAttributeType attr) {
       SetValueAttribute(ValueArrayItem(val, i), attr);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     for (i = 0; i < ValueRecordSize(val); i++) {
       SetValueAttribute(ValueRecordItem(val, i), attr);
@@ -145,7 +146,6 @@ extern ValueStruct *ParValueDefine(CURFILE *in) {
   ArrayDimension *next, *curr;
   Bool fExpandable;
 
-  ENTER_FUNC;
   SetReserved(in, Reserved);
   value = NULL;
   switch (GetSymbol) {
@@ -354,7 +354,6 @@ extern ValueStruct *ParValueDefine(CURFILE *in) {
       ValueArrayItems(array) = MakeValueArray(value, curr->count, FALSE);
       for (i = 0; i < ValueArraySize(array); i++) {
         ValueParent(ValueArrayItem(array, i)) = array;
-        ValueIndex(ValueArrayItem(array, i)) = i;
       }
     }
     next = curr->next;
@@ -362,7 +361,6 @@ extern ValueStruct *ParValueDefine(CURFILE *in) {
     curr = next;
     value = array;
   }
-  LEAVE_FUNC;
   return (value);
 }
 
@@ -371,7 +369,6 @@ static void ParValueDefines(CURFILE *in, ValueStruct *upper) {
   ValueStruct *value;
   char name[SIZE_SYMBOL + 1];
 
-  ENTER_FUNC;
   while (ComToken == T_SYMBOL) {
     strcpy(name, ComSymbol);
     value = ParValueDefine(in);
@@ -413,7 +410,6 @@ static void ParValueDefines(CURFILE *in, ValueStruct *upper) {
     printf("token = %d [%c]\n", ComToken, ComToken);
     Error("syntax error(invalid structure define(s))");
   }
-  LEAVE_FUNC;
 }
 
 extern void RecParserInit(void) {
@@ -428,7 +424,6 @@ extern ValueStruct *RecParseMain(CURFILE *in) {
   ValueStruct *ret;
   ValueAttributeType attr;
 
-  ENTER_FUNC;
 
   SetReserved(in, Reserved);
   ret = NULL;
@@ -444,7 +439,7 @@ extern ValueStruct *RecParseMain(CURFILE *in) {
     }
     in->ValueName = StrDup(ComSymbol);
     if (GetSymbol == '{') {
-      ret = NewValue(GL_TYPE_RECORD);
+      ret = NewValue(GL_TYPE_ROOT_RECORD);
       ValueAttribute(ret) = attr;
       GetName;
       ParValueDefines(in, ret);
@@ -460,7 +455,6 @@ extern ValueStruct *RecParseMain(CURFILE *in) {
   } else {
     ret = NULL;
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -473,7 +467,7 @@ static ValueStruct *_RecParseValue(CURFILE *in, char **topname) {
       if (topname != NULL) {
         *topname = StrDup(in->ValueName);
       }
-      ValueName(ret) = StrDup(in->ValueName);
+      ValueRootRecordName(ret) = StrDup(in->ValueName);
     }
   }
   return ret;
@@ -483,7 +477,6 @@ extern ValueStruct *RecParseValue(const char *name, char **ValueName) {
   ValueStruct *ret;
   CURFILE *in, root;
 
-  ENTER_FUNC;
   assert(ParsedRec);
   root.next = NULL;
   if ((ret = g_hash_table_lookup(ParsedRec, name)) == NULL) {
@@ -500,7 +493,6 @@ extern ValueStruct *RecParseValue(const char *name, char **ValueName) {
     }
   }
 
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -508,7 +500,6 @@ extern ValueStruct *RecParseValueMem(const char *mem, char **ValueName) {
   ValueStruct *ret;
   CURFILE *in, root;
 
-  ENTER_FUNC;
   root.next = NULL;
   if ((in = PushLexInfoMem(&root, mem, RecordDir, Reserved)) != NULL) {
     ret = _RecParseValue(in, ValueName);
@@ -516,6 +507,5 @@ extern ValueStruct *RecParseValueMem(const char *mem, char **ValueName) {
   } else {
     ret = NULL;
   }
-  LEAVE_FUNC;
   return (ret);
 }

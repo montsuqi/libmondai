@@ -127,6 +127,7 @@ static size_t _CSV_UnPackValue(CONVOPT *opt, unsigned char *p,
         p += _CSV_UnPackValue(opt, p, ValueArrayItem(value, i), buff);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += _CSV_UnPackValue(opt, p, ValueRecordItem(value, i), buff);
@@ -245,6 +246,7 @@ static size_t __CSV_PackValue(CONVOPT *opt, unsigned char *p,
         }
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += __CSV_PackValue(opt, p, ValueRecordItem(value, i), FALSE, fNsep,
@@ -363,6 +365,7 @@ static size_t _CSV_SizeValue(CONVOPT *opt, ValueStruct *value, Bool fOuter,
       }
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {
@@ -469,6 +472,7 @@ extern size_t SQL_UnPackValue(CONVOPT *opt, unsigned char *p,
         p += SQL_UnPackValue(opt, p, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += SQL_UnPackValue(opt, p, ValueRecordItem(value, i));
@@ -563,6 +567,7 @@ static size_t _SQL_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value,
           p += _SQL_PackValue(opt, p, ValueArrayItem(value, i), fFirst);
         }
         break;
+      case GL_TYPE_ROOT_RECORD:
       case GL_TYPE_RECORD:
         for (i = 0; i < ValueRecordSize(value); i++) {
           p += _SQL_PackValue(opt, p, ValueRecordItem(value, i), fFirst);
@@ -593,7 +598,6 @@ static size_t _SQL_SizeValue(CONVOPT *opt, ValueStruct *value, Bool *fFirst) {
   size_t ret;
   char *str;
 
-  ENTER_FUNC;
   if (value == NULL)
     return (0);
   if (IS_VALUE_NIL(value)) {
@@ -667,6 +671,7 @@ static size_t _SQL_SizeValue(CONVOPT *opt, ValueStruct *value, Bool *fFirst) {
         ret += _SQL_SizeValue(opt, ValueArrayItem(value, i), fFirst);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       ret = 0;
       for (i = 0; i < ValueRecordSize(value); i++) {
@@ -678,7 +683,6 @@ static size_t _SQL_SizeValue(CONVOPT *opt, ValueStruct *value, Bool *fFirst) {
       ret = 0;
       break;
     }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -816,6 +820,7 @@ static size_t _RFC822_UnPackValueNoNamed(CONVOPT *opt, unsigned char *p,
         p += _RFC822_UnPackValueNoNamed(opt, p, ValueArrayItem(value, i), buff);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p +=
@@ -839,7 +844,6 @@ static size_t _RFC822_UnPackValueNamed(CONVOPT *opt, unsigned char *p,
   ValueStruct *e;
   size_t len;
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     while (*p != 0) {
@@ -894,7 +898,6 @@ static size_t _RFC822_UnPackValueNamed(CONVOPT *opt, unsigned char *p,
       }
     }
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -903,7 +906,6 @@ extern size_t RFC822_UnPackValue(CONVOPT *opt, unsigned char *p,
   size_t ret;
   unsigned char buff[SIZE_BUFF];
 
-  ENTER_FUNC;
   p = StrDup(p);
   if (opt->fName) {
     ret = _RFC822_UnPackValueNamed(opt, p, value, buff);
@@ -911,7 +913,6 @@ extern size_t RFC822_UnPackValue(CONVOPT *opt, unsigned char *p,
     ret = _RFC822_UnPackValueNoNamed(opt, p, value, buff);
   }
   xfree(p);
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -922,7 +923,6 @@ static size_t _RFC822_PackValue(CONVOPT *opt, unsigned char *p,
   unsigned char *str;
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     if (name == NULL) {
@@ -963,6 +963,7 @@ static size_t _RFC822_PackValue(CONVOPT *opt, unsigned char *p,
                                name + strlen(name), longname, buff);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         sprintf(name, ".%s", ValueRecordName(value, i));
@@ -976,7 +977,6 @@ static size_t _RFC822_PackValue(CONVOPT *opt, unsigned char *p,
     }
   }
   *p = 0;
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -985,7 +985,6 @@ extern size_t RFC822_PackValue(CONVOPT *opt, unsigned char *p,
   char buff[SIZE_BUFF], longname[SIZE_LONGNAME + 1];
   size_t ret;
 
-  ENTER_FUNC;
   memclear(longname, SIZE_LONGNAME);
   if (opt->recname != NULL) {
     strcpy(longname, opt->recname);
@@ -994,7 +993,6 @@ extern size_t RFC822_PackValue(CONVOPT *opt, unsigned char *p,
   if (ret > 0) {
     *(p + ret - 1) = 0;
   }
-  LEAVE_FUNC;
   return (ret);
 }
 
@@ -1044,6 +1042,7 @@ static size_t _RFC822_SizeValue(CONVOPT *opt, ValueStruct *value, char *name,
                                name + strlen(name), longname);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {
@@ -1170,6 +1169,7 @@ static size_t _CGI_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value,
                             name + strlen(name), longname);
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         sprintf(name, ".%s", ValueRecordName(value, i));
@@ -1237,6 +1237,7 @@ static size_t _CGI_SizeValue(CONVOPT *opt, ValueStruct *value, char *name,
                             longname);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {

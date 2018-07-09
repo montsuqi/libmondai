@@ -50,7 +50,6 @@ extern char **ParCommandLine(char *line) {
   char *p, *q;
   char **cmd;
 
-  ENTER_FUNC;
   n = 0;
   p = line;
   while (*p != 0) {
@@ -78,7 +77,6 @@ extern char **ParCommandLine(char *line) {
     }
   }
   cmd[n] = NULL;
-  LEAVE_FUNC;
 
   return (cmd);
 }
@@ -90,7 +88,6 @@ extern char *ExpandPath(char *org, char *base) {
   FILE *fp;
   int c;
 
-  ENTER_FUNC;
   p = path;
   while (*org != 0) {
     switch (*org) {
@@ -154,7 +151,6 @@ extern char *ExpandPath(char *org, char *base) {
     }
   }
   *p = 0;
-  LEAVE_FUNC;
   return (path);
 }
 

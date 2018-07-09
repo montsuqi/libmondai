@@ -207,6 +207,7 @@ static size_t _PHP_PackValue(CONVOPT *opt, unsigned char *p, ValueStruct *value,
       }
       p += sprintf(p, "}");
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         if (*longname == 0) {
@@ -278,6 +279,7 @@ static size_t _PHP_SizeValue(CONVOPT *opt, ValueStruct *value, char *name,
                             longname);
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {

@@ -403,7 +403,6 @@ extern void LBS_EmitStringCodeset(LargeByteString *lbs, char *str, size_t isize,
   int rc, i;
   size_t obsize, ssize;
 
-  ENTER_FUNC;
   if (lbs != NULL) {
     if ((str == NULL) || (strlen(str) == 0)) {
       return;
@@ -458,7 +457,6 @@ extern void LBS_EmitStringCodeset(LargeByteString *lbs, char *str, size_t isize,
       lbs->ptr = lbs->size;
     }
   }
-  LEAVE_FUNC;
 }
 
 extern void LBS_EmitPointer(LargeByteString *lbs, void *p) {

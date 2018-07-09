@@ -118,7 +118,6 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
   char buff[SIZE_NUMBUF + 1];
   unsigned char *q;
 
-  ENTER_FUNC;
   q = p;
   if (value != NULL) {
     ValueIsNonNil(value);
@@ -219,14 +218,13 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       for (i = 0; i < ValueArraySize(value); i++) {
         p += OpenCOBOL_UnPackValue(opt, p, ValueArrayItem(value, i));
         ValueParent(ValueArrayItem(value, i)) = value;
-        ValueIndex(ValueArrayItem(value, i)) = i;
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += OpenCOBOL_UnPackValue(opt, p, ValueRecordItem(value, i));
         ValueParent(ValueRecordItem(value, i)) = value;
-        ValueIndex(ValueRecordItem(value, i)) = i;
       }
       break;
     default:
@@ -234,7 +232,6 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       break;
     }
   }
-  LEAVE_FUNC;
   return (p - q);
 }
 
@@ -244,7 +241,6 @@ extern size_t OpenCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
   size_t size;
   unsigned char *pp;
 
-  ENTER_FUNC;
   pp = p;
   if (value != NULL) {
     switch (ValueType(value)) {
@@ -321,6 +317,7 @@ extern size_t OpenCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
         p += OpenCOBOL_PackValue(opt, p, ValueArrayItem(value, i));
       }
       break;
+    case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
         p += OpenCOBOL_PackValue(opt, p, ValueRecordItem(value, i));
@@ -330,7 +327,6 @@ extern size_t OpenCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
       break;
     }
   }
-  LEAVE_FUNC;
   return (p - pp);
 }
 
@@ -383,6 +379,7 @@ extern size_t OpenCOBOL_SizeValue(CONVOPT *opt, ValueStruct *value) {
       ret += OpenCOBOL_SizeValue(opt, ValueArrayItem(value, i));
     }
     break;
+  case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
     ret = 0;
     for (i = 0; i < ValueRecordSize(value); i++) {

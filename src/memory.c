@@ -156,7 +156,6 @@ extern void _ReleaseArea(POOL *pool, void *p) {
 
   if (!p)
     return;
-  ENTER_FUNC;
   if (pool != NULL) {
     if ((rp = pool->head) != NULL) {
       while (rp->next != NULL) {
@@ -173,13 +172,11 @@ extern void _ReleaseArea(POOL *pool, void *p) {
       }
     }
   }
-  LEAVE_FUNC;
 }
 
 extern void _ReleasePool(POOL *pool) {
   MEMAREA *np, *rp;
 
-  ENTER_FUNC;
   if (pool != NULL) {
     if (pool->name != NULL) {
       LockWrite(PoolTable);
@@ -199,13 +196,11 @@ extern void _ReleasePool(POOL *pool) {
     }
     xfree(pool);
   }
-  LEAVE_FUNC;
 }
 
 extern POOL *NewPool(char *name) {
   POOL *pool;
 
-  ENTER_FUNC;
   if (name == NULL) {
     pool = (POOL *)xmalloc(sizeof(POOL));
     pool->name = NULL;
@@ -222,7 +217,6 @@ extern POOL *NewPool(char *name) {
     }
     UnLock(PoolTable);
   }
-  LEAVE_FUNC;
   return (pool);
 }
 
