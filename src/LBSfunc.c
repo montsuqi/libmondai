@@ -36,6 +36,7 @@
 #include <iconv.h>
 #include <wchar.h>
 #include <math.h>
+#include <errno.h>
 
 #include "types.h"
 #include "libmondai.h"
@@ -67,22 +68,13 @@ extern void LBS_Grown(LargeByteString *lbs, size_t size, Bool fKeep) {
   unsigned char *body;
 
   if (lbs->asize < size) {
-#if 1 /* realloc */
     body = (unsigned char *)realloc(lbs->body, size);
+    if (body == NULL) {
+      MonErrorPrintf("realloc failure:%s",strerror(errno));
+    }
     if (!fKeep) {
       memclear(body, size);
     }
-#else /* normal */
-    body = (unsigned char *)xmalloc(size);
-    if (fKeep) {
-      memcpy(body, lbs->body, lbs->size);
-    } else {
-      memclear(body, size);
-    }
-    if (lbs->body != NULL) {
-      xfree(lbs->body);
-    }
-#endif
     lbs->body = body;
     lbs->asize = size;
   }
@@ -566,7 +558,10 @@ extern LargeByteString *LBS_Duplicate(LargeByteString *lbs) {
   if (lbs != NULL) {
     ret = NewLBS();
     LBS_ReserveSize(ret, lbs->size, FALSE);
-    memcpy(ret->body, lbs->body, lbs->size);
+    /* for scan-build... */
+    if (ret != NULL && ret->body != NULL) {
+      memcpy(ret->body, lbs->body, lbs->size);
+    }
   } else {
     ret = NULL;
   }

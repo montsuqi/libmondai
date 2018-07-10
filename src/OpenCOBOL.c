@@ -117,6 +117,7 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
   int32_t i;
   char buff[SIZE_NUMBUF + 1];
   unsigned char *q;
+  ValueStruct *child;
 
   q = p;
   if (value != NULL) {
@@ -209,15 +210,21 @@ extern size_t OpenCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       break;
     case GL_TYPE_ARRAY:
       for (i = 0; i < ValueArraySize(value); i++) {
-        p += OpenCOBOL_UnPackValue(opt, p, ValueArrayItem(value, i));
-        ValueParent(ValueArrayItem(value, i)) = value;
+        child = ValueArrayItem(value, i);
+        if (child != NULL) {
+          p += OpenCOBOL_UnPackValue(opt, p, child);
+          ValueParent(child) = value;
+        }
       }
       break;
     case GL_TYPE_ROOT_RECORD:
     case GL_TYPE_RECORD:
       for (i = 0; i < ValueRecordSize(value); i++) {
-        p += OpenCOBOL_UnPackValue(opt, p, ValueRecordItem(value, i));
-        ValueParent(ValueRecordItem(value, i)) = value;
+        child = ValueRecordItem(value, i);
+        if (child != NULL) {
+          p += OpenCOBOL_UnPackValue(opt, p, child);
+          ValueParent(child) = value;
+        }
       }
       break;
     default:

@@ -27,7 +27,6 @@
 extern int main(int argc, char **argv) {
   int i, mode;
 
-  mode = 0;
   if (argc < 3) {
     fprintf(stderr, "%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...\n");
     exit(1);

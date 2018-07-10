@@ -260,11 +260,11 @@ static int GetChar(CURFILE *in) {
         c = 0;
       }
     } else {
+      c = 0;
       if (in->body == NULL) {
         fprintf(stderr, "nulpo!\n");
-      }
-      if ((c = in->body[in->pos]) == 0) {
-        c = 0;
+      } else {
+        c = in->body[in->pos];
       }
     }
   }

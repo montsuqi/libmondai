@@ -18,11 +18,6 @@
 
 lib_LTLIBRARIES = libmondai.la 
 
-if SOAP
-TESTSOAP  =  testsoap
-else
-TESTSOAP  =
-endif
 noinst_PROGRAMS =	\
 	testfileutils \
 	testfixed \
@@ -31,8 +26,7 @@ noinst_PROGRAMS =	\
 	testmem \
 	testNativePack \
 	testjson \
-	testnumeric \
-	$(TESTSOAP)
+	testnumeric
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -54,7 +48,6 @@ libmondaiinclude_HEADERS =	\
 	XML_v.h					\
 	php_v.h					\
 	json_v.h				\
-	SOAP_v.h				\
 	cobolvalue.h			\
 	others.h				\
 	numerici.h				\
@@ -91,7 +84,6 @@ libmondai_la_SOURCES	=	\
 	php.c			php_v.h			\
 	json.c			json_v.h		\
 	XML.c			XML_v.h			\
-	SOAP.c			SOAP_v.h		\
 	hash.c			hash_v.h		\
 	getset.c		getset.h		\
 	value.c			value.h			\
@@ -126,11 +118,6 @@ testvalue_SOURCES	=		\
 
 testNativePack_SOURCES	=		\
 	testNativePack.c
-
-if SOAP
-testsoap_SOURCES	=		\
-	testsoap.c
-endif
 
 testmem_SOURCES		=		\
 	testmem.c
