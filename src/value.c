@@ -89,9 +89,8 @@ extern ValueStruct *NewValue(PacketDataType type) {
     SetValueBool(ret,FALSE);
     break;
   case GL_TYPE_OBJECT:
-    ret->body = New(ObjectData);
-    ValueObjectId(ret) = 0;
-    ValueObjectFile(ret) = NULL;
+    ret->body = xmalloc(SIZE_UUID+1);
+    memset(ret->body,0,SIZE_UUID+1);
     break;
   case GL_TYPE_ROOT_RECORD:
   case GL_TYPE_RECORD:
@@ -138,8 +137,6 @@ extern ValueStruct *NewValue(PacketDataType type) {
     ValueDateTimeYDay(ret) = 0;
     ValueDateTimeIsdst(ret) = 0;
     break;
-  case GL_TYPE_POINTER:
-    ret->body = NULL;
     break;
   default:
     MonWarningPrintf("invalid type:%#X", type);
@@ -193,21 +190,15 @@ extern void FreeValueStruct(ValueStruct *val) {
     case GL_TYPE_TIMESTAMP:
     case GL_TYPE_DATE:
     case GL_TYPE_TIME:
+    case GL_TYPE_OBJECT:
+    case GL_TYPE_FLOAT:
+    case GL_TYPE_ALIAS:
       xfree(ValueBody(val));
       break;
     case GL_TYPE_NUMBER:
       xfree(ValueFixedBody(val));
       xfree(ValueBody(val));
       break;
-    case GL_TYPE_OBJECT:
-      xfree(ValueObjectFile(val));
-      xfree(ValueBody(val));
-      break;
-    case GL_TYPE_FLOAT:
-      xfree(ValueBody(val));
-      break;
-    case GL_TYPE_ALIAS:
-      xfree(ValueBody(val));
     default:
       break;
     }
@@ -407,7 +398,7 @@ static void _DumpValueStruct(ValueStruct *val, int level) {
       fprintf(stderr, "%s\n", ValueFixedBody(val));
       break;
     case GL_TYPE_OBJECT:
-      fprintf(stderr, "%d\n", (int)ValueObjectId(val));
+      fprintf(stderr, "%s\n", ValueObjectId(val));
       break;
     case GL_TYPE_TIMESTAMP:
       fprintf(stderr, "[%s]\n", ValueToString(val, DUMP_LOCALE));
@@ -490,11 +481,7 @@ extern void InitializeValue(ValueStruct *value) {
     SetValueBool(value, FALSE);
     break;
   case GL_TYPE_OBJECT:
-    ValueObjectId(value) = 0;
-    if (ValueObjectFile(value) != NULL) {
-      xfree(ValueObjectFile(value));
-    }
-    ValueObjectFile(value) = NULL;
+    memset(ValueBody(value),0,SIZE_UUID+1);
     break;
   case GL_TYPE_BYTE:
   case GL_TYPE_CHAR:
@@ -596,11 +583,7 @@ extern void FillValue(ValueStruct *value) {
     SetValueBool(value, FALSE);
     break;
   case GL_TYPE_OBJECT:
-    ValueObjectId(value) = 0;
-    if (ValueObjectFile(value) != NULL) {
-      xfree(ValueObjectFile(value));
-    }
-    ValueObjectFile(value) = NULL;
+    memset(ValueBody(value),0,SIZE_UUID+1);
     break;
   case GL_TYPE_BYTE:
   case GL_TYPE_CHAR:
@@ -731,6 +714,10 @@ extern void MoveValue(ValueStruct *to, ValueStruct *from) {
   case GL_TYPE_TIME:
     SetValueDateTime(to, ValueToDateTime(from));
     break;
+  case GL_TYPE_OBJECT:
+    memset(ValueBody(to),0,SIZE_UUID+1);
+    memcpy(ValueBody(to),ValueBody(from),SIZE_UUID);
+    break;
   case GL_TYPE_ALIAS:
   default:
     break;
@@ -760,11 +747,8 @@ extern void CopyValue(ValueStruct *vd, ValueStruct *vs) {
     SetValueBool(vd, ValueBool(vs));
     break;
   case GL_TYPE_OBJECT:
-    ValueObjectId(vd) = ValueObjectId(vs);
-    if (ValueObjectFile(vd) != NULL) {
-      xfree(ValueObjectFile(vd));
-    }
-    ValueObjectFile(vd) = StrDup(ValueObjectFile(vs));
+    memset(ValueBody(vd),0,SIZE_UUID+1);
+    memcpy(ValueBody(vd),ValueBody(vs),SIZE_UUID);
     break;
   case GL_TYPE_TIMESTAMP:
   case GL_TYPE_DATE:
@@ -957,6 +941,8 @@ extern int CompareValue(ValueStruct *vl, ValueStruct *vr) {
       }
       break;
     case GL_TYPE_OBJECT:
+      res = memcmp(ValueBody(vl),ValueBody(vr),SIZE_UUID);
+      break;
     case GL_TYPE_ALIAS:
     default:
       res = 0;
@@ -1001,6 +987,9 @@ extern Bool EqualValue(ValueStruct *vl, ValueStruct *vr) {
       } else {
         ret = FALSE;
       }
+      break;
+    case GL_TYPE_OBJECT:
+      ret = !memcmp(ValueBody(vl),ValueBody(vr),SIZE_UUID);
       break;
     case GL_TYPE_ARRAY:
       if (ValueArraySize(vl) != ValueArraySize(vr)) {
@@ -1092,14 +1081,7 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
       break;
     case GL_TYPE_OBJECT:
       if (fCopy) {
-        ValueObjectId(p) = ValueObjectId(template);
-        if (ValueObjectFile(p) != NULL) {
-          xfree(ValueObjectFile(p));
-        }
-        ValueObjectFile(p) = StrDup(ValueObjectFile(template));
-      } else {
-        ValueObjectId(p) = 0;
-        ValueObjectFile(p) = NULL;
+        CopyValue(p,template);
       }
       break;
     case GL_TYPE_TIMESTAMP:

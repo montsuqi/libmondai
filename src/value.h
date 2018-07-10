@@ -36,8 +36,13 @@
 #ifndef SIZE_NAME
 #define SIZE_NAME 64
 #endif
+
 #ifndef SIZE_LONGNAME
 #define SIZE_LONGNAME 1024
+#endif
+
+#ifndef SIZE_UUID
+#define SIZE_UUID 36
 #endif
 
 #include <stdio.h>
@@ -91,11 +96,6 @@ typedef struct _ValueData {
   struct _ValueStruct **item;
 } ValuesData;
 
-typedef struct _ObjectData {
-  MonObjectType oid;
-  char *file;
-} ObjectData;
-
 #define GL_TYPE_CLASS (PacketDataType)0xF0
 #define GL_TYPE_NULL (PacketDataType)0x00
 
@@ -110,7 +110,6 @@ typedef struct _ObjectData {
 #define GL_TYPE_TEXT (PacketDataType)0x22
 #define GL_TYPE_VARCHAR (PacketDataType)0x23
 #define GL_TYPE_DBCODE (PacketDataType)0x24
-#define GL_TYPE_POINTER (PacketDataType)0x25
 #define GL_TYPE_SYMBOL (PacketDataType)0x26
 
 #define GL_TYPE_BITS (PacketDataType)0x30
@@ -232,11 +231,6 @@ typedef struct _ObjectData {
 #define ValueRootRecord(v)      ((RootRecordData*)ValueBody(v))
 #define ValueRootRecordName(v)  ((ValueRootRecord(v))->name)
 
-/*ObjecData*/
-#define ValueObject(v)     ((ObjectData*)ValueBody(v))
-#define ValueObjectId(v)   ((ValueObject(v))->oid)
-#define ValueObjectFile(v) ((ValueObject(v))->file)
-
 /*Values*/
 #define ValueValues(v)        ((ValuesData*)ValueBody(v))
 #define ValueValuesSize(v)    ((ValueValues(v))->count)
@@ -248,7 +242,7 @@ typedef struct _ObjectData {
 #define ValueBool(v)           ((int64_t)ValueBody(v))
 #define ValueFloat(v)          (*((double*)(ValueBody(v))))
 #define ValueAliasName(v)      ((char*)ValueBody(v))
-#define ValuePointer(v)        ((ValueStruct*)ValueBody(v))
+#define ValueObjectId(v)       ((char*)ValueBody(v))
 
 extern ValueStruct *NewValue(PacketDataType type);
 extern void FreeValueStruct(ValueStruct *val);

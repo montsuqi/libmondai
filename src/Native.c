@@ -191,20 +191,9 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
       break;
     case GL_TYPE_OBJECT:
       dbgmsg("GL_TYPE_OBJECT");
-      ValueObjectId(value) = *(MonObjectType *)p;
-      p += sizeof(ValueObjectId(value));
-      if (ValueObjectFile(value) != NULL) {
-        xfree(ValueObjectFile(value));
-      }
-      if ((size = *(size_t *)p) > 0) {
-        p += sizeof(size_t);
-        ValueObjectFile(value) = (char *)xmalloc(size);
-        strcpy(ValueObjectFile(value), p);
-        p += size;
-      } else {
-        p += sizeof(size_t);
-        ValueObjectFile(value) = NULL;
-      }
+      InitializeValue(value);
+      memcpy(ValueBody(value),p,SIZE_UUID);
+      p += SIZE_UUID;
       break;
     case GL_TYPE_ARRAY:
       dbgmsg("GL_TYPE_ARRAY");
@@ -303,11 +292,7 @@ extern size_t NativeSizeValue(CONVOPT *opt, ValueStruct *value) {
       }
       break;
     case GL_TYPE_OBJECT:
-      esize += sizeof(MonObjectType);
-      esize += sizeof(size_t);
-      if (ValueObjectFile(value) != NULL) {
-        esize += strlen(ValueObjectFile(value)) + 1;
-      }
+      esize += SIZE_UUID;
       break;
     case GL_TYPE_ARRAY:
       esize += sizeof(size_t);
@@ -412,18 +397,8 @@ extern size_t NativePackValue(CONVOPT *opt, unsigned char *p,
       }
       break;
     case GL_TYPE_OBJECT:
-      *(MonObjectType *)p = ValueObjectId(value);
-      p += sizeof(MonObjectType);
-      if (ValueObjectFile(value) != NULL) {
-        size = strlen(ValueObjectFile(value)) + 1;
-        *(size_t *)p = size;
-        p += sizeof(size_t);
-        strcpy(p, ValueObjectFile(value));
-        p += size;
-      } else {
-        *(size_t *)p = 0;
-        p += sizeof(size_t);
-      }
+      memcpy(p,ValueBody(value),SIZE_UUID);
+      p += SIZE_UUID;
       break;
     case GL_TYPE_ARRAY:
       *(size_t *)p = ValueArraySize(value);
