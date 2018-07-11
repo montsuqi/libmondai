@@ -588,7 +588,6 @@ static size_t _SOAP_PackValue(CONVOPT *opt, unsigned char *p, char *ns,
         p += sprintf(p, " id=\"%s\"", id);
       }
       switch (ValueType(value)) {
-      case GL_TYPE_OBJECT:
       case GL_TYPE_INT:
         if (IS_VALUE_NIL(value)) {
           p += sprintf(p, " xsi:type=\"SOAP-ENC:int\" xsi:null=\"true\"/>");

@@ -72,9 +72,6 @@ extern int ValueToInteger(ValueStruct *val) {
     case GL_TYPE_BOOL:
       ret = ValueBool(val);
       break;
-    case GL_TYPE_OBJECT:
-      ret = ValueObjectId(val);
-      break;
     case GL_TYPE_TIMESTAMP:
     case GL_TYPE_DATE:
     case GL_TYPE_TIME:
@@ -326,10 +323,6 @@ extern LargeByteString *ValueToLBS(ValueStruct *val, char *codeset) {
       sprintf(work, "%ld", ValueInteger(val));
       LBS_EmitString(ValueStr(val), work);
       break;
-    case GL_TYPE_OBJECT:
-      sprintf(work, "%d", (int)ValueObjectId(val));
-      LBS_EmitString(ValueStr(val), work);
-      break;
     case GL_TYPE_FLOAT:
       sprintf(work, "%g", ValueFloat(val));
       LBS_EmitString(ValueStr(val), work);
@@ -541,18 +534,13 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
       rc = TRUE;
       break;
     case GL_TYPE_OBJECT:
-      ValueObjectId(val) = 0;
-      for (; slen > 0; slen--) {
-        if (isdigit(*str)) {
-          ValueObjectId(val) = ValueObjectId(val) * 10 + (*str - '0');
-        }
-        str++;
+      InitializeValue(val);
+      if (slen >= SIZE_UUID) {
+        memcpy(ValueBody(val),str,SIZE_UUID);
+        rc = TRUE;
+      } else {
+        rc = FALSE;
       }
-      if (ValueObjectFile(val) != NULL) {
-        xfree(ValueObjectFile(val));
-        ValueObjectFile(val) = NULL;
-      }
-      rc = TRUE;
       break;
     case GL_TYPE_NUMBER:
     case GL_TYPE_INT:
@@ -701,14 +689,6 @@ extern Bool SetValueInteger(ValueStruct *val, int ival) {
       break;
     case GL_TYPE_BOOL:
       SetValueBool(val, (ival == 0) ? FALSE : TRUE);
-      rc = TRUE;
-      break;
-    case GL_TYPE_OBJECT:
-      ValueObjectId(val) = ival;
-      if (ValueObjectFile(val) != NULL) {
-        xfree(ValueObjectFile(val));
-        ValueObjectFile(val) = NULL;
-      }
       rc = TRUE;
       break;
     case GL_TYPE_TIMESTAMP:
@@ -1047,16 +1027,13 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
       rc = TRUE;
       break;
     case GL_TYPE_OBJECT:
-      if (str != NULL) {
-        memcpy(&ValueObjectId(val), str, sizeof(MonObjectType));
+      InitializeValue(val);
+      if (slen >= SIZE_UUID) {
+        memcpy(ValueBody(val),str,SIZE_UUID);
+        rc = TRUE;
       } else {
-        ValueObjectId(val) = 0;
+        rc = FALSE;
       }
-      if (ValueObjectFile(val) != NULL) {
-        xfree(ValueObjectFile(val));
-        ValueObjectFile(val) = NULL;
-      }
-      rc = TRUE;
       break;
     case GL_TYPE_FLOAT:
       if (str != NULL) {
@@ -1134,8 +1111,8 @@ extern unsigned char *ValueToBinary(ValueStruct *val) {
         memcpy(ValueStrBody(val), ValueBody(val), sizeof(int));
         break;
       case GL_TYPE_OBJECT:
-        LBS_ReserveSize(ValueStr(val), sizeof(MonObjectType), FALSE);
-        memcpy(ValueStrBody(val), ValueObject(val), sizeof(MonObjectType));
+        LBS_ReserveSize(ValueStr(val), SIZE_UUID+1, FALSE);
+        memcpy(ValueStrBody(val), ValueBody(val), SIZE_UUID+1);
         break;
       case GL_TYPE_FLOAT:
         LBS_ReserveSize(ValueStr(val), sizeof(double), FALSE);

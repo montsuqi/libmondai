@@ -138,12 +138,9 @@ extern size_t dotCOBOL_UnPackValue(CONVOPT *opt, unsigned char *p,
       p += ValueFixedLength(value);
       break;
     case GL_TYPE_OBJECT:
-      ValueObjectId(value) = *(MonObjectType *)p;
-      p += sizeof(ValueObject(value));
-      if (ValueObjectFile(value) != NULL) {
-        xfree(ValueObjectFile(value));
-        ValueObjectFile(value) = NULL;
-      }
+      StringCobol2C(p, SIZE_UUID);
+      memcpy(ValueBody(value), p, SIZE_UUID);
+      p += SIZE_UUID;
       break;
     case GL_TYPE_TIMESTAMP:
       ValueDateTimeYear(value) = StrToInt(p, 2);
@@ -265,8 +262,9 @@ extern size_t dotCOBOL_PackValue(CONVOPT *opt, unsigned char *p,
       p += ValueFixedLength(value);
       break;
     case GL_TYPE_OBJECT:
-      *(MonObjectType *)p = ValueObjectId(value);
-      p += sizeof(ValueObject(value));
+      memcpy(p, ValueBody(value), SIZE_UUID);
+      StringC2Cobol(p, SIZE_UUID);
+      p += SIZE_UUID;
       break;
     case GL_TYPE_TIMESTAMP:
       p += sprintf(p, "%04d%02d%02d%02d%02d%02d", ValueDateTimeYear(value),
@@ -333,7 +331,7 @@ extern size_t dotCOBOL_SizeValue(CONVOPT *opt, ValueStruct *value) {
     ret = ValueFixedLength(value);
     break;
   case GL_TYPE_OBJECT:
-    ret = sizeof(ValueObject(value));
+    ret = SIZE_UUID;
     break;
   case GL_TYPE_TIMESTAMP:
     ret = 8 + 6;
