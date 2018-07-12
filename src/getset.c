@@ -348,6 +348,9 @@ extern LargeByteString *ValueToLBS(ValueStruct *val, char *codeset) {
               ValueDateTimeMin(val), ValueDateTimeSec(val));
       LBS_EmitString(ValueStr(val), work);
       break;
+    case GL_TYPE_OBJECT:
+      LBS_EmitString(ValueStr(val), ValueObjectId(val));
+      break;
     default:
       break;
     }
