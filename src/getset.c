@@ -616,7 +616,6 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
         ValueDateTimeMin(val) = StrToInt(str, 2);
         str += 2;
         ValueDateTimeSec(val) = StrToInt(str, 2);
-        str += 2;
         rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
         break;
       case GL_TYPE_DATE:
@@ -625,7 +624,6 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
         ValueDateTimeMon(val) = StrToInt(str, 2) - 1;
         str += 2;
         ValueDateTimeMDay(val) = StrToInt(str, 2);
-        str += 2;
         ValueDateTimeHour(val) = 0;
         ValueDateTimeMin(val) = 0;
         ValueDateTimeSec(val) = 0;
@@ -640,7 +638,6 @@ extern Bool SetValueStringWithLength(ValueStruct *val, const char *str,
         ValueDateTimeMin(val) = StrToInt(str, 2);
         str += 2;
         ValueDateTimeSec(val) = StrToInt(str, 2);
-        str += 2;
         rc = TRUE;
         break;
       default:
@@ -903,7 +900,6 @@ extern Bool SetValueFixed(ValueStruct *val, Fixed *fval) {
       ValueDateTimeMin(val) = StrToInt(str, 2);
       str += 2;
       ValueDateTimeSec(val) = StrToInt(str, 2);
-      str += 2;
       rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
       break;
     case GL_TYPE_DATE:
@@ -913,7 +909,6 @@ extern Bool SetValueFixed(ValueStruct *val, Fixed *fval) {
       ValueDateTimeMon(val) = StrToInt(str, 2) - 1;
       str += 2;
       ValueDateTimeMDay(val) = StrToInt(str, 2);
-      str += 2;
       ValueDateTimeHour(val) = 0;
       ValueDateTimeMin(val) = 0;
       ValueDateTimeSec(val) = 0;
@@ -929,15 +924,8 @@ extern Bool SetValueFixed(ValueStruct *val, Fixed *fval) {
       ValueDateTimeMin(val) = StrToInt(str, 2);
       str += 2;
       ValueDateTimeSec(val) = StrToInt(str, 2);
-      str += 2;
       rc = TRUE;
       break;
-#if 0
-		  case	GL_TYPE_BOOL:
-			val->body.BoolData = ( *fval->sval == 0 ) ? FALSE : TRUE;
-			rc = TRUE;
-			break;
-#endif
     default:
       ValueIsNil(val);
       rc = FALSE;
@@ -953,119 +941,117 @@ extern Bool SetValueBinary(ValueStruct *val, unsigned char *str, size_t slen) {
 
   if (val == NULL) {
     MonWarning("no ValueStruct");
-    rc = FALSE;
-  } else {
-    if ((str == NULL) || (slen == 0)) {
+    return FALSE;
+  }
+  if ((str == NULL) || (slen == 0)) {
+    ValueIsNil(val);
+    return FALSE;
+  }
+  ValueIsNonNil(val);
+  switch (ValueType(val)) {
+  case GL_TYPE_CHAR:
+  case GL_TYPE_VARCHAR:
+  case GL_TYPE_DBCODE:
+  case GL_TYPE_TEXT:
+  case GL_TYPE_SYMBOL:
+    if (*str == CHAR_NIL) {
       ValueIsNil(val);
+    } else {
+      size = slen + 1;
+      if (size > ValueStringSize(val)) {
+        if (ValueString(val) != NULL) {
+          xfree(ValueString(val));
+        }
+        ValueStringSize(val) = size;
+        ValueString(val) = (unsigned char *)xmalloc(size);
+      }
+      memclear(ValueString(val), ValueStringSize(val));
+      if (str != NULL) {
+        strcpy(ValueString(val), str);
+      }
+      if (ValueType(val) == GL_TYPE_TEXT) {
+        ValueStringLength(val) = slen;
+      }
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_BYTE:
+    size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
+    memclear(ValueByte(val), ValueByteSize(val));
+    if (str != NULL) {
+      memcpy(ValueByte(val), str, size);
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_BINARY:
+    if (slen > ValueByteSize(val)) {
+      if (ValueByte(val) != NULL) {
+        xfree(ValueByte(val));
+      }
+      ValueByteSize(val) = slen;
+      ValueByte(val) = (unsigned char *)xmalloc(slen);
+    }
+    memclear(ValueByte(val), ValueByteSize(val));
+    if (str != NULL) {
+      memcpy(ValueByte(val), str, slen);
+    }
+    ValueByteLength(val) = slen;
+    rc = TRUE;
+    break;
+  case GL_TYPE_NUMBER:
+    if (str != NULL) {
+      memcpy(ValueFixed(val), str, sizeof(Fixed));
+    } else {
+      memclear(ValueFixed(val), sizeof(Fixed));
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_INT:
+    memclear(ValueBody(val), sizeof(void*));
+    if (str != NULL) {
+      memcpy(ValueBody(val), str, sizeof(int));
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_OBJECT:
+    InitializeValue(val);
+    if (slen >= SIZE_UUID && str != NULL) {
+      memcpy(ValueBody(val),str,SIZE_UUID);
       rc = TRUE;
     } else {
-      ValueIsNonNil(val);
-    }
-    switch (ValueType(val)) {
-    case GL_TYPE_CHAR:
-    case GL_TYPE_VARCHAR:
-    case GL_TYPE_DBCODE:
-    case GL_TYPE_TEXT:
-    case GL_TYPE_SYMBOL:
-      if (*str == CHAR_NIL) {
-        ValueIsNil(val);
-      } else {
-        size = slen + 1;
-        if (size > ValueStringSize(val)) {
-          if (ValueString(val) != NULL) {
-            xfree(ValueString(val));
-          }
-          ValueStringSize(val) = size;
-          ValueString(val) = (unsigned char *)xmalloc(size);
-        }
-        memclear(ValueString(val), ValueStringSize(val));
-        if (str != NULL) {
-          strcpy(ValueString(val), str);
-        }
-        if (ValueType(val) == GL_TYPE_TEXT) {
-          ValueStringLength(val) = slen;
-        }
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_BYTE:
-      size = ValueByteLength(val) < slen ? ValueByteLength(val) : slen;
-      memclear(ValueByte(val), ValueByteSize(val));
-      if (str != NULL) {
-        memcpy(ValueByte(val), str, size);
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_BINARY:
-      if (slen > ValueByteSize(val)) {
-        if (ValueByte(val) != NULL) {
-          xfree(ValueByte(val));
-        }
-        ValueByteSize(val) = slen;
-        ValueByte(val) = (unsigned char *)xmalloc(slen);
-      }
-      memclear(ValueByte(val), ValueByteSize(val));
-      if (str != NULL) {
-        memcpy(ValueByte(val), str, slen);
-      }
-      ValueByteLength(val) = slen;
-      rc = TRUE;
-      break;
-    case GL_TYPE_NUMBER:
-      if (str != NULL) {
-        memcpy(ValueFixed(val), str, sizeof(Fixed));
-      } else {
-        memclear(ValueFixed(val), sizeof(Fixed));
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_INT:
-      memclear(ValueBody(val), sizeof(void*));
-      if (str != NULL) {
-        memcpy(ValueBody(val), str, sizeof(int));
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_OBJECT:
-      InitializeValue(val);
-      if (slen >= SIZE_UUID) {
-        memcpy(ValueBody(val),str,SIZE_UUID);
-        rc = TRUE;
-      } else {
-        rc = FALSE;
-      }
-      break;
-    case GL_TYPE_FLOAT:
-      if (str != NULL) {
-        memcpy(&ValueFloat(val), str, sizeof(double));
-      } else {
-        memclear(&ValueFloat(val), sizeof(double));
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_BOOL:
-      memclear(ValueBody(val), sizeof(void*));
-      if (str != NULL) {
-        memcpy(ValueBody(val), str, sizeof(Bool));
-      }
-      rc = TRUE;
-      break;
-    case GL_TYPE_TIMESTAMP:
-    case GL_TYPE_DATE:
-    case GL_TYPE_TIME:
-      if (str != NULL) {
-        memcpy(ValueDateTime(val), str, sizeof(struct tm));
-        rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
-      } else {
-        memclear(ValueDateTime(val), sizeof(struct tm));
-        rc = TRUE;
-      }
-      break;
-    default:
-      ValueIsNil(val);
       rc = FALSE;
-      break;
     }
+    break;
+  case GL_TYPE_FLOAT:
+    if (str != NULL) {
+      memcpy(&ValueFloat(val), str, sizeof(double));
+    } else {
+      memclear(&ValueFloat(val), sizeof(double));
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_BOOL:
+    memclear(ValueBody(val), sizeof(void*));
+    if (str != NULL) {
+      memcpy(ValueBody(val), str, sizeof(Bool));
+    }
+    rc = TRUE;
+    break;
+  case GL_TYPE_TIMESTAMP:
+  case GL_TYPE_DATE:
+  case GL_TYPE_TIME:
+    if (str != NULL) {
+      memcpy(ValueDateTime(val), str, sizeof(struct tm));
+      rc = mktime(ValueDateTime(val)) >= 0 ? TRUE : FALSE;
+    } else {
+      memclear(ValueDateTime(val), sizeof(struct tm));
+      rc = TRUE;
+    }
+    break;
+  default:
+    ValueIsNil(val);
+    rc = FALSE;
+    break;
   }
   return (rc);
 }
@@ -1206,7 +1192,6 @@ extern struct tm ValueToDateTime(ValueStruct *val) {
       ret.tm_min = StrToInt(str, 2);
       str += 2;
       ret.tm_sec = StrToInt(str, 2);
-      str += 2;
       mktime(&ret);
       break;
     case GL_TYPE_NUMBER:
@@ -1223,7 +1208,6 @@ extern struct tm ValueToDateTime(ValueStruct *val) {
       ret.tm_min = StrToInt(str, 2);
       str += 2;
       ret.tm_sec = StrToInt(str, 2);
-      str += 2;
       mktime(&ret);
       break;
     case GL_TYPE_INT:
@@ -1277,7 +1261,6 @@ extern struct tm ValueToDate(ValueStruct *val) {
       ret.tm_mon = StrToInt(str, 2) - 1;
       str += 2;
       ret.tm_mday = StrToInt(str, 2);
-      str += 2;
       ret.tm_hour = 0;
       ret.tm_min = 0;
       ret.tm_sec = 0;
@@ -1291,7 +1274,6 @@ extern struct tm ValueToDate(ValueStruct *val) {
       ret.tm_mon = StrToInt(str, 2) - 1;
       str += 2;
       ret.tm_mday = StrToInt(str, 2);
-      str += 2;
       ret.tm_hour = 0;
       ret.tm_min = 0;
       ret.tm_sec = 0;
@@ -1334,7 +1316,6 @@ extern struct tm ValueToTime(ValueStruct *val) {
       ret.tm_min = StrToInt(str, 2);
       str += 2;
       ret.tm_sec = StrToInt(str, 2);
-      str += 2;
       break;
     case GL_TYPE_NUMBER:
       xval = ValueFixed(val);
@@ -1347,7 +1328,6 @@ extern struct tm ValueToTime(ValueStruct *val) {
       ret.tm_min = StrToInt(str, 2);
       str += 2;
       ret.tm_sec = StrToInt(str, 2);
-      str += 2;
       break;
     case GL_TYPE_INT:
       wt = (time_t)ValueInteger(val);

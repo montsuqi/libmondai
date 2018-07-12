@@ -67,7 +67,6 @@ extern void StringC2Cobol(char *p, size_t size) {
   if (left > 0) {
     memset(p, ' ', left);
   }
-  p += left;
 }
 
 extern Bool IsCobolSpace(char *str, size_t size) {

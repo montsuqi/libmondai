@@ -108,7 +108,7 @@ static ValueStruct *BuildMcpArea(size_t stacksize) {
   p += sprintf(p, "  foo = db.path.blocks;");
   p += sprintf(p, "  baa = private.count;");
   p += sprintf(p, "};");
-  p += sprintf(p, "};");
+  sprintf(p, "};");
 
   value = RecParseValueMem(buff, NULL);
 

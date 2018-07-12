@@ -1461,7 +1461,9 @@ static void SetVarFromVar(NumericVar *value, NumericVar *dest) {
 
   newbuf = digitbuf_alloc(value->ndigits + 1);
   newbuf[0] = 0; /* spare digit for rounding */
-  memcpy(newbuf + 1, value->digits, value->ndigits);
+  if (value != NULL && value->digits != NULL) {
+    memcpy(newbuf + 1, value->digits, value->ndigits);
+  }
 
   digitbuf_free(dest->buf);
 

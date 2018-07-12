@@ -79,18 +79,6 @@ dnl ***************************************************************************
 PKG_CHECK_MODULES(JSON, json >= 0.9)
 
 dnl ***************************************************************************
-dnl SOAP
-dnl ***************************************************************************
-USE_SOAP="yes"
-AC_ARG_ENABLE(soap,
-    [  --disable-soap          disable soap [[enable]]],
-    [USE_SOAP=$enable_soap])
-if test "x$USE_SOAP" != "xno"; then
-    AC_DEFINE(USE_SOAP,1,"")
-fi
-AM_CONDITIONAL(SOAP, test x$USE_SOAP != "xno")
-
-dnl ***************************************************************************
 dnl libxml2
 dnl ***************************************************************************
 PKG_CHECK_MODULES(XML, libxml-2.0 >= 2.6.0)
