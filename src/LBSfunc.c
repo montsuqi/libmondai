@@ -557,11 +557,11 @@ extern LargeByteString *LBS_Duplicate(LargeByteString *lbs) {
 
   if (lbs != NULL) {
     ret = NewLBS();
-    LBS_ReserveSize(ret, lbs->size, FALSE);
-    /* for scan-build... */
-    if (ret != NULL && ret->body != NULL) {
-      memcpy(ret->body, lbs->body, lbs->size);
+    if (lbs->size == 0) {
+      return ret;
     }
+    LBS_ReserveSize(ret, lbs->size, FALSE);
+    memcpy(ret->body, lbs->body, lbs->size);
   } else {
     ret = NULL;
   }
