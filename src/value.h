@@ -57,7 +57,6 @@
 
 typedef PacketClass PacketDataType;
 typedef uint16_t ValueAttributeType;
-typedef uint64_t MonObjectType;
 
 #define IS_OBJECT_NULL(obj) ((obj) == 0)
 
