@@ -478,6 +478,7 @@ static void _JSON_UnPackValue(CONVOPT *opt, json_object *obj,
     }
     break;
   case GL_TYPE_ROOT_RECORD:
+  case GL_TYPE_RECORD:
     if (type == json_type_object) {
       for (i = 0; i < ValueRecordSize(value); i++) {
         if (json_object_object_get_ex(obj, ValueRecordName(value, i), &child)) {

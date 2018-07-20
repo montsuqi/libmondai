@@ -1081,7 +1081,8 @@ extern ValueStruct *DuplicateValue(ValueStruct *template, Bool fCopy) {
       break;
     case GL_TYPE_OBJECT:
       if (fCopy) {
-        CopyValue(p,template);
+        memclear(ValueBody(p), SIZE_UUID+1);
+        memcpy(ValueBody(p), ValueBody(template), SIZE_UUID);
       }
       break;
     case GL_TYPE_TIMESTAMP:
