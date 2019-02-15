@@ -160,6 +160,9 @@ extern void FreeValueStruct(ValueStruct *val) {
       if (ValueArrayPrototype(val) != NULL) {
         FreeValueStruct(ValueArrayPrototype(val));
       }
+      if (ValueArrayItems(val) != NULL) {
+        xfree(ValueArrayItems(val));
+      }
       xfree(ValueBody(val));
       break;
     case GL_TYPE_ROOT_RECORD:
@@ -172,6 +175,12 @@ extern void FreeValueStruct(ValueStruct *val) {
         xfree(ValueRecordName(val, i));
       }
       DestroyHashTable(ValueRecordMembers(val));
+      if (ValueRecordNames(val) != NULL) {
+        xfree(ValueRecordNames(val));
+      }
+      if (ValueRecordItems(val) != NULL) {
+        xfree(ValueRecordItems(val));
+      }
       xfree(ValueBody(val));
       break;
     case GL_TYPE_BYTE:
@@ -199,6 +208,11 @@ extern void FreeValueStruct(ValueStruct *val) {
       xfree(ValueFixedBody(val));
       xfree(ValueBody(val));
       break;
+    case GL_TYPE_VALUES:
+      if (ValueValuesItems(val) != NULL) {
+        xfree(ValueValuesItems(val));
+      }
+      xfree(ValueBody(val));
     default:
       break;
     }
