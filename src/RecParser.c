@@ -473,7 +473,7 @@ static ValueStruct *_RecParseValue(CURFILE *in, char **topname) {
   return ret;
 }
 
-extern ValueStruct *RecParseValue(const char *name, char **ValueName) {
+extern ValueStruct *RecParseValue(const char *name, char **ValueName,Bool use_cache) {
   ValueStruct *ret;
   CURFILE *in, root;
 
@@ -483,7 +483,9 @@ extern ValueStruct *RecParseValue(const char *name, char **ValueName) {
     if ((in = PushLexInfo(&root, name, RecordDir, Reserved)) != NULL) {
       ret = _RecParseValue(in, ValueName);
       DropLexInfo(&in);
-      g_hash_table_insert(ParsedRec, StrDup(name), ret);
+      if (use_cache) {
+        g_hash_table_insert(ParsedRec, StrDup(name), ret);
+      }
     } else {
       ret = NULL;
     }

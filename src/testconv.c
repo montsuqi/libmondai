@@ -102,7 +102,7 @@ extern int main(int argc, char **argv) {
   printf("***** DD_ParserInit *****\n");
   RecParserInit();
   printf("***** RecParseValue *****\n");
-  if ((val = RecParseValue("testrec.rec", NULL)) == NULL) {
+  if ((val = RecParseValue("testrec.rec", NULL,TRUE)) == NULL) {
     fprintf(stderr, "file not found.\n");
     exit(1);
   }
