@@ -477,12 +477,10 @@ extern ValueStruct *RecParseValueNoCache(const char *name, char **ValueName) {
   ValueStruct *ret;
   CURFILE *in, root;
 
-  assert(ParsedRec);
   root.next = NULL;
   if ((in = PushLexInfo(&root, name, RecordDir, Reserved)) != NULL) {
     ret = _RecParseValue(in, ValueName);
     DropLexInfo(&in);
-    g_hash_table_insert(ParsedRec, StrDup(name), ret);
   } else {
     ret = NULL;
   }
@@ -492,12 +490,11 @@ extern ValueStruct *RecParseValueNoCache(const char *name, char **ValueName) {
 
 extern ValueStruct *RecParseValue(const char *name, char **ValueName) {
   ValueStruct *ret;
-  CURFILE *in, root;
 
   assert(ParsedRec);
-  root.next = NULL;
   if ((ret = g_hash_table_lookup(ParsedRec, name)) == NULL) {
     ret = RecParseValueNoCache(name,ValueName);
+    g_hash_table_insert(ParsedRec, StrDup(name), ret);
   } else {
     if (ValueName != NULL) {
       *ValueName = GetValueName(ret);
