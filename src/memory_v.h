@@ -47,6 +47,8 @@ extern void _ReleasePool(POOL *pool);
 extern POOL *NewPool(char *name);
 extern void InitPool(void);
 extern void SetFinalizer(void *p, AreaFinalizerFunc func, void *data);
+extern void ResetTotalFreeSize();
+extern unsigned long GetTotalFreeSize();
 
 #define GetAreaByPool(p, s) _GetArea((p), (s), __FILE__, __LINE__)
 #define GetAreaByName(n, s) _GetArea(GetPool(n), (s), __FILE__, __LINE__)
