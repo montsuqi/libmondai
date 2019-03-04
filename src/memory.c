@@ -37,6 +37,9 @@
 #include "memory_v.h"
 #include "lock.h"
 #include "debug.h"
+#ifdef MON_MEM_TRACE
+#include <malloc.h>
+#endif
 
 typedef struct {
   LOCKOBJECT;
@@ -44,6 +47,7 @@ typedef struct {
 } POOLMGR;
 
 static POOLMGR *PoolTable = NULL;
+static unsigned long TotalFreeSize = 0;
 
 #ifdef TRACE
 static size_t total = 0;
@@ -98,6 +102,9 @@ extern void _xfree(void *p, char *fn, int line) {
 #else
   if (p == NULL)
     return;
+#ifdef MON_MEM_TRACE
+  TotalFreeSize += malloc_usable_size(p);
+#endif
   free(p);
 #endif
 }
@@ -241,4 +248,12 @@ extern void ReleaseAllPool(void) {
     DestroyLock(PoolTable);
   }
   PoolTable = NULL;
+}
+
+extern void ResetTotalFreeSize(void) {
+  TotalFreeSize = 0;
+}
+
+extern unsigned long GetTotalFreeSize(void) {
+  return TotalFreeSize;
 }
