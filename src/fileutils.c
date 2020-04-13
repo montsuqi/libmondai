@@ -58,7 +58,9 @@ extern Bool rm_r(char *dname) {
       /* directory */
       if ((dir = opendir(dname)) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-          if (ent->d_name[0] != '.') {
+          if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
+            // skip
+          } else {
             snprintf(path, sizeof(path), "%s/%s", dname, ent->d_name);
             path[sizeof(path) - 1] = 0;
             if (!rm_r(path)) {
