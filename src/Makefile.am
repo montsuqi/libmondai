@@ -108,7 +108,7 @@ LDADD 				=		\
 	$(GLIB_LIBS)			\
 	$(XML_LIBS)				\
 	$(JSON_LIBS)			\
-	$(top_builddir)/src/libmondai.la
+	libmondai.la
 
 testconv_SOURCES	=		\
 	testconv.c

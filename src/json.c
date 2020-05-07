@@ -310,7 +310,7 @@ extern size_t JSON_UnPackValueOmmit(CONVOPT *opt, unsigned char *p,
   size_t ret;
   ret = 0;
   obj = json_tokener_parse(p);
-  if (is_error(obj)) {
+  if (obj == NULL) {
 #if 0
 		MonWarning("invalid json");
 #endif
@@ -498,7 +498,7 @@ extern size_t JSON_UnPackValue(CONVOPT *opt, unsigned char *p,
   size_t ret;
   ret = 0;
   obj = json_tokener_parse(p);
-  if (is_error(obj)) {
+  if (obj == NULL) {
 #if 0
 		MonWarning("invalid json");
 #endif
@@ -1368,9 +1368,6 @@ extern size_t JSON_SizeValue(CONVOPT *opt, ValueStruct *value) {
 
 Bool CheckJSONObject(json_object *obj, enum json_type type) {
   if (obj == NULL) {
-    return FALSE;
-  }
-  if (is_error(obj)) {
     return FALSE;
   }
   if (!json_object_is_type(obj, type)) {
