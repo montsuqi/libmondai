@@ -201,7 +201,9 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
       for (i = 0; i < ValueArraySize(value); i++) {
         dbgprintf("child[%d]", i);
         rc = NativeUnPackValue(opt, p, ValueArrayItem(value, i));
-        ValueParent(ValueArrayItem(value, i)) = value;
+        if (ValueArrayItem(value, i) != NULL) {
+          ValueParent(ValueArrayItem(value, i)) = value;
+        }
         if (rc > 0) {
           p += rc;
         } else {
@@ -222,7 +224,9 @@ extern size_t NativeUnPackValue(CONVOPT *opt, unsigned char *p,
         dbgprintf("child[%d][%s]", i, p);
         p += strlen(p) + 1;
         rc = NativeUnPackValue(opt, p, ValueRecordItem(value, i));
-        ValueParent(ValueRecordItem(value, i)) = value;
+        if (ValueRecordItem(value, i) != NULL) {
+          ValueParent(ValueRecordItem(value, i)) = value;
+        }
         dbgprintf("rc[%d]", rc);
         if (rc > 0) {
           p += rc;
