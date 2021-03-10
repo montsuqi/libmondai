@@ -376,7 +376,7 @@ retry:
         in->Token = '/';
       } else {
         do {
-          while ((c = GetChar(in)) != '*')
+          while (GetChar(in) != '*')
             ;
           if ((c = GetChar(in)) == '/')
             break;
