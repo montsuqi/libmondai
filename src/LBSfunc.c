@@ -297,6 +297,8 @@ static gchar *UTF8Normalize(gchar *str) {
   return ret;
 }
 
+/*IBM互換文字、euc-jisx0213変換時に異体字のため
+第2水準の別の文字に変換されてしまうため□とする*/
 static int ConvertForJISX0213(char *string) {
   int i;
   const char *table[][2] = {
@@ -385,14 +387,11 @@ static int ConvertForJISX0213(char *string) {
   return 0;
 }
 
-#define SIZE_CONV 10
-
 extern void LBS_EmitStringCodeset(LargeByteString *lbs, char *str, size_t isize,
                                   size_t osize, char *codeset) {
-  char *oc, *istr, *buff, *nstr;
+  char *oc, *istr, *nstr;
   size_t sib, sob;
   iconv_t cd;
-  int rc, i;
   size_t obsize, ssize;
 
   if (lbs != NULL) {
@@ -408,31 +407,24 @@ extern void LBS_EmitStringCodeset(LargeByteString *lbs, char *str, size_t isize,
       oc = (char *)LBS_Body(lbs);
       sob = obsize;
       while (TRUE) {
-        if ((rc = iconv(cd, &istr, &sib, &oc, &sob)) == 0) {
+        if (iconv(cd, &istr, &sib, &oc, &sob) == 0) {
           break;
         }
-        if (errno == EILSEQ) {
-          if (!ConvertForJISX0213(istr)) {
-            buff = xmalloc(sib * 4 + 1);
-            for (i = 0; i < sib; i++) {
-              sprintf(buff + i * 4, "\\x%02X", istr[i]);
-            }
-            MonWarningPrintf("iconv EILSEQ:%s", buff);
-            xfree(buff);
-
-            *istr = 0;
-            sib = 1;
+        if (errno == EILSEQ || errno == EINVAL) {
+          /*不正byte列または不完全なbyte列*/
+          if (ConvertForJISX0213(istr)) {
+            /*IBM拡張文字を変換*/
+          } else {
+            /*その他不正byteを'?'に変換*/
+            istr[0] = 0x3f;
           }
         } else if (errno == E2BIG) {
-          MonWarningPrintf("iconv failure %s", strerror(errno));
+          /*バッファサイズエラー*/
+          MonWarningPrintf("iconv buffer size error %d:%s", errno, strerror(errno));
           break;
         } else {
-          buff = xmalloc(sib * 4 + 1);
-          for (i = 0; i < sib; i++) {
-            sprintf(buff + i * 4, "\\x%02X", istr[i]);
-          }
-          MonWarningPrintf("iconv failure %d str:%s", errno, buff);
-          xfree(buff);
+          /*その他のエラー*/
+          MonWarningPrintf("iconv failure %d:%s", errno, strerror(errno));
           break;
         }
       }
