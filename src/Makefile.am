@@ -26,7 +26,8 @@ noinst_PROGRAMS =	\
 	testmem \
 	testNativePack \
 	testjson \
-	testnumeric
+	testnumeric \
+	testOpenCOBOLPack
 
 libmondai_la_LDFLAGS	=	\
 	-version-info $(LTVERSION)	\
@@ -133,5 +134,8 @@ testjson_SOURCES		=		\
 
 testnumeric_SOURCES		=		\
 	testnumeric.c
+
+testOpenCOBOLPack_SOURCES		=		\
+	testOpenCOBOLPack.c
 
 EXTRA_DIST = lgpl testrec.rec testinc.rec
