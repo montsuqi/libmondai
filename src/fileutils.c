@@ -33,11 +33,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <glib.h>
 #include <errno.h>
 #include <dirent.h>
-#include <time.h>
 
 #include "types.h"
 #include "debug.h"
@@ -141,8 +142,8 @@ unsigned long now(void) {
   return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
 }
 
-void rm_r_old_level(const char *name, unsigned int elapsed, 
-                    unsigned int level, unsigned int rm_level) {
+void rm_r_old_depth(const char *name, unsigned int elapsed, 
+                    unsigned int level, unsigned int depth) {
   DIR *dir;
   struct dirent *ent;
   struct stat st;
@@ -165,17 +166,17 @@ void rm_r_old_level(const char *name, unsigned int elapsed,
           } else {
             snprintf(path, sizeof(path), "%s/%s", name, ent->d_name);
             path[sizeof(path) - 1] = 0;
-            rm_r_old_level(path, elapsed, level+1, rm_level);
+            rm_r_old_depth(path, elapsed, level+1, depth);
           }
         }
         closedir(dir);
-        if ((now - st.st_ctim.tv_sec) > elapsed && level >= rm_level) {
+        if ((now - st.st_ctim.tv_sec) > elapsed && level >= depth) {
           remove(name);
         }
       }
     } else {
       /* file */
-      if ((now - st.st_ctim.tv_sec) > elapsed && level >= rm_level) {
+      if ((now - st.st_ctim.tv_sec) > elapsed && level >= depth) {
         remove(name);
       }
     }
@@ -183,5 +184,5 @@ void rm_r_old_level(const char *name, unsigned int elapsed,
 }
 
 void rm_r_old(const char *name, unsigned int elapsed) {
-  rm_r_old_level(name,elapsed,0,0);
+  rm_r_old_depth(name,elapsed,0,0);
 }
