@@ -33,6 +33,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <glib.h>
 #include <errno.h>
@@ -62,7 +64,6 @@ extern Bool rm_r(char *dname) {
             // skip
           } else {
             snprintf(path, sizeof(path), "%s/%s", dname, ent->d_name);
-            path[sizeof(path) - 1] = 0;
             if (!rm_r(path)) {
               return FALSE;
             }
@@ -132,3 +133,53 @@ extern Bool mkdir_p_clean(char *dir, int mode) {
 }
 
 extern Bool MakeDir(char *dir, int mode) { return mkdir_p_clean(dir, mode); }
+
+unsigned long now(void) {
+  struct timeval tv;
+
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
+}
+
+void rm_r_old_depth(const char *name, unsigned int elapsed, int depth) {
+  DIR *dir;
+  struct dirent *ent;
+  struct stat st;
+  time_t now;
+  char path[4096];
+
+  if (name == NULL) {
+    return;
+  }
+
+  now = time(NULL);
+
+  if (stat(name, &st) == 0) {
+    if (S_ISDIR(st.st_mode)) {
+      /* directory */
+      if ((dir = opendir(name)) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+          if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
+            // skip
+          } else {
+            snprintf(path, sizeof(path), "%s/%s", name, ent->d_name);
+            rm_r_old_depth(path, elapsed, depth - 1);
+          }
+        }
+        closedir(dir);
+        if ((now - st.st_ctim.tv_sec) > elapsed && depth <= 0) {
+          remove(name);
+        }
+      }
+    } else {
+      /* file */
+      if ((now - st.st_ctim.tv_sec) > elapsed && depth <= 0) {
+        remove(name);
+      }
+    }
+  }
+}
+
+void rm_r_old(const char *name, unsigned int elapsed) {
+  rm_r_old_depth(name,elapsed,0);
+}

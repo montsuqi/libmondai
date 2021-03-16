@@ -27,5 +27,7 @@ extern Bool rm_r(char *dname);
 extern Bool mkdir_p(char *dname, int mode);
 extern Bool mkdir_p_clean(char *dir, int mode);
 extern Bool MakeDir(char *dir, int mode);
+extern void rm_r_old_depth(const char *name, unsigned int elapsed, int depth);
+extern void rm_r_old(const char *name, unsigned int elapsed);
 
 #endif
