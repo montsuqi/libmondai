@@ -22,38 +22,65 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <glib.h>
 #include "fileutils.h"
 
+#define TEST_ROOT_DIR "/tmp/libmondai-test-root"
+#define TEST_MAKE_DIR "/tmp/libmondai-test-root/MakeDir"
+#define TEST_RM_R_OLD "/tmp/libmondai-test-root/rm_r_old"
+#define TEST_RM_R_OLD2 "/tmp/libmondai-test-root/rm_r_old/1"
+#define TEST_RM_R_OLD3 "/tmp/libmondai-test-root/rm_r_old/1/2"
+
+static void touch(const char *path) {
+  char *command = g_strdup_printf("touch %s/test.txt",path);
+  fprintf(stderr, "%s\n", command);
+  system(command);
+  g_free(command);
+}
+
+static void ls_R() {
+  char *command = g_strdup_printf("ls -R %s",TEST_ROOT_DIR);
+  fprintf(stderr, "ls -R\n");
+  system(command);
+  g_free(command);
+  fprintf(stderr, "\n");
+}
+
 extern int main(int argc, char **argv) {
-  int i, mode;
+  fprintf(stderr, "---- \n");
+  fprintf(stderr, "rm_r[%s] [%d]\n", TEST_ROOT_DIR, rm_r(TEST_ROOT_DIR));
+  fprintf(stderr, "mkdir_p[%s] [%d]\n", TEST_ROOT_DIR, mkdir_p(TEST_ROOT_DIR, 0700));
+  touch(TEST_ROOT_DIR);
+  ls_R();
 
-  if (argc < 3) {
-    fprintf(stderr, "%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...\n");
-    exit(1);
-  }
-  if (!strcmp(argv[1], "MakeDir")) {
-    mode = 1;
-  } else if (!strcmp(argv[1], "mkdir_p")) {
-    mode = 2;
-  } else if (!strcmp(argv[1], "rm_r")) {
-    mode = 3;
-  } else {
-    fprintf(stderr, "%% testfileutils <MakeDir|mkdir_p|rm_r> dir1 dir2 ...\n");
-    exit(1);
-  }
+  fprintf(stderr, "---- \n");
+  fprintf(stderr, "MakeDir[%s] [%d]\n", TEST_MAKE_DIR, MakeDir(TEST_MAKE_DIR, 0700));
+  touch(TEST_MAKE_DIR);
+  ls_R();
 
-  for (i = 2; i < argc; i++) {
-    switch (mode) {
-    case 1:
-      fprintf(stderr, "MakeDir[%s] [%d]\n", argv[i], MakeDir(argv[i], 0700));
-      break;
-    case 2:
-      fprintf(stderr, "mkdir_p[%s] [%d]\n", argv[i], mkdir_p(argv[i], 0700));
-      break;
-    case 3:
-      fprintf(stderr, "rm_r[%s] [%d]\n", argv[i], rm_r(argv[i]));
-      break;
-    }
-  }
+  fprintf(stderr, "---- \n");
+  fprintf(stderr, "rm_r[%s] [%d]\n", TEST_MAKE_DIR, rm_r(TEST_MAKE_DIR));
+  ls_R();
+
+  fprintf(stderr, "---- \n");
+  fprintf(stderr, "mkdir_p[%s] [%d]\n", TEST_RM_R_OLD, mkdir_p(TEST_RM_R_OLD, 0700));
+  touch(TEST_RM_R_OLD);
+  fprintf(stderr, "mkdir_p[%s] [%d]\n", TEST_RM_R_OLD3, mkdir_p(TEST_RM_R_OLD3, 0700));
+  touch(TEST_RM_R_OLD2);
+  touch(TEST_RM_R_OLD3);
+  ls_R();
+
+  fprintf(stderr, "rm_r_old_level(%s,500,0,1) \n", TEST_RM_R_OLD);
+  rm_r_old_level(TEST_RM_R_OLD,500,0,1);
+  ls_R();
+
+  fprintf(stderr, "sleep(5)\n");
+  sleep(5);
+
+  fprintf(stderr, "rm_r_old_level(%s,4,0,2) \n", TEST_RM_R_OLD);
+  rm_r_old_level(TEST_RM_R_OLD,4,0,2);
+  ls_R();
+
   return 0;
 }

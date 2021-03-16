@@ -37,6 +37,7 @@
 #include <glib.h>
 #include <errno.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "types.h"
 #include "debug.h"
@@ -132,3 +133,55 @@ extern Bool mkdir_p_clean(char *dir, int mode) {
 }
 
 extern Bool MakeDir(char *dir, int mode) { return mkdir_p_clean(dir, mode); }
+
+unsigned long now(void) {
+  struct timeval tv;
+
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
+}
+
+void rm_r_old_level(const char *name, unsigned int elapsed, 
+                    unsigned int level, unsigned int rm_level) {
+  DIR *dir;
+  struct dirent *ent;
+  struct stat st;
+  time_t now;
+  char path[4096];
+
+  if (name == NULL) {
+    return;
+  }
+
+  now = time(NULL);
+
+  if (stat(name, &st) == 0) {
+    if (S_ISDIR(st.st_mode)) {
+      /* directory */
+      if ((dir = opendir(name)) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+          if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
+            // skip
+          } else {
+            snprintf(path, sizeof(path), "%s/%s", name, ent->d_name);
+            path[sizeof(path) - 1] = 0;
+            rm_r_old_level(path, elapsed, level+1, rm_level);
+          }
+        }
+        closedir(dir);
+        if ((now - st.st_ctim.tv_sec) > elapsed && level >= rm_level) {
+          remove(name);
+        }
+      }
+    } else {
+      /* file */
+      if ((now - st.st_ctim.tv_sec) > elapsed && level >= rm_level) {
+        remove(name);
+      }
+    }
+  }
+}
+
+void rm_r_old(const char *name, unsigned int elapsed) {
+  rm_r_old_level(name,elapsed,0,0);
+}
