@@ -64,7 +64,6 @@ extern Bool rm_r(char *dname) {
             // skip
           } else {
             snprintf(path, sizeof(path), "%s/%s", dname, ent->d_name);
-            path[sizeof(path) - 1] = 0;
             if (!rm_r(path)) {
               return FALSE;
             }
@@ -142,8 +141,7 @@ unsigned long now(void) {
   return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
 }
 
-void rm_r_old_depth(const char *name, unsigned int elapsed, 
-                    unsigned int level, unsigned int depth) {
+void rm_r_old_depth(const char *name, unsigned int elapsed, int depth) {
   DIR *dir;
   struct dirent *ent;
   struct stat st;
@@ -165,18 +163,17 @@ void rm_r_old_depth(const char *name, unsigned int elapsed,
             // skip
           } else {
             snprintf(path, sizeof(path), "%s/%s", name, ent->d_name);
-            path[sizeof(path) - 1] = 0;
-            rm_r_old_depth(path, elapsed, level+1, depth);
+            rm_r_old_depth(path, elapsed, depth - 1);
           }
         }
         closedir(dir);
-        if ((now - st.st_ctim.tv_sec) > elapsed && level >= depth) {
+        if ((now - st.st_ctim.tv_sec) > elapsed && depth <= 0) {
           remove(name);
         }
       }
     } else {
       /* file */
-      if ((now - st.st_ctim.tv_sec) > elapsed && level >= depth) {
+      if ((now - st.st_ctim.tv_sec) > elapsed && depth <= 0) {
         remove(name);
       }
     }
@@ -184,5 +181,5 @@ void rm_r_old_depth(const char *name, unsigned int elapsed,
 }
 
 void rm_r_old(const char *name, unsigned int elapsed) {
-  rm_r_old_depth(name,elapsed,0,0);
+  rm_r_old_depth(name,elapsed,0);
 }

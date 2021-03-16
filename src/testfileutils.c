@@ -71,15 +71,15 @@ extern int main(int argc, char **argv) {
   touch(TEST_RM_R_OLD3);
   ls_R();
 
-  fprintf(stderr, "rm_r_old_depth(%s,500,0,2) \n", TEST_RM_R_OLD);
-  rm_r_old_depth(TEST_RM_R_OLD,500,0,2);
+  fprintf(stderr, "rm_r_old_depth(%s,500,2) \n", TEST_RM_R_OLD);
+  rm_r_old_depth(TEST_RM_R_OLD,500,2);
   ls_R();
 
   fprintf(stderr, "sleep(5)\n");
   sleep(5);
 
-  fprintf(stderr, "rm_r_old_depth(%s,4,0,2) \n", TEST_RM_R_OLD);
-  rm_r_old_depth(TEST_RM_R_OLD,4,0,2);
+  fprintf(stderr, "rm_r_old_depth(%s,4,2) \n", TEST_RM_R_OLD);
+  rm_r_old_depth(TEST_RM_R_OLD,4,2);
   ls_R();
 
   return 0;
